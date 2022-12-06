@@ -55,7 +55,7 @@ enum Property
 };
 
 //-----------------------------------------------------------------------------
-extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
+extern vector<string> nameRandom, nicknameRandom, crazyName, txLocationStart, txLocationEnd;
 string Language::prefix, Language::dir, Language::tstr;
 Language::Map Language::strs;
 Language::Sections Language::sections;
@@ -359,14 +359,14 @@ void Language::ParseObject(Tokenizer& t)
 				{
 					if(nickname)
 						t.Throw("Crazies can't have nicknames.");
-					names = &crazy_name;
+					names = &crazyName;
 				}
 				else if(id == K_RANDOM)
 				{
 					if(nickname)
-						names = &nickname_random;
+						names = &nicknameRandom;
 					else
-						names = &name_random;
+						names = &nameRandom;
 				}
 				else if(id == K_LOCATION_START)
 				{

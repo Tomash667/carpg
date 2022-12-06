@@ -55,9 +55,9 @@ void City::Save(GameWriter& f)
 		{
 			f << b.building->id;
 			f << b.pt;
-			f << b.unit_pt;
+			f << b.unitPt;
 			f << b.dir;
-			f << b.walk_pt;
+			f << b.walkPt;
 		}
 
 		f << inside_offset;
@@ -110,9 +110,9 @@ void City::Load(GameReader& f)
 		{
 			b.building = Building::Get(f.ReadString1());
 			f >> b.pt;
-			f >> b.unit_pt;
+			f >> b.unitPt;
 			f >> b.dir;
-			f >> b.walk_pt;
+			f >> b.walkPt;
 			assert(b.building != nullptr);
 			if(LOAD_VERSION < V_0_14 && b.building->id == "mages_tower")
 			{
@@ -127,9 +127,9 @@ void City::Load(GameReader& f)
 				else
 					pos = Vec3::TransformZero(point->mat);
 				pos += Vec3(float(b.pt.x + b.building->shift[b.dir].x) * 2, 0.f, float(b.pt.y + b.building->shift[b.dir].y) * 2);
-				b.walk_pt = pos;
+				b.walkPt = pos;
 				gameLevel->terrain->SetHeightMap(h);
-				gameLevel->terrain->SetY(b.walk_pt);
+				gameLevel->terrain->SetY(b.walkPt);
 				gameLevel->terrain->RemoveHeightMap();
 			}
 		}
@@ -263,7 +263,7 @@ bool City::Read(BitStreamReader& f)
 bool City::IsInsideCity(const Vec3& pos)
 {
 	Int2 tile(int(pos.x / 2), int(pos.z / 2));
-	if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
+	if(tile.x <= int(0.15f * size) || tile.y <= int(0.15f * size) || tile.x >= int(0.85f * size) || tile.y >= int(0.85f * size))
 		return false;
 	else
 		return true;
@@ -424,7 +424,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 				for(int i = 0; i < building_count; ++i)
 				{
 					uint index = Rand() % count;
-					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
+					BuildingScript::Code type = (BuildingScript::Code) * (code + index * 2);
 					if(type == BuildingScript::BS_BUILDING)
 					{
 						Building* b = (Building*)*(code + index * 2 + 1);
@@ -665,7 +665,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 //=================================================================================================
 Vec3 CityBuilding::GetUnitPos()
 {
-	return Vec3(float(unit_pt.x) * 2 + 1, 0, float(unit_pt.y) * 2 + 1);
+	return Vec3(float(unitPt.x) * 2 + 1, 0, float(unitPt.y) * 2 + 1);
 }
 
 //=================================================================================================

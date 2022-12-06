@@ -43,18 +43,18 @@ struct Room : ObjectPoolProxy<Room>
 	}
 	bool IsInside(float x, float z) const
 	{
-		return (x >= 2.f*pos.x && z >= 2.f*pos.y && x <= 2.f*(pos.x + size.x) && z <= 2.f*(pos.y + size.y));
+		return (x >= 2.f * pos.x && z >= 2.f * pos.y && x <= 2.f * (pos.x + size.x) && z <= 2.f * (pos.y + size.y));
 	}
-	bool IsInside(const Vec3& _pos) const
+	bool IsInside(const Vec3& pos) const
 	{
-		return IsInside(_pos.x, _pos.z);
+		return IsInside(pos.x, pos.z);
 	}
-	float Distance(const Vec3& _pos) const
+	float Distance(const Vec3& pos) const
 	{
-		if(IsInside(_pos))
+		if(IsInside(pos))
 			return 0.f;
 		else
-			return Vec3::Distance2d(_pos, Center());
+			return Vec3::Distance2d(pos, Center());
 	}
 	float Distance(const Room& room) const
 	{
@@ -62,26 +62,26 @@ struct Room : ObjectPoolProxy<Room>
 	}
 	Vec3 GetRandomPos() const
 	{
-		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
+		return Vec3(Random(2.f * (pos.x + 1), 2.f * (pos.x + size.x - 1)), 0, Random(2.f * (pos.y + 1), 2.f * (pos.y + size.y - 1)));
 	}
-	bool GetRandomPos(float margin, Vec3& out_pos) const
+	bool GetRandomPos(float margin, Vec3& outPos) const
 	{
 		float min_size = (min(size.x, size.y) - 1) * 2.f;
 		if(margin * 2 >= min_size)
 			return false;
-		out_pos = Vec3(
-			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
+		outPos = Vec3(
+			Random(2.f * (pos.x + 1) + margin, 2.f * (pos.x + size.x - 1) - margin),
 			0,
-			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
+			Random(2.f * (pos.y + 1) + margin, 2.f * (pos.y + size.y - 1) - margin));
 		return true;
 	}
 	Vec3 GetRandomPos(float margin) const
 	{
 		assert(margin * 2 < (min(size.x, size.y) - 1) * 2.f);
 		return Vec3(
-			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
+			Random(2.f * (pos.x + 1) + margin, 2.f * (pos.x + size.x - 1) - margin),
 			0,
-			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
+			Random(2.f * (pos.y + 1) + margin, 2.f * (pos.y + size.y - 1) - margin));
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
@@ -100,7 +100,7 @@ struct RoomGroup
 {
 	struct Connection
 	{
-		int group_index, my_room, other_room;
+		int groupIndex, myRoom, otherRoom;
 	};
 
 	int index;
@@ -108,8 +108,8 @@ struct RoomGroup
 	vector<int> rooms;
 	RoomTarget target;
 
-	bool IsConnected(int group_index) const;
-	bool HaveRoom(int room_index) const;
+	bool IsConnected(int groupIndex) const;
+	bool HaveRoom(int roomIndex) const;
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	static void SetRoomGroupConnections(vector<RoomGroup>& groups, vector<Room*>& rooms);

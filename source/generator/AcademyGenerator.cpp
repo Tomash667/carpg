@@ -71,7 +71,7 @@ void AcademyGenerator::Generate()
 	for(uint y = 1; y < s / 2; ++y)
 	{
 		for(uint x = 61; x <= 67; ++x)
-			h[x + y * (s + 1)] = (h[x + y * (s + 1)] + h[x + 1 + y * (s + 1)] + h[x - 1 + y * (s + 1)] + h[x + (y - 1)*(s + 1)] + h[x + (y + 1)*(s + 1)]) / 5;
+			h[x + y * (s + 1)] = (h[x + y * (s + 1)] + h[x + 1 + y * (s + 1)] + h[x - 1 + y * (s + 1)] + h[x + (y - 1) * (s + 1)] + h[x + (y + 1) * (s + 1)]) / 5;
 	}
 
 	// set building tiles
@@ -90,11 +90,11 @@ void AcademyGenerator::Generate()
 	{
 		for(int xx = -x1, xr = 0; xx <= x2; ++xx, ++xr)
 		{
-			Building::TileScheme scheme = building->scheme[xr + (ext2.y - yr - 1)*ext2.x];
+			Building::TileScheme scheme = building->scheme[xr + (ext2.y - yr - 1) * ext2.x];
 
 			Int2 pt2(pt.x + xx, pt.y + yy);
 
-			TerrainTile& t = outside->tiles[pt2.x + (pt2.y)*s];
+			TerrainTile& t = outside->tiles[pt2.x + (pt2.y) * s];
 
 			switch(scheme)
 			{
@@ -106,7 +106,7 @@ void AcademyGenerator::Generate()
 				t.Set(TT_SAND, TM_BUILDING_BLOCK);
 				break;
 			case Building::SCHEME_UNIT:
-				unit_pos = Vec3(2.f*pt2.x, 0, 2.f*pt2.y);
+				unitPos = Vec3(2.f * pt2.x, 0, 2.f * pt2.y);
 				t.Set(TT_SAND, TM_BUILDING_SAND);
 				break;
 			case Building::SCHEME_SAND:
@@ -129,13 +129,13 @@ void AcademyGenerator::Generate()
 		{
 			Int2 pt2(pt.x + xx, pt.y + yy);
 			++count;
-			sum += outside->h[pt2.x + pt2.y*(s + 1)];
+			sum += outside->h[pt2.x + pt2.y * (s + 1)];
 			tmp_pts.push_back(pt2);
 		}
 	}
 	sum /= count;
 	for(Int2& pt : tmp_pts)
-		outside->h[pt.x + pt.y*(s + 1)] = sum;
+		outside->h[pt.x + pt.y * (s + 1)] = sum;
 	tmp_pts.clear();
 
 	// it would be better to round only next to building...
@@ -150,13 +150,13 @@ void AcademyGenerator::Generate()
 		{
 			Int2 pt2(pt.x + xx, pt.y + yy);
 			++count;
-			sum += outside->h[pt2.x + pt2.y*(s + 1)];
+			sum += outside->h[pt2.x + pt2.y * (s + 1)];
 			tmp_pts.push_back(pt2);
 		}
 	}
 	sum /= count;
 	for(Int2& pt : tmp_pts)
-		outside->h[pt.x + pt.y*(s + 1)] = sum;
+		outside->h[pt.x + pt.y * (s + 1)] = sum;
 	tmp_pts.clear();
 
 	terrain->RemoveHeightMap();
@@ -200,7 +200,7 @@ void AcademyGenerator::GenerateItems()
 void AcademyGenerator::GenerateUnits()
 {
 	UnitData* ud = UnitData::Get("q_main_academy");
-	Unit* u = gameLevel->SpawnUnitNearLocation(*outside, unit_pos, *ud);
+	Unit* u = gameLevel->SpawnUnitNearLocation(*outside, unitPos, *ud);
 	u->ai->startRot = u->rot = 0.f;
 }
 

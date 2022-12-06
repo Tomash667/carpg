@@ -20,9 +20,9 @@ enum CityTarget
 struct CityBuilding
 {
 	Building* building;
-	Int2 pt, unit_pt;
+	Int2 pt, unitPt;
 	GameDirection dir;
-	Vec3 walk_pt;
+	Vec3 walkPt;
 
 	CityBuilding() {}
 	explicit CityBuilding(Building* building) : building(building) {}

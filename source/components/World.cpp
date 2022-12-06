@@ -225,7 +225,7 @@ void World::UpdateLocations()
 		if(loc->type == L_CAMP)
 		{
 			Camp* camp = static_cast<Camp*>(loc);
-			if(worldtime - camp->create_time >= 30
+			if(worldtime - camp->createTime >= 30
 				&& currentLocation != loc // don't remove when team is inside
 				&& travelLocation != loc) // don't remove when traveling to
 			{
@@ -278,7 +278,7 @@ Location* World::CreateCamp(const Vec2& pos, UnitGroup* group)
 	loc->reset = false;
 	loc->group = group;
 	loc->pos = pos;
-	loc->create_time = worldtime;
+	loc->createTime = worldtime;
 	SetLocationImageAndName(loc);
 
 	loc->st = GetTileSt(loc->pos);
@@ -2848,7 +2848,7 @@ void World::AbadonLocation(Location* loc)
 	if(loc->type == L_CAMP)
 	{
 		Camp* camp = static_cast<Camp*>(loc);
-		camp->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+		camp->createTime = world->GetWorldtime() - 30 + Random(4, 8);
 
 		// turn off lights
 		if(loc != currentLocation)
@@ -2875,8 +2875,8 @@ void World::AbadonLocation(Location* loc)
 		{
 			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
-				u->to_remove = true;
-				gameLevel->to_remove.push_back(u);
+				u->toRemove = true;
+				gameLevel->toRemove.push_back(u);
 			}
 		}
 

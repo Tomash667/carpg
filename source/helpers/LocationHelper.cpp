@@ -98,6 +98,6 @@ Unit* LocationHelper::FindQuestUnit(Location* loc, Quest* quest)
 	const int questId = quest->id;
 	return ForLocation(loc)->FindUnit([=](Unit* unit)
 	{
-		return unit->quest_id == questId;
+		return unit->questId == questId;
 	});
 }

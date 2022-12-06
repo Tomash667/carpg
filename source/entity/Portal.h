@@ -5,10 +5,10 @@ struct Portal
 {
 	Vec3 pos;
 	float rot;
-	int at_level;
+	int atLevel;
 	int index;
-	int target_loc;
-	Portal* next_portal;
+	int targetLoc;
+	Portal* nextPortal;
 
 	static const int MIN_SIZE = 17;
 

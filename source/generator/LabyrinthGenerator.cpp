@@ -8,23 +8,23 @@
 #include "UnitGroup.h"
 
 //=================================================================================================
-int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
+int LabyrinthGenerator::TryGenerate(const Int2& mazeSize, const Int2& roomSize, Int2& roomPos, Int2& doors)
 {
 	list<Int2> drillers;
-	maze.resize(maze_size.x * maze_size.y, false);
+	maze.resize(mazeSize.x * mazeSize.y, false);
 	for(vector<bool>::iterator it = maze.begin(), end = maze.end(); it != end; ++it)
 		*it = false;
 
-	int mx = maze_size.x / 2 - room_size.x / 2,
-		my = maze_size.y / 2 - room_size.y / 2;
-	room_pos.x = mx;
-	room_pos.y = my;
+	int mx = mazeSize.x / 2 - roomSize.x / 2,
+		my = mazeSize.y / 2 - roomSize.y / 2;
+	roomPos.x = mx;
+	roomPos.y = my;
 
-	for(int y = 0; y < room_size.y; ++y)
+	for(int y = 0; y < roomSize.y; ++y)
 	{
-		for(int x = 0; x < room_size.x; ++x)
+		for(int x = 0; x < roomSize.x; ++x)
 		{
-			maze[x + mx + (y + my)*maze_size.x] = true;
+			maze[x + mx + (y + my) * mazeSize.x] = true;
 		}
 	}
 
@@ -34,29 +34,29 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 	switch(Rand() % 4)
 	{
 	case 0:
-		start.x = maze_size.x / 2;
-		start.y = maze_size.y / 2 + room_size.y / 2;
+		start.x = mazeSize.x / 2;
+		start.y = mazeSize.y / 2 + roomSize.y / 2;
 		start2 = start;
 		start.y--;
 		dir = 1;
 		break;
 	case 1:
-		start.x = maze_size.x / 2 - room_size.x / 2;
-		start.y = maze_size.y / 2;
+		start.x = mazeSize.x / 2 - roomSize.x / 2;
+		start.y = mazeSize.y / 2;
 		start2 = start;
 		start2.x--;
 		dir = 2;
 		break;
 	case 2:
-		start.x = maze_size.x / 2;
-		start.y = maze_size.y / 2 - room_size.y / 2;
+		start.x = mazeSize.x / 2;
+		start.y = mazeSize.y / 2 - roomSize.y / 2;
 		start2 = start;
 		start2.y--;
 		dir = 0;
 		break;
 	case 3:
-		start.x = maze_size.x / 2 + room_size.x / 2;
-		start.y = maze_size.y / 2;
+		start.x = mazeSize.x / 2 + roomSize.x / 2;
+		start.y = mazeSize.y / 2;
 		start2 = start;
 		start.x--;
 		dir = 3;
@@ -77,39 +77,39 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 			{
 			case 0:
 				m->y -= 2;
-				if(m->y < 0 || maze[m->y*maze_size.x + m->x])
+				if(m->y < 0 || maze[m->y * mazeSize.x + m->x])
 				{
 					remove_driller = true;
 					break;
 				}
-				maze[(m->y + 1)*maze_size.x + m->x] = true;
+				maze[(m->y + 1) * mazeSize.x + m->x] = true;
 				break;
 			case 1:
 				m->y += 2;
-				if(m->y >= maze_size.y || maze[m->y*maze_size.x + m->x])
+				if(m->y >= mazeSize.y || maze[m->y * mazeSize.x + m->x])
 				{
 					remove_driller = true;
 					break;
 				}
-				maze[(m->y - 1)*maze_size.x + m->x] = true;
+				maze[(m->y - 1) * mazeSize.x + m->x] = true;
 				break;
 			case 2:
 				m->x -= 2;
-				if(m->x < 0 || maze[m->y*maze_size.x + m->x])
+				if(m->x < 0 || maze[m->y * mazeSize.x + m->x])
 				{
 					remove_driller = true;
 					break;
 				}
-				maze[m->y*maze_size.x + m->x + 1] = true;
+				maze[m->y * mazeSize.x + m->x + 1] = true;
 				break;
 			case 3:
 				m->x += 2;
-				if(m->x >= maze_size.x || maze[m->y*maze_size.x + m->x])
+				if(m->x >= mazeSize.x || maze[m->y * mazeSize.x + m->x])
 				{
 					remove_driller = true;
 					break;
 				}
-				maze[m->y*maze_size.x + m->x - 1] = true;
+				maze[m->y * mazeSize.x + m->x - 1] = true;
 				break;
 			}
 			if(remove_driller)
@@ -121,7 +121,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 				// if (Rand()%2)
 				drillers.push_back(*m);
 
-				maze[m->x + m->y*maze_size.x] = true;
+				maze[m->x + m->y * mazeSize.x] = true;
 				++m;
 				++pc;
 			}
@@ -130,18 +130,18 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 		}
 	}
 
-	for(int x = 0; x < room_size.x; ++x)
+	for(int x = 0; x < roomSize.x; ++x)
 	{
-		maze[mx + x + my * maze_size.x] = false;
-		maze[mx + x + (my + room_size.y - 1)*maze_size.x] = false;
+		maze[mx + x + my * mazeSize.x] = false;
+		maze[mx + x + (my + roomSize.y - 1) * mazeSize.x] = false;
 	}
-	for(int y = 0; y < room_size.y; ++y)
+	for(int y = 0; y < roomSize.y; ++y)
 	{
-		maze[mx + (my + y)*maze_size.x] = false;
-		maze[mx + room_size.x - 1 + (my + y)*maze_size.x] = false;
+		maze[mx + (my + y) * mazeSize.x] = false;
+		maze[mx + roomSize.x - 1 + (my + y) * mazeSize.x] = false;
 	}
-	maze[start.x + start.y*maze_size.x] = true;
-	maze[start2.x + start2.y*maze_size.x] = true;
+	maze[start.x + start.y * mazeSize.x] = true;
+	maze[start2.x + start2.y * mazeSize.x] = true;
 
 	doors = Int2(start.x, start.y);
 
@@ -149,43 +149,43 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 }
 
 //=================================================================================================
-void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, GameDirection& stairs_dir, Int2& room_pos,
-	int grating_chance)
+void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const Int2& roomSize, Int2& stairs, GameDirection& stairsDir, Int2& roomPos,
+	int gratingChance)
 {
-	assert(room_size.x > 4 && room_size.y > 4 && size.x >= room_size.x * 2 + 4 && size.y >= room_size.y * 2 + 4);
-	Int2 maze_size(size.x - 2, size.y - 2), doors;
+	assert(roomSize.x > 4 && roomSize.y > 4 && size.x >= roomSize.x * 2 + 4 && size.y >= roomSize.y * 2 + 4);
+	Int2 mazeSize(size.x - 2, size.y - 2), doors;
 
-	while(TryGenerate(maze_size, room_size, room_pos, doors) < 600);
+	while(TryGenerate(mazeSize, roomSize, roomPos, doors) < 600);
 
-	++room_pos.x;
-	++room_pos.y;
-	tiles = new Tile[size.x*size.y];
-	memset(tiles, 0, sizeof(Tile)*size.x*size.y);
+	++roomPos.x;
+	++roomPos.y;
+	tiles = new Tile[size.x * size.y];
+	memset(tiles, 0, sizeof(Tile) * size.x * size.y);
 
 	// copy map
-	for(int y = 0; y < maze_size.y; ++y)
+	for(int y = 0; y < mazeSize.y; ++y)
 	{
-		for(int x = 0; x < maze_size.x; ++x)
-			tiles[x + 1 + (y + 1)*size.x].type = (maze[x + y * maze_size.x] ? EMPTY : WALL);
+		for(int x = 0; x < mazeSize.x; ++x)
+			tiles[x + 1 + (y + 1) * size.x].type = (maze[x + y * mazeSize.x] ? EMPTY : WALL);
 	}
 
-	tiles[doors.x + 1 + (doors.y + 1)*size.x].type = DOORS;
+	tiles[doors.x + 1 + (doors.y + 1) * size.x].type = DOORS;
 
 	// add blockades
 	for(int x = 0; x < size.x; ++x)
 	{
 		tiles[x].type = BLOCKADE_WALL;
-		tiles[x + (size.y - 1)*size.x].type = BLOCKADE_WALL;
+		tiles[x + (size.y - 1) * size.x].type = BLOCKADE_WALL;
 	}
 
 	for(int y = 1; y < size.y - 1; ++y)
 	{
-		tiles[y*size.x].type = BLOCKADE_WALL;
+		tiles[y * size.x].type = BLOCKADE_WALL;
 		tiles[size.x - 1 + y * size.x].type = BLOCKADE_WALL;
 	}
 
-	CreateStairs(tiles, size, stairs, stairs_dir);
-	CreateGratings(tiles, size, room_size, room_pos, grating_chance);
+	CreateStairs(tiles, size, stairs, stairsDir);
+	CreateGratings(tiles, size, roomSize, roomPos, gratingChance);
 
 	Tile::SetupFlags(tiles, size, ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
 
@@ -194,7 +194,7 @@ void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const
 }
 
 //=================================================================================================
-void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stairs, GameDirection& stairs_dir)
+void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stairs, GameDirection& stairsDir)
 {
 	int order[4] = { 0,1,2,3 };
 	for(int i = 0; i < 5; ++i)
@@ -246,13 +246,13 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 					if(tiles[1 + p * size.x].type == EMPTY)
 					{
 						int count = 0;
-						if(tiles[p*size.x].type != EMPTY)
+						if(tiles[p * size.x].type != EMPTY)
 							++count;
 						if(tiles[2 + p * size.x].type != EMPTY)
 							++count;
-						if(tiles[1 + (p - 1)*size.x].type != EMPTY)
+						if(tiles[1 + (p - 1) * size.x].type != EMPTY)
 							++count;
-						if(tiles[1 + (p + 1)*size.x].type != EMPTY)
+						if(tiles[1 + (p + 1) * size.x].type != EMPTY)
 							++count;
 
 						if(count == 3)
@@ -276,16 +276,16 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 				int p = start;
 				do
 				{
-					if(tiles[p + (size.y - 2)*size.x].type == EMPTY)
+					if(tiles[p + (size.y - 2) * size.x].type == EMPTY)
 					{
 						int count = 0;
-						if(tiles[p - 1 + (size.y - 2)*size.x].type != EMPTY)
+						if(tiles[p - 1 + (size.y - 2) * size.x].type != EMPTY)
 							++count;
-						if(tiles[p + 1 + (size.y - 2)*size.x].type != EMPTY)
+						if(tiles[p + 1 + (size.y - 2) * size.x].type != EMPTY)
 							++count;
-						if(tiles[p + (size.y - 1)*size.x].type != EMPTY)
+						if(tiles[p + (size.y - 1) * size.x].type != EMPTY)
 							++count;
-						if(tiles[p + (size.y - 3)*size.x].type != EMPTY)
+						if(tiles[p + (size.y - 3) * size.x].type != EMPTY)
 							++count;
 
 						if(count == 3)
@@ -316,9 +316,9 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 							++count;
 						if(tiles[size.x - 1 + p * size.x].type != EMPTY)
 							++count;
-						if(tiles[size.x - 2 + (p - 1)*size.x].type != EMPTY)
+						if(tiles[size.x - 2 + (p - 1) * size.x].type != EMPTY)
 							++count;
-						if(tiles[size.x - 2 + (p + 1)*size.x].type != EMPTY)
+						if(tiles[size.x - 2 + (p + 1) * size.x].type != EMPTY)
 							++count;
 
 						if(count == 3)
@@ -340,17 +340,17 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 	}
 	if(!ok)
 		throw "Failed to generate labyrinth.";
-	tiles[stairs.x + stairs.y*size.x].type = ENTRY_PREV;
+	tiles[stairs.x + stairs.y * size.x].type = ENTRY_PREV;
 
 	// set stairs direction
-	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == EMPTY)
-		stairs_dir = GDIR_UP;
-	else if(tiles[stairs.x - 1 + stairs.y*size.x].type == EMPTY)
-		stairs_dir = GDIR_LEFT;
-	else if(tiles[stairs.x + (stairs.y - 1)*size.x].type == EMPTY)
-		stairs_dir = GDIR_DOWN;
-	else if(tiles[stairs.x + 1 + stairs.y*size.x].type == EMPTY)
-		stairs_dir = GDIR_RIGHT;
+	if(tiles[stairs.x + (stairs.y + 1) * size.x].type == EMPTY)
+		stairsDir = GDIR_UP;
+	else if(tiles[stairs.x - 1 + stairs.y * size.x].type == EMPTY)
+		stairsDir = GDIR_LEFT;
+	else if(tiles[stairs.x + (stairs.y - 1) * size.x].type == EMPTY)
+		stairsDir = GDIR_DOWN;
+	else if(tiles[stairs.x + 1 + stairs.y * size.x].type == EMPTY)
+		stairsDir = GDIR_RIGHT;
 	else
 	{
 		assert(0);
@@ -358,9 +358,9 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 }
 
 //=================================================================================================
-void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int2& room_size, const Int2& room_pos, int grating_chance)
+void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int2& roomSize, const Int2& roomPos, int gratingChance)
 {
-	if(grating_chance <= 0)
+	if(gratingChance <= 0)
 		return;
 
 	for(int y = 1; y < size.y - 1; ++y)
@@ -368,7 +368,7 @@ void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int
 		for(int x = 1; x < size.x - 1; ++x)
 		{
 			Tile& p = tiles[x + y * size.x];
-			if(p.type == EMPTY && !Rect::IsInside(Int2(x, y), room_pos, room_size) && Rand() % 100 < grating_chance)
+			if(p.type == EMPTY && !Rect::IsInside(Int2(x, y), roomPos, roomSize) && Rand() % 100 < gratingChance)
 			{
 				int j = Rand() % 3;
 				if(j == 0)
@@ -391,8 +391,8 @@ void LabyrinthGenerator::Generate()
 
 	assert(!lvl.map);
 
-	Int2 room_pos;
-	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.prevEntryPt, lvl.prevEntryDir, room_pos, base.bars_chance);
+	Int2 roomPos;
+	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.prevEntryPt, lvl.prevEntryDir, roomPos, base.bars_chance);
 	lvl.prevEntryType = ENTRY_STAIRS_UP;
 	lvl.nextEntryPt = Int2(-1000, -1000);
 
@@ -400,7 +400,7 @@ void LabyrinthGenerator::Generate()
 	Room* room = Room::Get();
 	room->target = RoomTarget::Treasury;
 	room->type = nullptr;
-	room->pos = room_pos;
+	room->pos = roomPos;
 	room->size = base.room_size;
 	room->connected.clear();
 	room->index = 0;
@@ -421,14 +421,14 @@ void LabyrinthGenerator::GenerateObjects()
 	// torch near wall
 	Int2 pt = lvl.GetPrevEntryFrontTile();
 	Vec3 pos;
-	if(IsBlocking(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
-		pos = Vec3(2.f*pt.x + torch->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
-	else if(IsBlocking(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
-		pos = Vec3(2.f*(pt.x + 1) - torch->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
-	else if(IsBlocking(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
-		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + torch->size.y + 0.1f);
-	else if(IsBlocking(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
-		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + torch->size.y - 0.1f);
+	if(IsBlocking(lvl.map[pt.x - 1 + pt.y * lvl.w].type))
+		pos = Vec3(2.f * pt.x + torch->size.x + 0.1f, 0.f, 2.f * pt.y + 1.f);
+	else if(IsBlocking(lvl.map[pt.x + 1 + pt.y * lvl.w].type))
+		pos = Vec3(2.f * (pt.x + 1) - torch->size.x - 0.1f, 0.f, 2.f * pt.y + 1.f);
+	else if(IsBlocking(lvl.map[pt.x + (pt.y - 1) * lvl.w].type))
+		pos = Vec3(2.f * pt.x + 1.f, 0.f, 2.f * pt.y + torch->size.y + 0.1f);
+	else if(IsBlocking(lvl.map[pt.x + (pt.y + 1) * lvl.w].type))
+		pos = Vec3(2.f * pt.x + 1.f, 0.f, 2.f * (pt.y + 1) + torch->size.y - 0.1f);
 	gameLevel->SpawnObjectEntity(lvl, torch, pos, Random(MAX_ANGLE));
 
 	// torch inside treasure
@@ -465,7 +465,7 @@ void LabyrinthGenerator::GenerateUnits()
 			continue;
 
 		TmpUnitGroup::Spawn spawn = t->Get();
-		if(gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
+		if(gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f * pt.x + 1.f, 0, 2.f * pt.y + 1.f), *spawn.first, nullptr, spawn.second))
 			++added;
 	}
 

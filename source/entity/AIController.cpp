@@ -181,7 +181,7 @@ void AIController::Load(GameReader& f)
 			st.cast.ability = Ability::Get(f.Read<int>());
 		else
 		{
-			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];
+			st.cast.ability = unit->data->abilities->ability[unit->aiMode];
 			if(LOAD_VERSION < V_0_12)
 				f.Skip<int>(); // old cast_target
 		}
@@ -382,7 +382,8 @@ void AIController::Reset()
 	pfLocalPath.clear();
 	inCombat = false;
 	nextAttack = 0.f;
-	timer = Random(1.f, 3.f);;
+	timer = Random(1.f, 3.f);
+	scanTimer = Random(0.f, 0.2f);
 	ignore = 0.f;
 	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
@@ -441,7 +442,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bulletSpeed) const
 	if(bulletSpeed == 0.f)
 		return target.GetCenter();
 
-	Vec3 vel = target.pos - target.prev_pos;
+	Vec3 vel = target.pos - target.prevPos;
 	vel *= 60;
 
 	float a = bulletSpeed * bulletSpeed - vel.Dot2d();
@@ -477,8 +478,8 @@ void AIController::Shout()
 	Unit* target_unit = target;
 	for(Unit* u : unit->locPart->units)
 	{
-		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
-			|| u->ai->alertTarget || u->dont_attack)
+		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
+			|| u->ai->alertTarget || u->dontAttack)
 			continue;
 
 		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
@@ -492,7 +493,7 @@ void AIController::Shout()
 //=================================================================================================
 void AIController::HitReaction(const Vec3& pos)
 {
-	if(unit->dont_attack || !Any(state, Idle, SearchEnemy))
+	if(unit->dontAttack || !Any(state, Idle, SearchEnemy))
 		return;
 
 	target = nullptr;
@@ -518,7 +519,7 @@ void AIController::HitReaction(const Vec3& pos)
 	// alarm near allies
 	for(Unit* u : unit->locPart->units)
 	{
-		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dont_attack)
+		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dontAttack)
 			continue;
 
 		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
@@ -536,7 +537,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.n_groups == 1 || unit->weapon_state == WeaponState::Taken) && nextAttack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.n_groups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -544,22 +545,22 @@ void AIController::DoAttack(Unit* target, bool running)
 	unit->action = A_ATTACK;
 	unit->act.attack.index = unit->GetRandomAttack();
 
-	bool do_power_attack;
+	bool doPowerAttack;
 	if(!IsSet(unit->data->flags, F_NO_POWER_ATTACK))
 	{
 		if(target && target->action == A_BLOCK)
-			do_power_attack = (Rand() % 2 == 0);
+			doPowerAttack = (Rand() % 2 == 0);
 		else
-			do_power_attack = (Rand() % 5 == 0);
+			doPowerAttack = (Rand() % 5 == 0);
 	}
 	else
-		do_power_attack = false;
+		doPowerAttack = false;
 
 	if(running)
 	{
 		unit->act.attack.power = 1.5f;
 		unit->act.attack.run = true;
-		do_power_attack = false;
+		doPowerAttack = false;
 	}
 	else
 	{
@@ -567,30 +568,30 @@ void AIController::DoAttack(Unit* target, bool running)
 		unit->act.attack.run = false;
 	}
 
-	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
+	float staminaCost = (running || doPowerAttack) ? 1.5f : 1.f;
 	if(unit->HaveWeapon())
 	{
 		const Weapon& weapon = unit->GetWeapon();
-		stamina_cost *= weapon.GetInfo().stamina * unit->GetStaminaMod(weapon);
+		staminaCost *= weapon.GetInfo().stamina * unit->GetStaminaMod(weapon);
 	}
 	else
-		stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
-	unit->RemoveStamina(stamina_cost);
+		staminaCost *= Unit::STAMINA_UNARMED_ATTACK;
+	unit->RemoveStamina(staminaCost);
 
-	float speed = (do_power_attack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
+	float speed = (doPowerAttack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
 
 	if(unit->meshInst->mesh->head.n_groups > 1)
 	{
-		unit->meshInst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 		unit->meshInst->groups[1].speed = speed;
 	}
 	else
 	{
-		unit->meshInst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
+		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
 		unit->meshInst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}
-	unit->animation_state = (do_power_attack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
+	unit->animationState = (doPowerAttack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
 	unit->act.attack.hitted = !target;
 
 	if(Net::IsOnline())
@@ -598,7 +599,7 @@ void AIController::DoAttack(Unit* target, bool running)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::ATTACK;
 		c.unit = unit;
-		c.id = (do_power_attack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
+		c.id = (doPowerAttack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 		c.f[1] = speed;
 	}
 }

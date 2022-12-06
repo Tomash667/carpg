@@ -89,8 +89,8 @@ void DodajStraznikow()
 	{
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{
-			(*it)->to_remove = true;
-			gameLevel->to_remove.push_back(*it);
+			(*it)->toRemove = true;
+			gameLevel->toRemove.push_back(*it);
 		}
 	}
 
@@ -101,7 +101,7 @@ void DodajStraznikow()
 		Unit* u2 = gameLevel->SpawnUnitInsideRoom(*room, *ud2, 10);
 		if(u2)
 		{
-			u2->dont_attack = true;
+			u2->dontAttack = true;
 			u2->OrderGuard(u);
 		}
 	}
@@ -290,7 +290,7 @@ void Quest_Goblins::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWithInnkeeper)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = nullptr;
+		unit->eventHandler = nullptr;
 	}
 }
 

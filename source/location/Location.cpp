@@ -16,9 +16,9 @@ Location::~Location()
 	Portal* p = portal;
 	while(p)
 	{
-		Portal* next_portal = p->next_portal;
+		Portal* nextPortal = p->nextPortal;
 		delete p;
-		p = next_portal;
+		p = nextPortal;
 	}
 }
 
@@ -70,7 +70,7 @@ void Location::Save(GameWriter& f)
 	{
 		f.Write1();
 		p->Save(f);
-		p = p->next_portal;
+		p = p->nextPortal;
 	}
 	f.Write0();
 
@@ -158,12 +158,12 @@ void Location::Load(GameReader& f)
 			if(f.Read1())
 			{
 				Portal* np = new Portal;
-				p->next_portal = np;
+				p->nextPortal = np;
 				p = np;
 			}
 			else
 			{
-				p->next_portal = nullptr;
+				p->nextPortal = nullptr;
 				break;
 			}
 		}
@@ -203,7 +203,7 @@ Portal* Location::GetPortal(int index)
 			return cportal;
 
 		++cindex;
-		cportal = cportal->next_portal;
+		cportal = cportal->nextPortal;
 	}
 
 	assert(0);
@@ -224,7 +224,7 @@ Portal* Location::TryGetPortal(int index) const
 			return cportal;
 
 		++cindex;
-		cportal = cportal->next_portal;
+		cportal = cportal->nextPortal;
 	}
 
 	return nullptr;
@@ -239,7 +239,7 @@ void Location::WritePortals(BitStreamWriter& f) const
 	while(cportal)
 	{
 		++count;
-		cportal = cportal->next_portal;
+		cportal = cportal->nextPortal;
 	}
 	f.WriteCasted<byte>(count);
 
@@ -249,13 +249,13 @@ void Location::WritePortals(BitStreamWriter& f) const
 	{
 		f << cportal->pos;
 		f << cportal->rot;
-		f << (cportal->target_loc != -1);
-		cportal = cportal->next_portal;
+		f << (cportal->targetLoc != -1);
+		cportal = cportal->nextPortal;
 	}
 }
 
 //=================================================================================================
-bool Location::ReadPortals(BitStreamReader& f, int at_level)
+bool Location::ReadPortals(BitStreamReader& f, int atLevel)
 {
 	byte count = f.Read<byte>();
 	if(!f.Ensure(count * Portal::MIN_SIZE))
@@ -266,7 +266,7 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 		Portal* p = portal;
 		while(p)
 		{
-			Portal* next = p->next_portal;
+			Portal* next = p->nextPortal;
 			delete p;
 			p = next;
 		}
@@ -287,13 +287,13 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 			return false;
 		}
 
-		p->target_loc = (active ? 0 : -1);
-		p->at_level = at_level;
-		p->next_portal = nullptr;
+		p->targetLoc = (active ? 0 : -1);
+		p->atLevel = atLevel;
+		p->nextPortal = nullptr;
 
 		if(cportal)
 		{
-			cportal->next_portal = p;
+			cportal->nextPortal = p;
 			cportal = p;
 		}
 		else

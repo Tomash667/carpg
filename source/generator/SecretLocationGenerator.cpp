@@ -98,12 +98,12 @@ void SecretLocationGenerator::GenerateObjects()
 	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
-	portal->at_level = -1;
-	portal->next_portal = nullptr;
+	portal->atLevel = -1;
+	portal->nextPortal = nullptr;
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->index = 0;
-	portal->target_loc = questMgr->questSecret->where;
+	portal->targetLoc = questMgr->questSecret->where;
 	gameLevel->location->portal = portal;
 
 	TerrainTile* tiles = ((OutsideLocation*)gameLevel->location)->tiles;
@@ -115,17 +115,17 @@ void SecretLocationGenerator::GenerateObjects()
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
-			TERRAIN_TILE tile = tiles[pt.x + pt.y*OutsideLocation::size].t;
+			TERRAIN_TILE tile = tiles[pt.x + pt.y * OutsideLocation::size].t;
 			if(tile == TT_GRASS)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = trees[Rand() % n_trees];
+				OutsideObject& o = trees[Rand() % nTrees];
 				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
 				int type;
 				if(Rand() % 12 == 0)
@@ -145,11 +145,11 @@ void SecretLocationGenerator::GenerateObjects()
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
-			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
+			if(tiles[pt.x + pt.y * OutsideLocation::size].t != TT_SAND)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = misc[Rand() % n_misc];
+				OutsideObject& o = misc[Rand() % nMisc];
 				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}

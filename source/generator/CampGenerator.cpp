@@ -246,7 +246,7 @@ void CampGenerator::GenerateObjects()
 		case 3: // crafting
 			{
 				const ObjId ids[] = { CHEST, ANVIL, CAULDRON, TANNING_RACK, TANNING_RACK };
-				for(uint i=0; i<countof(ids); ++i)
+				for(uint i = 0; i < countof(ids); ++i)
 					gameLevel->SpawnObjectNearLocation(locPart, objs[ids[i]], pos + Vec2::RandomCirclePt(7), Random(MAX_ANGLE));
 			}
 			break;
@@ -299,7 +299,7 @@ void CampGenerator::GenerateObjects()
 		pos.y = terrain->GetH(pos);
 		OutsideObject* o;
 		if(tile == TT_GRASS)
-			o = &trees[Rand() % n_trees];
+			o = &trees[Rand() % nTrees];
 		else
 		{
 			int type;
@@ -334,7 +334,7 @@ void CampGenerator::GenerateObjects()
 
 		Vec3 pos = pos2d.XZ();
 		pos.y = terrain->GetH(pos);
-		OutsideObject& o = misc[Rand() % n_misc];
+		OutsideObject& o = misc[Rand() % nMisc];
 		gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 	}
 }

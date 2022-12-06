@@ -26,12 +26,12 @@ void LoadScreen::Draw()
 	gui->DrawSprite(tLoadbarBg, pt);
 
 	// loadbar
-	Rect r = { pt.x, pt.y, pt.x + 8 + int(progress*(503 - 8)), LONG(pt.y + img_size.y) };
-	Rect rp = { 0, 0, 8 + int(progress*(503 - 8)), LONG(img_size.y) };
+	Rect r = { pt.x, pt.y, pt.x + 8 + int(progress * (503 - 8)), pt.y + img_size.y };
+	Rect rp = { 0, 0, 8 + int(progress * (503 - 8)), img_size.y };
 	gui->DrawSpriteRectPart(tLoadbar, r, rp);
 
 	// text
-	Rect r2 = { 32, 0, gui->wndSize.x - 32, LONG(gui->wndSize.y - img_size.y - 32) };
+	Rect r2 = { 32, 0, gui->wndSize.x - 32, gui->wndSize.y - img_size.y - 32 };
 	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
 }
 

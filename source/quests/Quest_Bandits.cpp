@@ -197,7 +197,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		{
 			bandits_state = State::AgentTalked;
 			DialogContext::current->talker->OrderLeave();
-			DialogContext::current->talker->event_handler = this;
+			DialogContext::current->talker->eventHandler = this;
 			const Vec2 pos = world->FindPlace(startLoc->pos, 64.f);
 			Location& target = *world->CreateLocation(L_DUNGEON, pos, THRONE_VAULT);
 			target.group = UnitGroup::Get("bandits");
@@ -326,7 +326,7 @@ void Quest_Bandits::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 		if(prog == Progress::TalkedWithAgent)
 		{
 			SetProgress(Progress::KilledBoss);
-			unit->event_handler = nullptr;
+			unit->eventHandler = nullptr;
 		}
 	}
 }

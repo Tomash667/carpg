@@ -687,7 +687,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				Msg("Can't spawn player unit.");
 			else
 			{
-				int level = -1, count = 1, in_arena = -1;
+				int level = -1, count = 1, inArena = -1;
 				if(t.Next())
 				{
 					level = t.MustGetInt();
@@ -695,7 +695,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					{
 						count = t.MustGetInt();
 						if(t.Next())
-							in_arena = Clamp(t.MustGetInt(), -1, 1);
+							inArena = Clamp(t.MustGetInt(), -1, 1);
 					}
 				}
 
@@ -710,9 +710,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 							Msg("No free space for unit '%s'!", data->id.c_str());
 							break;
 						}
-						else if(in_arena != -1)
+						else if(inArena != -1)
 						{
-							u->in_arena = in_arena;
+							u->inArena = inArena;
 							game->arena->units.push_back(u);
 						}
 					}
@@ -724,7 +724,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					c.baseUnit = data;
 					c.count = count;
 					c.id = level;
-					c.i = in_arena;
+					c.i = inArena;
 				}
 			}
 		}
@@ -990,7 +990,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				else
 				{
 					// warp from outside to front of building
-					gameLevel->WarpUnit(*game->pc->unit, city_building->walk_pt);
+					gameLevel->WarpUnit(*game->pc->unit, city_building->walkPt);
 					game->pc->unit->RotateTo(PtToPos(city_building->pt));
 				}
 			}
@@ -2439,7 +2439,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				else
 				{
 					CityBuilding& city_building = gameLevel->cityCtx->buildings[building_index];
-					gameLevel->WarpUnit(unit, city_building.walk_pt);
+					gameLevel->WarpUnit(unit, city_building.walkPt);
 					unit.RotateTo(PtToPos(city_building.pt));
 				}
 			}
@@ -2597,9 +2597,9 @@ void CommandParser::HealUnit(Unit& unit)
 			c.unit = &unit;
 		}
 	}
-	if(unit.stamina != unit.stamina_max)
+	if(unit.stamina != unit.staminaMax)
 	{
-		unit.stamina = unit.stamina_max;
+		unit.stamina = unit.staminaMax;
 		if(Net::IsServer() && unit.IsTeamMember())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -2732,7 +2732,7 @@ void CommandParser::ListStats(Unit* u)
 		Msg("Mana: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->mp, (int)u->mpmax, u->GetEffectSum(EffectId::Mana), u->GetMpRegen(),
 			1.f + u->GetEffectSum(EffectId::ManaRegeneration));
 	}
-	Msg("Stamina: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->stamina, (int)u->stamina_max, u->GetEffectSum(EffectId::Stamina),
+	Msg("Stamina: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->stamina, (int)u->staminaMax, u->GetEffectSum(EffectId::Stamina),
 		u->GetEffectMax(EffectId::StaminaRegeneration), u->GetEffectMul(EffectId::StaminaRegenerationMod));
 	Msg("Melee attack: %s (bonus: %+g, backstab: x%g), ranged: %s (bonus: %+g, backstab: x%g)",
 		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",

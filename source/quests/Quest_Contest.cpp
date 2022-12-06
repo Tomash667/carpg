@@ -106,12 +106,12 @@ bool Quest_Contest::Special(DialogContext& ctx, cstring msg)
 		time = 0;
 		units.clear();
 		units.push_back(ctx.pc->unit);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "contest_join") == 0)
 	{
 		units.push_back(ctx.pc->unit);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "contest_reward") == 0)
 	{
@@ -218,8 +218,8 @@ void Quest_Contest::Update(float dt)
 		{
 			Unit& u = **it;
 			u.busy = Unit::Busy_No;
-			u.look_target = nullptr;
-			u.event_handler = nullptr;
+			u.lookTarget = nullptr;
+			u.eventHandler = nullptr;
 			if(u.IsPlayer())
 			{
 				u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
@@ -244,11 +244,11 @@ void Quest_Contest::Update(float dt)
 			if(!unit->IsPlayer())
 				continue;
 			float dist = Vec3::Distance2d(unit->pos, innkeeper.pos);
-			bool leaving_event = (dist > 10.f || unit->locPart != inn);
-			if(leaving_event != unit->player->leaving_event)
+			bool leavingEvent = (dist > 10.f || unit->locPart != inn);
+			if(leavingEvent != unit->player->leavingEvent)
 			{
-				unit->player->leaving_event = leaving_event;
-				if(leaving_event)
+				unit->player->leavingEvent = leavingEvent;
+				if(leavingEvent)
 					gameGui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
 			}
 		}
@@ -271,7 +271,7 @@ void Quest_Contest::Update(float dt)
 			for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
-				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
+				if(u.IsStanding() && u.IsAI() && !u.eventHandler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
 				{
 					bool ok = false;
 					if(IsSet(u.data->flags2, F2_CONTEST))
@@ -326,8 +326,8 @@ void Quest_Contest::Update(float dt)
 						c.id = innkeeper.id;
 					}
 					u.busy = Unit::Busy_Yes;
-					u.look_target = innkeeper;
-					u.event_handler = this;
+					u.lookTarget = innkeeper;
+					u.eventHandler = this;
 				}
 			}
 			if(removed)
@@ -474,7 +474,7 @@ void Quest_Contest::Update(float dt)
 				{
 					state = CONTEST_FINISH;
 					state2 = 0;
-					innkeeper.look_target = units.back();
+					innkeeper.lookTarget = units.back();
 					world->AddNews(Format(txContestWinNews, units.back()->GetName()));
 					innkeeper.Talk(txContestWin);
 				}
@@ -500,29 +500,29 @@ void Quest_Contest::Update(float dt)
 				break;
 			case 1: // draw
 				innkeeper.busy = Unit::Busy_No;
-				innkeeper.look_target = nullptr;
+				innkeeper.lookTarget = nullptr;
 				state = CONTEST_DONE;
 				generated = false;
 				winner = nullptr;
 				break;
 			case 2: // win2
 				innkeeper.busy = Unit::Busy_No;
-				innkeeper.look_target = nullptr;
+				innkeeper.lookTarget = nullptr;
 				winner = units.back();
 				units.clear();
 				state = CONTEST_DONE;
 				generated = false;
-				winner->look_target = nullptr;
+				winner->lookTarget = nullptr;
 				winner->busy = Unit::Busy_No;
-				winner->event_handler = nullptr;
+				winner->eventHandler = nullptr;
 				break;
 			case 3: // no people
 				for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					u.busy = Unit::Busy_No;
-					u.look_target = nullptr;
-					u.event_handler = nullptr;
+					u.lookTarget = nullptr;
+					u.eventHandler = nullptr;
 					if(u.IsPlayer())
 					{
 						u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
@@ -548,9 +548,9 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	if(event == UnitEventHandler::FALL)
 	{
 		// unit fallen from drinking...
-		unit->look_target = nullptr;
+		unit->lookTarget = nullptr;
 		unit->busy = Unit::Busy_No;
-		unit->event_handler = nullptr;
+		unit->eventHandler = nullptr;
 		RemoveElement(units, unit);
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != game->pc)
@@ -569,8 +569,8 @@ void Quest_Contest::Cleanup()
 	{
 		Unit& u = **it;
 		u.busy = Unit::Busy_No;
-		u.look_target = nullptr;
-		u.event_handler = nullptr;
+		u.lookTarget = nullptr;
+		u.eventHandler = nullptr;
 	}
 
 	InsideBuilding* inn = gameLevel->cityCtx->FindInn();

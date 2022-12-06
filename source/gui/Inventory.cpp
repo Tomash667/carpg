@@ -159,16 +159,16 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 		invTradeOther->mode = InventoryPanel::SHARE_OTHER;
 		invTradeOther->title = Format("%s - %s", txShareItems, unit.GetName());
 		pc->action = PlayerAction::ShareItems;
-		pc->action_unit = &unit;
-		pc->chest_trade = &unit.items;
+		pc->actionUnit = &unit;
+		pc->chestTrade = &unit.items;
 		break;
 	case I_GIVE:
 		invTradeMine->mode = InventoryPanel::GIVE_MY;
 		invTradeOther->mode = InventoryPanel::GIVE_OTHER;
 		invTradeOther->title = Format("%s - %s", txGiveItems, unit.GetName());
 		pc->action = PlayerAction::GiveItems;
-		pc->action_unit = &unit;
-		pc->chest_trade = &unit.items;
+		pc->actionUnit = &unit;
+		pc->chestTrade = &unit.items;
 		break;
 	default:
 		assert(0);
@@ -205,14 +205,14 @@ void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* un
 		invTradeOther->unit = unit;
 		invTradeOther->title = Format("%s - %s", txTrading, unit->GetName());
 		pc->action = PlayerAction::Trade;
-		pc->action_unit = unit;
-		pc->chest_trade = &items;
+		pc->actionUnit = unit;
+		pc->chestTrade = &items;
 		break;
 	case I_LOOT_CONTAINER:
 		invTradeMine->mode = InventoryPanel::LOOT_MY;
 		invTradeOther->mode = InventoryPanel::LOOT_OTHER;
 		invTradeOther->unit = nullptr;
-		invTradeOther->title = Format("%s - %s", txLooting, pc->action_usable->base->name.c_str());
+		invTradeOther->title = Format("%s - %s", txLooting, pc->actionUsable->base->name.c_str());
 		break;
 	default:
 		assert(0);
@@ -237,8 +237,8 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 		{
 			Chest* chest = (Chest*)ptr;
 			pc->action = PlayerAction::LootChest;
-			pc->action_chest = chest;
-			pc->chest_trade = &pc->action_chest->items;
+			pc->actionChest = chest;
+			pc->chestTrade = &pc->actionChest->items;
 			invTradeMine->mode = InventoryPanel::LOOT_MY;
 			invTradeOther->unit = nullptr;
 			invTradeOther->items = &chest->items;
@@ -251,11 +251,11 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 		{
 			Usable* usable = (Usable*)ptr;
 			pc->action = PlayerAction::LootContainer;
-			pc->action_usable = usable;
-			pc->chest_trade = &pc->action_usable->container->items;
+			pc->actionUsable = usable;
+			pc->chestTrade = &pc->actionUsable->container->items;
 			invTradeMine->mode = InventoryPanel::LOOT_MY;
 			invTradeOther->unit = nullptr;
-			invTradeOther->items = &pc->action_usable->container->items;
+			invTradeOther->items = &pc->actionUsable->container->items;
 			invTradeOther->equipped = nullptr;
 			invTradeOther->title = Format("%s - %s", txLooting, usable->base->name.c_str());
 			invTradeOther->mode = InventoryPanel::LOOT_OTHER;
@@ -295,8 +295,8 @@ void Inventory::BuildTmpInventory(int index)
 			|| pc->action == PlayerAction::LootContainer)
 			equipped = nullptr;
 		else
-			equipped = &pc->action_unit->GetEquippedItems();
-		items = pc->chest_trade;
+			equipped = &pc->actionUnit->GetEquippedItems();
+		items = pc->chestTrade;
 	}
 
 	ids.clear();
@@ -393,9 +393,9 @@ void InventoryPanel::Draw()
 		// carry capacity
 		rect.Left() = shift_x + bar_size + 10;
 		rect.Right() = rect.Left() + bar_size;
-		cstring weight_str = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
+		cstring weight_str = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weightMax) / 10);
 		int w = GameGui::font->LineWidth(weight_str);
-		gui->DrawText(GameGui::font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
+		gui->DrawText(GameGui::font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weightMax) / 10) : weight_str),
 			DTF_CENTER | DTF_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
 	}
 
@@ -692,8 +692,8 @@ void InventoryPanel::Update(float dt)
 					{
 						// drop item after hiding it
 						unit->HideWeapon();
-						unit->player->next_action = NA_DROP;
-						unit->player->next_action_data.slot = slot_type;
+						unit->player->nextAction = NA_DROP;
+						unit->player->nextActionData.slot = slot_type;
 						if(Net::IsClient())
 							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
@@ -752,8 +752,8 @@ void InventoryPanel::Update(float dt)
 					{
 						// hide weapon & add next action to unequip
 						unit->HideWeapon();
-						unit->player->next_action = NA_REMOVE;
-						unit->player->next_action_data.slot = slot_type;
+						unit->player->nextAction = NA_REMOVE;
+						unit->player->nextActionData.slot = slot_type;
 						if(Net::IsClient())
 							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
@@ -789,9 +789,9 @@ void InventoryPanel::Update(float dt)
 						{
 							// hide equipped item & equip new one
 							unit->HideWeapon();
-							unit->player->next_action = NA_EQUIP;
-							unit->player->next_action_data.item = item;
-							unit->player->next_action_data.index = i_index;
+							unit->player->nextAction = NA_EQUIP;
+							unit->player->nextActionData.item = item;
+							unit->player->nextActionData.index = i_index;
 							if(Net::IsClient())
 								Net::PushChange(NetChange::SET_NEXT_ACTION);
 						}
@@ -816,7 +816,7 @@ void InventoryPanel::Update(float dt)
 				break;
 			case TRADE_MY:
 				// selling items
-				if(item->value <= 1 || !unit->player->action_unit->data->trader->CanBuySell(item))
+				if(item->value <= 1 || !unit->player->actionUnit->data->trader->CanBuySell(item))
 					gui->SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
@@ -824,8 +824,8 @@ void InventoryPanel::Update(float dt)
 					{
 						// hide equipped item and sell it
 						unit->HideWeapon();
-						unit->player->next_action = NA_SELL;
-						unit->player->next_action_data.slot = slot_type;
+						unit->player->nextAction = NA_SELL;
+						unit->player->nextActionData.slot = slot_type;
 					}
 					else
 						SellSlotItem(slot_type);
@@ -918,8 +918,8 @@ void InventoryPanel::Update(float dt)
 					{
 						// hide equipped item and put it in container
 						unit->HideWeapon();
-						unit->player->next_action = NA_PUT;
-						unit->player->next_action_data.slot = slot_type;
+						unit->player->nextAction = NA_PUT;
+						unit->player->nextActionData.slot = slot_type;
 					}
 					else
 						PutSlotItem(slot_type);
@@ -1019,7 +1019,7 @@ void InventoryPanel::Update(float dt)
 					else
 						count = 1;
 
-					Unit* t = unit->player->action_unit;
+					Unit* t = unit->player->actionUnit;
 					if(t->CanTake(item))
 						ShareGiveItem(i_index, count);
 					else
@@ -1070,7 +1070,7 @@ void InventoryPanel::Update(float dt)
 				break;
 			case GIVE_MY:
 				// give item to companion
-				Unit* t = unit->player->action_unit;
+				Unit* t = unit->player->actionUnit;
 				if(slot)
 				{
 					if(t->CanWear(item))
@@ -1170,8 +1170,8 @@ void InventoryPanel::Update(float dt)
 								{
 									// hide equipped item and give it
 									unit->HideWeapon();
-									unit->player->next_action = NA_GIVE;
-									unit->player->next_action_data.slot = slot_type;
+									unit->player->nextAction = NA_GIVE;
+									unit->player->nextActionData.slot = slot_type;
 								}
 								else
 									GiveSlotItem(slot_type);
@@ -1264,7 +1264,7 @@ void InventoryPanel::Event(GuiEvent e)
 		// slots
 		if(game->pc->action != PlayerAction::LootChest && game->pc->action != PlayerAction::LootContainer)
 		{
-			array<const Item*, SLOT_MAX>& equipped = game->pc->action_unit->GetEquippedItems();
+			array<const Item*, SLOT_MAX>& equipped = game->pc->actionUnit->GetEquippedItems();
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
 				if(!equipped[i])
@@ -1287,12 +1287,12 @@ void InventoryPanel::Event(GuiEvent e)
 				changes = true;
 			}
 
-			game->pc->action_unit->weight = 0;
-			game->pc->action_unit->RemoveAllEquippedItems();
+			game->pc->actionUnit->weight = 0;
+			game->pc->actionUnit->RemoveAllEquippedItems();
 		}
 
 		// items
-		for(vector<ItemSlot>::iterator it = game->pc->chest_trade->begin(), end = game->pc->chest_trade->end(); it != end; ++it)
+		for(vector<ItemSlot>::iterator it = game->pc->chestTrade->begin(), end = game->pc->chestTrade->end(); it != end; ++it)
 		{
 			if(!it->item)
 				continue;
@@ -1320,7 +1320,7 @@ void InventoryPanel::Event(GuiEvent e)
 				changes = true;
 			}
 		}
-		game->pc->chest_trade->clear();
+		game->pc->chestTrade->clear();
 
 		if(Net::IsClient())
 		{
@@ -1447,7 +1447,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 	}
 	else if(group == INDEX_CARRY)
 	{
-		text = Format(base.txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
+		text = Format(base.txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weightMax) / 10);
 		smallText = base.txCarryInfo;
 		img = nullptr;
 		itemVisible = nullptr;
@@ -1473,7 +1473,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 
 		Unit* target;
 		if(forUnit)
-			target = game->pc->action_unit;
+			target = game->pc->actionUnit;
 		else
 			target = game->pc->unit;
 
@@ -1489,7 +1489,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 		{
 			text += '\n';
 			int price = ItemHelper::GetItemPrice(item, *game->pc->unit, false);
-			if(price == 0 || !unit->player->action_unit->data->trader->CanBuySell(item))
+			if(price == 0 || !unit->player->actionUnit->data->trader->CanBuySell(item))
 				text += base.txWontBuy;
 			else
 				text += Format(base.txPrice, price);
@@ -1501,14 +1501,14 @@ void InventoryPanel::FormatBox(int group, string& text, string& smallText, Textu
 			text += Format(base.txPrice, price);
 		}
 		smallText = item->desc;
-		if(AllowForUnit() && game->pc->action_unit->CanWear(item) && !Any(item->type, IT_AMULET, IT_RING))
+		if(AllowForUnit() && game->pc->actionUnit->CanWear(item) && !Any(item->type, IT_AMULET, IT_RING))
 		{
 			if(!smallText.empty())
 				smallText += '\n';
 			if(forUnit)
-				smallText += Format(base.txStatsFor, game->pc->action_unit->GetName());
+				smallText += Format(base.txStatsFor, game->pc->actionUnit->GetName());
 			else
-				smallText += Format(base.txShowStatsFor, game->pc->action_unit->GetName());
+				smallText += Format(base.txShowStatsFor, game->pc->actionUnit->GetName());
 		}
 
 		if(item->mesh)
@@ -1702,7 +1702,7 @@ void InventoryPanel::SellItem(int index, uint count)
 			unit->gold += price * normal_count;
 	}
 	// add item to trader
-	if(!InsertItem(*unit->player->chest_trade, slot.item, count, teamCount))
+	if(!InsertItem(*unit->player->chestTrade, slot.item, count, teamCount))
 		UpdateGrid(false);
 	// remove item from player
 	unit->weight -= slot.item->weight * count;
@@ -1744,7 +1744,7 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	if(Net::IsLocal())
 		game->pc->Train(TrainWhat::Trade, (float)price, 0);
 	// add item to trader
-	InsertItem(*unit->player->chest_trade, item, 1, 0);
+	InsertItem(*unit->player->chestTrade, item, 1, 0);
 	UpdateGrid(false);
 	// remove player item
 	unit->RemoveEquippedItem(slot);
@@ -1770,7 +1770,7 @@ void InventoryPanel::OnPutGold(int id)
 			return;
 		}
 		// add gold
-		if(!InsertItem(*unit->player->chest_trade, Item::gold, counter, 0))
+		if(!InsertItem(*unit->player->chestTrade, Item::gold, counter, 0))
 			UpdateGrid(false);
 		// remove
 		unit->gold -= counter;
@@ -1807,9 +1807,9 @@ void InventoryPanel::LootItem(int index, uint count)
 	if(base.mode == I_LOOT_BODY)
 	{
 		unit->weight -= slot.item->weight * count;
-		if(slot.item == unit->used_item)
+		if(slot.item == unit->usedItem)
 		{
-			unit->used_item = nullptr;
+			unit->usedItem = nullptr;
 			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -1873,17 +1873,17 @@ void InventoryPanel::PutItem(int index, uint count)
 	// add to container
 	if(base.mode == I_LOOT_BODY)
 	{
-		if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
+		if(!unit->player->actionUnit->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 	else if(base.mode == I_LOOT_CONTAINER)
 	{
-		if(!unit->player->action_usable->container->AddItem(slot.item, count, teamCount))
+		if(!unit->player->actionUsable->container->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 	else
 	{
-		if(!unit->player->action_chest->AddItem(slot.item, count, teamCount))
+		if(!unit->player->actionChest->AddItem(slot.item, count, teamCount))
 			UpdateGrid(false);
 	}
 
@@ -1927,11 +1927,11 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 
 	// add to container
 	if(base.mode == I_LOOT_BODY)
-		unit->player->action_unit->AddItem(item, 1u, 0u);
+		unit->player->actionUnit->AddItem(item, 1u, 0u);
 	else if(base.mode == I_LOOT_CONTAINER)
-		unit->player->action_usable->container->AddItem(item, 1u, 0u);
+		unit->player->actionUsable->container->AddItem(item, 1u, 0u);
 	else
-		unit->player->action_chest->AddItem(item, 1u, 0u);
+		unit->player->actionChest->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
 
 	// remove from player
@@ -1961,7 +1961,7 @@ void InventoryPanel::OnGiveGold(int id)
 
 		game->pc->unit->gold -= counter;
 		soundMgr->PlaySound2d(gameRes->sCoins);
-		Unit* u = game->pc->action_unit;
+		Unit* u = game->pc->actionUnit;
 		if(Net::IsLocal())
 		{
 			u->gold += counter;
@@ -1990,7 +1990,7 @@ void InventoryPanel::OnShareGiveItem(int id)
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
 	{
-		Unit* t = unit->player->action_unit;
+		Unit* t = unit->player->actionUnit;
 		if(t->CanTake(items->at(index).item, counter))
 			ShareGiveItem(index, counter);
 		else
@@ -2015,15 +2015,15 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
+	if(!unit->player->actionUnit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(false);
 	if(Net::IsLocal() && item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = item->ToConsumable();
 		if(pot.aiType == Consumable::AiType::Healing)
-			unit->player->action_unit->ai->havePotion = HavePotion::Yes;
+			unit->player->actionUnit->ai->havePotion = HavePotion::Yes;
 		else if(pot.aiType == Consumable::AiType::Mana)
-			unit->player->action_unit->ai->haveMpPotion = HavePotion::Yes;
+			unit->player->actionUnit->ai->haveMpPotion = HavePotion::Yes;
 	}
 	// remove
 	unit->weight -= slot.item->weight * count;
@@ -2124,7 +2124,7 @@ void InventoryPanel::OnGiveItem(int id)
 	}
 
 	// add
-	Unit* t = unit->player->action_unit;
+	Unit* t = unit->player->actionUnit;
 	int price = item->value / 2;
 	switch(giveItemMod)
 	{
@@ -2176,7 +2176,7 @@ void InventoryPanel::OnGivePotion(int id)
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
 	{
-		Unit* t = unit->player->action_unit;
+		Unit* t = unit->player->actionUnit;
 		if(t->CanTake(items->at(index).item, counter))
 			GivePotion(index, counter);
 		else
@@ -2192,15 +2192,15 @@ void InventoryPanel::GivePotion(int index, uint count)
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
 	// add
-	if(!unit->player->action_unit->AddItem(slot.item, count, teamCount))
+	if(!unit->player->actionUnit->AddItem(slot.item, count, teamCount))
 		UpdateGrid(false);
 	if(Net::IsLocal() && slot.item->type == IT_CONSUMABLE)
 	{
 		const Consumable& pot = slot.item->ToConsumable();
 		if(pot.aiType == Consumable::AiType::Healing)
-			unit->player->action_unit->ai->havePotion = HavePotion::Yes;
+			unit->player->actionUnit->ai->havePotion = HavePotion::Yes;
 		else if(pot.aiType == Consumable::AiType::Mana)
-			unit->player->action_unit->ai->haveMpPotion = HavePotion::Yes;
+			unit->player->actionUnit->ai->haveMpPotion = HavePotion::Yes;
 	}
 	// remove
 	unit->weight -= slot.item->weight * count;
@@ -2236,7 +2236,7 @@ void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 		base.tooltip.Clear();
 	DialogInfo info;
 	const Item* item = equipped->at(slot);
-	if(unit->player->action_unit->gold >= item->value / 2)
+	if(unit->player->actionUnit->gold >= item->value / 2)
 	{
 		// buy item
 		info.text = Format(base.txSellItem, item->value / 2);
@@ -2276,7 +2276,7 @@ void InventoryPanel::IsBetterItemResponse(bool isBetter)
 		gui->SimpleDialog(base.txWontTakeItem, this);
 	else
 	{
-		Unit* t = game->pc->action_unit;
+		Unit* t = game->pc->actionUnit;
 		if(iindex >= 0)
 		{
 			// not equipped item
@@ -2325,8 +2325,8 @@ void InventoryPanel::IsBetterItemResponse(bool isBetter)
 			{
 				// hide equipped item and give it
 				unit->HideWeapon();
-				unit->player->next_action = NA_GIVE;
-				unit->player->next_action_data.slot = slot_type;
+				unit->player->nextAction = NA_GIVE;
+				unit->player->nextActionData.slot = slot_type;
 			}
 			else
 				GiveSlotItem(slot_type);

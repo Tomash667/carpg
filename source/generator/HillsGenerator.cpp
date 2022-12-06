@@ -50,7 +50,7 @@ void HillsGenerator::GenerateUnits()
 	tmp.Fill(loc->group, level);
 	static vector<Vec2> poss;
 	poss.clear();
-	poss.push_back(Vec2(team_pos.x, team_pos.z));
+	poss.push_back(Vec2(teamPos.x, teamPos.z));
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{

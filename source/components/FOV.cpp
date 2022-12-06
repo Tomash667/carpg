@@ -60,8 +60,8 @@ namespace FOV
 		// 0 if the line is on the point.
 		int relativeSlope(const Int2& point) const
 		{
-			return (far.y - near.y)*(far.x - point.x)
-				- (far.y - point.y)*(far.x - near.x);
+			return (far.y - near.y) * (far.x - point.x)
+				- (far.y - point.y) * (far.x - near.x);
 		}
 
 		Int2 near, far;
@@ -106,7 +106,7 @@ namespace FOV
 			return true;
 
 		Int2 real_pt(x, y);
-		Tile& p = mapa[real_pt.x + real_pt.y*w];
+		Tile& p = mapa[real_pt.x + real_pt.y * w];
 
 		return (IsBlocking(p) || (p.type == DOORS && findDoorBlocking(real_pt)));
 	}
@@ -127,11 +127,11 @@ namespace FOV
 
 	bool actIsBlocked(const Int2& pos)
 	{
-		Int2 adjustedPos(pos.x*quadrant.x + source.x, pos.y*quadrant.y + source.y);
+		Int2 adjustedPos(pos.x * quadrant.x + source.x, pos.y * quadrant.y + source.y);
 		bool result = isBlocked(adjustedPos.x, adjustedPos.y);
 		if((quadrant.x * quadrant.y == 1 && pos.x == 0 && pos.y != 0)
 			|| (quadrant.x * quadrant.y == -1 && pos.y == 0 && pos.x != 0)
-			|| doesPermissiveVisit(pos.x*quadrant.x, pos.y*quadrant.y))
+			|| doesPermissiveVisit(pos.x * quadrant.x, pos.y * quadrant.y))
 		{
 			return result;
 		}

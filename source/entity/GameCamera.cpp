@@ -246,7 +246,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 	float t, min_t = 2.f;
 
 	const int tx = int(target->pos.x / 2),
-		      tz = int(target->pos.z / 2);
+		tz = int(target->pos.z / 2);
 
 	if(locPart.partType == LocationPart::Type::Outside)
 	{

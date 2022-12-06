@@ -352,7 +352,7 @@ void GameMessages::AddGameMsg3(GMS id)
 void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 {
 	assert(player);
-	if(player->is_local)
+	if(player->isLocal)
 		AddGameMsg3(id);
 	else
 	{
@@ -366,7 +366,7 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int subtype, int value)
 {
 	assert(player);
-	if(player->is_local)
+	if(player->isLocal)
 	{
 		GameMsg* existing = nullptr;
 		for(GameMsg& msg : msgs)

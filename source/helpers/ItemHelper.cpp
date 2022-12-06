@@ -5,7 +5,7 @@
 #include "Stock.h"
 #include "Unit.h"
 
-int treasure_value[] = {
+int treasureValue[] = {
 	10, //0
 	50, //1
 	100, //2
@@ -35,12 +35,12 @@ const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
 const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
 template<typename T>
-void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count)
+void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int priceLimit, int exclude_flags, uint count)
 {
 	for(int i = 0; i < 100; ++i)
 	{
 		T* item = items[Rand() % items.size()];
-		if(item->value > price_limit || IsSet(item->flags, exclude_flags))
+		if(item->value > priceLimit || IsSet(item->flags, exclude_flags))
 			continue;
 		InsertItemBare(container, item, count);
 		return;
@@ -52,7 +52,7 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 {
 	assert(InRange(level, 1, 20));
 
-	int value = Random(treasure_value[level - 1], treasure_value[level]) * _count / 10;
+	int value = Random(treasureValue[level - 1], treasureValue[level]) * _count / 10;
 
 	items.clear();
 
@@ -175,7 +175,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		if(unit.player->HavePerk(Perk::Get("asocial")))
 			persuasion -= 20;
 		if(unit.player->action == PlayerAction::Trade
-			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
+			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
 			persuasion += 20;
 	}
 
@@ -220,7 +220,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 //=================================================================================================
 // zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
 // mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
-const Item* ItemHelper::GetRandomItem(int max_value)
+const Item* ItemHelper::GetRandomItem(int maxValue)
 {
 	int type = Rand() % 6;
 
@@ -231,42 +231,42 @@ const Item* ItemHelper::GetRandomItem(int max_value)
 	case 0:
 		for(Weapon* w : Weapon::weapons)
 		{
-			if(w->value <= max_value && w->CanBeGenerated())
+			if(w->value <= maxValue && w->CanBeGenerated())
 				items->push_back(w);
 		}
 		break;
 	case 1:
 		for(Bow* b : Bow::bows)
 		{
-			if(b->value <= max_value && b->CanBeGenerated())
+			if(b->value <= maxValue && b->CanBeGenerated())
 				items->push_back(b);
 		}
 		break;
 	case 2:
 		for(Shield* s : Shield::shields)
 		{
-			if(s->value <= max_value && s->CanBeGenerated())
+			if(s->value <= maxValue && s->CanBeGenerated())
 				items->push_back(s);
 		}
 		break;
 	case 3:
 		for(Armor* a : Armor::armors)
 		{
-			if(a->value <= max_value && a->CanBeGenerated())
+			if(a->value <= maxValue && a->CanBeGenerated())
 				items->push_back(a);
 		}
 		break;
 	case 4:
 		for(Consumable* c : Consumable::consumables)
 		{
-			if(c->value <= max_value && c->CanBeGenerated())
+			if(c->value <= maxValue && c->CanBeGenerated())
 				items->push_back(c);
 		}
 		break;
 	case 5:
 		for(OtherItem* o : OtherItem::others)
 		{
-			if(o->value <= max_value && o->CanBeGenerated())
+			if(o->value <= maxValue && o->CanBeGenerated())
 				items->push_back(o);
 		}
 		break;
@@ -305,38 +305,38 @@ void ItemHelper::SkipStock(GameReader& f)
 }
 
 //=================================================================================================
-void ItemHelper::AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int price_limit, int flags, uint count)
+void ItemHelper::AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int priceLimit, int flags, uint count)
 {
 	switch(type)
 	{
 	case IT_WEAPON:
-		InsertRandomItem(items, Weapon::weapons, price_limit, flags, count);
+		InsertRandomItem(items, Weapon::weapons, priceLimit, flags, count);
 		break;
 	case IT_BOW:
-		InsertRandomItem(items, Bow::bows, price_limit, flags, count);
+		InsertRandomItem(items, Bow::bows, priceLimit, flags, count);
 		break;
 	case IT_SHIELD:
-		InsertRandomItem(items, Shield::shields, price_limit, flags, count);
+		InsertRandomItem(items, Shield::shields, priceLimit, flags, count);
 		break;
 	case IT_ARMOR:
-		InsertRandomItem(items, Armor::armors, price_limit, flags, count);
+		InsertRandomItem(items, Armor::armors, priceLimit, flags, count);
 		break;
 	case IT_OTHER:
-		InsertRandomItem(items, OtherItem::others, price_limit, flags, count);
+		InsertRandomItem(items, OtherItem::others, priceLimit, flags, count);
 		break;
 	case IT_CONSUMABLE:
-		InsertRandomItem(items, Consumable::consumables, price_limit, flags, count);
+		InsertRandomItem(items, Consumable::consumables, priceLimit, flags, count);
 		break;
 	case IT_BOOK:
-		InsertRandomItem(items, Book::books, price_limit, flags, count);
+		InsertRandomItem(items, Book::books, priceLimit, flags, count);
 		break;
 	}
 }
 
 //=================================================================================================
-int ItemHelper::CalculateReward(int level, const Int2& level_range, const Int2& price_range)
+int ItemHelper::CalculateReward(int level, const Int2& levelRange, const Int2& priceRange)
 {
-	level = level_range.Clamp(level);
-	float t = float(level - level_range.x) / float(level_range.y - level_range.x);
-	return price_range.Lerp(t);
+	level = levelRange.Clamp(level);
+	float t = float(level - levelRange.x) / float(levelRange.y - levelRange.x);
+	return priceRange.Lerp(t);
 }

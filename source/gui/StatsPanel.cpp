@@ -159,22 +159,22 @@ void StatsPanel::SetText()
 	if(IsSet(clas->flags, Class::F_MP_BAR))
 	{
 		flowStats.Add()->Set(Format(txTraitsStartMp, hp, int(pc->unit->hpmax), int(pc->unit->mp), int(pc->unit->mpmax),
-			int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+			int(pc->unit->stamina), int(pc->unit->staminaMax)), G_INVALID, -1);
 	}
 	else
-		flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+		flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->staminaMax)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
 	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
 	cstring blockDesc = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "-");
-	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learning_points,
-		float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learningPoints,
+		float(pc->unit->weight) / 10, float(pc->unit->weightMax) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	if(game->hardcoreMode)
 		flowStats.Add()->Set(Format("$cr%s$c-", txHardcoreMode), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_INVALID, -1);
-	flowStats.Add()->Set(Format(txStatsText, gameStats->hour, gameStats->minute, gameStats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
-		pc->arena_fights), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txStatsText, gameStats->hour, gameStats->minute, gameStats->second, pc->kills, pc->knocks, pc->dmgDone, pc->dmgTaken,
+		pc->arenaFights), G_INVALID, -1);
 	flowStats.Reposition();
 
 	// skills
@@ -260,7 +260,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 				if(game->devmode)
 				{
 					if(Net::IsLocal())
-						tooltip.smallText = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->exp_level, pc->exp, pc->exp_need);
+						tooltip.smallText = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->expLevel, pc->exp, pc->expNeed);
 					else
 						tooltip.smallText = Format("Level: %d", pc->unit->level);
 				}

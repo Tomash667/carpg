@@ -193,7 +193,7 @@ int CaveGenerator::TryGenerate()
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext)
+void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairsDir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
 
@@ -222,7 +222,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 	for(int i = 0; i < size2; ++i)
 		tiles[i].type = (m2[i] ? WALL : EMPTY);
 
-	CreateStairs(tiles, stairs, stairs_dir);
+	CreateStairs(tiles, stairs, stairsDir);
 	CreateHoles(tiles, holes);
 
 	Tile::SetupFlags(tiles, Int2(size, size), ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
@@ -233,7 +233,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 }
 
 //=================================================================================================
-void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairs_dir)
+void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairsDir)
 {
 	do
 	{
@@ -294,7 +294,7 @@ void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stair
 				if(count == 1)
 				{
 					stairs = pt;
-					stairs_dir = stairs_dir_result;
+					stairsDir = stairs_dir_result;
 					tiles[pt.x + pt.y * size].type = ENTRY_PREV;
 					return;
 				}
@@ -534,7 +534,7 @@ int CaveGenerator::HandleUpdate(int days)
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCaveItems(int days_since)
+void CaveGenerator::GenerateCaveItems(int daysSince)
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	const Item* toSpawn[] = {
@@ -543,7 +543,7 @@ void CaveGenerator::GenerateCaveItems(int days_since)
 		Item::Get("heal_crystal")
 	};
 
-	for(int i = 0; i < days_since * 20; ++i)
+	for(int i = 0; i < daysSince * 20; ++i)
 	{
 		Int2 pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
 		if(!Any(lvl.map[pt.x + pt.y * lvl.w].type, EMPTY, BARS_CEILING))

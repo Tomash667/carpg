@@ -199,13 +199,13 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 						if(hitted->action != A_POSITION)
 							hitted->action = A_PAIN;
 						else
-							hitted->animation_state = AS_POSITION_HURT;
+							hitted->animationState = AS_POSITION_HURT;
 
 						if(hitted->meshInst->mesh->head.n_groups == 2)
-							hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
-							hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							hitted->animation = ANI_PLAY;
 						}
 					}

@@ -164,7 +164,7 @@ void Net::UpdateServer(float dt)
 
 		for(PlayerInfo& info : players)
 		{
-			if(info.left == PlayerInfo::LEFT_NO && !info.pc->is_local)
+			if(info.left == PlayerInfo::LEFT_NO && !info.pc->isLocal)
 			{
 				info.pc->UpdateCooldown(gameDt);
 				if(!info.u->IsStanding())
@@ -268,12 +268,12 @@ void Net::UpdateServer(float dt)
 				continue;
 
 			// update stats
-			if(info.u->player->stat_flags != 0)
+			if(info.u->player->statFlags != 0)
 			{
 				NetChangePlayer& c = Add1(info.changes);
-				c.id = info.u->player->stat_flags;
+				c.id = info.u->player->statFlags;
 				c.type = NetChangePlayer::PLAYER_STATS;
-				info.u->player->stat_flags = 0;
+				info.u->player->statFlags = 0;
 			}
 
 			// write & send updates
@@ -294,8 +294,8 @@ void Net::InterpolatePlayers(float dt)
 {
 	for(PlayerInfo& info : players)
 	{
-		if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
-			info.u->interp->Update(dt, info.u->visual_pos, info.u->rot);
+		if(!info.pc->isLocal && info.left == PlayerInfo::LEFT_NO)
+			info.u->interp->Update(dt, info.u->visualPos, info.u->rot);
 	}
 }
 
@@ -476,8 +476,8 @@ void Net::RemovePlayer(PlayerInfo& info)
 	}
 	else
 	{
-		gameLevel->to_remove.push_back(unit);
-		unit->to_remove = true;
+		gameLevel->toRemove.push_back(unit);
+		unit->toRemove = true;
 	}
 	info.u = nullptr;
 }
@@ -656,11 +656,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				byte typeflags;
 				float attack_speed;
-				Vec3 target_pos;
+				Vec3 targetPos;
 				f >> typeflags;
 				f >> attack_speed;
 				if((typeflags & 0xF) == AID_Shoot)
-					f >> target_pos;
+					f >> targetPos;
 				if(!f)
 					Error("Update server: Broken ATTACK from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
@@ -670,10 +670,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					switch(type)
 					{
 					case AID_Attack:
-						if(unit.action == A_ATTACK && unit.animation_state == AS_ATTACK_PREPARE)
+						if(unit.action == A_ATTACK && unit.animationState == AS_ATTACK_PREPARE)
 						{
 							const float ratio = unit.meshInst->groups[1].time / unit.GetAttackFrame(0);
-							unit.animation_state = AS_ATTACK_CAN_HIT;
+							unit.animationState = AS_ATTACK_CAN_HIT;
 							unit.meshInst->groups[1].speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
 							unit.act.attack.power = ratio + 1.f;
 						}
@@ -682,12 +682,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.animation_state = AS_ATTACK_CAN_HIT;
+							unit.animationState = AS_ATTACK_CAN_HIT;
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = false;
-							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attack_speed;
 						}
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
@@ -697,12 +697,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.animation_state = AS_ATTACK_PREPARE;
+							unit.animationState = AS_ATTACK_PREPARE;
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = false;
-							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attack_speed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * unit.GetStaminaMod(weapon));
@@ -712,23 +712,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Shoot:
 					case AID_StartShoot:
 						is_bow = true;
-						if(unit.action == A_SHOOT && unit.animation_state == AS_SHOOT_PREPARE)
-							unit.animation_state = AS_SHOOT_CAN;
+						if(unit.action == A_SHOOT && unit.animationState == AS_SHOOT_PREPARE)
+							unit.animationState = AS_SHOOT_CAN;
 						else
 							unit.DoRangedAttack(type == AID_StartShoot, false);
 						if(type == AID_Shoot)
-							unit.target_pos = target_pos;
+							unit.targetPos = targetPos;
 						break;
 					case AID_Block:
 						unit.action = A_BLOCK;
-						unit.meshInst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+						unit.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
 						unit.meshInst->groups[1].speed = 1.f;
 						unit.meshInst->groups[1].blendMax = attack_speed;
 						break;
 					case AID_Bash:
 						unit.action = A_BASH;
-						unit.animation_state = AS_BASH_ANIMATION;
-						unit.meshInst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
+						unit.animationState = AS_BASH_ANIMATION;
+						unit.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, 1);
 						unit.meshInst->groups[1].speed = attack_speed;
 						unit.player->Train(TrainWhat::BashStart, 0.f, 0);
 						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK * unit.GetStaminaMod(unit.GetShield()));
@@ -738,12 +738,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 								game->PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
-							unit.animation_state = AS_ATTACK_CAN_HIT;
+							unit.animationState = AS_ATTACK_CAN_HIT;
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.5f;
 							unit.act.attack.run = true;
 							unit.act.attack.hitted = false;
-							unit.meshInst->Play(NAMES::ani_attacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attack_speed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * 1.5f * unit.GetStaminaMod(weapon));
@@ -752,7 +752,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Cancel:
 						if(unit.action == A_SHOOT)
 						{
-							gameLevel->FreeBowInstance(unit.bow_instance);
+							gameLevel->FreeBowInstance(unit.bowInstance);
 							is_bow = true;
 						}
 						unit.action = A_NONE;
@@ -966,8 +966,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					c.id = 1;
 					looted_unit->busy = Unit::Busy_Looted;
 					player.action = PlayerAction::LootUnit;
-					player.action_unit = looted_unit;
-					player.chest_trade = &looted_unit->items;
+					player.actionUnit = looted_unit;
+					player.chestTrade = &looted_unit->items;
 				}
 			}
 			break;
@@ -1004,8 +1004,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// start looting chest
 					c.id = 1;
 					player.action = PlayerAction::LootChest;
-					player.action_chest = chest;
-					player.chest_trade = &chest->items;
+					player.actionChest = chest;
+					player.chestTrade = &chest->items;
 					chest->OpenClose(player.unit);
 				}
 			}
@@ -1034,13 +1034,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(i_index >= 0)
 				{
 					// getting not equipped item
-					if(i_index >= (int)player.chest_trade->size())
+					if(i_index >= (int)player.chestTrade->size())
 					{
 						Error("Update server: GET_ITEM from %s, invalid index %d.", info.name.c_str(), i_index);
 						break;
 					}
 
-					ItemSlot& slot = player.chest_trade->at(i_index);
+					ItemSlot& slot = player.chestTrade->at(i_index);
 					if(count < 1 || count >(int)slot.count)
 					{
 						Error("Update server: GET_ITEM from %s, invalid item count %d (have %d).", info.name.c_str(), count, slot.count);
@@ -1068,7 +1068,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chest_trade->erase(player.chest_trade->begin() + i_index);
+							player.chestTrade->erase(player.chestTrade->begin() + i_index);
 						else
 							slot.teamCount -= teamCount;
 					}
@@ -1087,39 +1087,39 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							const Consumable& pot = slot.item->ToConsumable();
 							if(pot.aiType == Consumable::AiType::Healing)
-								player.action_unit->ai->havePotion = HavePotion::Check;
+								player.actionUnit->ai->havePotion = HavePotion::Check;
 							else if(pot.aiType == Consumable::AiType::Mana)
-								player.action_unit->ai->haveMpPotion = HavePotion::Check;
+								player.actionUnit->ai->haveMpPotion = HavePotion::Check;
 						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 						{
-							player.action_unit->weight -= slot.item->weight * count;
+							player.actionUnit->weight -= slot.item->weight * count;
 							if(player.action == PlayerAction::LootUnit)
 							{
-								if(slot.item == player.action_unit->used_item)
+								if(slot.item == player.actionUnit->usedItem)
 								{
-									player.action_unit->used_item = nullptr;
+									player.actionUnit->usedItem = nullptr;
 									// removed item from hand, send info to other players
 									if(activePlayers > 2)
 									{
 										NetChange& c = Add1(changes);
 										c.type = NetChange::REMOVE_USED_ITEM;
-										c.unit = player.action_unit;
+										c.unit = player.actionUnit;
 									}
 								}
 								if(IsSet(slot.item->flags, ITEM_IMPORTANT))
 								{
-									player.action_unit->mark = false;
+									player.actionUnit->mark = false;
 									NetChange& c = Add1(changes);
 									c.type = NetChange::MARK_UNIT;
-									c.unit = player.action_unit;
+									c.unit = player.actionUnit;
 									c.id = 0;
 								}
 							}
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chest_trade->erase(player.chest_trade->begin() + i_index);
+							player.chestTrade->erase(player.chestTrade->begin() + i_index);
 						else
 							slot.teamCount -= teamCount;
 					}
@@ -1130,15 +1130,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					ITEM_SLOT type = IIndexToSlot(i_index);
 					if(Any(player.action, PlayerAction::LootChest, PlayerAction::LootContainer)
 						|| !IsValid(type)
-						|| !player.action_unit->HaveEquippedItem(type))
+						|| !player.actionUnit->HaveEquippedItem(type))
 					{
 						Error("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						break;
 					}
 
 					// get equipped item from unit
-					unit.AddItem2(player.action_unit->GetEquippedItem(type), 1u, 1u, false, false);
-					player.action_unit->RemoveEquippedItem(type);
+					unit.AddItem2(player.actionUnit->GetEquippedItem(type), 1u, 1u, false, false);
+					player.actionUnit->RemoveEquippedItem(type);
 				}
 			}
 			break;
@@ -1184,12 +1184,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					// add item
 					if(player.action == PlayerAction::LootChest)
-						player.action_chest->AddItem(slot.item, count, teamCount, false);
+						player.actionChest->AddItem(slot.item, count, teamCount, false);
 					else if(player.action == PlayerAction::LootContainer)
-						player.action_usable->container->AddItem(slot.item, count, teamCount);
+						player.actionUsable->container->AddItem(slot.item, count, teamCount);
 					else if(player.action == PlayerAction::Trade)
 					{
-						InsertItem(*player.chest_trade, slot.item, count, teamCount);
+						InsertItem(*player.chestTrade, slot.item, count, teamCount);
 						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 						player.Train(TrainWhat::Trade, (float)price * count, 0);
 						if(teamCount)
@@ -1203,7 +1203,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 					else
 					{
-						Unit* t = player.action_unit;
+						Unit* t = player.actionUnit;
 						uint add_as_team = teamCount;
 						if(player.action == PlayerAction::GiveItems && slot.item->type != IT_CONSUMABLE)
 						{
@@ -1264,31 +1264,31 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					int price = ItemHelper::GetItemPrice(item, unit, false);
 					// add new item
 					if(player.action == PlayerAction::LootChest)
-						player.action_chest->AddItem(item, 1u, 0u, false);
+						player.actionChest->AddItem(item, 1u, 0u, false);
 					else if(player.action == PlayerAction::LootContainer)
-						player.action_usable->container->AddItem(item, 1u, 0u);
+						player.actionUsable->container->AddItem(item, 1u, 0u);
 					else if(player.action == PlayerAction::Trade)
 					{
-						InsertItem(*player.chest_trade, item, 1u, 0u);
+						InsertItem(*player.chestTrade, item, 1u, 0u);
 						unit.gold += price;
 						player.Train(TrainWhat::Trade, (float)price, 0);
 					}
 					else
 					{
-						player.action_unit->AddItem2(item, 1u, 0u, false, false);
+						player.actionUnit->AddItem2(item, 1u, 0u, false, false);
 						if(player.action == PlayerAction::GiveItems)
 						{
 							price = item->value / 2;
-							if(player.action_unit->gold >= price)
+							if(player.actionUnit->gold >= price)
 							{
 								// sold for gold
-								player.action_unit->gold -= price;
+								player.actionUnit->gold -= price;
 								unit.gold += price;
 							}
-							player.action_unit->UpdateInventory();
+							player.actionUnit->UpdateInventory();
 							NetChangePlayer& c = Add1(info.changes);
 							c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
-							c.unit = player.action_unit;
+							c.unit = player.actionUnit;
 						}
 					}
 					// remove equipped
@@ -1311,7 +1311,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				bool any = false;
 				if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 				{
-					array<const Item*, SLOT_MAX>& equipped = player.action_unit->GetEquippedItems();
+					array<const Item*, SLOT_MAX>& equipped = player.actionUnit->GetEquippedItems();
 					for(int i = 0; i < SLOT_MAX; ++i)
 					{
 						if(equipped[i])
@@ -1323,12 +1323,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 
 					// reset weight
-					player.action_unit->weight = 0;
-					player.action_unit->RemoveAllEquippedItems();
+					player.actionUnit->weight = 0;
+					player.actionUnit->RemoveAllEquippedItems();
 				}
 
 				// not equipped items
-				for(ItemSlot& slot : *player.chest_trade)
+				for(ItemSlot& slot : *player.chestTrade)
 				{
 					if(!slot.item)
 						continue;
@@ -1342,7 +1342,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						any = true;
 					}
 				}
-				player.chest_trade->clear();
+				player.chestTrade->clear();
 
 				if(any)
 					SortItems(unit.items);
@@ -1359,7 +1359,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			}
 
 			if(player.action == PlayerAction::LootChest)
-				player.action_chest->OpenClose(nullptr);
+				player.actionChest->OpenClose(nullptr);
 			else if(player.action == PlayerAction::LootContainer)
 			{
 				unit.UseUsable(nullptr);
@@ -1367,13 +1367,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				NetChange& c = Add1(changes);
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
-				c.id = player.action_usable->id;
+				c.id = player.actionUsable->id;
 				c.count = USE_USABLE_END;
 			}
-			else if(player.action_unit)
+			else if(player.actionUnit)
 			{
-				player.action_unit->busy = Unit::Busy_No;
-				player.action_unit->look_target = nullptr;
+				player.actionUnit->busy = Unit::Busy_No;
+				player.actionUnit->lookTarget = nullptr;
 			}
 			player.action = PlayerAction::None;
 			break;
@@ -1626,15 +1626,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.action = A_USE_USABLE;
 							unit.animation = ANI_PLAY;
 							unit.meshInst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
-							unit.target_pos = unit.pos;
-							unit.target_pos2 = usable->pos;
+							unit.targetPos = unit.pos;
+							unit.targetPos2 = usable->pos;
 							if(usable->base->limit_rot == 4)
-								unit.target_pos2 -= Vec3(sin(usable->rot) * 1.5f, 0, cos(usable->rot) * 1.5f);
+								unit.targetPos2 -= Vec3(sin(usable->rot) * 1.5f, 0, cos(usable->rot) * 1.5f);
 							unit.timer = 0.f;
-							unit.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
-							unit.act.use_usable.rot = Vec3::LookAtAngle(unit.pos, usable->pos);
-							unit.used_item = base.item;
-							if(unit.used_item)
+							unit.animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
+							unit.act.useUsable.rot = Vec3::LookAtAngle(unit.pos, usable->pos);
+							unit.usedItem = base.item;
+							if(unit.usedItem)
 								unit.SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 						}
 						else
@@ -1645,8 +1645,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							c.id = 1;
 
 							player.action = PlayerAction::LootContainer;
-							player.action_usable = usable;
-							player.chest_trade = &usable->container->items;
+							player.actionUsable = usable;
+							player.chestTrade = &usable->container->items;
 						}
 
 						unit.UseUsable(usable);
@@ -1664,10 +1664,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							{
 								unit.action = A_USE_USABLE;
 								unit.animation = ANI_STAND;
-								unit.animation_state = AS_USE_USABLE_MOVE_TO_ENDPOINT;
+								unit.animationState = AS_USE_USABLE_MOVE_TO_ENDPOINT;
 								unit.timer = 0;
-								if(unit.live_state == Unit::ALIVE)
-									unit.used_item = nullptr;
+								if(unit.liveState == Unit::ALIVE)
+									unit.usedItem = nullptr;
 							}
 						}
 						else if(state == USE_USABLE_END)
@@ -1710,7 +1710,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					const Item* item = unit.GetIIndexItem(i_index);
 					if(item)
 					{
-						if(player.action_unit->IsBetterItem(item))
+						if(player.actionUnit->IsBetterItem(item))
 							c.id = 1;
 					}
 					else
@@ -1768,11 +1768,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CHEAT_SPAWN_UNIT:
 			{
 				byte count;
-				char level, in_arena;
+				char level, inArena;
 				const string& unit_id = f.ReadString1();
 				f >> count;
 				f >> level;
-				f >> in_arena;
+				f >> inArena;
 				if(!f)
 					Error("Update server: Broken CHEAT_SPAWN_UNIT from %s.", info.name.c_str());
 				else if(!info.devmode)
@@ -1784,8 +1784,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						Error("Update server: CHEAT_SPAWN_UNIT from %s, invalid unit id %s.", info.name.c_str(), unit_id.c_str());
 					else
 					{
-						if(in_arena < -1 || in_arena > 1)
-							in_arena = -1;
+						if(inArena < -1 || inArena > 1)
+							inArena = -1;
 
 						LocationPart& locPart = *info.u->locPart;
 						Vec3 pos = info.u->GetFrontPos();
@@ -1798,9 +1798,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
 								break;
 							}
-							else if(in_arena != -1)
+							else if(inArena != -1)
 							{
-								spawned->in_arena = in_arena;
+								spawned->inArena = inArena;
 								game->arena->units.push_back(spawned);
 							}
 						}
@@ -2350,7 +2350,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 					else
 					{
-						InsertItem(*player.chest_trade, Item::gold, count, 0);
+						InsertItem(*player.chestTrade, Item::gold, count, 0);
 						unit.gold -= count;
 					}
 				}
@@ -2486,58 +2486,58 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player set next action
 		case NetChange::SET_NEXT_ACTION:
 			{
-				f.ReadCasted<byte>(player.next_action);
+				f.ReadCasted<byte>(player.nextAction);
 				if(!f)
 				{
 					Error("Update server: Broken SET_NEXT_ACTION from '%s'.", info.name.c_str());
-					player.next_action = NA_NONE;
+					player.nextAction = NA_NONE;
 					break;
 				}
-				switch(player.next_action)
+				switch(player.nextAction)
 				{
 				case NA_NONE:
 					break;
 				case NA_REMOVE:
 				case NA_DROP:
-					f.ReadCasted<byte>(player.next_action_data.slot);
+					f.ReadCasted<byte>(player.nextActionData.slot);
 					if(!f)
 					{
 						Error("Update server: Broken SET_NEXT_ACTION(2) from '%s'.", info.name.c_str());
-						player.next_action = NA_NONE;
+						player.nextAction = NA_NONE;
 					}
 					else if(game->gameState != GS_LEVEL)
-						player.next_action = NA_NONE;
-					else if(!IsValid(player.next_action_data.slot) || !unit.HaveEquippedItem(player.next_action_data.slot))
+						player.nextAction = NA_NONE;
+					else if(!IsValid(player.nextActionData.slot) || !unit.HaveEquippedItem(player.nextActionData.slot))
 					{
-						Error("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", player.next_action_data.slot, info.name.c_str());
-						player.next_action = NA_NONE;
+						Error("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", player.nextActionData.slot, info.name.c_str());
+						player.nextAction = NA_NONE;
 					}
 					break;
 				case NA_EQUIP:
 				case NA_CONSUME:
 				case NA_EQUIP_DRAW:
 					{
-						f >> player.next_action_data.index;
+						f >> player.nextActionData.index;
 						const string& item_id = f.ReadString1();
 						if(!f)
 						{
 							Error("Update server: Broken SET_NEXT_ACTION(3) from '%s'.", info.name.c_str());
-							player.next_action = NA_NONE;
+							player.nextAction = NA_NONE;
 						}
 						else if(game->gameState != GS_LEVEL)
-							player.next_action = NA_NONE;
-						else if(player.next_action_data.index < 0 || (uint)player.next_action_data.index >= info.u->items.size())
+							player.nextAction = NA_NONE;
+						else if(player.nextActionData.index < 0 || (uint)player.nextActionData.index >= info.u->items.size())
 						{
-							Error("Update server: SET_NEXT_ACTION, invalid index %d from '%s'.", player.next_action_data.index, info.name.c_str());
-							player.next_action = NA_NONE;
+							Error("Update server: SET_NEXT_ACTION, invalid index %d from '%s'.", player.nextActionData.index, info.name.c_str());
+							player.nextAction = NA_NONE;
 						}
 						else
 						{
-							player.next_action_data.item = Item::TryGet(item_id);
-							if(!player.next_action_data.item)
+							player.nextActionData.item = Item::TryGet(item_id);
+							if(!player.nextActionData.item)
 							{
 								Error("Update server: SET_NEXT_ACTION, invalid item '%s' from '%s'.", item_id.c_str(), info.name.c_str());
-								player.next_action = NA_NONE;
+								player.nextAction = NA_NONE;
 							}
 						}
 					}
@@ -2549,22 +2549,22 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(!f)
 						{
 							Error("Update server: Broken SET_NEXT_ACTION(4) from '%s'.", info.name.c_str());
-							player.next_action = NA_NONE;
+							player.nextAction = NA_NONE;
 						}
 						else if(game->gameState == GS_LEVEL)
 						{
-							player.next_action_data.usable = gameLevel->FindUsable(id);
-							if(!player.next_action_data.usable)
+							player.nextActionData.usable = gameLevel->FindUsable(id);
+							if(!player.nextActionData.usable)
 							{
 								Error("Update server: SET_NEXT_ACTION, invalid usable %d from '%s'.", id, info.name.c_str());
-								player.next_action = NA_NONE;
+								player.nextAction = NA_NONE;
 							}
 						}
 					}
 					break;
 				default:
-					Error("Update server: SET_NEXT_ACTION, invalid action %d from '%s'.", player.next_action, info.name.c_str());
-					player.next_action = NA_NONE;
+					Error("Update server: SET_NEXT_ACTION, invalid action %d from '%s'.", player.nextAction, info.name.c_str());
+					player.nextAction = NA_NONE;
 					break;
 				}
 			}
@@ -2572,12 +2572,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player toggle always run - notify to save it
 		case NetChange::CHANGE_ALWAYS_RUN:
 			{
-				bool always_run;
-				f >> always_run;
+				bool alwaysRun;
+				f >> alwaysRun;
 				if(!f)
 					Error("Update server: Broken CHANGE_ALWAYS_RUN from %s.", info.name.c_str());
 				else
-					player.always_run = always_run;
+					player.alwaysRun = alwaysRun;
 			}
 			break;
 		// player used generic command
@@ -2627,7 +2627,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(IsSet(book.flags, ITEM_MAGIC_SCROLL))
 				{
 					unit.action = A_USE_ITEM;
-					unit.used_item = slot.item;
+					unit.usedItem = slot.item;
 					unit.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 
 					NetChange& c = Add1(changes);
@@ -2807,10 +2807,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			break;
 		// unit cast spell
 		case NetChange::CAST_SPELL:
-			f >> info.u->target_pos;
+			f >> info.u->targetPos;
 			if(!f)
 				Error("Update server: Broken CAST_SPELL from %s.", info.name.c_str());
-			info.u->animation_state = AS_CAST_TRIGGER;
+			info.u->animationState = AS_CAST_TRIGGER;
 			break;
 		// craft item
 		case NetChange::CRAFT:
@@ -2910,7 +2910,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				Unit& u = *c.unit;
 				f << u.id;
 				f << (c.id != 0);
-				f.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
+				f.WriteCasted<byte>(c.id == 0 ? u.weaponTaken : u.weaponHiding);
 			}
 			break;
 		case NetChange::ATTACK:
@@ -3021,7 +3021,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 					if(info.left == PlayerInfo::LEFT_NO)
 					{
 						f << info.u->id;
-						f << info.u->player->free_days;
+						f << info.u->player->freeDays;
 						++count;
 					}
 				}
@@ -3077,7 +3077,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::HAIR_COLOR:
 			f << c.unit->id;
-			f << c.unit->human_data->hairColor;
+			f << c.unit->humanData->hairColor;
 			break;
 		case NetChange::WARP:
 			f << c.unit->id;
@@ -3155,7 +3155,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CHANGE_ARENA_STATE:
 			f << c.unit->id;
-			f.WriteCasted<char>(c.unit->in_arena);
+			f.WriteCasted<char>(c.unit->inArena);
 			break;
 		case NetChange::WORLD_TIME:
 			world->WriteTime(f);
@@ -3330,13 +3330,13 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 
 	// variables
 	if(IsSet(info.updateFlags, PlayerInfo::UF_POISON_DAMAGE))
-		f << player.last_dmg_poison;
+		f << player.lastDmgPoison;
 	if(IsSet(info.updateFlags, PlayerInfo::UF_GOLD))
 		f << info.u->gold;
 	if(IsSet(info.updateFlags, PlayerInfo::UF_ALCOHOL))
 		f << info.u->alcohol;
 	if(IsSet(info.updateFlags, PlayerInfo::UF_LEARNING_POINTS))
-		f << info.pc->learning_points;
+		f << info.pc->learningPoints;
 	if(IsSet(info.updateFlags, PlayerInfo::UF_LEVEL))
 		f << info.u->level;
 
@@ -3357,7 +3357,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			{
 				if(player.action == PlayerAction::LootUnit)
 				{
-					array<const Item*, SLOT_MAX>& equipped = player.action_unit->GetEquippedItems();
+					array<const Item*, SLOT_MAX>& equipped = player.actionUnit->GetEquippedItems();
 					for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
 					{
 						if(equipped[i])
@@ -3366,15 +3366,15 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 							f.Write0();
 					}
 				}
-				f.WriteItemListTeam(*player.chest_trade);
+				f.WriteItemListTeam(*player.chestTrade);
 			}
 			break;
 		case NetChangePlayer::START_SHARE:
 		case NetChangePlayer::START_GIVE:
 			{
-				Unit& u = *player.action_unit;
+				Unit& u = *player.actionUnit;
 				f << u.weight;
-				f << u.weight_max;
+				f << u.weightMax;
 				f << u.gold;
 				f << u.stats->subprofile;
 				f << u.effects;
@@ -3413,7 +3413,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			break;
 		case NetChangePlayer::START_TRADE:
 			f << c.id;
-			f.WriteItemList(*player.chest_trade);
+			f.WriteItemList(*player.chestTrade);
 			break;
 		case NetChangePlayer::SET_FROZEN:
 		case NetChangePlayer::DEVMODE:
@@ -3494,13 +3494,13 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			if(IsSet(c.id, STAT_KILLS))
 				f << player.kills;
 			if(IsSet(c.id, STAT_DMG_DONE))
-				f << player.dmg_done;
+				f << player.dmgDone;
 			if(IsSet(c.id, STAT_DMG_TAKEN))
-				f << player.dmg_taken;
+				f << player.dmgTaken;
 			if(IsSet(c.id, STAT_KNOCKS))
 				f << player.knocks;
 			if(IsSet(c.id, STAT_ARENA_FIGHTS))
-				f << player.arena_fights;
+				f << player.arenaFights;
 			break;
 		case NetChangePlayer::STAT_CHANGED:
 			f.WriteCasted<byte>(c.id);
@@ -3836,8 +3836,8 @@ void Net::WritePlayerData(BitStreamWriter& f, PlayerInfo& info)
 	// multiplayer load data
 	if(mpLoad)
 	{
-		f << unit.used_item_is_team;
-		f << unit.raise_timer;
+		f << unit.usedItemIsTeam;
+		f << unit.raiseTimer;
 		if(unit.action == A_ATTACK)
 		{
 			f << unit.act.attack.power;

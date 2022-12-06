@@ -661,7 +661,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 	{
 		int bone = u->meshInst->mesh->GetBone("usta")->id;
 		static Matrix mat2;
-		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
+		float val = u->talking ? sin(u->talkTimer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
 	}
 }
@@ -1749,7 +1749,7 @@ void Game::UpdateGame(float dt)
 	{
 		if(Net::IsLocal())
 		{
-			assert(pc->is_local);
+			assert(pc->isLocal);
 			if(Net::IsServer())
 			{
 				for(PlayerInfo& info : net->players)
@@ -1758,13 +1758,13 @@ void Game::UpdateGame(float dt)
 					{
 						assert(info.pc == info.pc->playerInfo->pc);
 						if(info.id != 0)
-							assert(!info.pc->is_local);
+							assert(!info.pc->isLocal);
 					}
 				}
 			}
 		}
 		else
-			assert(pc->is_local && pc == pc->playerInfo->pc);
+			assert(pc->isLocal && pc == pc->playerInfo->pc);
 	}
 
 	gameLevel->minimapOpenedDoors = false;
@@ -1976,7 +1976,7 @@ void Game::UpdateGame(float dt)
 			DialogContext& dialogCtx = *info.u->player->dialogCtx;
 			if(dialogCtx.dialogMode)
 			{
-				if(!dialogCtx.talker->IsStanding() || !dialogCtx.talker->IsIdle() || dialogCtx.talker->to_remove || dialogCtx.talker->frozen != FROZEN::NO)
+				if(!dialogCtx.talker->IsStanding() || !dialogCtx.talker->IsIdle() || dialogCtx.talker->toRemove || dialogCtx.talker->frozen != FROZEN::NO)
 					dialogCtx.EndDialog();
 				else
 					dialogCtx.Update(dt);
@@ -2078,12 +2078,12 @@ void Game::UpdateFallback(float dt)
 				{
 					LeaveLocation(false, false);
 					Portal* portal = gameLevel->location->GetPortal(fallbackValue);
-					world->ChangeLevel(portal->target_loc, false);
+					world->ChangeLevel(portal->targetLoc, false);
 					// currently it is only allowed to teleport from X level to first, can teleport back because X level is already visited
-					int at_level = 0;
+					int atLevel = 0;
 					if(gameLevel->location->portal)
-						at_level = gameLevel->location->portal->at_level;
-					EnterLocation(at_level, portal->index);
+						atLevel = gameLevel->location->portal->atLevel;
+					EnterLocation(atLevel, portal->index);
 				}
 				return;
 			case FALLBACK::NONE:
@@ -2146,17 +2146,17 @@ void Game::UpdateCamera(float dt)
 			camera.RotateTo(dt, 4.2875104f);
 			Vec3 zoom_pos;
 			if(gameGui->inventory->mode == I_LOOT_CHEST)
-				zoom_pos = pc->action_chest->GetCenter();
+				zoom_pos = pc->actionChest->GetCenter();
 			else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
-				zoom_pos = pc->action_usable->GetCenter();
+				zoom_pos = pc->actionUsable->GetCenter();
 			else if(gameGui->craft->visible)
 				zoom_pos = pc->unit->usable->GetCenter();
 			else
 			{
-				if(pc->action_unit->IsAlive())
-					zoom_pos = pc->action_unit->GetHeadSoundPos();
+				if(pc->actionUnit->IsAlive())
+					zoom_pos = pc->actionUnit->GetHeadSoundPos();
 				else
-					zoom_pos = pc->action_unit->GetLootCenter();
+					zoom_pos = pc->actionUnit->GetLootCenter();
 			}
 			camera.SetZoom(&zoom_pos);
 		}
@@ -2255,7 +2255,7 @@ uint Game::TestGameData(bool major)
 		{
 			if(ud.frames->extra)
 			{
-				if(InRange(ud.frames->attacks, 1, NAMES::max_attacks))
+				if(InRange(ud.frames->attacks, 1, NAMES::maxAttacks))
 				{
 					for(int i = 0; i < ud.frames->attacks; ++i)
 					{
@@ -2310,36 +2310,36 @@ uint Game::TestGameData(bool major)
 			Mesh& mesh = *ud.mesh;
 			resMgr->Load(&mesh);
 
-			for(uint i = 0; i < NAMES::n_ani_base; ++i)
+			for(uint i = 0; i < NAMES::nAniBase; ++i)
 			{
-				if(!mesh.GetAnimation(NAMES::ani_base[i]))
+				if(!mesh.GetAnimation(NAMES::aniBase[i]))
 				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
+					str += Format("\tMissing animation '%s'.\n", NAMES::aniBase[i]);
 					++errors;
 				}
 			}
 
 			if(!IsSet(ud.flags, F_SLOW))
 			{
-				if(!mesh.GetAnimation(NAMES::ani_run))
+				if(!mesh.GetAnimation(NAMES::aniRun))
 				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
+					str += Format("\tMissing animation '%s'.\n", NAMES::aniRun);
 					++errors;
 				}
 			}
 
 			if(!IsSet(ud.flags, F_DONT_SUFFER))
 			{
-				if(!mesh.GetAnimation(NAMES::ani_hurt))
+				if(!mesh.GetAnimation(NAMES::aniHurt))
 				{
-					str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
+					str += Format("\tMissing animation '%s'.\n", NAMES::aniHurt);
 					++errors;
 				}
 			}
 
 			if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
 			{
-				for(uint i = 0; i < NAMES::n_points; ++i)
+				for(uint i = 0; i < NAMES::nPoints; ++i)
 				{
 					if(!mesh.GetPoint(NAMES::points[i]))
 					{
@@ -2348,11 +2348,11 @@ uint Game::TestGameData(bool major)
 					}
 				}
 
-				for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
+				for(uint i = 0; i < NAMES::nAniHumanoid; ++i)
 				{
-					if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
+					if(!mesh.GetAnimation(NAMES::aniHumanoid[i]))
 					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
+						str += Format("\tMissing animation '%s'.\n", NAMES::aniHumanoid[i]);
 						++errors;
 					}
 				}
@@ -2361,16 +2361,16 @@ uint Game::TestGameData(bool major)
 			// attack animations
 			if(ud.frames)
 			{
-				if(ud.frames->attacks > NAMES::max_attacks)
+				if(ud.frames->attacks > NAMES::maxAttacks)
 				{
 					str += Format("\tToo many attacks (%d)!\n", ud.frames->attacks);
 					++errors;
 				}
-				for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
+				for(int i = 0; i < min(ud.frames->attacks, NAMES::maxAttacks); ++i)
 				{
-					if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
+					if(!mesh.GetAnimation(NAMES::aniAttacks[i]))
 					{
-						str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
+						str += Format("\tMissing animation '%s'.\n", NAMES::aniAttacks[i]);
 						++errors;
 					}
 				}
@@ -2390,9 +2390,9 @@ uint Game::TestGameData(bool major)
 			}
 
 			// cast spell point
-			if(ud.abilities && !mesh.GetPoint(NAMES::point_cast))
+			if(ud.abilities && !mesh.GetPoint(NAMES::pointCast))
 			{
-				str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
+				str += Format("\tMissing attachment point '%s'.\n", NAMES::pointCast);
 				++errors;
 			}
 		}
@@ -2878,13 +2878,13 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 					}
 					else
 					{
-						if(unit.live_state == Unit::DYING)
+						if(unit.liveState == Unit::DYING)
 						{
-							unit.live_state = Unit::DEAD;
+							unit.liveState = Unit::DEAD;
 							unit.meshInst->SetToEnd();
 							gameLevel->CreateBlood(locPart, unit, true);
 						}
-						else if(Any(unit.live_state, Unit::FALLING, Unit::FALL))
+						else if(Any(unit.liveState, Unit::FALLING, Unit::FALL))
 							unit.Standup(false, true);
 
 						if(unit.IsAlive())
@@ -2897,7 +2897,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 								{
 									InsideBuilding* inn = gameLevel->cityCtx->FindInn();
 									gameLevel->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-									unit.visual_pos = unit.pos;
+									unit.visualPos = unit.pos;
 									unit.locPart = inn;
 									inn->units.push_back(&unit);
 									return true;
@@ -3349,7 +3349,7 @@ void Game::DeleteUnit(Unit* unit)
 			pc->data.selectedUnit = nullptr;
 		if(Net::IsClient())
 		{
-			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+			if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)
 				pc->unit->BreakAction();
 		}
 		else
@@ -3357,8 +3357,8 @@ void Game::DeleteUnit(Unit* unit)
 			for(PlayerInfo& player : net->players)
 			{
 				PlayerController* pc = player.pc;
-				if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
-					pc->action_unit = nullptr;
+				if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)
+					pc->actionUnit = nullptr;
 			}
 		}
 
@@ -3367,17 +3367,17 @@ void Game::DeleteUnit(Unit* unit)
 			switch(unit->player->action)
 			{
 			case PlayerAction::LootChest:
-				unit->player->action_chest->OpenClose(nullptr);
+				unit->player->actionChest->OpenClose(nullptr);
 				break;
 			case PlayerAction::LootUnit:
-				unit->player->action_unit->busy = Unit::Busy_No;
+				unit->player->actionUnit->busy = Unit::Busy_No;
 				break;
 			case PlayerAction::Trade:
 			case PlayerAction::Talk:
 			case PlayerAction::GiveItems:
 			case PlayerAction::ShareItems:
-				unit->player->action_unit->busy = Unit::Busy_No;
-				unit->player->action_unit->look_target = nullptr;
+				unit->player->actionUnit->busy = Unit::Busy_No;
+				unit->player->actionUnit->lookTarget = nullptr;
 				break;
 			case PlayerAction::LootContainer:
 				unit->UseUsable(nullptr);
@@ -3437,7 +3437,7 @@ void Game::RemoveUnit(Unit* unit)
 		pc->data.selectedUnit = nullptr;
 	if(Net::IsClient())
 	{
-		if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
+		if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)
 			pc->unit->BreakAction();
 	}
 	else
@@ -3445,8 +3445,8 @@ void Game::RemoveUnit(Unit* unit)
 		for(PlayerInfo& player : net->players)
 		{
 			PlayerController* pc = player.pc;
-			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
-				pc->action_unit = nullptr;
+			if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)
+				pc->actionUnit = nullptr;
 		}
 	}
 
@@ -3513,8 +3513,8 @@ void Game::OnCloseInventory()
 	{
 		if(Net::IsLocal())
 		{
-			pc->action_unit->busy = Unit::Busy_No;
-			pc->action_unit->look_target = nullptr;
+			pc->actionUnit->busy = Unit::Busy_No;
+			pc->actionUnit->lookTarget = nullptr;
 		}
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
@@ -3523,14 +3523,14 @@ void Game::OnCloseInventory()
 	{
 		if(Net::IsLocal())
 		{
-			pc->action_unit->busy = Unit::Busy_No;
-			pc->action_unit->look_target = nullptr;
+			pc->actionUnit->busy = Unit::Busy_No;
+			pc->actionUnit->lookTarget = nullptr;
 		}
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 	else if(gameGui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
-		pc->action_chest->OpenClose(nullptr);
+		pc->actionChest->OpenClose(nullptr);
 	else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
@@ -3554,11 +3554,11 @@ void Game::OnCloseInventory()
 		if(Net::IsClient())
 			Net::PushChange(NetChange::STOP_TRADE);
 		else if(gameGui->inventory->mode == I_LOOT_BODY)
-			pc->action_unit->busy = Unit::Busy_No;
+			pc->actionUnit->busy = Unit::Busy_No;
 	}
 
-	if(Any(pc->next_action, NA_PUT, NA_GIVE, NA_SELL))
-		pc->next_action = NA_NONE;
+	if(Any(pc->nextAction, NA_PUT, NA_GIVE, NA_SELL))
+		pc->nextAction = NA_NONE;
 
 	pc->action = PlayerAction::None;
 	gameGui->inventory->mode = I_NONE;

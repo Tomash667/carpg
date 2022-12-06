@@ -157,7 +157,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 			ForLocation(in_location)->RemoveUnit(target_unit);
 		}
 		else
-			target_unit->event_handler = nullptr;
+			target_unit->eventHandler = nullptr;
 		target_unit = nullptr;
 	}
 

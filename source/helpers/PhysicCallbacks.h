@@ -110,7 +110,7 @@ struct RaytestTerrainCallback : public btCollisionWorld::RayResultCallback
 //-----------------------------------------------------------------------------
 struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 {
-	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2) : obj(obj), clbk(clbk), use_clbk2(use_clbk2), hit(false)
+	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool useClbk2) : obj(obj), clbk(clbk), useClbk2(useClbk2), hit(false)
 	{
 	}
 
@@ -122,7 +122,7 @@ struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 	float addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap,
 		int partId1, int index1)
 	{
-		if(use_clbk2)
+		if(useClbk2)
 		{
 			const btCollisionObject* cobj;
 			if(colObj0Wrap->m_collisionObject == obj)
@@ -138,7 +138,7 @@ struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 
 	btCollisionObject* obj;
 	delegate<bool(btCollisionObject*, bool)> clbk;
-	bool use_clbk2, hit;
+	bool useClbk2, hit;
 };
 
 //-----------------------------------------------------------------------------
@@ -178,8 +178,8 @@ struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 //-----------------------------------------------------------------------------
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
-	ConvexCallback(delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2),
-		end(false), end_t(1.f), closest(1.1f)
+	ConvexCallback(delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* tList, bool useClbk2) : clbk(clbk), tList(tList), useClbk2(useClbk2),
+		end(false), endT(1.f), closest(1.1f)
 	{
 	}
 
@@ -190,34 +190,34 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
-		if(use_clbk2)
+		if(useClbk2)
 		{
 			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, false);
 			if(result == LT_IGNORE)
 				return m_closestHitFraction;
 			else if(result == LT_END)
 			{
-				if(end_t > convexResult.m_hitFraction)
+				if(endT > convexResult.m_hitFraction)
 				{
 					closest = min(closest, convexResult.m_hitFraction);
 					m_closestHitFraction = convexResult.m_hitFraction;
-					end_t = convexResult.m_hitFraction;
+					endT = convexResult.m_hitFraction;
 				}
 				end = true;
 				return 1.f;
 			}
-			else if(end && convexResult.m_hitFraction > end_t)
+			else if(end && convexResult.m_hitFraction > endT)
 				return 1.f;
 		}
 		closest = min(closest, convexResult.m_hitFraction);
-		if(t_list)
-			t_list->push_back(convexResult.m_hitFraction);
+		if(tList)
+			tList->push_back(convexResult.m_hitFraction);
 		// return value is unused
 		return 1.f;
 	}
 
 	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
-	vector<float>* t_list;
-	float end_t, closest;
-	bool use_clbk2, end;
+	vector<float>* tList;
+	float endT, closest;
+	bool useClbk2, end;
 };

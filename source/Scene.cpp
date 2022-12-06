@@ -341,7 +341,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 		Portal* portal = gameLevel->location->portal;
 		while(portal)
 		{
-			if(gameLevel->location->outside || gameLevel->dungeonLevel == portal->at_level)
+			if(gameLevel->location->outside || gameLevel->dungeonLevel == portal->atLevel)
 			{
 				SceneNode* node = SceneNode::Get();
 				node->SetMesh(gameRes->aPortal);
@@ -350,7 +350,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->mat = Matrix::Rotation(0, portal->rot, -portalAnim * PI * 2) * Matrix::Translation(node->center);
 				drawBatch.Add(node);
 			}
-			portal = portal->next_portal;
+			portal = portal->nextPortal;
 		}
 	}
 
@@ -514,7 +514,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 {
 	u.meshInst->mesh->EnsureIsLoaded();
-	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
+	if(!frustum.SphereToFrustum(u.visualPos, u.GetSphereRadius()))
 		return;
 
 	// add stun effect
@@ -553,8 +553,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	node->SetMesh(u.meshInst);
 	if(IsSet(u.data->flags2, F2_ALPHA_BLEND))
 		node->flags |= SceneNode::F_ALPHA_BLEND;
-	node->center = u.visual_pos;
-	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
+	node->center = u.visualPos;
+	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visualPos);
 	node->texOverride = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
 
@@ -608,37 +608,37 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	Mesh* right_hand_item = nullptr;
 	bool in_hand = false;
 
-	switch(u.weapon_state)
+	switch(u.weaponState)
 	{
 	case WeaponState::Hidden:
 		break;
 	case WeaponState::Taken:
-		if(u.weapon_taken == W_BOW)
+		if(u.weaponTaken == W_BOW)
 		{
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state != AS_SHOOT_SHOT)
+				if(u.animationState != AS_SHOOT_SHOT)
 					right_hand_item = gameRes->aArrow;
 			}
 			else
 				right_hand_item = gameRes->aArrow;
 		}
-		else if(u.weapon_taken == W_ONE_HANDED)
+		else if(u.weaponTaken == W_ONE_HANDED)
 			in_hand = true;
 		break;
 	case WeaponState::Taking:
-		if(u.animation_state == AS_TAKE_WEAPON_MOVED)
+		if(u.animationState == AS_TAKE_WEAPON_MOVED)
 		{
-			if(u.weapon_taken == W_BOW)
+			if(u.weaponTaken == W_BOW)
 				right_hand_item = gameRes->aArrow;
 			else
 				in_hand = true;
 		}
 		break;
 	case WeaponState::Hiding:
-		if(u.animation_state == AS_TAKE_WEAPON_START)
+		if(u.animationState == AS_TAKE_WEAPON_START)
 		{
-			if(u.weapon_hiding == W_BOW)
+			if(u.weaponHiding == W_BOW)
 				right_hand_item = gameRes->aArrow;
 			else
 				in_hand = true;
@@ -646,16 +646,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		break;
 	}
 
-	if(u.used_item && u.action != A_USE_ITEM)
-		right_hand_item = u.used_item->mesh;
+	if(u.usedItem && u.action != A_USE_ITEM)
+		right_hand_item = u.usedItem->mesh;
 
 	if(right_hand_item == gameRes->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
 		right_hand_item = u.act.shoot.ability->mesh;
 
 	Matrix mat_scale;
-	if(u.human_data)
+	if(u.humanData)
 	{
-		Vec2 scale = u.human_data->GetScale();
+		Vec2 scale = u.humanData->GetScale();
 		scale.x = 1.f / scale.x;
 		scale.y = 1.f / scale.y;
 		mat_scale = Matrix::Scale(scale.x, scale.y, scale.x);
@@ -667,7 +667,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointWeapon : NAMES::pointHiddenWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
@@ -689,7 +689,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		drawBatch.Add(node2);
 
 		// weapon hitbox
-		if(drawHitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
+		if(drawHitbox && u.weaponState == WeaponState::Taken && u.weaponTaken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -717,7 +717,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointShield : NAMES::pointShieldHidden);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
@@ -739,7 +739,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		drawBatch.Add(node2);
 
 		// shield hitbox
-		if(drawHitbox && u.weapon_state == WeaponState::Taken && u.weapon_taken == W_ONE_HANDED)
+		if(drawHitbox && u.weaponState == WeaponState::Taken && u.weaponTaken == W_ONE_HANDED)
 		{
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -755,7 +755,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// other item (arrow/potion)
 	if(right_hand_item)
 	{
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(NAMES::point_weapon);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(NAMES::pointWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
@@ -782,32 +782,32 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	{
 		bool in_hand;
 
-		switch(u.weapon_state)
+		switch(u.weaponState)
 		{
 		case WeaponState::Hiding:
-			in_hand = (u.weapon_hiding == W_BOW && u.animation_state == AS_TAKE_WEAPON_START);
+			in_hand = (u.weaponHiding == W_BOW && u.animationState == AS_TAKE_WEAPON_START);
 			break;
 		case WeaponState::Hidden:
 			in_hand = false;
 			break;
 		case WeaponState::Taking:
-			in_hand = (u.weapon_taken == W_BOW && u.animation_state == AS_TAKE_WEAPON_MOVED);
+			in_hand = (u.weaponTaken == W_BOW && u.animationState == AS_TAKE_WEAPON_MOVED);
 			break;
 		case WeaponState::Taken:
-			in_hand = (u.weapon_taken == W_BOW);
+			in_hand = (u.weaponTaken == W_BOW);
 			break;
 		}
 
 		SceneNode* node2 = SceneNode::Get();
 		if(u.action == A_SHOOT)
 		{
-			u.bow_instance->SetupBones();
-			node2->SetMesh(u.bow_instance);
+			u.bowInstance->SetupBones();
+			node2->SetMesh(u.bowInstance);
 		}
 		else
 			node2->SetMesh(u.GetBow().mesh);
 		node2->center = node->center;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointBow : NAMES::pointShieldHidden);
 		assert(point);
 		Matrix m1;
 		if(in_hand)
@@ -833,7 +833,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// hair/beard/eyebrows for humans
 	if(u.data->type == UNIT_TYPE::HUMAN)
 	{
-		Human& h = *u.human_data;
+		Human& h = *u.humanData;
 
 		// eyebrows
 		SceneNode* node2 = SceneNode::Get();
@@ -1119,15 +1119,15 @@ void Game::ListAreas(LocationPart& locPart)
 
 	// action area2
 	if(pc->data.abilityReady || (pc->unit->action == A_CAST
-		&& pc->unit->animation_state == AS_CAST_ANIMATION && Any(pc->unit->act.cast.ability->type, Ability::Summon, Ability::Trap)))
+		&& pc->unit->animationState == AS_CAST_ANIMATION && Any(pc->unit->act.cast.ability->type, Ability::Summon, Ability::Trap)))
 		PrepareAreaPath();
 	else if(pc->unit->action == A_CAST && Any(pc->unit->act.cast.ability->type, Ability::Point, Ability::Ray))
-		pc->unit->target_pos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
-	else if(pc->unit->weapon_state == WeaponState::Taken
-		&& ((pc->unit->weapon_taken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
-			|| (pc->unit->weapon_taken == W_ONE_HANDED && IsSet(pc->unit->GetWeapon().flags, ITEM_WAND)
+		pc->unit->targetPos = pc->RaytestTarget(pc->unit->act.cast.ability->range);
+	else if(pc->unit->weaponState == WeaponState::Taken
+		&& ((pc->unit->weaponTaken == W_BOW && Any(pc->unit->action, A_NONE, A_SHOOT))
+			|| (pc->unit->weaponTaken == W_ONE_HANDED && IsSet(pc->unit->GetWeapon().flags, ITEM_WAND)
 				&& Any(pc->unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH))))
-		pc->unit->target_pos = pc->RaytestTarget(50.f);
+		pc->unit->targetPos = pc->RaytestTarget(50.f);
 
 	if(drawHitbox && pc->ShouldUseRaytest())
 	{
@@ -1135,7 +1135,7 @@ void Game::ListAreas(LocationPart& locPart)
 		if(pc->data.abilityReady)
 			pos = pc->data.abilityPoint;
 		else
-			pos = pc->unit->target_pos;
+			pos = pc->unit->targetPos;
 		DebugNode* node = DebugNode::Get();
 		node->mat = Matrix::Scale(0.25f) * Matrix::Translation(pos) * drawBatch.camera->matViewProj;
 		node->shape = MeshShape::Sphere;
@@ -1388,7 +1388,7 @@ void Game::PrepareAreaPath()
 				if(gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside)
 					gameLevel->terrain->SetY(from);
 				if(!pc->data.abilityReady)
-					pc->unit->target_pos = from;
+					pc->unit->targetPos = from;
 				else
 					pc->data.abilityPoint = from;
 				area->ok = 2;

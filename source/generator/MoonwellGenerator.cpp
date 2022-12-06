@@ -66,17 +66,17 @@ void MoonwellGenerator::GenerateObjects()
 		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
 		{
-			TERRAIN_TILE tile = tiles[pt.x + pt.y*OutsideLocation::size].t;
+			TERRAIN_TILE tile = tiles[pt.x + pt.y * OutsideLocation::size].t;
 			if(tile == TT_GRASS)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = trees[Rand() % n_trees];
+				OutsideObject& o = trees[Rand() % nTrees];
 				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
 				int type;
 				if(Rand() % 12 == 0)
@@ -95,11 +95,11 @@ void MoonwellGenerator::GenerateObjects()
 		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
 		{
-			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
+			if(tiles[pt.x + pt.y * OutsideLocation::size].t != TT_SAND)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = misc[Rand() % n_misc];
+				OutsideObject& o = misc[Rand() % nMisc];
 				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
@@ -115,7 +115,7 @@ void MoonwellGenerator::GenerateUnits()
 	tmp.Fill(loc->group, level);
 	static vector<Vec2> poss;
 	poss.clear();
-	poss.push_back(Vec2(team_pos.x, team_pos.z));
+	poss.push_back(Vec2(teamPos.x, teamPos.z));
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{

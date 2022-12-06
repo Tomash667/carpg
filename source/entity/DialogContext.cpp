@@ -44,8 +44,8 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	// use up auto talk
 	if(talker && !dialog && talker->GetOrder() == ORDER_AUTO_TALK)
 	{
-		dialog = talker->order->auto_talk_dialog;
-		quest = talker->order->auto_talk_quest;
+		dialog = talker->order->autoTalkDialog;
+		quest = talker->order->autoTalkQuest;
 		talker->OrderNext();
 	}
 
@@ -62,14 +62,14 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	{
 		// this vars are useless for clients, don't increase ref counter
 		talker->busy = Unit::Busy_Talking;
-		talker->look_target = pc->unit;
+		talker->lookTarget = pc->unit;
 	}
 	if(this->dialog && this->dialog->quest)
 		dialogQuest = questMgr->FindAnyQuest(this->dialog->quest);
 	updateNews = true;
 	updateLocations = 1;
 	pc->action = PlayerAction::Talk;
-	pc->action_unit = talker;
+	pc->actionUnit = talker;
 	ClearChoices();
 	forceEnd = false;
 	if(!dialog)
@@ -460,11 +460,11 @@ void DialogContext::UpdateLoop()
 			talker->busy = Unit::Busy_Trading;
 			EndDialog();
 			pc->action = PlayerAction::Trade;
-			pc->action_unit = talker;
-			pc->chest_trade = &talker->stock->items;
+			pc->actionUnit = talker;
+			pc->chestTrade = &talker->stock->items;
 
 			if(isLocal)
-				gameGui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);
+				gameGui->inventory->StartTrade(I_TRADE, *pc->chestTrade, talker);
 			else
 			{
 				NetChangePlayer& c = Add1(pc->playerInfo->changes);
@@ -535,10 +535,10 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_HAVE_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				int quest_id = -1;
+				int questId = -1;
 				if(msg[0] == '$' && msg[1] == '$')
-					quest_id = talker->quest_id;
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, quest_id);
+					questId = talker->questId;
+				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, questId);
 				if(de.op == OP_NOT_EQUAL)
 					cmp_result = !cmp_result;
 			}
@@ -559,11 +559,11 @@ void DialogContext::UpdateLoop()
 		case DTF_DO_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				int quest_id = -1;
+				int questId = -1;
 				if(msg[0] == '$' && msg[1] == '$')
-					quest_id = talker->quest_id;
+					questId = talker->questId;
 				Quest* quest;
-				if(pc->unit->FindQuestItem(msg, &quest, nullptr, false, quest_id))
+				if(pc->unit->FindQuestItem(msg, &quest, nullptr, false, questId))
 					StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), quest);
 			}
 			break;
@@ -786,7 +786,7 @@ void DialogContext::EndDialog()
 		return;
 	}
 	talker->busy = Unit::Busy_No;
-	talker->look_target = nullptr;
+	talker->lookTarget = nullptr;
 	talker = nullptr;
 	pc->action = PlayerAction::None;
 
@@ -1003,15 +1003,15 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "item_quest") == 0)
 	{
-		if(talker->quest_id == -1)
+		if(talker->questId == -1)
 		{
 			Quest* quest = questMgr->GetAdventurerQuest();
-			talker->quest_id = quest->id;
+			talker->questId = quest->id;
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 		else
 		{
-			Quest* quest = questMgr->FindUnacceptedQuest(talker->quest_id);
+			Quest* quest = questMgr->FindUnacceptedQuest(talker->questId);
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 	}
@@ -1301,7 +1301,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		// check learning points
 		if(train)
 			cost = pc->GetTrainCost(*train);
-		if(pc->learning_points < cost)
+		if(pc->learningPoints < cost)
 		{
 			Talk(game->txNeedLearningPoints);
 			forceEnd = true;
@@ -1320,7 +1320,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		// give gold and freeze
 		if(train)
 			*train += 1;
-		pc->learning_points -= cost;
+		pc->learningPoints -= cost;
 		pc->unit->ModGold(-gold_cost);
 		pc->unit->frozen = FROZEN::YES;
 		if(isLocal)
@@ -1444,8 +1444,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		t->busy = Unit::Busy_Trading;
 		EndDialog();
 		pc->action = PlayerAction::GiveItems;
-		pc->action_unit = t;
-		pc->chest_trade = &t->items;
+		pc->actionUnit = t;
+		pc->chestTrade = &t->items;
 		if(isLocal)
 			gameGui->inventory->StartTrade(I_GIVE, *t);
 		else
@@ -1461,8 +1461,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		t->busy = Unit::Busy_Trading;
 		EndDialog();
 		pc->action = PlayerAction::ShareItems;
-		pc->action_unit = t;
-		pc->chest_trade = &t->items;
+		pc->actionUnit = t;
+		pc->chestTrade = &t->items;
 		if(isLocal)
 			gameGui->inventory->StartTrade(I_SHARE, *t);
 		else
@@ -1493,13 +1493,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		team->TeamShareDecline(*this);
 	else if(strcmp(msg, "force_attack") == 0)
 	{
-		talker->dont_attack = false;
-		talker->attack_team = true;
+		talker->dontAttack = false;
+		talker->attackTeam = true;
 		talker->ai->changeAiMode = true;
 	}
 	else if(strcmp(msg, "ginger_hair") == 0)
 	{
-		pc->unit->human_data->hairColor = gHairColors[8];
+		pc->unit->humanData->hairColor = gHairColors[8];
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1511,21 +1511,21 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		if(Rand() % 2 == 0)
 		{
-			Vec4 color = pc->unit->human_data->hairColor;
+			Vec4 color = pc->unit->humanData->hairColor;
 			do
 			{
-				pc->unit->human_data->hairColor = gHairColors[Rand() % nHairColors];
+				pc->unit->humanData->hairColor = gHairColors[Rand() % nHairColors];
 			}
-			while(color.Equal(pc->unit->human_data->hairColor));
+			while(color.Equal(pc->unit->humanData->hairColor));
 		}
 		else
 		{
-			Vec4 color = pc->unit->human_data->hairColor;
+			Vec4 color = pc->unit->humanData->hairColor;
 			do
 			{
-				pc->unit->human_data->hairColor = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
+				pc->unit->humanData->hairColor = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
 			}
-			while(color.Equal(pc->unit->human_data->hairColor));
+			while(color.Equal(pc->unit->humanData->hairColor));
 		}
 		if(Net::IsServer())
 		{
@@ -1537,14 +1537,14 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "captive_join") == 0)
 	{
 		team->AddMember(talker, HeroType::Visitor);
-		talker->dont_attack = true;
+		talker->dontAttack = true;
 	}
 	else if(strcmp(msg, "captive_escape") == 0)
 	{
 		if(talker->hero->teamMember)
 			team->RemoveMember(talker);
 		talker->OrderLeave();
-		talker->dont_attack = false;
+		talker->dontAttack = false;
 	}
 	else if(strcmp(msg, "news") == 0)
 	{
@@ -1671,16 +1671,16 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "is_near_arena") == 0)
 		return gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, gameLevel->cityCtx->arena_pos) < 5.f;
 	else if(strcmp(msg, "is_ginger") == 0)
-		return pc->unit->human_data->hairColor.Equal(gHairColors[8]);
+		return pc->unit->humanData->hairColor.Equal(gHairColors[8]);
 	else if(strcmp(msg, "is_bald") == 0)
-		return pc->unit->human_data->hair == -1;
+		return pc->unit->humanData->hair == -1;
 	else if(strcmp(msg, "dont_have_quest") == 0)
-		return talker->quest_id == -1;
+		return talker->questId == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
-		return questMgr->FindUnacceptedQuest(talker->quest_id);
+		return questMgr->FindUnacceptedQuest(talker->questId);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* quest = questMgr->FindQuest(talker->quest_id, false);
+		Quest* quest = questMgr->FindQuest(talker->questId, false);
 		return quest && !quest->IsActive();
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
@@ -1875,13 +1875,13 @@ void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int a
 			ClearChoices();
 		dialogString = text;
 		dialogText = dialogString.c_str();
-		skipId = skipId;
 		mode = DialogContext::WAIT_TALK;
+		this->skipId = skipId;
 	}
-	else if(pc->action == PlayerAction::Talk && pc->action_unit == unit)
+	else if(pc->action == PlayerAction::Talk && pc->actionUnit == unit)
 	{
 		predialog = text;
-		skipId = skipId;
+		this->skipId = skipId;
 	}
 }
 
@@ -1916,7 +1916,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	const int cost = 200;
 
 	// check learning points
-	if(pc->learning_points < perk->cost)
+	if(pc->learningPoints < perk->cost)
 	{
 		Talk(game->txNeedLearningPoints);
 		forceEnd = true;
@@ -1933,7 +1933,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	}
 
 	// give gold and freeze
-	pc->learning_points -= perk->cost;
+	pc->learningPoints -= perk->cost;
 	pc->unit->ModGold(-cost);
 	pc->unit->frozen = FROZEN::YES;
 	if(isLocal)

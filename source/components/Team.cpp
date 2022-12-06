@@ -96,8 +96,8 @@ void Team::AddMember(Unit* unit, HeroType type)
 		c.unit = unit;
 	}
 
-	if(unit->event_handler)
-		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
+	if(unit->eventHandler)
+		unit->eventHandler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
 }
 
 void Team::RemoveMember(Unit* unit)
@@ -139,8 +139,8 @@ void Team::RemoveMember(Unit* unit)
 		c.id = unit->id;
 	}
 
-	if(unit->event_handler)
-		unit->event_handler->HandleUnitEvent(UnitEventHandler::KICK, unit);
+	if(unit->eventHandler)
+		unit->eventHandler->HandleUnitEvent(UnitEventHandler::KICK, unit);
 }
 
 Unit* Team::FindActiveTeamMember(int id)
@@ -372,7 +372,7 @@ bool Team::IsAnyoneAlive()
 {
 	for(Unit& unit : members)
 	{
-		if(unit.IsAlive() || unit.in_arena != -1)
+		if(unit.IsAlive() || unit.inArena != -1)
 			return true;
 	}
 
@@ -536,16 +536,16 @@ void Team::Update(int days, UpdateMode mode)
 			int max_days = 0;
 			for(Unit& unit : activeMembers)
 			{
-				if(unit.IsPlayer() && unit.player->free_days > max_days)
-					max_days = unit.player->free_days;
+				if(unit.IsPlayer() && unit.player->freeDays > max_days)
+					max_days = unit.player->freeDays;
 			}
 
 			if(max_days > 0)
 			{
 				for(Unit& unit : activeMembers)
 				{
-					if(unit.IsPlayer() && unit.player->free_days == max_days)
-						--unit.player->free_days;
+					if(unit.IsPlayer() && unit.player->freeDays == max_days)
+						--unit.player->freeDays;
 				}
 			}
 		}
@@ -621,15 +621,15 @@ void Team::CheckTeamItemShares()
 					int value, prev_value;
 					if(unit.IsBetterItem(slot.item, &value, &prev_value))
 					{
-						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type];
-						if(real_value > 0)
+						float realValue = 1000.f * value * unit.stats->priorities[slot.item->type];
+						if(realValue > 0)
 						{
 							TeamShareItem& tsi = Add1(teamShares);
 							tsi.from = &other_unit;
 							tsi.to = &unit;
 							tsi.item = slot.item;
 							tsi.index = index;
-							tsi.value = real_value;
+							tsi.value = realValue;
 							tsi.isTeam = (slot.teamCount != 0);
 							if(&unit == &other_unit)
 							{
@@ -725,11 +725,11 @@ void Team::UpdateTeamItemShares()
 			else
 				prev_item_weight = 0;
 
-			if(tsi.to->weight + item_weight - prev_item_weight > tsi.to->weight_max)
+			if(tsi.to->weight + item_weight - prev_item_weight > tsi.to->weightMax)
 			{
 				// unit will be overweighted, maybe sell some trash?
 				int items_to_sell_weight = tsi.to->ItemsToSellWeight();
-				if(tsi.to->weight + item_weight - prev_item_weight - items_to_sell_weight > tsi.to->weight_max)
+				if(tsi.to->weight + item_weight - prev_item_weight - items_to_sell_weight > tsi.to->weightMax)
 				{
 					// don't try to get, will get overweight
 					state = 0;
@@ -1002,8 +1002,8 @@ void Team::BuyTeamItems()
 				UnitHelper::BetterItem result = UnitHelper::GetBetterAmulet(unit);
 				if(result.item)
 				{
-					float real_value = 1000.f * (result.value - result.prev_value) * priorities[IT_AMULET] / result.item->value;
-					toBuy.push_back({ result.item, result.value, real_value });
+					float realValue = 1000.f * (result.value - result.prevValue) * priorities[IT_AMULET] / result.item->value;
+					toBuy.push_back({ result.item, result.value, realValue });
 				}
 			}
 			else if(slot_type == SLOT_RING1)
@@ -1013,8 +1013,8 @@ void Team::BuyTeamItems()
 				{
 					if(result[i].item)
 					{
-						float real_value = 1000.f * (result[i].value - result[i].prev_value) * priorities[IT_AMULET] / result[i].item->value;
-						toBuy.push_back({ result[i].item, result[i].value, real_value });
+						float realValue = 1000.f * (result[i].value - result[i].prevValue) * priorities[IT_AMULET] / result[i].item->value;
+						toBuy.push_back({ result[i].item, result[i].value, realValue });
 					}
 				}
 			}
@@ -1044,8 +1044,8 @@ void Team::BuyTeamItems()
 					int value, prev_value;
 					if(unit.IsBetterItem(item, &value, &prev_value))
 					{
-						float real_value = 1000.f * (value - prev_value) * priorities[IT_BOW] / item->value;
-						toBuy.push_back({ item, (float)value, real_value });
+						float realValue = 1000.f * (value - prev_value) * priorities[IT_BOW] / item->value;
+						toBuy.push_back({ item, (float)value, realValue });
 					}
 					item = ItemHelper::GetBetterItem(item);
 				}
@@ -1201,7 +1201,7 @@ vector<ItemToSell> items_to_sell;
 // Only sell equippable items now
 void Team::CheckUnitOverload(Unit& unit)
 {
-	if(unit.weight <= unit.weight_max)
+	if(unit.weight <= unit.weightMax)
 		return;
 
 	items_to_sell.clear();
@@ -1222,7 +1222,7 @@ void Team::CheckUnitOverload(Unit& unit)
 
 	int team_gold = 0;
 
-	while(!items_to_sell.empty() && unit.weight > unit.weight_max)
+	while(!items_to_sell.empty() && unit.weight > unit.weightMax)
 	{
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
@@ -1241,7 +1241,7 @@ void Team::CheckUnitOverload(Unit& unit)
 	if(team_gold > 0)
 		AddGold(team_gold);
 
-	assert(unit.weight <= unit.weight_max);
+	assert(unit.weight <= unit.weightMax);
 }
 
 //=================================================================================================
@@ -1381,7 +1381,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 		u.gold += count;
 		if(u.IsPlayer())
 		{
-			if(!u.player->is_local)
+			if(!u.player->isLocal)
 				u.player->playerInfo->UpdateGold();
 			if(show)
 				gameGui->messages->AddFormattedMessage(u.player, msg, -1, count);
@@ -1474,7 +1474,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 	{
 		if(unit.IsPlayer())
 		{
-			if(unit.player->goldGet && !unit.player->is_local)
+			if(unit.player->goldGet && !unit.player->isLocal)
 				unit.player->playerInfo->UpdateGold();
 			if(show && (unit.player->goldGet || isQuest))
 				gameGui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->goldGet);
@@ -1609,7 +1609,7 @@ void Team::Warp(const Vec3& pos, const Vec3& lookAt)
 {
 	// first warp leader to be in front
 	gameLevel->WarpNearLocation(*gameLevel->localPart, *leader, pos, 2.f, true, 20);
-	leader->visual_pos = leader->pos;
+	leader->visualPos = leader->pos;
 	leader->rot = Vec3::LookAtAngle(leader->pos, lookAt);
 	if(leader->interp)
 		leader->interp->Reset(leader->pos, leader->rot);
@@ -1621,7 +1621,7 @@ void Team::Warp(const Vec3& pos, const Vec3& lookAt)
 		if(&unit == leader)
 			continue;
 		gameLevel->WarpNearLocation(*gameLevel->localPart, unit, target_pos, 2.f, true, 20);
-		unit.visual_pos = unit.pos;
+		unit.visualPos = unit.pos;
 		unit.rot = Vec3::LookAtAngle(unit.pos, lookAt);
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);

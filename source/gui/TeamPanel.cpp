@@ -184,7 +184,7 @@ void TeamPanel::Draw()
 			}
 			else if(&unit == game->pc->unit)
 				s += Format(txPing, net->peer->GetAveragePing(net->server));
-			s += Format(txDays, unit.player->free_days);
+			s += Format(txDays, unit.player->freeDays);
 		}
 		s += ")$h-";
 		if(!gui->DrawText(GameGui::font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitboxCounter))

@@ -470,8 +470,8 @@ pair<Room*, Room*> InsideLocationLevel::GetConnectingRooms(RoomGroup* group1, Ro
 
 	for(RoomGroup::Connection& c : group1->connections)
 	{
-		if(c.group_index == group2->index)
-			return std::make_pair(rooms[c.my_room], rooms[c.other_room]);
+		if(c.groupIndex == group2->index)
+			return std::make_pair(rooms[c.myRoom], rooms[c.otherRoom]);
 	}
 
 	return pair<Room*, Room*>(nullptr, nullptr);

@@ -72,9 +72,9 @@ void Minimap::Draw()
 		lvl = &((InsideLocation*)gameLevel->location)->GetLevelData();
 	while(p)
 	{
-		if(!lvl || (gameLevel->dungeonLevel == p->at_level && lvl->IsTileVisible(p->pos)))
+		if(!lvl || (gameLevel->dungeonLevel == p->atLevel && lvl->IsTileVisible(p->pos)))
 			gui->DrawSprite(tPortal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
-		p = p->next_portal;
+		p = p->nextPortal;
 	}
 
 	// chests

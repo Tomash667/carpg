@@ -102,7 +102,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		}
 		else
 		{
-			if(u->player->is_local)
+			if(u->player->isLocal)
 			{
 				DialogInfo info;
 				info.event = DialogEvent(this, &Arena::PvpEvent);
@@ -195,7 +195,7 @@ void Arena::Clean()
 	{
 		Unit& u = **it;
 		u.frozen = FROZEN::NO;
-		u.in_arena = -1;
+		u.inArena = -1;
 		u.locPart = gameLevel->localPart;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
@@ -281,11 +281,11 @@ void Arena::StartArenaCombat(int level)
 	{
 		NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
-		ctx.pc->arena_fights++;
+		ctx.pc->arenaFights++;
 	}
 
 	ctx.pc->unit->frozen = FROZEN::YES;
-	ctx.pc->unit->in_arena = 0;
+	ctx.pc->unit->inArena = 0;
 	units.push_back(ctx.pc->unit);
 
 	if(Net::IsOnline())
@@ -304,11 +304,11 @@ void Arena::StartArenaCombat(int level)
 			unit.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
 
 			unit.frozen = FROZEN::YES;
-			unit.in_arena = 0;
+			unit.inArena = 0;
 			units.push_back(&unit);
 
-			unit.player->arena_fights++;
-			unit.player->stat_flags |= STAT_ARENA_FIGHTS;
+			unit.player->arenaFights++;
+			unit.player->statFlags |= STAT_ARENA_FIGHTS;
 
 			if(unit.player == game->pc)
 			{
@@ -325,10 +325,10 @@ void Arena::StartArenaCombat(int level)
 			c.type = NetChange::CHANGE_ARENA_STATE;
 			c.unit = &unit;
 		}
-		else if(unit.IsHero() && unit.CanFollowWarp() && !unit.dont_attack)
+		else if(unit.IsHero() && unit.CanFollowWarp() && !unit.dontAttack)
 		{
 			unit.frozen = FROZEN::YES;
-			unit.in_arena = 0;
+			unit.inArena = 0;
 			units.push_back(&unit);
 
 			if(Net::IsOnline())
@@ -375,7 +375,7 @@ void Arena::StartArenaCombat(int level)
 		if(u)
 		{
 			u->rot = 0.f;
-			u->in_arena = 1;
+			u->inArena = 1;
 			u->frozen = FROZEN::YES;
 			units.push_back(u);
 		}
@@ -449,15 +449,15 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 
 	// dodaj do areny
 	player->unit->frozen = FROZEN::YES;
-	player->arena_fights++;
-	player->stat_flags |= STAT_ARENA_FIGHTS;
+	player->arenaFights++;
+	player->statFlags |= STAT_ARENA_FIGHTS;
 	units.push_back(player->unit);
 	unit->frozen = FROZEN::YES;
 	units.push_back(unit);
 	if(unit->IsPlayer())
 	{
-		unit->player->arena_fights++;
-		unit->player->stat_flags |= STAT_ARENA_FIGHTS;
+		unit->player->arenaFights++;
+		unit->player->statFlags |= STAT_ARENA_FIGHTS;
 	}
 	pvpPlayer = player;
 	fighter = unit;
@@ -479,7 +479,7 @@ void Arena::AddReward(int gold, int exp)
 	rvector<Unit> v;
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{
-		if((*it)->in_arena == 0)
+		if((*it)->inArena == 0)
 			v.push_back(*it);
 	}
 
@@ -499,7 +499,7 @@ void Arena::Update(float dt)
 			{
 				for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 				{
-					if((*it)->in_arena == 0)
+					if((*it)->inArena == 0)
 						gameLevel->WarpUnit(*it, WARP_ARENA);
 				}
 			}
@@ -510,7 +510,7 @@ void Arena::Update(float dt)
 
 				if(!units.empty())
 				{
-					units[0]->in_arena = 0;
+					units[0]->inArena = 0;
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -519,7 +519,7 @@ void Arena::Update(float dt)
 					}
 					if(units.size() >= 2)
 					{
-						units[1]->in_arena = 1;
+						units[1]->inArena = 1;
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -591,9 +591,9 @@ void Arena::Update(float dt)
 		int count[2] = { 0 }, alive[2] = { 0 };
 		for(Unit* unit : units)
 		{
-			++count[unit->in_arena];
-			if(unit->live_state != Unit::DEAD)
-				++alive[unit->in_arena];
+			++count[unit->inArena];
+			if(unit->liveState != Unit::DEAD)
+				++alive[unit->inArena];
 		}
 
 		if(alive[0] == 0 || alive[1] == 0)
@@ -688,14 +688,14 @@ void Arena::Update(float dt)
 
 				for(Unit* unit : units)
 				{
-					if(unit->in_arena != 0)
+					if(unit->inArena != 0)
 					{
 						gameLevel->RemoveUnit(unit);
 						continue;
 					}
 
 					unit->frozen = FROZEN::NO;
-					unit->in_arena = -1;
+					unit->inArena = -1;
 					if(unit->hp <= 0.f)
 						unit->Standup(false);
 
@@ -714,7 +714,7 @@ void Arena::Update(float dt)
 				for(Unit* unit : units)
 				{
 					unit->frozen = FROZEN::NO;
-					unit->in_arena = -1;
+					unit->inArena = -1;
 					if(unit->hp <= 0.f)
 						unit->Standup(false);
 
@@ -847,28 +847,28 @@ void Arena::ShowPvpRequest(Unit* unit)
 }
 
 //=================================================================================================
-void Arena::RewardExp(Unit* dead_unit)
+void Arena::RewardExp(Unit* deadUnit)
 {
 	if(mode == PVP)
 	{
-		Unit* winner = units[dead_unit->in_arena == 0 ? 1 : 0];
+		Unit* winner = units[deadUnit->inArena == 0 ? 1 : 0];
 		if(winner->IsPlayer())
 		{
-			int exp = 50 * dead_unit->level;
-			if(dead_unit->IsPlayer())
+			int exp = 50 * deadUnit->level;
+			if(deadUnit->IsPlayer())
 				exp /= 2;
 			winner->player->AddExp(exp);
 		}
 	}
-	else if(!dead_unit->IsTeamMember())
+	else if(!deadUnit->IsTeamMember())
 	{
 		rvector<Unit> to_reward;
 		for(Unit* unit : units)
 		{
-			if(unit->in_arena != dead_unit->in_arena)
+			if(unit->inArena != deadUnit->inArena)
 				to_reward.push_back(unit);
 		}
-		team->AddExp(50 * dead_unit->level, &to_reward);
+		team->AddExp(50 * deadUnit->level, &to_reward);
 	}
 }
 
@@ -889,7 +889,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 				if(u)
 				{
 					u->rot = 0.f;
-					u->in_arena = 1;
+					u->inArena = 1;
 				}
 			}
 			else
@@ -898,7 +898,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 				if(u)
 				{
 					u->rot = PI;
-					u->in_arena = 0;
+					u->inArena = 0;
 				}
 			}
 		}

@@ -22,9 +22,9 @@ struct MapSettings
 		ENTRY_FAR_FROM_PREV
 	};
 
-	int map_w, map_h;
-	Int2 room_size, corridor_size;
-	int corridor_chance, corridor_join_chance, room_join_chance, bars_chance;
+	int mapW, mapH;
+	Int2 roomSize, corridorSize;
+	int corridorChance, corridorJoinChance, roomJoinChance, barsChance;
 	Shape shape;
 	EntryType prevEntryType, nextEntryType;
 	EntryLocation prevEntryLoc, nextEntryLoc;
@@ -33,7 +33,7 @@ struct MapSettings
 	GameDirection prevEntryDir, nextEntryDir;
 	Int2 prevEntryPt, nextEntryPt;
 	vector<RoomGroup>* groups;
-	bool stop, devmode, remove_dead_end_corridors;
+	bool stop, devmode, removeDeadEndCorridors;
 
 	MapSettings() : stop(false), prevEntryPt(-1000, -1000), nextEntryPt(-1000, -1000)
 	{
@@ -79,6 +79,6 @@ private:
 	MapSettings* settings;
 	vector<pair<int, Room*>> empty;
 	vector<pair<Room*, Room*>> joined;
-	vector<Room*> map_rooms;
-	int map_w, map_h;
+	vector<Room*> mapRooms;
+	int mapW, mapH;
 };

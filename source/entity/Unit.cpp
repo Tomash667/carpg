@@ -66,10 +66,10 @@ Unit::~Unit()
 {
 	if(order)
 		order->Free();
-	if(bow_instance)
-		gameLevel->FreeBowInstance(bow_instance);
+	if(bowInstance)
+		gameLevel->FreeBowInstance(bowInstance);
 	delete meshInst;
-	delete human_data;
+	delete humanData;
 	delete hero;
 	delete player;
 	delete stock;
@@ -84,7 +84,7 @@ void Unit::Release()
 {
 	if(--refs == 0)
 	{
-		assert(to_remove);
+		assert(toRemove);
 		delete this;
 	}
 }
@@ -93,21 +93,21 @@ void Unit::Release()
 void Unit::Init(UnitData& base, int lvl)
 {
 	Register();
-	fake_unit = true; // to prevent sending MP message set temporary as fake unit
+	fakeUnit = true; // to prevent sending MP message set temporary as fake unit
 
 	// stats
 	data = &base;
-	human_data = nullptr;
+	humanData = nullptr;
 	pos = Vec3(0, 0, 0);
 	rot = 0.f;
-	used_item = nullptr;
-	live_state = ALIVE;
+	usedItem = nullptr;
+	liveState = ALIVE;
 	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
 	action = A_NONE;
-	weapon_taken = W_NONE;
-	weapon_hiding = W_NONE;
-	weapon_state = WeaponState::Hidden;
+	weaponTaken = W_NONE;
+	weaponHiding = W_NONE;
+	weaponState = WeaponState::Hidden;
 	if(lvl == -2)
 		level = base.level.Random();
 	else if(lvl == -3)
@@ -116,23 +116,23 @@ void Unit::Init(UnitData& base, int lvl)
 		level = base.level.Clamp(lvl);
 	player = nullptr;
 	ai = nullptr;
-	speed = prev_speed = 0.f;
-	hurt_timer = 0.f;
+	speed = prevSpeed = 0.f;
+	hurtTimer = 0.f;
 	talking = false;
 	usable = nullptr;
 	frozen = FROZEN::NO;
-	in_arena = -1;
-	event_handler = nullptr;
-	to_remove = false;
+	inArena = -1;
+	eventHandler = nullptr;
+	toRemove = false;
 	temporary = false;
-	quest_id = -1;
+	questId = -1;
 	bubble = nullptr;
 	busy = Busy_No;
 	interp = nullptr;
-	dont_attack = false;
+	dontAttack = false;
 	assist = false;
-	attack_team = false;
-	last_bash = 0.f;
+	attackTeam = false;
+	lastBash = 0.f;
 	alcohol = 0.f;
 	moved = false;
 	running = false;
@@ -149,8 +149,8 @@ void Unit::Init(UnitData& base, int lvl)
 	CalculateStats();
 	hp = hpmax = CalculateMaxHp();
 	mp = mpmax = CalculateMaxMp();
-	stamina = stamina_max = CalculateMaxStamina();
-	stamina_timer = 0;
+	stamina = staminaMax = CalculateMaxStamina();
+	staminaTimer = 0;
 
 	// items
 	weight = 0;
@@ -182,8 +182,8 @@ void Unit::Init(UnitData& base, int lvl)
 	// human data
 	if(base.type == UNIT_TYPE::HUMAN)
 	{
-		human_data = new Human;
-		human_data->Init(base.appearance);
+		humanData = new Human;
+		humanData->Init(base.appearance);
 	}
 
 	// hero data
@@ -195,7 +195,7 @@ void Unit::Init(UnitData& base, int lvl)
 	else
 		hero = nullptr;
 
-	fake_unit = false;
+	fakeUnit = false;
 }
 
 //=================================================================================================
@@ -398,7 +398,7 @@ void Unit::SetGold(int new_gold)
 	if(IsPlayer())
 	{
 		gameGui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
-		if(player->is_local)
+		if(player->isLocal)
 			soundMgr->PlaySound2d(gameRes->sCoins);
 		else
 		{
@@ -603,19 +603,19 @@ int Unit::ConsumeItem(int index)
 
 	// jeœli coœ robi to nie mo¿e u¿yæ
 	if(action != A_NONE &&
-		!((action == A_ATTACK && animation_state == AS_ATTACK_PREPARE)
-		|| (action == A_SHOOT && animation_state == AS_SHOOT_PREPARE)))
+		!((action == A_ATTACK && animationState == AS_ATTACK_PREPARE)
+		|| (action == A_SHOOT && animationState == AS_SHOOT_PREPARE)))
 	{
-		if(action == A_TAKE_WEAPON && weapon_state == WeaponState::Hiding)
+		if(action == A_TAKE_WEAPON && weaponState == WeaponState::Hiding)
 		{
 			// jeœli chowa broñ to u¿yj miksturki jak schowa
 			if(IsPlayer())
 			{
-				if(player->is_local)
+				if(player->isLocal)
 				{
-					player->next_action = NA_CONSUME;
-					player->next_action_data.index = index;
-					player->next_action_data.item = slot.item;
+					player->nextAction = NA_CONSUME;
+					player->nextActionData.index = index;
+					player->nextActionData.item = slot.item;
 					if(Net::IsClient())
 						Net::PushChange(NetChange::SET_NEXT_ACTION);
 					return 2;
@@ -637,15 +637,15 @@ int Unit::ConsumeItem(int index)
 	}
 
 	// jeœli broñ jest wyjêta to schowaj
-	if(weapon_state != WeaponState::Hidden)
+	if(weaponState != WeaponState::Hidden)
 	{
 		HideWeapon();
 		if(IsPlayer())
 		{
-			assert(player->is_local);
-			player->next_action = NA_CONSUME;
-			player->next_action_data.index = index;
-			player->next_action_data.item = slot.item;
+			assert(player->isLocal);
+			player->nextAction = NA_CONSUME;
+			player->nextActionData.index = index;
+			player->nextActionData.item = slot.item;
 			if(Net::IsClient())
 				Net::PushChange(NetChange::SET_NEXT_ACTION);
 		}
@@ -663,10 +663,10 @@ int Unit::ConsumeItem(int index)
 	if(slot.teamCount)
 	{
 		--slot.teamCount;
-		used_item_is_team = true;
+		usedItemIsTeam = true;
 	}
 	else
-		used_item_is_team = false;
+		usedItemIsTeam = false;
 	if(slot.count == 0)
 	{
 		items.erase(items.begin() + index);
@@ -683,7 +683,7 @@ int Unit::ConsumeItem(int index)
 		if(Net::IsServer())
 		{
 			c.unit = this;
-			c.id = (int)used_item;
+			c.id = (int)usedItem;
 			c.count = 0;
 		}
 		else
@@ -707,7 +707,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	}
 
-	used_item_is_team = true;
+	usedItemIsTeam = true;
 	ConsumeItemAnim(item);
 
 	if(send)
@@ -736,29 +736,29 @@ void Unit::ConsumeItemS(const Item* item)
 //=================================================================================================
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
-	cstring anim_name;
+	cstring animName;
 	if(Any(cons.subtype, Consumable::Subtype::Food, Consumable::Subtype::Herb))
 	{
 		action = A_EAT;
-		animation_state = AS_EAT_START;
-		anim_name = "je";
+		animationState = AS_EAT_START;
+		animName = "je";
 	}
 	else
 	{
 		action = A_DRINK;
-		animation_state = AS_DRINK_START;
-		anim_name = "pije";
+		animationState = AS_DRINK_START;
+		animName = "pije";
 	}
 
-	if(current_animation == ANI_PLAY && !usable)
+	if(currentAnimation == ANI_PLAY && !usable)
 	{
 		animation = ANI_STAND;
-		current_animation = ANI_NONE;
+		currentAnimation = ANI_NONE;
 	}
 
-	meshInst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	meshInst->Play(animName, PLAY_ONCE | PLAY_PRIO1, 1);
 	gameRes->PreloadItem(&cons);
-	used_item = &cons;
+	usedItem = &cons;
 }
 
 //=================================================================================================
@@ -790,14 +790,14 @@ bool Unit::AddItem(const Item* item, uint count, uint teamCount)
 				if(normal_gold)
 				{
 					gold += normal_gold;
-					if(IsPlayer() && !player->is_local)
+					if(IsPlayer() && !player->isLocal)
 						player->playerInfo->UpdateGold();
 				}
 			}
 			else
 			{
 				gold += count;
-				if(IsPlayer() && !player->is_local)
+				if(IsPlayer() && !player->isLocal)
 					player->playerInfo->UpdateGold();
 			}
 		}
@@ -810,7 +810,7 @@ bool Unit::AddItem(const Item* item, uint count, uint teamCount)
 }
 
 //=================================================================================================
-void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool show_msg, bool notify)
+void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, bool notify)
 {
 	assert(item && count && teamCount <= count);
 
@@ -823,7 +823,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool show_msg,
 	{
 		if(IsPlayer())
 		{
-			if(!player->is_local)
+			if(!player->isLocal)
 			{
 				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::ADD_ITEMS;
@@ -845,7 +845,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool show_msg,
 				}
 			}
 
-			if(u && !u->player->is_local)
+			if(u && !u->player->isLocal)
 			{
 				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
@@ -857,7 +857,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool show_msg,
 		}
 	}
 
-	if(show_msg && IsPlayer())
+	if(showMsg && IsPlayer())
 		gameGui->messages->AddItemMessage(player, count);
 
 	// rebuild inventory
@@ -1026,7 +1026,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				if(alcohol != 0.f)
 				{
 					alcohol = 0.f;
-					if(IsPlayer() && !player->is_local)
+					if(IsPlayer() && !player->isLocal)
 						player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 				}
 			}
@@ -1044,9 +1044,9 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			}
 			break;
 		case EffectId::GreenHair:
-			if(human_data)
+			if(humanData)
 			{
-				human_data->hairColor = Vec4(0, 1, 0, 1);
+				humanData->hairColor = Vec4(0, 1, 0, 1);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -1089,7 +1089,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 }
 
 //=================================================================================================
-uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, int value)
+uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int value)
 {
 	uint index = 0;
 	for(Effect& e : effects)
@@ -1097,7 +1097,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, in
 		if((effect == EffectId::None || e.effect == effect)
 			&& (value == -1 || e.value == value)
 			&& (source == EffectSource::None || e.source == source)
-			&& (source_id == -1 || e.source_id == source_id))
+			&& (sourceId == -1 || e.source_id == sourceId))
 			_to_remove.push_back(index);
 		++index;
 	}
@@ -1196,9 +1196,9 @@ void Unit::UpdateEffects(float dt)
 	if(alco_sum > 0.f)
 	{
 		alcohol += alco_sum * dt;
-		if(alcohol >= hpmax && live_state == ALIVE)
+		if(alcohol >= hpmax && liveState == ALIVE)
 			Fall();
-		if(IsPlayer() && !player->is_local)
+		if(IsPlayer() && !player->isLocal)
 			player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 	}
 	else if(alcohol != 0.f)
@@ -1206,7 +1206,7 @@ void Unit::UpdateEffects(float dt)
 		alcohol -= dt / 10 * Get(AttributeId::END);
 		if(alcohol < 0.f)
 			alcohol = 0.f;
-		if(IsPlayer() && !player->is_local)
+		if(IsPlayer() && !player->isLocal)
 			player->playerInfo->updateFlags |= PlayerInfo::UF_ALCOHOL;
 	}
 
@@ -1215,9 +1215,9 @@ void Unit::UpdateEffects(float dt)
 		GiveDmg(poison_dmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
-		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
+		if(Net::IsOnline() && !player->isLocal && player->lastDmgPoison != poison_dmg)
 			player->playerInfo->updateFlags |= PlayerInfo::UF_POISON_DAMAGE;
-		player->last_dmg_poison = poison_dmg;
+		player->lastDmgPoison = poison_dmg;
 	}
 
 	// restore mana
@@ -1235,14 +1235,14 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// restore stamina
-	if(stamina_timer > 0)
+	if(staminaTimer > 0)
 	{
-		stamina_timer -= dt;
-		if(best_stamina > 0.f && stamina != stamina_max)
+		staminaTimer -= dt;
+		if(best_stamina > 0.f && stamina != staminaMax)
 		{
 			stamina += best_stamina * dt * stamina_mod;
-			if(stamina > stamina_max)
-				stamina = stamina_max;
+			if(stamina > staminaMax)
+				stamina = staminaMax;
 			if(Net::IsServer() && IsTeamMember())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -1251,10 +1251,10 @@ void Unit::UpdateEffects(float dt)
 			}
 		}
 	}
-	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	else if(stamina != staminaMax && (staminaAction != SA_DONT_RESTORE || best_stamina > 0.f))
 	{
 		float stamina_restore;
-		switch(stamina_action)
+		switch(staminaAction)
 		{
 		case SA_RESTORE_MORE:
 			stamina_restore = 66.66f;
@@ -1288,9 +1288,9 @@ void Unit::UpdateEffects(float dt)
 		}
 		if(stamina_restore < 0)
 			stamina_restore = 0;
-		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
-		if(stamina > stamina_max)
-			stamina = stamina_max;
+		stamina += ((staminaMax * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
+		if(stamina > staminaMax)
+			stamina = staminaMax;
 		if(Net::IsServer() && IsTeamMember())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1301,17 +1301,17 @@ void Unit::UpdateEffects(float dt)
 }
 
 //=================================================================================================
-void Unit::EndEffects(int days, float* o_natural_mod)
+void Unit::EndEffects(int days, float* outNaturalMod)
 {
 	alcohol = 0.f;
-	stamina = stamina_max;
-	stamina_timer = 0;
+	stamina = staminaMax;
+	staminaTimer = 0;
 	mp = mpmax;
 
 	if(effects.empty())
 	{
-		if(o_natural_mod)
-			*o_natural_mod = 1.f;
+		if(outNaturalMod)
+			*outNaturalMod = 1.f;
 		return;
 	}
 
@@ -1359,8 +1359,8 @@ void Unit::EndEffects(int days, float* o_natural_mod)
 	}
 
 	natural_mod *= natural_tmp_mod;
-	if(o_natural_mod)
-		*o_natural_mod = natural_mod;
+	if(outNaturalMod)
+		*outNaturalMod = natural_mod;
 
 	if(best_reg < 0.f)
 		hp = hpmax; // hp regen from perk - full heal
@@ -1493,11 +1493,11 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 void Unit::CalculateLoad()
 {
 	if(IsSet(data->flags2, F2_FIXED_STATS))
-		weight_max = 999;
+		weightMax = 999;
 	else
 	{
 		float mod = GetEffectMul(EffectId::Carry);
-		weight_max = (int)(mod * (Get(AttributeId::STR) * 15));
+		weightMax = (int)(mod * (Get(AttributeId::STR) * 15));
 	}
 }
 
@@ -1528,11 +1528,11 @@ Vec3 Unit::GetLootCenter() const
 	Mesh::Point* point2 = meshInst->mesh->GetPoint("centrum");
 
 	if(!point2)
-		return visual_pos;
+		return visualPos;
 
 	const Mesh::Point& point = *point2;
 	Matrix matBone = point.mat * meshInst->matBones[point.bone];
-	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(visual_pos));
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(visualPos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
 }
@@ -1545,14 +1545,14 @@ float Unit::CalculateWeaponPros(const Weapon& weapon) const
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prev_value) const
+bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prevValue) const
 {
 	if(!HaveWeapon())
 	{
 		if(value)
 		{
 			*value = (int)CalculateWeaponPros(weapon);
-			*prev_value = 0;
+			*prevValue = 0;
 		}
 		return true;
 	}
@@ -1562,7 +1562,7 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prev_value) con
 		float v = CalculateWeaponPros(weapon);
 		float prev_v = CalculateWeaponPros(GetWeapon());
 		*value = (int)v;
-		*prev_value = (int)prev_v;
+		*prevValue = (int)prev_v;
 		return prev_v < v;
 	}
 	else
@@ -1570,14 +1570,14 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prev_value) con
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
+bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prevValue) const
 {
 	if(!HaveArmor())
 	{
 		if(value)
 		{
 			*value = (int)CalculateDefense(&armor);
-			*prev_value = 0;
+			*prevValue = 0;
 		}
 		return true;
 	}
@@ -1587,7 +1587,7 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
 		float v = CalculateDefense(&armor);
 		float prev_v = CalculateDefense();
 		*value = (int)v;
-		*prev_value = (int)prev_v;
+		*prevValue = (int)prev_v;
 		return prev_v < v;
 	}
 	else
@@ -1637,9 +1637,9 @@ void Unit::RecalculateMp()
 //=================================================================================================
 void Unit::RecalculateStamina()
 {
-	float p = stamina / stamina_max;
-	stamina_max = CalculateMaxStamina();
-	stamina = stamina_max * p;
+	float p = stamina / staminaMax;
+	staminaMax = CalculateMaxStamina();
+	stamina = staminaMax * p;
 }
 
 //=================================================================================================
@@ -1761,7 +1761,7 @@ void Unit::Save(GameWriter& f)
 	else
 		f.Write0();
 
-	f << live_state;
+	f << liveState;
 	f << pos;
 	f << rot;
 	f << hp;
@@ -1769,32 +1769,32 @@ void Unit::Save(GameWriter& f)
 	f << mp;
 	f << mpmax;
 	f << stamina;
-	f << stamina_max;
-	f << stamina_action;
-	f << stamina_timer;
+	f << staminaMax;
+	f << staminaAction;
+	f << staminaTimer;
 	f << level;
 	if(IsPlayer())
 		stats->Save(f);
 	else
 		f << stats->subprofile;
 	f << gold;
-	f << to_remove;
+	f << toRemove;
 	f << temporary;
-	f << quest_id;
+	f << questId;
 	f << assist;
-	f << dont_attack;
-	f << attack_team;
-	f << (event_handler ? event_handler->GetUnitEventHandlerQuestId() : -1);
+	f << dontAttack;
+	f << attackTeam;
+	f << (eventHandler ? eventHandler->GetUnitEventHandlerQuestId() : -1);
 	f << weight;
 	f << summoner;
-	if(live_state >= DYING)
+	if(liveState >= DYING)
 		f << mark;
 
-	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
-	if(human_data)
+	assert((humanData != nullptr) == (data->type == UNIT_TYPE::HUMAN));
+	if(humanData)
 	{
 		f.Write1();
-		human_data->Save(f);
+		humanData->Save(f);
 	}
 	else
 		f.Write0();
@@ -1803,24 +1803,24 @@ void Unit::Save(GameWriter& f)
 	{
 		meshInst->Save(f);
 		f << animation;
-		f << current_animation;
+		f << currentAnimation;
 
-		f << prev_pos;
+		f << prevPos;
 		f << speed;
-		f << prev_speed;
-		f << animation_state;
+		f << prevSpeed;
+		f << animationState;
 		f << action;
-		f << weapon_taken;
-		f << weapon_hiding;
-		f << weapon_state;
-		f << hurt_timer;
-		f << target_pos;
-		f << target_pos2;
+		f << weaponTaken;
+		f << weaponHiding;
+		f << weaponState;
+		f << hurtTimer;
+		f << targetPos;
+		f << targetPos2;
 		f << talking;
-		f << talk_timer;
+		f << talkTimer;
 		f << timer;
 		f << alcohol;
-		f << raise_timer;
+		f << raiseTimer;
 
 		switch(action)
 		{
@@ -1844,14 +1844,14 @@ void Unit::Save(GameWriter& f)
 			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
 			break;
 		case A_USE_USABLE:
-			f << act.use_usable.rot;
+			f << act.useUsable.rot;
 			break;
 		}
 
-		if(used_item)
+		if(usedItem)
 		{
-			f << used_item->id;
-			f << used_item_is_team;
+			f << usedItem->id;
+			f << usedItemIsTeam;
 		}
 		else
 			f.Write0();
@@ -1870,7 +1870,7 @@ void Unit::Save(GameWriter& f)
 		else
 			f << -1;
 
-		f << last_bash;
+		f << lastBash;
 		f << moved;
 		f << running;
 	}
@@ -1912,7 +1912,7 @@ void Unit::Save(GameWriter& f)
 			break;
 		case ORDER_MOVE:
 			f << current_order->pos;
-			f << current_order->move_type;
+			f << current_order->moveType;
 			f << current_order->range;
 			break;
 		case ORDER_ESCAPE_TO:
@@ -1923,11 +1923,11 @@ void Unit::Save(GameWriter& f)
 			f << current_order->pos;
 			break;
 		case ORDER_AUTO_TALK:
-			f << current_order->auto_talk;
-			if(current_order->auto_talk_dialog)
+			f << current_order->autoTalk;
+			if(current_order->autoTalkDialog)
 			{
-				f << current_order->auto_talk_dialog->id;
-				f << (current_order->auto_talk_quest ? current_order->auto_talk_quest->id : -1);
+				f << current_order->autoTalkDialog->id;
+				f << (current_order->autoTalkQuest ? current_order->autoTalkQuest->id : -1);
 			}
 			else
 				f.Write0();
@@ -1973,8 +1973,8 @@ void Unit::SaveStock(GameWriter& f)
 //=================================================================================================
 void Unit::Load(GameReader& f)
 {
-	fake_unit = true; // to prevent sending MP message set temporary as fake unit
-	human_data = nullptr;
+	fakeUnit = true; // to prevent sending MP message set temporary as fake unit
+	humanData = nullptr;
 
 	if(LOAD_VERSION >= V_0_12)
 		f >> id;
@@ -2016,7 +2016,7 @@ void Unit::Load(GameReader& f)
 		LoadStock(f);
 
 	// stats
-	f >> live_state;
+	f >> liveState;
 	f >> pos;
 	f >> rot;
 	f >> hp;
@@ -2027,9 +2027,9 @@ void Unit::Load(GameReader& f)
 		f >> mpmax;
 	}
 	f >> stamina;
-	f >> stamina_max;
-	f >> stamina_action;
-	f >> stamina_timer;
+	f >> staminaMax;
+	f >> staminaAction;
+	f >> staminaTimer;
 	f >> level;
 	if(content.require_update && data->group != G_PLAYER)
 	{
@@ -2077,9 +2077,9 @@ void Unit::Load(GameReader& f)
 		f >> old_invisible;
 	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old inside_building
-	f >> to_remove;
+	f >> toRemove;
 	f >> temporary;
-	f >> quest_id;
+	f >> questId;
 	f >> assist;
 
 	AutoTalkMode old_auto_talk = AutoTalkMode::No;
@@ -2091,26 +2091,26 @@ void Unit::Load(GameReader& f)
 		f >> old_auto_talk;
 		if(old_auto_talk != AutoTalkMode::No)
 		{
-			if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
-				old_auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+			if(const string& dialogId = f.ReadString1(); !dialogId.empty())
+				old_auto_talk_dialog = GameDialog::TryGet(dialogId.c_str());
 			else
 				old_auto_talk_dialog = nullptr;
 			f >> old_auto_talk_timer;
 		}
 	}
 
-	f >> dont_attack;
-	f >> attack_team;
+	f >> dontAttack;
+	f >> attackTeam;
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
 	int unit_event_handler_quest_id = f.Read<int>();
 	if(unit_event_handler_quest_id == -2)
-		event_handler = questMgr->questContest;
+		eventHandler = questMgr->questContest;
 	else if(unit_event_handler_quest_id == -1)
-		event_handler = nullptr;
+		eventHandler = nullptr;
 	else
 	{
-		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
+		eventHandler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
 		game->loadUnitHandler.push_back(this);
 	}
 	if(can_sort && content.require_update)
@@ -2124,23 +2124,23 @@ void Unit::Load(GameReader& f)
 		f >> guard_target;
 	f >> summoner;
 
-	if(live_state >= DYING)
+	if(liveState >= DYING)
 		f >> mark;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
 	busy = Busy_No;
-	visual_pos = pos;
+	visualPos = pos;
 
 	if(f.Read1())
 	{
-		human_data = new Human;
-		human_data->Load(f);
+		humanData = new Human;
+		humanData->Load(f);
 	}
 	else
 	{
 		assert(data->type != UNIT_TYPE::HUMAN);
-		human_data = nullptr;
+		humanData = nullptr;
 	}
 
 	if(f.isLocal)
@@ -2151,25 +2151,25 @@ void Unit::Load(GameReader& f)
 		CreateMesh(CREATE_MESH::LOAD);
 		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
 		f >> animation;
-		f >> current_animation;
+		f >> currentAnimation;
 
-		f >> prev_pos;
+		f >> prevPos;
 		f >> speed;
-		f >> prev_speed;
-		f >> animation_state;
+		f >> prevSpeed;
+		f >> animationState;
 		if(LOAD_VERSION < V_0_13)
-			f >> ai_mode; // old attack_id, assigned to unused variable at client side to pass to AIController
+			f >> aiMode; // old attack_id, assigned to unused variable at client side to pass to AIController
 		f >> action;
-		f >> weapon_taken;
-		f >> weapon_hiding;
-		f >> weapon_state;
+		f >> weaponTaken;
+		f >> weaponHiding;
+		f >> weaponState;
 		if(LOAD_VERSION < V_0_13)
 			f >> old_hitted;
-		f >> hurt_timer;
-		f >> target_pos;
-		f >> target_pos2;
+		f >> hurtTimer;
+		f >> targetPos;
+		f >> targetPos2;
 		f >> talking;
-		f >> talk_timer;
+		f >> talkTimer;
 		if(LOAD_VERSION < V_0_13)
 		{
 			f >> old_attack_power;
@@ -2177,7 +2177,7 @@ void Unit::Load(GameReader& f)
 		}
 		f >> timer;
 		f >> alcohol;
-		f >> raise_timer;
+		f >> raiseTimer;
 
 		switch(action)
 		{
@@ -2191,7 +2191,7 @@ void Unit::Load(GameReader& f)
 			}
 			else
 			{
-				act.attack.index = ai_mode;
+				act.attack.index = aiMode;
 				act.attack.power = old_attack_power;
 				act.attack.run = old_run_attack;
 				act.attack.hitted = old_hitted;
@@ -2212,14 +2212,14 @@ void Unit::Load(GameReader& f)
 				if(data->group == G_PLAYER)
 					act.cast.ability = data->clas->ability;
 				else
-					act.cast.ability = data->abilities->ability[ai_mode];
+					act.cast.ability = data->abilities->ability[aiMode];
 			}
 			break;
 		case A_DASH:
 			if(LOAD_VERSION >= V_0_13)
 				act.dash.ability = Ability::Get(f.Read<int>());
 			else
-				act.dash.ability = Ability::Get(animation_state == 0 ? "dash" : "bull_charge");
+				act.dash.ability = Ability::Get(animationState == 0 ? "dash" : "bull_charge");
 			f >> act.dash.rot;
 			if(LOAD_VERSION >= V_0_17 && act.dash.ability->RequireList())
 			{
@@ -2242,20 +2242,20 @@ void Unit::Load(GameReader& f)
 			break;
 		case A_USE_USABLE:
 			if(LOAD_VERSION >= V_0_10)
-				f >> act.use_usable.rot;
+				f >> act.useUsable.rot;
 			else
-				act.use_usable.rot = 0.f;
+				act.useUsable.rot = 0.f;
 			break;
 		}
 
 		const string& item_id = f.ReadString1();
 		if(!item_id.empty())
 		{
-			used_item = Item::Get(item_id);
-			f >> used_item_is_team;
+			usedItem = Item::Get(item_id);
+			f >> usedItemIsTeam;
 		}
 		else
-			used_item = nullptr;
+			usedItem = nullptr;
 
 		int usable_id = f.Read<int>();
 		if(usable_id == -1)
@@ -2265,13 +2265,13 @@ void Unit::Load(GameReader& f)
 
 		if(action == A_SHOOT)
 		{
-			bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
-			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = meshInst->groups[1].speed;
-			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
+			bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
+			bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bowInstance->groups[0].speed = meshInst->groups[1].speed;
+			bowInstance->groups[0].time = Min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
 		}
 
-		f >> last_bash;
+		f >> lastBash;
 		f >> moved;
 		f >> running;
 	}
@@ -2280,16 +2280,16 @@ void Unit::Load(GameReader& f)
 		meshInst = nullptr;
 		ai = nullptr;
 		usable = nullptr;
-		used_item = nullptr;
-		weapon_state = WeaponState::Hidden;
-		weapon_taken = W_NONE;
-		weapon_hiding = W_NONE;
+		usedItem = nullptr;
+		weaponState = WeaponState::Hidden;
+		weaponTaken = W_NONE;
+		weaponHiding = W_NONE;
 		frozen = FROZEN::NO;
 		talking = false;
-		animation = current_animation = ANI_STAND;
+		animation = currentAnimation = ANI_STAND;
 		action = A_NONE;
-		hurt_timer = 0.f;
-		speed = prev_speed = 0.f;
+		hurtTimer = 0.f;
+		speed = prevSpeed = 0.f;
 		alcohol = 0.f;
 		moved = false;
 		running = false;
@@ -2337,10 +2337,10 @@ void Unit::Load(GameReader& f)
 	dialogs.resize(f.Read<uint>());
 	for(QuestDialog& dialog : dialogs)
 	{
-		int quest_id = f.Read<int>();
+		int questId = f.Read<int>();
 		string* str = StringPool.Get();
 		f >> *str;
-		questMgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
+		questMgr->AddQuestRequest(questId, (Quest**)&dialog.quest, [this, &dialog, str]()
 		{
 			dialog.dialog = dialog.quest->GetDialog(*str);
 			StringPool.Free(str);
@@ -2358,10 +2358,10 @@ void Unit::Load(GameReader& f)
 		events.resize(f.Read<uint>());
 		for(Event& e : events)
 		{
-			int quest_id;
+			int questId;
 			f >> e.type;
-			f >> quest_id;
-			questMgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
+			f >> questId;
+			questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
 			{
 				EventPtr event;
 				event.source = EventPtr::UNIT;
@@ -2400,7 +2400,7 @@ void Unit::Load(GameReader& f)
 					break;
 				case ORDER_MOVE:
 					f >> current_order->pos;
-					f >> current_order->move_type;
+					f >> current_order->moveType;
 					if(LOAD_VERSION >= V_0_14)
 						f >> current_order->range;
 					else
@@ -2417,21 +2417,21 @@ void Unit::Load(GameReader& f)
 					f >> current_order->unit;
 					break;
 				case ORDER_AUTO_TALK:
-					f >> current_order->auto_talk;
-					if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
+					f >> current_order->autoTalk;
+					if(const string& dialogId = f.ReadString1(); !dialogId.empty())
 					{
-						current_order->auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
-						int quest_id;
-						f >> quest_id;
-						if(quest_id != -1)
-							questMgr->AddQuestRequest(quest_id, &current_order->auto_talk_quest);
+						current_order->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
+						int questId;
+						f >> questId;
+						if(questId != -1)
+							questMgr->AddQuestRequest(questId, &current_order->autoTalkQuest);
 						else
-							current_order->auto_talk_quest = nullptr;
+							current_order->autoTalkQuest = nullptr;
 					}
 					else
 					{
-						current_order->auto_talk_dialog = nullptr;
-						current_order->auto_talk_quest = nullptr;
+						current_order->autoTalkDialog = nullptr;
+						current_order->autoTalkQuest = nullptr;
 					}
 					break;
 				}
@@ -2461,7 +2461,7 @@ void Unit::Load(GameReader& f)
 					break;
 				case ORDER_MOVE:
 					f >> order->pos;
-					f >> order->move_type;
+					f >> order->moveType;
 					order->range = 0.1f;
 					break;
 				case ORDER_ESCAPE_TO:
@@ -2494,9 +2494,9 @@ void Unit::Load(GameReader& f)
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_AUTO_TALK;
 		order->timer = old_auto_talk_timer;
-		order->auto_talk = old_auto_talk;
-		order->auto_talk_dialog = old_auto_talk_dialog;
-		order->auto_talk_quest = nullptr;
+		order->autoTalk = old_auto_talk;
+		order->autoTalkDialog = old_auto_talk_dialog;
+		order->autoTalkQuest = nullptr;
 	}
 
 	if(f.Read1())
@@ -2510,8 +2510,8 @@ void Unit::Load(GameReader& f)
 	else
 		player = nullptr;
 
-	if(f.isLocal && human_data)
-		human_data->ApplyScale(meshInst);
+	if(f.isLocal && humanData)
+		humanData->ApplyScale(meshInst);
 
 	if(IsSet(data->flags, F_HERO))
 	{
@@ -2530,7 +2530,7 @@ void Unit::Load(GameReader& f)
 	else
 		hero = nullptr;
 
-	in_arena = -1;
+	inArena = -1;
 	ai = nullptr;
 	interp = nullptr;
 	frozen = FROZEN::NO;
@@ -2542,8 +2542,8 @@ void Unit::Load(GameReader& f)
 		cobj = nullptr;
 
 	// zabezpieczenie
-	if((Any(weapon_state, WeaponState::Taken, WeaponState::Taking) && weapon_taken == W_NONE)
-		|| (weapon_state == WeaponState::Hiding && weapon_hiding == W_NONE))
+	if((Any(weaponState, WeaponState::Taken, WeaponState::Taking) && weaponTaken == W_NONE)
+		|| (weaponState == WeaponState::Hiding && weaponHiding == W_NONE))
 	{
 		SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		Warn("Unit '%s' had broken weapon state.", data->id.c_str());
@@ -2559,7 +2559,7 @@ void Unit::Load(GameReader& f)
 
 	CalculateLoad();
 
-	fake_unit = false;
+	fakeUnit = false;
 }
 
 //=================================================================================================
@@ -2589,9 +2589,9 @@ void Unit::LoadStock(GameReader& f)
 			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_id;
-			f >> quest_id;
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &cnt);
+			int questId;
+			f >> questId;
+			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), questId, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -2611,11 +2611,11 @@ void Unit::Write(BitStreamWriter& f) const
 	// human data
 	if(data->type == UNIT_TYPE::HUMAN)
 	{
-		f.WriteCasted<byte>(human_data->hair);
-		f.WriteCasted<byte>(human_data->beard);
-		f.WriteCasted<byte>(human_data->mustache);
-		f << human_data->hairColor;
-		f << human_data->height;
+		f.WriteCasted<byte>(humanData->hair);
+		f.WriteCasted<byte>(humanData->beard);
+		f.WriteCasted<byte>(humanData->mustache);
+		f << humanData->hairColor;
+		f << humanData->height;
 	}
 
 	// items
@@ -2629,7 +2629,7 @@ void Unit::Write(BitStreamWriter& f) const
 				f.Write0();
 		}
 	}
-	f.WriteCasted<byte>(live_state);
+	f.WriteCasted<byte>(liveState);
 	f << pos;
 	f << rot;
 	f << GetHpp();
@@ -2641,7 +2641,7 @@ void Unit::Write(BitStreamWriter& f) const
 	}
 	else
 		f.Write0();
-	f.WriteCasted<char>(in_arena);
+	f.WriteCasted<char>(inArena);
 	f << summoner;
 	f << mark;
 
@@ -2672,7 +2672,7 @@ void Unit::Write(BitStreamWriter& f) const
 		f.WriteCasted<byte>(player->id);
 		f << player->name;
 		f << player->credit;
-		f << player->free_days;
+		f << player->freeDays;
 	}
 	if(IsAI())
 		f << GetAiMode();
@@ -2682,17 +2682,17 @@ void Unit::Write(BitStreamWriter& f) const
 	{
 		meshInst->Write(f);
 		f.WriteCasted<byte>(animation);
-		f.WriteCasted<byte>(current_animation);
-		f.WriteCasted<byte>(animation_state);
+		f.WriteCasted<byte>(currentAnimation);
+		f.WriteCasted<byte>(animationState);
 		f.WriteCasted<byte>(action);
-		f.WriteCasted<byte>(weapon_taken);
-		f.WriteCasted<byte>(weapon_hiding);
-		f.WriteCasted<byte>(weapon_state);
-		f << target_pos;
-		f << target_pos2;
+		f.WriteCasted<byte>(weaponTaken);
+		f.WriteCasted<byte>(weaponHiding);
+		f.WriteCasted<byte>(weaponState);
+		f << targetPos;
+		f << targetPos2;
 		f << timer;
-		if(used_item)
-			f << used_item->id;
+		if(usedItem)
+			f << usedItem->id;
 		else
 			f.Write0();
 		f << (usable ? usable->id : -1);
@@ -2702,7 +2702,7 @@ void Unit::Write(BitStreamWriter& f) const
 			f << act.attack.index;
 			break;
 		case A_USE_USABLE:
-			f << act.use_usable.rot;
+			f << act.useUsable.rot;
 			break;
 		case A_SHOOT:
 			f << (act.shoot.ability ? act.shoot.ability->hash : 0);
@@ -2732,8 +2732,8 @@ void Unit::Write(BitStreamWriter& f) const
 	else
 	{
 		// player changing dungeon level keeps weapon state
-		f.WriteCasted<byte>(weapon_taken);
-		f.WriteCasted<byte>(weapon_state);
+		f.WriteCasted<byte>(weaponTaken);
+		f.WriteCasted<byte>(weaponState);
 	}
 }
 
@@ -2756,35 +2756,35 @@ bool Unit::Read(BitStreamReader& f)
 	// human data
 	if(data->type == UNIT_TYPE::HUMAN)
 	{
-		human_data = new Human;
-		f.ReadCasted<byte>(human_data->hair);
-		f.ReadCasted<byte>(human_data->beard);
-		f.ReadCasted<byte>(human_data->mustache);
-		f >> human_data->hairColor;
-		f >> human_data->height;
+		humanData = new Human;
+		f.ReadCasted<byte>(humanData->hair);
+		f.ReadCasted<byte>(humanData->beard);
+		f.ReadCasted<byte>(humanData->mustache);
+		f >> humanData->hairColor;
+		f >> humanData->height;
 		if(!f)
 			return false;
-		if(human_data->hair == 0xFF)
-			human_data->hair = -1;
-		if(human_data->beard == 0xFF)
-			human_data->beard = -1;
-		if(human_data->mustache == 0xFF)
-			human_data->mustache = -1;
-		if(human_data->hair < -1
-			|| human_data->hair >= MAX_HAIR
-			|| human_data->beard < -1
-			|| human_data->beard >= MAX_BEARD
-			|| human_data->mustache < -1
-			|| human_data->mustache >= MAX_MUSTACHE
-			|| !InRange(human_data->height, 0.85f, 1.15f))
+		if(humanData->hair == 0xFF)
+			humanData->hair = -1;
+		if(humanData->beard == 0xFF)
+			humanData->beard = -1;
+		if(humanData->mustache == 0xFF)
+			humanData->mustache = -1;
+		if(humanData->hair < -1
+			|| humanData->hair >= MAX_HAIR
+			|| humanData->beard < -1
+			|| humanData->beard >= MAX_BEARD
+			|| humanData->mustache < -1
+			|| humanData->mustache >= MAX_MUSTACHE
+			|| !InRange(humanData->height, 0.85f, 1.15f))
 		{
-			Error("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", human_data->hair, human_data->beard,
-				human_data->mustache, human_data->height);
+			Error("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", humanData->hair, humanData->beard,
+				humanData->mustache, humanData->height);
 			return false;
 		}
 	}
 	else
-		human_data = nullptr;
+		humanData = nullptr;
 
 	// equipped items
 	if(data->type != UNIT_TYPE::ANIMAL)
@@ -2824,9 +2824,9 @@ bool Unit::Read(BitStreamReader& f)
 	// variables
 	hpmax = 1.f;
 	mpmax = 1.f;
-	stamina_max = 1.f;
+	staminaMax = 1.f;
 	level = 0;
-	f.ReadCasted<byte>(live_state);
+	f.ReadCasted<byte>(liveState);
 	f >> pos;
 	f >> rot;
 	f >> hp;
@@ -2840,14 +2840,14 @@ bool Unit::Read(BitStreamReader& f)
 		mp = 1.f;
 		stamina = 1.f;
 	}
-	f.ReadCasted<char>(in_arena);
+	f.ReadCasted<char>(inArena);
 	f >> summoner;
 	f >> mark;
 	if(!f)
 		return false;
-	if(live_state >= LIVESTATE_MAX)
+	if(liveState >= LIVESTATE_MAX)
 	{
-		Error("Invalid live state %d.", live_state);
+		Error("Invalid live state %d.", liveState);
 		return false;
 	}
 
@@ -2892,7 +2892,7 @@ bool Unit::Read(BitStreamReader& f)
 		alcohol = 0.f;
 		f >> player->name;
 		f >> player->credit;
-		f >> player->free_days;
+		f >> player->freeDays;
 		if(!f)
 			return false;
 		if(player->credit < 0)
@@ -2900,9 +2900,9 @@ bool Unit::Read(BitStreamReader& f)
 			Error("Invalid player %d credit %d.", player->id, player->credit);
 			return false;
 		}
-		if(player->free_days < 0)
+		if(player->freeDays < 0)
 		{
-			Error("Invalid player %d free days %d.", player->id, player->free_days);
+			Error("Invalid player %d free days %d.", player->id, player->freeDays);
 			return false;
 		}
 		player->playerInfo = net->TryGetPlayer(player->id);
@@ -2924,7 +2924,7 @@ bool Unit::Read(BitStreamReader& f)
 	// ai variables
 	if(IsAI())
 	{
-		f.ReadCasted<byte>(ai_mode);
+		f.ReadCasted<byte>(aiMode);
 		if(!f)
 			return false;
 	}
@@ -2933,24 +2933,24 @@ bool Unit::Read(BitStreamReader& f)
 	CreateMesh(net->mpLoad ? CREATE_MESH::PRELOAD : CREATE_MESH::NORMAL);
 
 	action = A_NONE;
-	weapon_taken = W_NONE;
-	weapon_hiding = W_NONE;
-	weapon_state = WeaponState::Hidden;
+	weaponTaken = W_NONE;
+	weaponHiding = W_NONE;
+	weaponState = WeaponState::Hidden;
 	talking = false;
 	busy = Busy_No;
 	frozen = FROZEN::NO;
 	usable = nullptr;
-	used_item = nullptr;
-	bow_instance = nullptr;
+	usedItem = nullptr;
+	bowInstance = nullptr;
 	ai = nullptr;
 	animation = ANI_STAND;
-	current_animation = ANI_STAND;
+	currentAnimation = ANI_STAND;
 	timer = 0.f;
-	to_remove = false;
+	toRemove = false;
 	bubble = nullptr;
 	interp = EntityInterpolator::Pool.Get();
 	interp->Reset(pos, rot);
-	visual_pos = pos;
+	visualPos = pos;
 
 	if(net->mpLoad)
 	{
@@ -2958,14 +2958,14 @@ bool Unit::Read(BitStreamReader& f)
 		if(!meshInst->Read(f))
 			return false;
 		f.ReadCasted<byte>(animation);
-		f.ReadCasted<byte>(current_animation);
-		f.ReadCasted<byte>(animation_state);
+		f.ReadCasted<byte>(currentAnimation);
+		f.ReadCasted<byte>(animationState);
 		f.ReadCasted<byte>(action);
-		f.ReadCasted<byte>(weapon_taken);
-		f.ReadCasted<byte>(weapon_hiding);
-		f.ReadCasted<byte>(weapon_state);
-		f >> target_pos;
-		f >> target_pos2;
+		f.ReadCasted<byte>(weaponTaken);
+		f.ReadCasted<byte>(weaponHiding);
+		f.ReadCasted<byte>(weaponState);
+		f >> targetPos;
+		f >> targetPos2;
 		f >> timer;
 		const string& used_item_id = f.ReadString1();
 		int usable_id = f.Read<int>();
@@ -2973,15 +2973,15 @@ bool Unit::Read(BitStreamReader& f)
 		// used item
 		if(!used_item_id.empty())
 		{
-			used_item = Item::TryGet(used_item_id);
-			if(!used_item)
+			usedItem = Item::TryGet(used_item_id);
+			if(!usedItem)
 			{
 				Error("Missing used item '%s'.", used_item_id.c_str());
 				return false;
 			}
 		}
 		else
-			used_item = nullptr;
+			usedItem = nullptr;
 
 		// usable
 		if(usable_id == -1)
@@ -2997,13 +2997,13 @@ bool Unit::Read(BitStreamReader& f)
 			break;
 		case A_SHOOT:
 			act.shoot.ability = Ability::Get(f.Read<int>());
-			bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
-			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = meshInst->groups[1].speed;
-			bow_instance->groups[0].time = Min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
+			bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
+			bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bowInstance->groups[0].speed = meshInst->groups[1].speed;
+			bowInstance->groups[0].time = Min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
 			break;
 		case A_USE_USABLE:
-			f >> act.use_usable.rot;
+			f >> act.useUsable.rot;
 			break;
 		}
 
@@ -3025,17 +3025,17 @@ bool Unit::Read(BitStreamReader& f)
 	else
 	{
 		// player changing dungeon level keeps weapon state
-		f.ReadCasted<byte>(weapon_taken);
-		f.ReadCasted<byte>(weapon_state);
-		if(weapon_state == WeaponState::Taking)
-			weapon_state = WeaponState::Hidden;
+		f.ReadCasted<byte>(weaponTaken);
+		f.ReadCasted<byte>(weaponState);
+		if(weaponState == WeaponState::Taking)
+			weaponState = WeaponState::Hidden;
 	}
 
 	// physics
 	CreatePhysics(true);
 
-	prev_pos = pos;
-	speed = prev_speed = 0.f;
+	prevPos = pos;
+	speed = prevSpeed = 0.f;
 	talking = false;
 
 	Register();
@@ -3256,22 +3256,22 @@ void Unit::ReequipItemsInternal()
 }
 
 //=================================================================================================
-bool Unit::HaveQuestItem(int quest_id)
+bool Unit::HaveQuestItem(int questId)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item && it->item->IsQuest(quest_id))
+		if(it->item && it->item->IsQuest(questId))
 			return true;
 	}
 	return false;
 }
 
 //=================================================================================================
-void Unit::RemoveQuestItem(int quest_id)
+void Unit::RemoveQuestItem(int questId)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item && it->item->IsQuest(quest_id))
+		if(it->item && it->item->IsQuest(questId))
 		{
 			weight -= it->item->weight;
 			items.erase(it);
@@ -3279,7 +3279,7 @@ void Unit::RemoveQuestItem(int quest_id)
 			{
 				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
-				c.id = quest_id;
+				c.id = questId;
 			}
 			return;
 		}
@@ -3339,13 +3339,13 @@ bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
 		return false;
 	}
 
-	switch(weapon_state)
+	switch(weaponState)
 	{
 	case WeaponState::Taken:
 	case WeaponState::Taking:
-		return weapon_taken == type;
+		return weaponTaken == type;
 	case WeaponState::Hiding:
-		return weapon_hiding == type;
+		return weaponHiding == type;
 	default:
 		return false;
 	}
@@ -3429,9 +3429,9 @@ float Unit::GetBowAttackSpeed() const
 }
 
 //=================================================================================================
-void Unit::MakeItemsTeam(bool is_team)
+void Unit::MakeItemsTeam(bool isTeam)
 {
-	if(is_team)
+	if(isTeam)
 	{
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 			it->teamCount = it->count;
@@ -3496,20 +3496,20 @@ void Unit::RemoveEffect(EffectId effect)
 }
 
 //=================================================================================================
-int Unit::FindItem(const Item* item, int quest_id) const
+int Unit::FindItem(const Item* item, int questId) const
 {
 	assert(item);
 
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(slots[i] == item && (quest_id == -1 || slots[i]->IsQuest(quest_id)))
+		if(slots[i] == item && (questId == -1 || slots[i]->IsQuest(questId)))
 			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item == item && (quest_id == -1 || it->item->IsQuest(quest_id)))
+		if(it->item == item && (questId == -1 || it->item->IsQuest(questId)))
 			return index;
 	}
 
@@ -3530,18 +3530,18 @@ int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
 }
 
 //=================================================================================================
-int Unit::FindQuestItem(int quest_id) const
+int Unit::FindQuestItem(int questId) const
 {
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(slots[i] && slots[i]->IsQuest(quest_id))
+		if(slots[i] && slots[i]->IsQuest(questId))
 			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item->IsQuest(quest_id))
+		if(it->item->IsQuest(questId))
 			return index;
 	}
 
@@ -3549,7 +3549,7 @@ int Unit::FindQuestItem(int quest_id) const
 }
 
 //=================================================================================================
-bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active, int quest_id)
+bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notActive, int questId)
 {
 	assert(id);
 
@@ -3558,13 +3558,13 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		// szukaj w za³o¿onych przedmiotach
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] && slots[i]->IsQuest() && (quest_id == -1 || quest_id == slots[i]->quest_id))
+			if(slots[i] && slots[i]->IsQuest() && (questId == -1 || questId == slots[i]->quest_id))
 			{
-				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
+				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !notActive);
+				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
-					if(i_index)
-						*i_index = SlotToIIndex(ITEM_SLOT(i));
+					if(iIndex)
+						*iIndex = SlotToIIndex(ITEM_SLOT(i));
 					if(out_quest)
 						*out_quest = quest;
 					return true;
@@ -3576,13 +3576,13 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && it2->item->IsQuest() && (quest_id == -1 || quest_id == it2->item->quest_id))
+			if(it2->item && it2->item->IsQuest() && (questId == -1 || questId == it2->item->quest_id))
 			{
-				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
+				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !notActive);
+				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
-					if(i_index)
-						*i_index = index;
+					if(iIndex)
+						*iIndex = index;
 					if(out_quest)
 						*out_quest = quest;
 					return true;
@@ -3597,11 +3597,11 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(slots[i] && slots[i]->IsQuest() && slots[i]->id == id)
 			{
-				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
+				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !notActive);
+				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
-					if(i_index)
-						*i_index = SlotToIIndex(ITEM_SLOT(i));
+					if(iIndex)
+						*iIndex = SlotToIIndex(ITEM_SLOT(i));
 					if(out_quest)
 						*out_quest = quest;
 					return true;
@@ -3615,11 +3615,11 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
-				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
+				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !notActive);
+				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
-					if(i_index)
-						*i_index = index;
+					if(iIndex)
+						*iIndex = index;
 					if(out_quest)
 						*out_quest = quest;
 					return true;
@@ -3642,10 +3642,10 @@ void Unit::EquipItem(int index)
 	{
 		if(slots[slot])
 		{
-			if(!slots[SLOT_RING2] || player->last_ring)
+			if(!slots[SLOT_RING2] || player->lastRing)
 				slot = SLOT_RING2;
 		}
-		player->last_ring = (slot == SLOT_RING2);
+		player->lastRing = (slot == SLOT_RING2);
 	}
 
 	const Item* prevItem = slots[slot];
@@ -3693,7 +3693,7 @@ void Unit::EquipItem(const Item* item)
 
 //=================================================================================================
 // currently using this on pc, looted units is not written
-void Unit::RemoveItem(int iindex, bool active_location)
+void Unit::RemoveItem(int iindex, bool activeLocation)
 {
 	assert(!player);
 	assert(Net::IsLocal());
@@ -3707,7 +3707,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 		ITEM_SLOT s = IIndexToSlot(iindex);
 		assert(slots[s]);
 		slots[s] = nullptr;
-		if(active_location && IsVisible(s))
+		if(activeLocation && IsVisible(s))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.unit = this;
@@ -3719,24 +3719,24 @@ void Unit::RemoveItem(int iindex, bool active_location)
 
 //=================================================================================================
 // remove item from inventory (handle open inventory, lock & multiplayer), for 0 count remove all items
-uint Unit::RemoveItem(int i_index, uint count)
+uint Unit::RemoveItem(int iIndex, uint count)
 {
 	// remove item
 	uint removed;
-	if(i_index >= 0)
+	if(iIndex >= 0)
 	{
-		ItemSlot& s = items[i_index];
+		ItemSlot& s = items[iIndex];
 		removed = (count == 0 ? s.count : min(s.count, count));
 		s.count -= removed;
 		weight -= s.item->weight * removed;
 		if(s.count == 0)
-			items.erase(items.begin() + i_index);
+			items.erase(items.begin() + iIndex);
 		else if(s.teamCount > 0)
 			s.teamCount -= min(s.teamCount, removed);
 	}
 	else
 	{
-		ITEM_SLOT type = IIndexToSlot(i_index);
+		ITEM_SLOT type = IIndexToSlot(iIndex);
 		weight -= slots[type]->weight;
 		slots[type] = nullptr;
 		removed = 1;
@@ -3755,11 +3755,11 @@ uint Unit::RemoveItem(int i_index, uint count)
 	{
 		if(IsPlayer())
 		{
-			if(!player->is_local)
+			if(!player->isLocal)
 			{
 				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
-				c.id = i_index;
+				c.id = iIndex;
 				c.count = count;
 			}
 		}
@@ -3782,7 +3782,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = id;
 				c.count = count;
-				c.a = i_index;
+				c.a = iIndex;
 			}
 		}
 	}
@@ -3802,10 +3802,10 @@ uint Unit::RemoveItem(int i_index, uint count)
 //=================================================================================================
 uint Unit::RemoveItem(const Item* item, uint count)
 {
-	int i_index = FindItem(item);
-	if(i_index == INVALID_IINDEX)
+	int iIndex = FindItem(item);
+	if(iIndex == INVALID_IINDEX)
 		return 0;
-	return RemoveItem(i_index, count);
+	return RemoveItem(iIndex, count);
 }
 
 //=================================================================================================
@@ -3821,9 +3821,9 @@ uint Unit::RemoveItemS(const string& item_id, uint count)
 void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 {
 	const Item* item = GetEquippedItem(slot);
-	if(slot == SLOT_WEAPON && slots[SLOT_WEAPON] == used_item)
+	if(slot == SLOT_WEAPON && slots[SLOT_WEAPON] == usedItem)
 	{
-		used_item = nullptr;
+		usedItem = nullptr;
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -3882,16 +3882,16 @@ void Unit::ClearInventory()
 	weight = 0;
 	SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	if(player)
-		player->last_weapon = W_NONE;
+		player->lastWeapon = W_NONE;
 }
 
 //=================================================================================================
-cstring NAMES::point_weapon = "bron";
-cstring NAMES::point_hidden_weapon = "schowana";
-cstring NAMES::point_shield = "tarcza";
-cstring NAMES::point_shield_hidden = "tarcza_plecy";
-cstring NAMES::point_bow = "luk";
-cstring NAMES::point_cast = "castpoint";
+cstring NAMES::pointWeapon = "bron";
+cstring NAMES::pointHiddenWeapon = "schowana";
+cstring NAMES::pointShield = "tarcza";
+cstring NAMES::pointShieldHidden = "tarcza_plecy";
+cstring NAMES::pointBow = "luk";
+cstring NAMES::pointCast = "castpoint";
 cstring NAMES::points[] = {
 	"bron",
 	"schowana",
@@ -3899,25 +3899,25 @@ cstring NAMES::points[] = {
 	"tarcza_plecy",
 	"luk"
 };
-uint NAMES::n_points = countof(NAMES::points);
+uint NAMES::nPoints = countof(points);
 
 //=================================================================================================
-cstring NAMES::ani_take_weapon = "wyjmuje";
-cstring NAMES::ani_take_weapon_no_shield = "wyjmuje_bez_tarczy";
-cstring NAMES::ani_take_bow = "wyjmij_luk";
-cstring NAMES::ani_move = "idzie";
-cstring NAMES::ani_run = "biegnie";
-cstring NAMES::ani_left = "w_lewo";
-cstring NAMES::ani_right = "w_prawo";
-cstring NAMES::ani_stand = "stoi";
-cstring NAMES::ani_battle = "bojowy";
-cstring NAMES::ani_battle_bow = "bojowy_luk";
-cstring NAMES::ani_die = "umiera";
-cstring NAMES::ani_hurt = "trafiony";
-cstring NAMES::ani_shoot = "atak_luk";
-cstring NAMES::ani_block = "blok";
-cstring NAMES::ani_bash = "bash";
-cstring NAMES::ani_base[] = {
+cstring NAMES::aniTakeWeapon = "wyjmuje";
+cstring NAMES::aniTakeWeaponNoShield = "wyjmuje_bez_tarczy";
+cstring NAMES::aniTakeBow = "wyjmij_luk";
+cstring NAMES::aniMove = "idzie";
+cstring NAMES::aniRun = "biegnie";
+cstring NAMES::aniLeft = "w_lewo";
+cstring NAMES::aniRight = "w_prawo";
+cstring NAMES::aniStand = "stoi";
+cstring NAMES::aniBattle = "bojowy";
+cstring NAMES::aniBattleBow = "bojowy_luk";
+cstring NAMES::aniDie = "umiera";
+cstring NAMES::aniHurt = "trafiony";
+cstring NAMES::aniShoot = "atak_luk";
+cstring NAMES::aniBlock = "blok";
+cstring NAMES::aniBash = "bash";
+cstring NAMES::aniBase[] = {
 	"idzie",
 	"w_lewo",
 	"w_prawo",
@@ -3925,7 +3925,7 @@ cstring NAMES::ani_base[] = {
 	"bojowy",
 	"umiera"
 };
-cstring NAMES::ani_humanoid[] = {
+cstring NAMES::aniHumanoid[] = {
 	"wyjmuje",
 	"wyjmij_luk",
 	"bojowy_luk",
@@ -3933,7 +3933,7 @@ cstring NAMES::ani_humanoid[] = {
 	"blok",
 	"bash"
 };
-cstring NAMES::ani_attacks[] = {
+cstring NAMES::aniAttacks[] = {
 	"atak1",
 	"atak2",
 	"atak3",
@@ -3941,9 +3941,9 @@ cstring NAMES::ani_attacks[] = {
 	"atak5",
 	"atak6"
 };
-uint NAMES::n_ani_base = countof(NAMES::ani_base);
-uint NAMES::n_ani_humanoid = countof(NAMES::ani_humanoid);
-int NAMES::max_attacks = countof(ani_attacks);
+uint NAMES::nAniBase = countof(aniBase);
+uint NAMES::nAniHumanoid = countof(aniHumanoid);
+int NAMES::maxAttacks = countof(aniAttacks);
 
 //=================================================================================================
 Vec3 Unit::GetEyePos() const
@@ -3956,18 +3956,18 @@ Vec3 Unit::GetEyePos() const
 }
 
 //=================================================================================================
-bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT* target_slot) const
+bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT* targetSlot) const
 {
 	assert(item);
 
-	if(target_slot)
-		*target_slot = ItemTypeToSlot(item->type);
+	if(targetSlot)
+		*targetSlot = ItemTypeToSlot(item->type);
 
 	switch(item->type)
 	{
 	case IT_WEAPON:
 		if(!IsSet(data->flags, F_MAGE))
-			return IsBetterWeapon(item->ToWeapon(), value, prev_value);
+			return IsBetterWeapon(item->ToWeapon(), value, prevValue);
 		else
 		{
 			int v = item->ai_value;
@@ -3975,7 +3975,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = v;
-				*prev_value = prev_v;
+				*prevValue = prev_v;
 			}
 			return v > prev_v;
 		}
@@ -3986,7 +3986,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = v * 2;
-				*prev_value = prev_v * 2;
+				*prevValue = prev_v * 2;
 			}
 			return v > prev_v;
 		}
@@ -3997,13 +3997,13 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = v * 2;
-				*prev_value = prev_v * 2;
+				*prevValue = prev_v * 2;
 			}
 			return v > prev_v;
 		}
 	case IT_ARMOR:
 		if(!IsSet(data->flags, F_MAGE))
-			return IsBetterArmor(item->ToArmor(), value, prev_value);
+			return IsBetterArmor(item->ToArmor(), value, prevValue);
 		else
 		{
 			int v = item->ai_value;
@@ -4011,7 +4011,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = v;
-				*prev_value = prev_v;
+				*prevValue = prev_v;
 			}
 			return v > prev_v;
 		}
@@ -4022,7 +4022,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = (int)v;
-				*prev_value = (int)prev_v;
+				*prevValue = (int)prev_v;
 			}
 			return v > prev_v && v > 0;
 		}
@@ -4059,10 +4059,10 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			if(value)
 			{
 				*value = (int)v;
-				*prev_value = (int)prev_v;
+				*prevValue = (int)prev_v;
 			}
-			if(target_slot)
-				*target_slot = best_slot;
+			if(targetSlot)
+				*targetSlot = best_slot;
 			return v > prev_v && v > 0;
 		}
 	default:
@@ -4124,18 +4124,18 @@ int Unit::CountItem(const Item* item)
 }
 
 //=================================================================================================
-const Item* Unit::GetIIndexItem(int i_index) const
+const Item* Unit::GetIIndexItem(int iIndex) const
 {
-	if(i_index >= 0)
+	if(iIndex >= 0)
 	{
-		if(i_index < (int)items.size())
-			return items[i_index].item;
+		if(iIndex < (int)items.size())
+			return items[iIndex].item;
 		else
 			return nullptr;
 	}
 	else
 	{
-		ITEM_SLOT slot_type = IIndexToSlot(i_index);
+		ITEM_SLOT slot_type = IIndexToSlot(iIndex);
 		if(slot_type < SLOT_MAX)
 			return slots[slot_type];
 		else
@@ -4149,21 +4149,21 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 	if(melee)
 	{
 		if(HaveShield())
-			return meshInst->mesh->GetAnimation(NAMES::ani_take_weapon);
+			return meshInst->mesh->GetAnimation(NAMES::aniTakeWeapon);
 		else
 		{
-			Mesh::Animation* anim = meshInst->mesh->GetAnimation(NAMES::ani_take_weapon_no_shield);
+			Mesh::Animation* anim = meshInst->mesh->GetAnimation(NAMES::aniTakeWeaponNoShield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej
-				return meshInst->mesh->GetAnimation(NAMES::ani_take_weapon);
+				return meshInst->mesh->GetAnimation(NAMES::aniTakeWeapon);
 			}
 			else
 				return anim;
 		}
 	}
 	else
-		return meshInst->mesh->GetAnimation(NAMES::ani_take_bow);
+		return meshInst->mesh->GetAnimation(NAMES::aniTakeBow);
 }
 
 //=================================================================================================
@@ -4321,7 +4321,7 @@ bool Unit::CanTalk(Unit& unit) const
 {
 	if(Any(action, A_EAT, A_DRINK, A_STAND_UP))
 		return false;
-	if(GetOrder() == ORDER_AUTO_TALK && order->auto_talk == AutoTalkMode::Leader && !team->IsLeader(unit))
+	if(GetOrder() == ORDER_AUTO_TALK && order->autoTalk == AutoTalkMode::Leader && !team->IsLeader(unit))
 		return false;
 	return true;
 }
@@ -4441,7 +4441,7 @@ void Unit::Set(AttributeId a, int value)
 		stats->attrib[(int)a] = value;
 		ApplyStat(a);
 		if(player)
-			player->recalculate_level = true;
+			player->recalculateLevel = true;
 	}
 }
 
@@ -4454,7 +4454,7 @@ void Unit::Set(SkillId s, int value)
 		stats->skill[(int)s] = value;
 		ApplyStat(s);
 		if(player)
-			player->recalculate_level = true;
+			player->recalculateLevel = true;
 	}
 }
 
@@ -4628,20 +4628,20 @@ int Unit::ItemsToSellWeight() const
 }
 
 //=================================================================================================
-void Unit::SetAnimationAtEnd(cstring anim_name)
+void Unit::SetAnimationAtEnd(cstring animName)
 {
-	if(anim_name)
-		meshInst->SetToEnd(anim_name);
+	if(animName)
+		meshInst->SetToEnd(animName);
 	else
 		meshInst->SetToEnd();
 }
 
 //=================================================================================================
-void Unit::SetDontAttack(bool new_dont_attack)
+void Unit::SetDontAttack(bool dontAttack)
 {
-	if(new_dont_attack == dont_attack)
+	if(this->dontAttack == dontAttack)
 		return;
-	dont_attack = new_dont_attack;
+	this->dontAttack = dontAttack;
 	if(ai)
 		ai->changeAiMode = true;
 }
@@ -4652,9 +4652,9 @@ void Unit::UpdateStaminaAction()
 	if(usable)
 	{
 		if(IsSet(usable->base->use_flags, BaseUsable::SLOW_STAMINA_RESTORE))
-			stamina_action = SA_RESTORE_SLOW;
+			staminaAction = SA_RESTORE_SLOW;
 		else
-			stamina_action = SA_RESTORE_MORE;
+			staminaAction = SA_RESTORE_MORE;
 	}
 	else
 	{
@@ -4665,28 +4665,28 @@ void Unit::UpdateStaminaAction()
 		case A_POSITION:
 		case A_PAIN:
 		case A_CAST:
-			stamina_action = SA_RESTORE;
+			staminaAction = SA_RESTORE;
 			break;
 		case A_SHOOT:
-			if(animation_state < AS_SHOOT_SHOT)
-				stamina_action = SA_RESTORE_SLOW;
+			if(animationState < AS_SHOOT_SHOT)
+				staminaAction = SA_RESTORE_SLOW;
 			else
-				stamina_action = SA_RESTORE;
+				staminaAction = SA_RESTORE;
 			break;
 		case A_EAT:
 		case A_DRINK:
 		case A_ANIMATION:
 		case A_USE_USABLE:
 		default:
-			stamina_action = SA_RESTORE_MORE;
+			staminaAction = SA_RESTORE_MORE;
 			break;
 		case A_BLOCK:
 		case A_DASH:
-			stamina_action = SA_RESTORE_SLOW;
+			staminaAction = SA_RESTORE_SLOW;
 			break;
 		case A_BASH:
 		case A_ATTACK:
-			stamina_action = SA_DONT_RESTORE;
+			staminaAction = SA_DONT_RESTORE;
 			break;
 		}
 
@@ -4698,8 +4698,8 @@ void Unit::UpdateStaminaAction()
 		case ANI_RIGHT:
 		case ANI_KNEELS:
 		case ANI_RUN:
-			if(stamina_action == SA_RESTORE_MORE)
-				stamina_action = SA_RESTORE;
+			if(staminaAction == SA_RESTORE_MORE)
+				staminaAction = SA_RESTORE;
 			break;
 		}
 	}
@@ -4723,9 +4723,9 @@ void Unit::RemoveMana(float value)
 void Unit::RemoveStamina(float value)
 {
 	stamina -= value;
-	if(stamina < -stamina_max / 2)
-		stamina = -stamina_max / 2;
-	stamina_timer = STAMINA_RESTORE_TIMER;
+	if(stamina < -staminaMax / 2)
+		stamina = -staminaMax / 2;
+	staminaTimer = STAMINA_RESTORE_TIMER;
 	if(player && Net::IsLocal())
 		player->Train(TrainWhat::Stamina, value, 0);
 	if(Net::IsServer() && IsTeamMember())
@@ -4850,20 +4850,20 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			{
 				if(IsAlive())
 				{
-					meshInst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-					animation = current_animation = ANI_STAND;
+					meshInst->Play(NAMES::aniStand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					animation = currentAnimation = ANI_STAND;
 				}
 				else
 				{
-					SetAnimationAtEnd(NAMES::ani_die);
-					animation = current_animation = ANI_DIE;
+					SetAnimationAtEnd(NAMES::aniDie);
+					animation = currentAnimation = ANI_DIE;
 				}
 			}
 
 			if(meshInst->mesh->head.n_groups > 1)
 				meshInst->groups[1].state = 0;
-			if(human_data)
-				human_data->ApplyScale(meshInst);
+			if(humanData)
+				humanData->ApplyScale(meshInst);
 		}
 		else
 		{
@@ -4896,7 +4896,7 @@ void Unit::UseUsable(Usable* new_usable)
 }
 
 //=================================================================================================
-void Unit::RevealName(bool set_name)
+void Unit::RevealName(bool setName)
 {
 	if(!hero || hero->knowName)
 		return;
@@ -4906,7 +4906,7 @@ void Unit::RevealName(bool set_name)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TELL_NAME;
 		c.unit = this;
-		c.id = set_name ? 1 : 0;
+		c.id = setName ? 1 : 0;
 	}
 }
 
@@ -4939,7 +4939,7 @@ bool Unit::IsIdle() const
 	if(Net::IsLocal())
 		return ai->state == AIController::Idle;
 	else
-		return !IsSet(ai_mode, AI_MODE_IDLE);
+		return !IsSet(aiMode, AI_MODE_IDLE);
 }
 
 //=================================================================================================
@@ -4948,44 +4948,44 @@ bool Unit::IsAssist() const
 	if(Net::IsLocal())
 		return assist;
 	else
-		return IsSet(ai_mode, AI_MODE_ASSIST);
+		return IsSet(aiMode, AI_MODE_ASSIST);
 }
 
 //=================================================================================================
 bool Unit::IsDontAttack() const
 {
 	if(Net::IsLocal())
-		return dont_attack;
+		return dontAttack;
 	else
-		return IsSet(ai_mode, AI_MODE_DONT_ATTACK);
+		return IsSet(aiMode, AI_MODE_DONT_ATTACK);
 }
 
 //=================================================================================================
 bool Unit::WantAttackTeam() const
 {
 	if(Net::IsLocal())
-		return attack_team;
+		return attackTeam;
 	else
-		return IsSet(ai_mode, AI_MODE_ATTACK_TEAM);
+		return IsSet(aiMode, AI_MODE_ATTACK_TEAM);
 }
 
 //=================================================================================================
 byte Unit::GetAiMode() const
 {
 	byte mode = 0;
-	if(dont_attack)
+	if(dontAttack)
 		mode |= AI_MODE_DONT_ATTACK;
 	if(assist)
 		mode |= AI_MODE_ASSIST;
 	if(ai->state != AIController::Idle)
 		mode |= AI_MODE_IDLE;
-	if(attack_team)
+	if(attackTeam)
 		mode |= AI_MODE_ATTACK_TEAM;
 	return mode;
 }
 
 //=================================================================================================
-void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation)
+void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 {
 	if(notify && Net::IsServer())
 	{
@@ -4999,34 +4999,34 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	case A_POSITION:
 		return;
 	case A_SHOOT:
-		if(bow_instance)
-			gameLevel->FreeBowInstance(bow_instance);
+		if(bowInstance)
+			gameLevel->FreeBowInstance(bowInstance);
 		action = A_NONE;
 		break;
 	case A_DRINK:
-		if(animation_state == AS_DRINK_START)
+		if(animationState == AS_DRINK_START)
 		{
 			if(Net::IsLocal())
-				AddItem2(used_item, 1, used_item_is_team, false);
+				AddItem2(usedItem, 1, usedItemIsTeam, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
-				used_item = nullptr;
+				usedItem = nullptr;
 		}
 		else
-			used_item = nullptr;
+			usedItem = nullptr;
 		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
 			meshInst->Deactivate(1);
 		action = A_NONE;
 		break;
 	case A_EAT:
-		if(animation_state < AS_EAT_EFFECT)
+		if(animationState < AS_EAT_EFFECT)
 		{
 			if(Net::IsLocal())
-				AddItem2(used_item, 1, used_item_is_team, false);
+				AddItem2(usedItem, 1, usedItemIsTeam, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
-				used_item = nullptr;
+				usedItem = nullptr;
 		}
 		else
-			used_item = nullptr;
+			usedItem = nullptr;
 		if(mode != BREAK_ACTION_MODE::ON_LEAVE)
 			meshInst->Deactivate(1);
 		action = A_NONE;
@@ -5054,7 +5054,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			StopUsingUsable();
 			UseUsable(nullptr);
-			visual_pos = pos = target_pos;
+			visualPos = pos = targetPos;
 		}
 	}
 	else if(usable && !(player && player->action == PlayerAction::LootContainer))
@@ -5062,22 +5062,22 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
 			action = A_NONE;
-			SetAnimationAtEnd(NAMES::ani_stand);
+			SetAnimationAtEnd(NAMES::aniStand);
 			UseUsable(nullptr);
-			used_item = nullptr;
+			usedItem = nullptr;
 			animation = ANI_STAND;
 		}
 		else
 		{
-			target_pos2 = target_pos = pos;
-			const Item* prev_used_item = used_item;
+			targetPos2 = targetPos = pos;
+			const Item* prev_used_item = usedItem;
 			StopUsingUsable(mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
 				SetWeaponStateInstant(WeaponState::Taken, W_ONE_HANDED);
 			else if(mode == BREAK_ACTION_MODE::FALL)
-				used_item = prev_used_item;
+				usedItem = prev_used_item;
 			action = A_POSITION;
-			animation_state = AS_POSITION_NORMAL;
+			animationState = AS_POSITION_NORMAL;
 		}
 
 		if(Net::IsLocal() && IsAI() && ai->state == AIController::Idle && ai->st.idle.action != AIController::Idle_None)
@@ -5088,7 +5088,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	}
 	else
 	{
-		if(!Any(action, A_ANIMATION, A_STAND_UP) || !allow_animation)
+		if(!Any(action, A_ANIMATION, A_STAND_UP) || !allowAnimation)
 			action = A_NONE;
 	}
 
@@ -5106,8 +5106,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 
 	if(IsPlayer())
 	{
-		player->next_action = NA_NONE;
-		if(player->is_local)
+		player->nextAction = NA_NONE;
+		if(player->isLocal)
 		{
 			player->data.abilityReady = nullptr;
 			gameGui->inventory->EndLock();
@@ -5121,13 +5121,13 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			{
 				if(Net::IsLocal())
 				{
-					player->action_unit->busy = Busy_No;
-					player->action_unit->look_target = nullptr;
+					player->actionUnit->busy = Busy_No;
+					player->actionUnit->lookTarget = nullptr;
 					player->dialogCtx->dialogMode = false;
 				}
 				else
 					game->dialogContext.dialogMode = false;
-				look_target = nullptr;
+				lookTarget = nullptr;
 				player->action = PlayerAction::None;
 			}
 		}
@@ -5135,10 +5135,10 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			if(player->action == PlayerAction::Talk)
 			{
-				player->action_unit->busy = Busy_No;
-				player->action_unit->look_target = nullptr;
+				player->actionUnit->busy = Busy_No;
+				player->actionUnit->lookTarget = nullptr;
 				player->dialogCtx->dialogMode = false;
-				look_target = nullptr;
+				lookTarget = nullptr;
 				player->action = PlayerAction::None;
 			}
 		}
@@ -5160,7 +5160,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 void Unit::Fall()
 {
 	ACTION prev_action = action;
-	live_state = FALLING;
+	liveState = FALLING;
 
 	if(Net::IsLocal())
 	{
@@ -5168,12 +5168,12 @@ void Unit::Fall()
 		BreakAction(BREAK_ACTION_MODE::FALL);
 
 		// wstawanie
-		raise_timer = Random(5.f, 7.f);
+		raiseTimer = Random(5.f, 7.f);
 		timer = 1.f;
 
 		// event
-		if(event_handler)
-			event_handler->HandleUnitEvent(UnitEventHandler::FALL, this);
+		if(eventHandler)
+			eventHandler->HandleUnitEvent(UnitEventHandler::FALL, this);
 
 		// komunikat
 		if(Net::IsOnline())
@@ -5185,7 +5185,7 @@ void Unit::Fall()
 
 		UpdatePhysics();
 
-		if(player && player->is_local)
+		if(player && player->isLocal)
 			player->data.beforePlayer = BP_NONE;
 	}
 	else
@@ -5193,9 +5193,9 @@ void Unit::Fall()
 		// przerwij akcjê
 		BreakAction(BREAK_ACTION_MODE::FALL);
 
-		if(player && player->is_local)
+		if(player && player->isLocal)
 		{
-			raise_timer = Random(5.f, 7.f);
+			raiseTimer = Random(5.f, 7.f);
 			player->data.beforePlayer = BP_NONE;
 		}
 	}
@@ -5203,7 +5203,7 @@ void Unit::Fall()
 	if(prev_action == A_ANIMATION)
 	{
 		action = A_NONE;
-		current_animation = ANI_STAND;
+		currentAnimation = ANI_STAND;
 	}
 	animation = ANI_DIE;
 	talking = false;
@@ -5213,28 +5213,28 @@ void Unit::Fall()
 //=================================================================================================
 void Unit::TryStandup(float dt)
 {
-	if(in_arena != -1 || game->deathScreen != 0)
+	if(inArena != -1 || game->deathScreen != 0)
 		return;
 
 	bool ok = false;
-	raise_timer -= dt;
+	raiseTimer -= dt;
 	timer -= dt;
 
-	if(live_state == DEAD)
+	if(liveState == DEAD)
 	{
 		if(IsTeamMember())
 		{
-			if(hp > 0.f && raise_timer > 0.5f)
-				raise_timer = 0.5f;
+			if(hp > 0.f && raiseTimer > 0.5f)
+				raiseTimer = 0.5f;
 
-			if(raise_timer <= 0.f)
+			if(raiseTimer <= 0.f)
 			{
 				RemoveEffect(EffectId::Poison);
 
 				if(alcohol > hpmax)
 				{
 					// could stand up but is too drunk
-					live_state = FALL;
+					liveState = FALL;
 					UpdatePhysics();
 				}
 				else
@@ -5255,9 +5255,9 @@ void Unit::TryStandup(float dt)
 				if(!ok)
 				{
 					if(hp > 0.f)
-						raise_timer = 0.5f;
+						raiseTimer = 0.5f;
 					else
-						raise_timer = Random(1.f, 2.f);
+						raiseTimer = Random(1.f, 2.f);
 					timer = 0.5f;
 				}
 			}
@@ -5275,14 +5275,14 @@ void Unit::TryStandup(float dt)
 			}
 		}
 	}
-	else if(live_state == FALL)
+	else if(liveState == FALL)
 	{
-		if(raise_timer <= 0.f)
+		if(raiseTimer <= 0.f)
 		{
 			if(alcohol < hpmax)
 				ok = true;
 			else
-				raise_timer = Random(1.f, 2.f);
+				raiseTimer = Random(1.f, 2.f);
 		}
 	}
 
@@ -5294,7 +5294,7 @@ void Unit::TryStandup(float dt)
 void Unit::Standup(bool warp, bool leave)
 {
 	HealPoison();
-	live_state = ALIVE;
+	liveState = ALIVE;
 	if(leave)
 	{
 		action = A_NONE;
@@ -5315,14 +5315,14 @@ void Unit::Standup(bool warp, bool leave)
 			animation = ANI_STAND;
 		}
 	}
-	used_item = nullptr;
-	if(weapon_state != WeaponState::Hidden)
+	usedItem = nullptr;
+	if(weaponState != WeaponState::Hidden)
 	{
 		WeaponType target_weapon;
-		if(weapon_state == WeaponState::Taken || weapon_state == WeaponState::Taking)
-			target_weapon = weapon_taken;
+		if(weaponState == WeaponState::Taken || weaponState == WeaponState::Taking)
+			target_weapon = weaponTaken;
 		else
-			target_weapon = weapon_hiding;
+			target_weapon = weaponHiding;
 		if((target_weapon == W_ONE_HANDED && !HaveWeapon())
 			|| (target_weapon == W_BOW && !HaveBow()))
 		{
@@ -5355,14 +5355,14 @@ void Unit::Die(Unit* killer)
 {
 	ACTION prev_action = action;
 
-	if(live_state == FALL)
+	if(liveState == FALL)
 	{
 		// unit already on ground, add blood
 		gameLevel->CreateBlood(*locPart, *this);
-		live_state = DEAD;
+		liveState = DEAD;
 	}
 	else
-		live_state = DYING;
+		liveState = DYING;
 	BreakAction(BREAK_ACTION_MODE::FALL);
 
 	if(Net::IsLocal())
@@ -5404,7 +5404,7 @@ void Unit::Die(Unit* killer)
 		// rising team members / check is location cleared
 		if(IsTeamMember())
 		{
-			raise_timer = Random(5.f, 7.f);
+			raiseTimer = Random(5.f, 7.f);
 			timer = 1.f;
 		}
 		else
@@ -5415,8 +5415,8 @@ void Unit::Die(Unit* killer)
 		}
 
 		// event
-		if(event_handler)
-			event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
+		if(eventHandler)
+			eventHandler->HandleUnitEvent(UnitEventHandler::DIE, this);
 		for(Event& event : events)
 		{
 			if(event.type == EVENT_DIE)
@@ -5440,20 +5440,20 @@ void Unit::Die(Unit* killer)
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;
-			killer->player->stat_flags |= STAT_KILLS;
+			killer->player->statFlags |= STAT_KILLS;
 		}
 		if(IsPlayer())
 		{
 			++player->knocks;
-			player->stat_flags |= STAT_KNOCKS;
-			if(player->is_local)
+			player->statFlags |= STAT_KNOCKS;
+			if(player->isLocal)
 				game->pc->data.beforePlayer = BP_NONE;
 		}
 
 		// give experience
 		if(killer)
 		{
-			if(killer->in_arena == -1)
+			if(killer->inArena == -1)
 			{
 				if(killer->IsTeamMember() || killer->assist)
 				{
@@ -5476,9 +5476,9 @@ void Unit::Die(Unit* killer)
 		hp = 0.f;
 
 		// player rising
-		if(player && player->is_local)
+		if(player && player->isLocal)
 		{
-			raise_timer = Random(5.f, 7.f);
+			raiseTimer = Random(5.f, 7.f);
 			player->data.beforePlayer = BP_NONE;
 		}
 	}
@@ -5490,7 +5490,7 @@ void Unit::Die(Unit* killer)
 	if(prev_action == A_ANIMATION)
 	{
 		action = A_NONE;
-		current_animation = ANI_STAND;
+		currentAnimation = ANI_STAND;
 	}
 	animation = ANI_DIE;
 	talking = false;
@@ -5626,10 +5626,10 @@ void Unit::CreatePhysics(bool position)
 }
 
 //=================================================================================================
-void Unit::UpdatePhysics(const Vec3* target_pos)
+void Unit::UpdatePhysics(const Vec3* targetPos)
 {
-	Vec3 phy_pos = target_pos ? *target_pos : pos;
-	if(live_state == ALIVE)
+	Vec3 phy_pos = targetPos ? *targetPos : pos;
+	if(liveState == ALIVE)
 		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
 
 	btVector3 a_min, a_max;
@@ -5650,143 +5650,143 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 {
 	if(takes_out)
 	{
-		switch(weapon_state)
+		switch(weaponState)
 		{
 		case WeaponState::Hidden:
 			// wyjmij bron
 			meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 			action = A_TAKE_WEAPON;
-			animation_state = AS_TAKE_WEAPON_START;
-			weapon_taken = type;
-			weapon_state = WeaponState::Taking;
+			animationState = AS_TAKE_WEAPON_START;
+			weaponTaken = type;
+			weaponState = WeaponState::Taking;
 			if(IsPlayer())
-				player->last_weapon = type;
+				player->lastWeapon = type;
 			break;
 		case WeaponState::Hiding:
-			if(weapon_hiding == type)
+			if(weaponHiding == type)
 			{
-				if(animation_state == AS_TAKE_WEAPON_START)
+				if(animationState == AS_TAKE_WEAPON_START)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					meshInst->Deactivate(1);
 					action = usable ? A_USE_USABLE : A_NONE;
-					weapon_taken = weapon_hiding;
-					weapon_hiding = W_NONE;
-					weapon_state = WeaponState::Taken;
+					weaponTaken = weaponHiding;
+					weaponHiding = W_NONE;
+					weaponState = WeaponState::Taken;
 				}
 				else
 				{
 					// schowa³ broñ, zacznij wyci¹gaæ
 					meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-					weapon_taken = weapon_hiding;
-					weapon_hiding = W_NONE;
-					weapon_state = WeaponState::Taking;
-					animation_state = AS_TAKE_WEAPON_START;
+					weaponTaken = weaponHiding;
+					weaponHiding = W_NONE;
+					weaponState = WeaponState::Taking;
+					animationState = AS_TAKE_WEAPON_START;
 					if(IsPlayer())
-						player->last_weapon = type;
+						player->lastWeapon = type;
 				}
 			}
 			else
 			{
-				if(animation_state == AS_TAKE_WEAPON_MOVED)
+				if(animationState == AS_TAKE_WEAPON_MOVED)
 				{
 					// unit is hiding weapon & animation almost ended, start taking out weapon
 					meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-					animation_state = AS_TAKE_WEAPON_START;
-					weapon_taken = type;
-					weapon_hiding = W_NONE;
-					weapon_state = WeaponState::Taking;
+					animationState = AS_TAKE_WEAPON_START;
+					weaponTaken = type;
+					weaponHiding = W_NONE;
+					weaponState = WeaponState::Taking;
 					if(IsPlayer())
-						player->last_weapon = type;
+						player->lastWeapon = type;
 				}
 				else
 				{
 					// set next weapon to take out
-					weapon_taken = type;
+					weaponTaken = type;
 				}
 			}
 			break;
 		case WeaponState::Taking:
-			if(weapon_taken == type)
+			if(weaponTaken == type)
 				return false;
-			if(animation_state == AS_TAKE_WEAPON_START)
+			if(animationState == AS_TAKE_WEAPON_START)
 			{
 				// jeszcze nie wyj¹³ broni, zacznij wyjmowaæ inn¹
 				meshInst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				weapon_state = WeaponState::Taking;
-				weapon_hiding = W_NONE;
+				weaponState = WeaponState::Taking;
+				weaponHiding = W_NONE;
 				if(IsPlayer())
-					player->last_weapon = type;
+					player->lastWeapon = type;
 			}
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
 				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
-				weapon_state = WeaponState::Hiding;
-				weapon_hiding = weapon_taken;
+				weaponState = WeaponState::Hiding;
+				weaponHiding = weaponTaken;
 			}
-			weapon_taken = type;
-			animation_state = AS_TAKE_WEAPON_START;
+			weaponTaken = type;
+			animationState = AS_TAKE_WEAPON_START;
 			break;
 		case WeaponState::Taken:
-			if(weapon_taken == type)
+			if(weaponTaken == type)
 				return false;
 			// hide previous weapon
 			if(action == A_SHOOT)
-				gameLevel->FreeBowInstance(bow_instance);
-			meshInst->Play(GetTakeWeaponAnimation(weapon_taken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
+				gameLevel->FreeBowInstance(bowInstance);
+			meshInst->Play(GetTakeWeaponAnimation(weaponTaken), PLAY_ONCE | PLAY_PRIO1 | PLAY_BACK, 1);
 			action = A_TAKE_WEAPON;
-			animation_state = AS_TAKE_WEAPON_START;
-			weapon_state = WeaponState::Hiding;
-			weapon_hiding = weapon_taken;
-			weapon_taken = type;
+			animationState = AS_TAKE_WEAPON_START;
+			weaponState = WeaponState::Hiding;
+			weaponHiding = weaponTaken;
+			weaponTaken = type;
 			break;
 		}
 	}
 	else // chowa
 	{
-		switch(weapon_state)
+		switch(weaponState)
 		{
 		case WeaponState::Hidden:
 			// schowana to schowana, nie ma co sprawdzaæ czy to ta
 			return false;
 		case WeaponState::Hiding:
 			if(type == W_NONE)
-				weapon_taken = W_NONE;
-			if(weapon_hiding == type || type == W_NONE)
+				weaponTaken = W_NONE;
+			if(weaponHiding == type || type == W_NONE)
 				return false;
 			// chowa z³¹ broñ, zamieñ
-			weapon_hiding = type;
+			weaponHiding = type;
 			break;
 		case WeaponState::Taking:
-			if(animation_state == AS_TAKE_WEAPON_START)
+			if(animationState == AS_TAKE_WEAPON_START)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				meshInst->Deactivate(1);
 				action = usable ? A_USE_USABLE : A_NONE;
-				weapon_taken = W_NONE;
-				weapon_state = WeaponState::Hidden;
+				weaponTaken = W_NONE;
+				weaponState = WeaponState::Hidden;
 			}
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
 				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
-				weapon_hiding = weapon_taken;
-				weapon_taken = W_NONE;
-				weapon_state = WeaponState::Hiding;
-				animation_state = AS_TAKE_WEAPON_START;
+				weaponHiding = weaponTaken;
+				weaponTaken = W_NONE;
+				weaponState = WeaponState::Hiding;
+				animationState = AS_TAKE_WEAPON_START;
 			}
 			break;
 		case WeaponState::Taken:
 			// zacznij chowaæ
 			if(action == A_SHOOT)
-				gameLevel->FreeBowInstance(bow_instance);
-			meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-			weapon_hiding = weapon_taken;
-			weapon_taken = W_NONE;
-			weapon_state = WeaponState::Hiding;
+				gameLevel->FreeBowInstance(bowInstance);
+			meshInst->Play(GetTakeWeaponAnimation(weaponTaken == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			weaponHiding = weaponTaken;
+			weaponTaken = W_NONE;
+			weaponState = WeaponState::Hiding;
 			action = A_TAKE_WEAPON;
-			animation_state = AS_TAKE_WEAPON_START;
+			animationState = AS_TAKE_WEAPON_START;
 			break;
 		}
 	}
@@ -5803,29 +5803,29 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 }
 
 //=============================================================================
-void Unit::SetWeaponStateInstant(WeaponState weapon_state, WeaponType type)
+void Unit::SetWeaponStateInstant(WeaponState weaponState, WeaponType type)
 {
-	this->weapon_state = weapon_state;
-	this->weapon_taken = type;
-	weapon_hiding = W_NONE;
+	this->weaponState = weaponState;
+	this->weaponTaken = type;
+	weaponHiding = W_NONE;
 }
 
 //=============================================================================
-void Unit::SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action)
+void Unit::SetTakeHideWeaponAnimationToEnd(bool hide, bool breakAction)
 {
-	if(hide || weapon_state == WeaponState::Hiding)
+	if(hide || weaponState == WeaponState::Hiding)
 	{
-		if(break_action && animation_state == AS_TAKE_WEAPON_START)
-			SetWeaponStateInstant(WeaponState::Taken, weapon_hiding);
+		if(breakAction && animationState == AS_TAKE_WEAPON_START)
+			SetWeaponStateInstant(WeaponState::Taken, weaponHiding);
 		else
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 	}
-	else if(weapon_state == WeaponState::Taking)
+	else if(weaponState == WeaponState::Taking)
 	{
-		if(break_action && animation_state == AS_TAKE_WEAPON_START)
+		if(breakAction && animationState == AS_TAKE_WEAPON_START)
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		else
-			SetWeaponStateInstant(WeaponState::Taken, weapon_taken);
+			SetWeaponStateInstant(WeaponState::Taken, weaponTaken);
 	}
 	if(action == A_TAKE_WEAPON)
 		action = A_NONE;
@@ -5845,19 +5845,19 @@ void Unit::UpdateInventory(bool notify)
 		if(!it->item || it->teamCount != 0 || !CanWear(it->item))
 			continue;
 
-		ITEM_SLOT target_slot;
-		if(IsBetterItem(it->item, nullptr, nullptr, &target_slot))
+		ITEM_SLOT targetSlot;
+		if(IsBetterItem(it->item, nullptr, nullptr, &targetSlot))
 		{
-			if(slots[target_slot])
+			if(slots[targetSlot])
 			{
-				RemoveItemEffects(slots[target_slot], target_slot);
-				ApplyItemEffects(it->item, target_slot);
-				std::swap(slots[target_slot], it->item);
+				RemoveItemEffects(slots[targetSlot], targetSlot);
+				ApplyItemEffects(it->item, targetSlot);
+				std::swap(slots[targetSlot], it->item);
 			}
 			else
 			{
-				ApplyItemEffects(it->item, target_slot);
-				slots[target_slot] = it->item;
+				ApplyItemEffects(it->item, targetSlot);
+				slots[targetSlot] = it->item;
 				it->item = nullptr;
 			}
 			changes = true;
@@ -5886,11 +5886,11 @@ void Unit::UpdateInventory(bool notify)
 }
 
 //=================================================================================================
-bool Unit::IsEnemy(Unit& u, bool ignore_dont_attack) const
+bool Unit::IsEnemy(Unit& u, bool ignoreDontAttack) const
 {
-	if(in_arena == -1 && u.in_arena == -1)
+	if(inArena == -1 && u.inArena == -1)
 	{
-		if(!ignore_dont_attack)
+		if(!ignoreDontAttack)
 		{
 			if(IsAI() && IsDontAttack())
 				return false;
@@ -5942,9 +5942,9 @@ bool Unit::IsEnemy(Unit& u, bool ignore_dont_attack) const
 	}
 	else
 	{
-		if(in_arena == -1 || u.in_arena == -1)
+		if(inArena == -1 || u.inArena == -1)
 			return false;
-		else if(in_arena == u.in_arena)
+		else if(inArena == u.inArena)
 			return false;
 		else
 			return true;
@@ -5952,9 +5952,9 @@ bool Unit::IsEnemy(Unit& u, bool ignore_dont_attack) const
 }
 
 //=================================================================================================
-bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
+bool Unit::IsFriend(Unit& u, bool checkArenaAttack) const
 {
-	if(in_arena == -1 && u.in_arena == -1)
+	if(inArena == -1 && u.inArena == -1)
 	{
 		if(IsTeamMember())
 		{
@@ -5977,13 +5977,13 @@ bool Unit::IsFriend(Unit& u, bool check_arena_attack) const
 	}
 	else
 	{
-		if(check_arena_attack)
+		if(checkArenaAttack)
 		{
 			// prevent attacking viewers when on arena
-			if(in_arena == -1 || u.in_arena == -1)
+			if(inArena == -1 || u.inArena == -1)
 				return true;
 		}
-		return in_arena == u.in_arena;
+		return inArena == u.inArena;
 	}
 }
 
@@ -6035,11 +6035,11 @@ void Unit::AddDialog(Quest2* quest, GameDialog* dialog, int priority)
 }
 
 //=================================================================================================
-void Unit::AddDialogS(Quest2* quest, const string& dialog_id, int priority)
+void Unit::AddDialogS(Quest2* quest, const string& dialogId, int priority)
 {
-	GameDialog* dialog = quest->GetDialog(dialog_id);
+	GameDialog* dialog = quest->GetDialog(dialogId);
 	if(!dialog)
-		throw ScriptException("Missing quest dialog '%s'.", dialog_id.c_str());
+		throw ScriptException("Missing quest dialog '%s'.", dialogId.c_str());
 	AddDialog(quest, dialog, priority);
 }
 
@@ -6202,9 +6202,9 @@ void Unit::OrderAttack()
 	{
 		for(Unit* unit : locPart->units)
 		{
-			if(unit->dont_attack && unit->IsEnemy(*team->leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
+			if(unit->dontAttack && unit->IsEnemy(*team->leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
 			{
-				unit->dont_attack = false;
+				unit->dontAttack = false;
 				unit->ai->changeAiMode = true;
 			}
 		}
@@ -6253,7 +6253,7 @@ UnitOrderEntry* Unit::OrderMove(const Vec3& pos)
 	OrderReset();
 	order->order = ORDER_MOVE;
 	order->pos = pos;
-	order->move_type = MOVE_RUN;
+	order->moveType = MOVE_RUN;
 	order->range = 0.1f;
 	return order;
 }
@@ -6325,21 +6325,21 @@ UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog, Quest* ques
 	order->order = ORDER_AUTO_TALK;
 	if(!leader)
 	{
-		order->auto_talk = AutoTalkMode::Yes;
+		order->autoTalk = AutoTalkMode::Yes;
 		order->timer = AUTO_TALK_WAIT;
 	}
 	else
 	{
-		order->auto_talk = AutoTalkMode::Leader;
+		order->autoTalk = AutoTalkMode::Leader;
 		order->timer = 0.f;
 	}
-	order->auto_talk_dialog = dialog;
-	order->auto_talk_quest = quest;
+	order->autoTalkDialog = dialog;
+	order->autoTalkQuest = quest;
 	return order;
 }
 
 //=================================================================================================
-void Unit::Talk(cstring text, int play_anim)
+void Unit::Talk(cstring text, int playAnim)
 {
 	assert(text && Net::IsLocal());
 
@@ -6347,15 +6347,15 @@ void Unit::Talk(cstring text, int play_anim)
 
 	// animation
 	int ani = 0;
-	if(play_anim != 0 && data->type == UNIT_TYPE::HUMAN)
+	if(playAnim != 0 && data->type == UNIT_TYPE::HUMAN)
 	{
-		if(play_anim == -1)
+		if(playAnim == -1)
 		{
 			if(Rand() % 3 != 0)
 				ani = Rand() % 2 + 1;
 		}
 		else
-			ani = Clamp(play_anim, 1, 2);
+			ani = Clamp(playAnim, 1, 2);
 	}
 	if(ani != 0)
 	{
@@ -6460,9 +6460,9 @@ UnitOrderEntry* UnitOrderEntry::WithTimer(float timer)
 	return this;
 }
 
-UnitOrderEntry* UnitOrderEntry::WithMoveType(MoveType move_type)
+UnitOrderEntry* UnitOrderEntry::WithMoveType(MoveType moveType)
 {
-	this->move_type = move_type;
+	this->moveType = moveType;
 	return this;
 }
 
@@ -6507,7 +6507,7 @@ UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos)
 	UnitOrderEntry* o = NextOrder();
 	o->order = ORDER_MOVE;
 	o->pos = pos;
-	o->move_type = MOVE_RUN;
+	o->moveType = MOVE_RUN;
 	o->range = 0.1f;
 	return o;
 }
@@ -6563,16 +6563,16 @@ UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Qu
 	o->order = ORDER_AUTO_TALK;
 	if(!leader)
 	{
-		o->auto_talk = AutoTalkMode::Yes;
+		o->autoTalk = AutoTalkMode::Yes;
 		o->timer = Unit::AUTO_TALK_WAIT;
 	}
 	else
 	{
-		o->auto_talk = AutoTalkMode::Leader;
+		o->autoTalk = AutoTalkMode::Leader;
 		o->timer = 0.f;
 	}
-	o->auto_talk_dialog = dialog;
-	o->auto_talk_quest = quest;
+	o->autoTalkDialog = dialog;
+	o->autoTalkQuest = quest;
 	return o;
 }
 
@@ -6580,9 +6580,9 @@ UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Qu
 void Unit::StopUsingUsable(bool send)
 {
 	animation = ANI_STAND;
-	animation_state = AS_USE_USABLE_MOVE_TO_ENDPOINT;
+	animationState = AS_USE_USABLE_MOVE_TO_ENDPOINT;
 	timer = 0.f;
-	used_item = nullptr;
+	usedItem = nullptr;
 
 	const float unit_radius = GetUnitRadius();
 
@@ -6592,7 +6592,7 @@ void Unit::StopUsingUsable(bool send)
 	ignore.ignoredUnits = ignoredUnits;
 	gameLevel->GatherCollisionObjects(*locPart, gameLevel->globalCol, pos, 2.f + unit_radius, &ignore);
 
-	Vec3 tmp_pos = target_pos;
+	Vec3 tmp_pos = targetPos;
 	bool ok = false;
 	float radius = unit_radius;
 
@@ -6602,12 +6602,12 @@ void Unit::StopUsingUsable(bool send)
 		{
 			if(i != 0 && locPart->haveTerrain)
 				tmp_pos.y = gameLevel->terrain->GetH(tmp_pos);
-			target_pos = tmp_pos;
+			targetPos = tmp_pos;
 			ok = true;
 			break;
 		}
 
-		tmp_pos = target_pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+		tmp_pos = targetPos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.2f;
@@ -6616,7 +6616,7 @@ void Unit::StopUsingUsable(bool send)
 	assert(ok);
 
 	if(cobj)
-		UpdatePhysics(&target_pos);
+		UpdatePhysics(&targetPos);
 
 	if(send && Net::IsOnline())
 	{
@@ -6633,9 +6633,9 @@ void Unit::CheckAutoTalk(float dt)
 {
 	if(action != A_NONE && action != A_USE_USABLE)
 	{
-		if(order->auto_talk == AutoTalkMode::Wait)
+		if(order->autoTalk == AutoTalkMode::Wait)
 		{
-			order->auto_talk = AutoTalkMode::Yes;
+			order->autoTalk = AutoTalkMode::Yes;
 			order->timer = AUTO_TALK_WAIT;
 		}
 		return;
@@ -6655,7 +6655,7 @@ void Unit::CheckAutoTalk(float dt)
 	};
 	static vector<NearUnit> near_units;
 
-	const bool leader_mode = (order->auto_talk == AutoTalkMode::Leader);
+	const bool leader_mode = (order->autoTalk == AutoTalkMode::Leader);
 
 	for(Unit& u : team->members)
 	{
@@ -6675,8 +6675,8 @@ void Unit::CheckAutoTalk(float dt)
 	// if no nearby available players found, return
 	if(near_units.empty())
 	{
-		if(order->auto_talk == AutoTalkMode::Wait)
-			order->auto_talk = AutoTalkMode::Yes;
+		if(order->autoTalk == AutoTalkMode::Wait)
+			order->autoTalk = AutoTalkMode::Yes;
 		return;
 	}
 
@@ -6697,7 +6697,7 @@ void Unit::CheckAutoTalk(float dt)
 				if(&talk_target == &check_unit || this == &check_unit)
 					continue;
 
-				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
+				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dontAttack
 					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && gameLevel->CanSee(check_unit, talk_target))
 				{
 					ok = false;
@@ -6716,20 +6716,20 @@ void Unit::CheckAutoTalk(float dt)
 	// start dialog or wait
 	if(talk_player)
 	{
-		if(order->auto_talk == AutoTalkMode::Yes)
+		if(order->autoTalk == AutoTalkMode::Yes)
 		{
-			order->auto_talk = AutoTalkMode::Wait;
+			order->autoTalk = AutoTalkMode::Wait;
 			order->timer = 1.f;
 		}
 		else
 		{
-			talk_player->StartDialog(this, order->auto_talk_dialog, order->auto_talk_quest);
+			talk_player->StartDialog(this, order->autoTalkDialog, order->autoTalkQuest);
 			OrderNext();
 		}
 	}
-	else if(order->auto_talk == AutoTalkMode::Wait)
+	else if(order->autoTalk == AutoTalkMode::Wait)
 	{
-		order->auto_talk = AutoTalkMode::Yes;
+		order->autoTalk = AutoTalkMode::Yes;
 		order->timer = AUTO_TALK_WAIT;
 	}
 
@@ -6761,7 +6761,7 @@ void Unit::CastSpell()
 {
 	Ability& ability = *act.cast.ability;
 
-	Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::point_cast);
+	Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::pointCast);
 	Vec3 coord;
 
 	if(point)
@@ -6784,7 +6784,7 @@ void Unit::CastSpell()
 			if(IsSet(ability.flags, Ability::Triple))
 				count = 3;
 
-			float expected_rot = Clip(-Vec3::Angle2d(coord, target_pos) + PI / 2);
+			float expected_rot = Clip(-Vec3::Angle2d(coord, targetPos) + PI / 2);
 			float current_rot = Clip(rot + PI);
 			AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
 
@@ -6814,16 +6814,16 @@ void Unit::CastSpell()
 				// ustal z jak¹ si³¹ rzuciæ kul¹
 				if(ability.type == Ability::Ball)
 				{
-					float dist = Vec3::Distance2d(pos, target_pos);
+					float dist = Vec3::Distance2d(pos, targetPos);
 					float t = dist / ability.speed;
-					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
+					float h = (targetPos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
 					bullet->yspeed = h / t + (10.f * t) / 2;
 				}
 				else if(ability.type == Ability::Point)
 				{
-					float dist = Vec3::Distance2d(pos, target_pos);
+					float dist = Vec3::Distance2d(pos, targetPos);
 					float t = dist / ability.speed;
-					float h = (target_pos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
+					float h = (targetPos.y + (IsPlayer() ? Random(-0.25f, 0.25f) : Random(-0.5f, 0.5f))) - bullet->pos.y;
 					bullet->yspeed = h / t;
 				}
 
@@ -6882,8 +6882,8 @@ void Unit::CastSpell()
 			Vec3 hitpoint;
 			Unit* hitted;
 
-			target_pos.y += Random(-0.5f, 0.5f);
-			Vec3 dir = target_pos - coord;
+			targetPos.y += Random(-0.5f, 0.5f);
+			Vec3 dir = targetPos - coord;
 			dir.Normalize();
 			Vec3 target = coord + dir * ability.range;
 
@@ -6929,9 +6929,9 @@ void Unit::CastSpell()
 			Vec3 hitpoint;
 			Unit* hitted;
 
-			target_pos.y += Random(-0.5f, 0.5f);
+			targetPos.y += Random(-0.5f, 0.5f);
 
-			if(gameLevel->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
+			if(gameLevel->RayTest(coord, targetPos, this, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
 				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted, true))
@@ -6973,10 +6973,10 @@ void Unit::CastSpell()
 			{
 				for(Unit* u : locPart->units)
 				{
-					if(u->live_state == DEAD
+					if(u->liveState == DEAD
 						&& !IsEnemy(*u)
 						&& IsSet(u->data->flags, F_UNDEAD)
-						&& Vec3::Distance(target_pos, u->pos) < 0.5f)
+						&& Vec3::Distance(targetPos, u->pos) < 0.5f)
 					{
 						target = u;
 						break;
@@ -7044,12 +7044,12 @@ void Unit::CastSpell()
 			}
 
 			// spawn new
-			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, target_pos, *ability.unit, nullptr, level);
+			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
 				new_unit->summoner = this;
-				new_unit->in_arena = in_arena;
-				if(new_unit->in_arena != -1)
+				new_unit->inArena = inArena;
+				if(new_unit->inArena != -1)
 					game->arena->units.push_back(new_unit);
 				team->AddMember(new_unit, HeroType::Visitor);
 				new_unit->order->unit = this; // follow summoner
@@ -7060,8 +7060,8 @@ void Unit::CastSpell()
 	case Ability::Aggro:
 		for(Unit* u : locPart->units)
 		{
-			if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
-				|| u->ai->alertTarget || u->dont_attack)
+			if(u->toRemove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
+				|| u->ai->alertTarget || u->dontAttack)
 				continue;
 
 			if(Vec3::Distance(pos, u->pos) <= ability.range && gameLevel->CanSee(*this, *u))
@@ -7079,8 +7079,8 @@ void Unit::CastSpell()
 			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
 			if(new_unit)
 			{
-				new_unit->in_arena = in_arena;
-				if(new_unit->in_arena != -1)
+				new_unit->inArena = inArena;
+				if(new_unit->inArena != -1)
 					game->arena->units.push_back(new_unit);
 				gameLevel->SpawnUnitEffect(*new_unit);
 				new_unit->ai->alertTarget = ai->target;
@@ -7103,13 +7103,13 @@ void Unit::CastSpell()
 			gameLevel->RemoveOldTrap(ability.trap, this, ability.count);
 
 			// spawn new
-			Trap* trap = gameLevel->CreateTrap(target_pos, ability.trap->type);
+			Trap* trap = gameLevel->CreateTrap(targetPos, ability.trap->type);
 			trap->owner = this;
 			trap->attack = ability.dmg + ability.dmg_bonus * (level + CalculateMagicPower());
 
 			// particle effect
 			if(ability.tex_particle)
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, target_pos, Vec2::Zero);
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, targetPos, Vec2::Zero);
 		}
 		break;
 	}
@@ -7151,15 +7151,15 @@ void Unit::Update(float dt)
 
 		if(IsStanding() && talking)
 		{
-			talk_timer += dt;
+			talkTimer += dt;
 			meshInst->needUpdate = true;
 		}
 
 		if(Net::IsLocal())
 		{
 			// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
-			hurt_timer -= dt;
-			last_bash -= dt;
+			hurtTimer -= dt;
+			lastBash -= dt;
 
 			if(moved)
 			{
@@ -7227,47 +7227,47 @@ void Unit::Update(float dt)
 	}
 
 	// zmieñ podstawow¹ animacjê
-	if(animation != current_animation)
+	if(animation != currentAnimation)
 	{
 		changed = true;
 		switch(animation)
 		{
 		case ANI_WALK:
-			meshInst->Play(NAMES::ani_move, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniMove, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
 				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
 			break;
 		case ANI_WALK_BACK:
-			meshInst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniMove, PLAY_BACK | PLAY_PRIO1, 0);
 			if(!Net::IsClient())
 				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
 			break;
 		case ANI_RUN:
-			meshInst->Play(NAMES::ani_run, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniRun, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
 				meshInst->groups[0].speed = GetRunSpeed() / data->run_speed;
 			break;
 		case ANI_LEFT:
-			meshInst->Play(NAMES::ani_left, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniLeft, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
 				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
 			break;
 		case ANI_RIGHT:
-			meshInst->Play(NAMES::ani_right, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniRight, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
 				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
 			break;
 		case ANI_STAND:
-			meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
 			break;
 		case ANI_BATTLE:
-			meshInst->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniBattle, PLAY_PRIO1, 0);
 			break;
 		case ANI_BATTLE_BOW:
-			meshInst->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+			meshInst->Play(NAMES::aniBattleBow, PLAY_PRIO1, 0);
 			break;
 		case ANI_DIE:
-			meshInst->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+			meshInst->Play(NAMES::aniDie, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
 			break;
 		case ANI_PLAY:
 			break;
@@ -7280,7 +7280,7 @@ void Unit::Update(float dt)
 			assert(0);
 			break;
 		}
-		current_animation = animation;
+		currentAnimation = animation;
 	}
 
 	// aktualizuj animacjê
@@ -7289,7 +7289,7 @@ void Unit::Update(float dt)
 	// koniec animacji idle
 	if(animation == ANI_IDLE && meshInst->IsEnded())
 	{
-		meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
 		animation = ANI_STAND;
 	}
 
@@ -7297,7 +7297,7 @@ void Unit::Update(float dt)
 	if(!IsStanding())
 	{
 		// move corpse that thanks to animation is now not lootable
-		if(Net::IsLocal() && (Any(live_state, DYING, FALLING) || action == A_POSITION_CORPSE))
+		if(Net::IsLocal() && (Any(liveState, DYING, FALLING) || action == A_POSITION_CORPSE))
 		{
 			Vec3 center = GetLootCenter();
 			gameLevel->globalCol.clear();
@@ -7310,7 +7310,7 @@ void Unit::Update(float dt)
 				Vec3 dir = pos - center;
 				dir.y = 0;
 				pos += dir * dt * 2;
-				visual_pos = pos;
+				visualPos = pos;
 				moved = true;
 				action = A_POSITION_CORPSE;
 				changed = true;
@@ -7319,11 +7319,11 @@ void Unit::Update(float dt)
 				action = A_NONE;
 		}
 
-		if(Any(live_state, DYING, FALLING) && meshInst->IsEnded())
+		if(Any(liveState, DYING, FALLING) && meshInst->IsEnded())
 		{
-			if(live_state == DYING)
+			if(liveState == DYING)
 			{
-				live_state = DEAD;
+				liveState = DEAD;
 				gameLevel->CreateBlood(*locPart, *this);
 				if(summoner && Net::IsLocal())
 				{
@@ -7334,7 +7334,7 @@ void Unit::Update(float dt)
 				}
 			}
 			else
-				live_state = FALL;
+				liveState = FALL;
 		}
 
 		if(action != A_POSITION && action != A_DESPAWN)
@@ -7352,17 +7352,17 @@ void Unit::Update(float dt)
 	case A_NONE:
 		break;
 	case A_TAKE_WEAPON:
-		if(weapon_state == WeaponState::Taking)
+		if(weaponState == WeaponState::Taking)
 		{
-			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
-				animation_state = AS_TAKE_WEAPON_MOVED;
+			if(animationState == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) >= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
+				animationState = AS_TAKE_WEAPON_MOVED;
 			if(meshInst->IsEnded(1))
 			{
-				weapon_state = WeaponState::Taken;
+				weaponState = WeaponState::Taken;
 				if(usable)
 				{
 					action = A_USE_USABLE;
-					animation_state = AS_USE_USABLE_USING;
+					animationState = AS_USE_USABLE_USING;
 				}
 				else
 					action = A_NONE;
@@ -7372,16 +7372,16 @@ void Unit::Update(float dt)
 		else
 		{
 			// chowanie broni
-			if(animation_state == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
-				animation_state = AS_TAKE_WEAPON_MOVED;
-			if(weapon_taken != W_NONE && (animation_state == AS_TAKE_WEAPON_MOVED || meshInst->IsEnded(1)))
+			if(animationState == AS_TAKE_WEAPON_START && (meshInst->GetProgress(1) <= data->frames->t[F_TAKE_WEAPON] || meshInst->IsEnded(1)))
+				animationState = AS_TAKE_WEAPON_MOVED;
+			if(weaponTaken != W_NONE && (animationState == AS_TAKE_WEAPON_MOVED || meshInst->IsEnded(1)))
 			{
-				meshInst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				weapon_state = WeaponState::Taking;
-				weapon_hiding = W_NONE;
-				animation_state = AS_TAKE_WEAPON_START;
+				meshInst->Play(GetTakeWeaponAnimation(weaponTaken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				weaponState = WeaponState::Taking;
+				weaponHiding = W_NONE;
+				animationState = AS_TAKE_WEAPON_START;
 				if(IsPlayer())
-					player->last_weapon = weapon_taken;
+					player->lastWeapon = weaponTaken;
 
 				if(Net::IsOnline())
 				{
@@ -7393,19 +7393,19 @@ void Unit::Update(float dt)
 			}
 			else if(meshInst->IsEnded(1))
 			{
-				weapon_state = WeaponState::Hidden;
-				weapon_hiding = W_NONE;
+				weaponState = WeaponState::Hidden;
+				weaponHiding = W_NONE;
 				action = A_NONE;
 				meshInst->Deactivate(1);
 
 				if(IsLocalPlayer())
 				{
-					switch(player->next_action)
+					switch(player->nextAction)
 					{
 					// unequip item
 					case NA_REMOVE:
-						if(slots[player->next_action_data.slot])
-							gameGui->inventory->invMine->RemoveSlotItem(player->next_action_data.slot);
+						if(slots[player->nextActionData.slot])
+							gameGui->inventory->invMine->RemoveSlotItem(player->nextActionData.slot);
 						break;
 					// equip item after unequiping old one
 					case NA_EQUIP:
@@ -7415,9 +7415,9 @@ void Unit::Update(float dt)
 							if(index != -1)
 							{
 								gameGui->inventory->invMine->EquipSlotItem(index);
-								if(player->next_action == NA_EQUIP_DRAW)
+								if(player->nextAction == NA_EQUIP_DRAW)
 								{
-									switch(player->next_action_data.item->type)
+									switch(player->nextActionData.item->type)
 									{
 									case IT_WEAPON:
 										player->unit->TakeWeapon(W_ONE_HANDED);
@@ -7436,8 +7436,8 @@ void Unit::Update(float dt)
 						break;
 					// drop item after hiding it
 					case NA_DROP:
-						if(slots[player->next_action_data.slot])
-							gameGui->inventory->invMine->DropSlotItem(player->next_action_data.slot);
+						if(slots[player->nextActionData.slot])
+							gameGui->inventory->invMine->DropSlotItem(player->nextActionData.slot);
 						break;
 					// use consumable
 					case NA_CONSUME:
@@ -7449,23 +7449,23 @@ void Unit::Update(float dt)
 						break;
 					// use usable
 					case NA_USE:
-						if(!player->next_action_data.usable->user)
-							player->UseUsable(player->next_action_data.usable, true);
+						if(!player->nextActionData.usable->user)
+							player->UseUsable(player->nextActionData.usable, true);
 						break;
 					// sell equipped item
 					case NA_SELL:
-						if(slots[player->next_action_data.slot])
-							gameGui->inventory->invTradeMine	->SellSlotItem(player->next_action_data.slot);
+						if(slots[player->nextActionData.slot])
+							gameGui->inventory->invTradeMine->SellSlotItem(player->nextActionData.slot);
 						break;
 					// put equipped item in container
 					case NA_PUT:
-						if(slots[player->next_action_data.slot])
-							gameGui->inventory->invTradeMine->PutSlotItem(player->next_action_data.slot);
+						if(slots[player->nextActionData.slot])
+							gameGui->inventory->invTradeMine->PutSlotItem(player->nextActionData.slot);
 						break;
 					// give equipped item
 					case NA_GIVE:
-						if(slots[player->next_action_data.slot])
-							gameGui->inventory->invTradeMine->GiveSlotItem(player->next_action_data.slot);
+						if(slots[player->nextActionData.slot])
+							gameGui->inventory->invTradeMine->GiveSlotItem(player->nextActionData.slot);
 						break;
 					}
 
@@ -7474,10 +7474,10 @@ void Unit::Update(float dt)
 					if(action == A_NONE && usable && !usable->container)
 					{
 						action = A_USE_USABLE;
-						animation_state = AS_USE_USABLE_USING;
+						animationState = AS_USE_USABLE_USING;
 					}
 				}
-				else if(Net::IsLocal() && !fake_unit && IsAI() && ai->potion != -1)
+				else if(Net::IsLocal() && !fakeUnit && IsAI() && ai->potion != -1)
 				{
 					ConsumeItem(ai->potion);
 					ai->potion = -1;
@@ -7486,30 +7486,30 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_SHOOT:
-		stamina_timer = STAMINA_RESTORE_TIMER;
+		staminaTimer = STAMINA_RESTORE_TIMER;
 		if(!meshInst)
 		{
 			// fix na skutek, nie na przyczynê ;(
-			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), live_state, action, animation,
-				current_animation, animation_state));
+			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), liveState, action, animation,
+				currentAnimation, animationState));
 			goto koniec_strzelania;
 		}
-		if(fake_unit)
+		if(fakeUnit)
 		{
 			if(meshInst->IsEnded(1))
 			{
 				meshInst->Deactivate(1);
 				action = A_NONE;
-				gameLevel->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bowInstance);
 				break;
 			}
 		}
-		else if(animation_state == AS_SHOOT_PREPARE)
+		else if(animationState == AS_SHOOT_PREPARE)
 		{
 			if(meshInst->GetProgress(1) > 20.f / 40)
 				meshInst->groups[1].time = 20.f / 40 * meshInst->groups[1].anim->length;
 		}
-		else if(animation_state == AS_SHOOT_CAN)
+		else if(animationState == AS_SHOOT_CAN)
 		{
 			if(Net::IsLocal() && meshInst->GetProgress(1) > 20.f / 40)
 			{
@@ -7518,7 +7518,7 @@ void Unit::Update(float dt)
 
 				meshInst->SetupBones();
 
-				Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::point_weapon);
+				Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::pointWeapon);
 				assert(point);
 
 				Matrix m2 = point->mat * meshInst->matBones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
@@ -7543,9 +7543,9 @@ void Unit::Update(float dt)
 				if(bullet->ability && bullet->ability->mesh)
 					bullet->mesh = bullet->ability->mesh;
 
-				float dist = Vec3::Distance2d(bullet->pos, target_pos);
+				float dist = Vec3::Distance2d(bullet->pos, targetPos);
 				float t = dist / bullet->speed;
-				float h = target_pos.y - bullet->pos.y;
+				float h = targetPos.y - bullet->pos.y;
 				bullet->yspeed = h / t;
 
 				if(IsPlayer())
@@ -7641,17 +7641,17 @@ void Unit::Update(float dt)
 				}
 			}
 			if(meshInst->GetProgress(1) > 20.f / 40)
-				animation_state = AS_SHOOT_SHOT;
+				animationState = AS_SHOOT_SHOT;
 		}
 		else if(meshInst->GetProgress(1) > 35.f / 40)
 		{
-			animation_state = AS_SHOOT_FINISHED;
+			animationState = AS_SHOOT_FINISHED;
 			if(meshInst->IsEnded(1))
 			{
 			koniec_strzelania:
 				meshInst->Deactivate(1);
 				action = A_NONE;
-				gameLevel->FreeBowInstance(bow_instance);
+				gameLevel->FreeBowInstance(bowInstance);
 				if(Net::IsLocal() && IsAI())
 				{
 					float v = 1.f - float(Get(SkillId::BOW)) / 100;
@@ -7660,21 +7660,21 @@ void Unit::Update(float dt)
 				break;
 			}
 		}
-		bow_instance->groups[0].time = min(meshInst->groups[1].time, bow_instance->groups[0].anim->length);
-		bow_instance->needUpdate = true;
+		bowInstance->groups[0].time = min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
+		bowInstance->needUpdate = true;
 		break;
 	case A_ATTACK:
-		stamina_timer = STAMINA_RESTORE_TIMER;
-		if(fake_unit)
+		staminaTimer = STAMINA_RESTORE_TIMER;
+		if(fakeUnit)
 		{
 			if(meshInst->IsEnded(1))
 			{
 				animation = ANI_BATTLE;
-				current_animation = ANI_STAND;
+				currentAnimation = ANI_STAND;
 				action = A_NONE;
 			}
 		}
-		else if(animation_state == AS_ATTACK_PREPARE)
+		else if(animationState == AS_ATTACK_PREPARE)
 		{
 			float t = GetAttackFrame(0);
 			float p = meshInst->GetProgress(group_index);
@@ -7685,7 +7685,7 @@ void Unit::Update(float dt)
 					float speed = (1.f + GetAttackSpeed()) * GetStaminaAttackSpeedMod();
 					meshInst->groups[group_index].speed = speed;
 					act.attack.power = 2.f;
-					animation_state = AS_ATTACK_CAN_HIT;
+					animationState = AS_ATTACK_CAN_HIT;
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -7710,7 +7710,7 @@ void Unit::Update(float dt)
 		}
 		else
 		{
-			if(animation_state == AS_ATTACK_CAN_HIT && meshInst->GetProgress(group_index) > GetAttackFrame(0))
+			if(animationState == AS_ATTACK_CAN_HIT && meshInst->GetProgress(group_index) > GetAttackFrame(0))
 			{
 				if(Net::IsLocal() && !act.attack.hitted && meshInst->GetProgress(group_index) >= GetAttackFrame(1))
 				{
@@ -7720,17 +7720,17 @@ void Unit::Update(float dt)
 				if(meshInst->GetProgress(group_index) >= GetAttackFrame(2) || meshInst->IsEnded(group_index))
 				{
 					// koniec mo¿liwego ataku
-					animation_state = AS_ATTACK_FINISHED;
+					animationState = AS_ATTACK_FINISHED;
 					meshInst->groups[group_index].speed = 1.f;
 					act.attack.run = false;
 				}
 			}
-			if(animation_state == AS_ATTACK_FINISHED && meshInst->IsEnded(group_index))
+			if(animationState == AS_ATTACK_FINISHED && meshInst->IsEnded(group_index))
 			{
 				if(group_index == 0)
 				{
 					animation = ANI_BATTLE;
-					current_animation = ANI_STAND;
+					currentAnimation = ANI_STAND;
 				}
 				else
 					meshInst->Deactivate(1);
@@ -7746,16 +7746,16 @@ void Unit::Update(float dt)
 	case A_BLOCK:
 		break;
 	case A_BASH:
-		stamina_timer = STAMINA_RESTORE_TIMER;
-		if(animation_state == AS_BASH_ANIMATION)
+		staminaTimer = STAMINA_RESTORE_TIMER;
+		if(animationState == AS_BASH_ANIMATION)
 		{
 			if(meshInst->GetProgress(1) >= data->frames->t[F_BASH])
-				animation_state = AS_BASH_CAN_HIT;
+				animationState = AS_BASH_CAN_HIT;
 		}
-		if(Net::IsLocal() && animation_state == AS_BASH_CAN_HIT)
+		if(Net::IsLocal() && animationState == AS_BASH_CAN_HIT)
 		{
 			if(DoShieldSmash())
-				animation_state = AS_BASH_HITTED;
+				animationState = AS_BASH_HITTED;
 		}
 		if(meshInst->IsEnded(1))
 		{
@@ -7766,23 +7766,23 @@ void Unit::Update(float dt)
 	case A_DRINK:
 		{
 			float p = meshInst->GetProgress(1);
-			if(p >= 28.f / 52.f && animation_state == AS_DRINK_START)
+			if(p >= 28.f / 52.f && animationState == AS_DRINK_START)
 			{
 				PlaySound(gameRes->sGulp, DRINK_SOUND_DIST);
-				animation_state = AS_DRINK_EFFECT;
+				animationState = AS_DRINK_EFFECT;
 				if(Net::IsLocal())
-					ApplyConsumableEffect(used_item->ToConsumable());
+					ApplyConsumableEffect(usedItem->ToConsumable());
 			}
-			if(p >= 49.f / 52.f && animation_state == AS_DRINK_EFFECT)
+			if(p >= 49.f / 52.f && animationState == AS_DRINK_EFFECT)
 			{
-				animation_state = AS_DRINK_EFFECT;
-				used_item = nullptr;
+				animationState = AS_DRINK_EFFECT;
+				usedItem = nullptr;
 			}
 			if(meshInst->IsEnded(1))
 			{
 				if(usable)
 				{
-					animation_state = AS_USE_USABLE_USING;
+					animationState = AS_USE_USABLE_USING;
 					action = A_USE_USABLE;
 				}
 				else
@@ -7794,27 +7794,27 @@ void Unit::Update(float dt)
 	case A_EAT:
 		{
 			float p = meshInst->GetProgress(1);
-			if(p >= 32.f / 70 && animation_state == AS_EAT_START)
+			if(p >= 32.f / 70 && animationState == AS_EAT_START)
 			{
-				animation_state = AS_EAT_SOUND;
+				animationState = AS_EAT_SOUND;
 				PlaySound(gameRes->sEat, EAT_SOUND_DIST);
 			}
-			if(p >= 48.f / 70 && animation_state == AS_EAT_SOUND)
+			if(p >= 48.f / 70 && animationState == AS_EAT_SOUND)
 			{
-				animation_state = AS_EAT_EFFECT;
+				animationState = AS_EAT_EFFECT;
 				if(Net::IsLocal())
-					ApplyConsumableEffect(used_item->ToConsumable());
+					ApplyConsumableEffect(usedItem->ToConsumable());
 			}
-			if(p >= 60.f / 70 && animation_state == AS_EAT_EFFECT)
+			if(p >= 60.f / 70 && animationState == AS_EAT_EFFECT)
 			{
-				animation_state = AS_EAT_END;
-				used_item = nullptr;
+				animationState = AS_EAT_END;
+				usedItem = nullptr;
 			}
 			if(meshInst->IsEnded(1))
 			{
 				if(usable)
 				{
-					animation_state = AS_USE_USABLE_USING;
+					animationState = AS_USE_USABLE_USING;
 					action = A_USE_USABLE;
 				}
 				else
@@ -7839,24 +7839,24 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_CAST:
-		if(animation_state != AS_CAST_KNEEL)
+		if(animationState != AS_CAST_KNEEL)
 		{
 			if(Net::IsLocal())
 			{
 				if(IsOtherPlayer()
-					? animation_state == AS_CAST_TRIGGER
-					: (animation_state == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+					? animationState == AS_CAST_TRIGGER
+					: (animationState == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST]))
 				{
-					animation_state = AS_CAST_CASTED;
+					animationState = AS_CAST_CASTED;
 					CastSpell();
 				}
 			}
-			else if(IsLocalPlayer() && animation_state == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST])
+			else if(IsLocalPlayer() && animationState == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST])
 			{
-				animation_state = AS_CAST_CASTED;
+				animationState = AS_CAST_CASTED;
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CAST_SPELL;
-				c.pos = target_pos;
+				c.pos = targetPos;
 			}
 			if(meshInst->IsEnded(group_index))
 			{
@@ -7885,7 +7885,7 @@ void Unit::Update(float dt)
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
-			current_animation = (Animation)-1;
+			currentAnimation = (Animation)-1;
 		}
 		break;
 	case A_USE_USABLE:
@@ -7898,16 +7898,16 @@ void Unit::Update(float dt)
 			}
 			else if(Net::IsClient())
 			{
-				if(!IsPlayer() || !player->is_local)
+				if(!IsPlayer() || !player->isLocal)
 					allow_move = false;
 			}
-			if(animation_state == AS_USE_USABLE_MOVE_TO_ENDPOINT)
+			if(animationState == AS_USE_USABLE_MOVE_TO_ENDPOINT)
 			{
 				timer += dt;
 				if(allow_move && timer >= 0.5f)
 				{
 					action = A_NONE;
-					visual_pos = pos = target_pos;
+					visualPos = pos = targetPos;
 					changed = true;
 					if(Net::IsOnline())
 					{
@@ -7925,10 +7925,10 @@ void Unit::Update(float dt)
 				if(allow_move)
 				{
 					// przesuñ postaæ
-					visual_pos = pos = Vec3::Lerp(target_pos2, target_pos, timer * 2);
+					visualPos = pos = Vec3::Lerp(targetPos2, targetPos, timer * 2);
 
 					// obrót
-					float target_rot = Vec3::LookAtAngle(target_pos, usable->pos);
+					float target_rot = Vec3::LookAtAngle(targetPos, usable->pos);
 					float dif = AngleDiff(rot, target_rot);
 					if(NotZero(dif))
 					{
@@ -7948,16 +7948,16 @@ void Unit::Update(float dt)
 			{
 				BaseUsable& bu = *usable->base;
 
-				if(animation_state > AS_USE_USABLE_MOVE_TO_OBJECT)
+				if(animationState > AS_USE_USABLE_MOVE_TO_OBJECT)
 				{
 					// odtwarzanie dŸwiêku
 					if(bu.sound)
 					{
 						if(meshInst->GetProgress() >= bu.sound_timer)
 						{
-							if(animation_state == AS_USE_USABLE_USING)
+							if(animationState == AS_USE_USABLE_USING)
 							{
-								animation_state = AS_USE_USABLE_USING_SOUND;
+								animationState = AS_USE_USABLE_USING_SOUND;
 								soundMgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
 								if(Net::IsServer())
 								{
@@ -7967,8 +7967,8 @@ void Unit::Update(float dt)
 								}
 							}
 						}
-						else if(animation_state == AS_USE_USABLE_USING_SOUND)
-							animation_state = AS_USE_USABLE_USING;
+						else if(animationState == AS_USE_USABLE_USING_SOUND)
+							animationState = AS_USE_USABLE_USING;
 					}
 				}
 				else if(Net::IsLocal() || IsLocalPlayer())
@@ -7979,7 +7979,7 @@ void Unit::Update(float dt)
 						target_rot = rot;
 					else if(bu.limit_rot == 1)
 					{
-						float rot1 = Clip(act.use_usable.rot + PI / 2),
+						float rot1 = Clip(act.useUsable.rot + PI / 2),
 							dif1 = AngleDiff(rot1, usable->rot),
 							rot2 = Clip(usable->rot + PI),
 							dif2 = AngleDiff(rot1, rot2);
@@ -7993,7 +7993,7 @@ void Unit::Update(float dt)
 						target_rot = usable->rot;
 					else if(bu.limit_rot == 3)
 					{
-						float rot1 = Clip(act.use_usable.rot + PI),
+						float rot1 = Clip(act.useUsable.rot + PI),
 							dif1 = AngleDiff(rot1, usable->rot),
 							rot2 = Clip(usable->rot + PI),
 							dif2 = AngleDiff(rot1, rot2);
@@ -8029,7 +8029,7 @@ void Unit::Update(float dt)
 						if(timer >= 0.5f)
 						{
 							timer = 0.5f;
-							animation_state = AS_USE_USABLE_USING;
+							animationState = AS_USE_USABLE_USING;
 							if(IsLocalPlayer() && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
 								gameGui->craft->Show();
 						}
@@ -8037,7 +8037,7 @@ void Unit::Update(float dt)
 						// przesuñ postaæ i fizykê
 						if(allow_move)
 						{
-							visual_pos = pos = Vec3::Lerp(target_pos, target_pos2, timer * 2);
+							visualPos = pos = Vec3::Lerp(targetPos, targetPos2, timer * 2);
 							changed = true;
 							gameLevel->globalCol.clear();
 							float my_radius = GetUnitRadius();
@@ -8074,7 +8074,7 @@ void Unit::Update(float dt)
 				break;
 		}
 		timer += dt;
-		if(animation_state == AS_POSITION_HURT)
+		if(animationState == AS_POSITION_HURT)
 		{
 			// obs³uga animacji cierpienia
 			if(meshInst->mesh->head.n_groups == 2)
@@ -8082,19 +8082,19 @@ void Unit::Update(float dt)
 				if(meshInst->IsEnded(1) || timer >= 0.5f)
 				{
 					meshInst->Deactivate(1);
-					animation_state = AS_POSITION_HURT_END;
+					animationState = AS_POSITION_HURT_END;
 				}
 			}
 			else if(meshInst->IsEnded() || timer >= 0.5f)
 			{
 				animation = ANI_BATTLE;
-				animation_state = AS_POSITION_HURT_END;
+				animationState = AS_POSITION_HURT_END;
 			}
 		}
 		if(timer >= 0.5f)
 		{
 			action = A_NONE;
-			visual_pos = pos = target_pos;
+			visualPos = pos = targetPos;
 
 			if(Net::IsOnline())
 			{
@@ -8109,7 +8109,7 @@ void Unit::Update(float dt)
 				UseUsable(nullptr);
 		}
 		else
-			visual_pos = pos = Vec3::Lerp(target_pos2, target_pos, timer * 2);
+			visualPos = pos = Vec3::Lerp(targetPos2, targetPos, timer * 2);
 		changed = true;
 		break;
 	case A_PICKUP:
@@ -8117,7 +8117,7 @@ void Unit::Update(float dt)
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
-			current_animation = (Animation)-1;
+			currentAnimation = (Animation)-1;
 		}
 		break;
 	case A_DASH:
@@ -8311,7 +8311,7 @@ void Unit::Update(float dt)
 		{
 			action = A_NONE;
 			animation = ANI_STAND;
-			current_animation = (Animation)-1;
+			currentAnimation = (Animation)-1;
 		}
 		break;
 	case A_USE_ITEM:
@@ -8329,13 +8329,13 @@ void Unit::Update(float dt)
 				e.power = 0;
 				e.time = 2.5f;
 				AddEffect(e);
-				RemoveItem(used_item, 1u);
-				used_item = nullptr;
+				RemoveItem(usedItem, 1u);
+				usedItem = nullptr;
 			}
 			soundMgr->PlaySound3d(gameRes->sZap, GetCenter(), MAGIC_SCROLL_SOUND_DIST);
 			action = A_NONE;
 			animation = ANI_STAND;
-			current_animation = (Animation)-1;
+			currentAnimation = (Animation)-1;
 		}
 		break;
 	default:
@@ -8511,7 +8511,7 @@ void Unit::Moved(bool warped, bool dash)
 		int index = 0;
 		while(portal)
 		{
-			if(portal->target_loc != -1 && Vec3::Distance2d(pos, portal->pos) < 2.f)
+			if(portal->targetLoc != -1 && Vec3::Distance2d(pos, portal->pos) < 2.f)
 			{
 				if(CircleToRotatedRectangle(pos.x, pos.z, GetUnitRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
 				{
@@ -8542,14 +8542,14 @@ void Unit::Moved(bool warped, bool dash)
 					break;
 				}
 			}
-			portal = portal->next_portal;
+			portal = portal->nextPortal;
 			++index;
 		}
 	}
 
 	if(Net::IsLocal() || !IsLocalPlayer() || net->interpolateTimer <= 0.f)
 	{
-		visual_pos = pos;
+		visualPos = pos;
 		changed = true;
 	}
 	UpdatePhysics();
@@ -8652,7 +8652,7 @@ void Unit::MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool 
 }
 
 //=================================================================================================
-void Unit::ChangeBase(UnitData* ud, bool update_items)
+void Unit::ChangeBase(UnitData* ud, bool updateItems)
 {
 	assert(ud);
 
@@ -8665,7 +8665,7 @@ void Unit::ChangeBase(UnitData* ud, bool update_items)
 	stats = data->GetStats(level);
 	CalculateStats();
 
-	if(update_items)
+	if(updateItems)
 	{
 		ud->item_script->Parse(*this);
 		for(const Item* item : slots)
@@ -8705,7 +8705,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 	newLocPart->units.push_back(this);
 	locPart = newLocPart;
 	pos = newPos;
-	visual_pos = newPos;
+	visualPos = newPos;
 
 	if(is_active != activate)
 	{
@@ -8789,11 +8789,11 @@ void Unit::MoveOffscreen()
 void Unit::Kill()
 {
 	assert(!gameLevel->ready); // TODO
-	live_state = DEAD;
+	liveState = DEAD;
 	if(data->mesh->IsLoaded())
 	{
-		animation = current_animation = ANI_DIE;
-		SetAnimationAtEnd(NAMES::ani_die);
+		animation = currentAnimation = ANI_DIE;
+		SetAnimationAtEnd(NAMES::aniDie);
 		gameLevel->CreateBlood(*gameLevel->lvl, *this, true);
 	}
 	else
@@ -8801,15 +8801,15 @@ void Unit::Kill()
 	hp = 0.f;
 	++gameStats->totalKills;
 	UpdatePhysics();
-	if(event_handler)
-		event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
+	if(eventHandler)
+		eventHandler->HandleUnitEvent(UnitEventHandler::DIE, this);
 }
 
 //=================================================================================================
-void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
+void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 {
 	// blood particles
-	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
+	if(!IsSet(dmgFlags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = gameRes->tBlood[data->blood];
@@ -8849,27 +8849,27 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	}
 
 	// apply magic resistance
-	if(IsSet(dmg_flags, DMG_MAGICAL))
+	if(IsSet(dmgFlags, DMG_MAGICAL))
 		dmg *= CalculateMagicResistance();
 
 	if(giver && giver->IsPlayer())
 	{
 		// update player damage done
-		giver->player->dmg_done += (int)dmg;
-		giver->player->stat_flags |= STAT_DMG_DONE;
+		giver->player->dmgDone += (int)dmg;
+		giver->player->statFlags |= STAT_DMG_DONE;
 	}
 
 	if(IsPlayer())
 	{
 		// update player damage taken
-		player->dmg_taken += (int)dmg;
-		player->stat_flags |= STAT_DMG_TAKEN;
+		player->dmgTaken += (int)dmg;
+		player->statFlags |= STAT_DMG_TAKEN;
 
 		// train endurance
 		player->Train(TrainWhat::TakeDamage, min(dmg, hp) / hpmax, (giver ? giver->level : -1));
 
 		// red screen
-		player->last_dmg += dmg;
+		player->lastDmg += dmg;
 	}
 
 	// aggravate units
@@ -8884,12 +8884,12 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 	else
 	{
 		// unit hurt sound
-		if(hurt_timer <= 0.f && data->sounds->Have(SOUND_PAIN))
+		if(hurtTimer <= 0.f && data->sounds->Have(SOUND_PAIN))
 		{
 			game->PlayAttachedSound(*this, data->sounds->Random(SOUND_PAIN), PAIN_SOUND_DIST);
-			hurt_timer = Random(1.f, 1.5f);
-			if(IsSet(dmg_flags, DMG_NO_BLOOD))
-				hurt_timer += 1.f;
+			hurtTimer = Random(1.f, 1.5f);
+			if(IsSet(dmgFlags, DMG_NO_BLOOD))
+				hurtTimer += 1.f;
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -8916,13 +8916,13 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 //=================================================================================================
 void Unit::AttackReaction(Unit& attacker)
 {
-	if(attacker.IsPlayer() && IsAI() && in_arena == -1 && !attack_team)
+	if(attacker.IsPlayer() && IsAI() && inArena == -1 && !attackTeam)
 	{
 		if(data->group == G_CITIZENS)
 		{
 			if(!team->isBandit)
 			{
-				if(dont_attack && IsSet(data->flags, F_PEACEFUL))
+				if(dontAttack && IsSet(data->flags, F_PEACEFUL))
 				{
 					if(ai->state == AIController::Idle)
 					{
@@ -8948,13 +8948,13 @@ void Unit::AttackReaction(Unit& attacker)
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
-		if(dont_attack && !IsSet(data->flags, F_PEACEFUL))
+		if(dontAttack && !IsSet(data->flags, F_PEACEFUL))
 		{
 			for(vector<Unit*>::iterator it = gameLevel->localPart->units.begin(), end = gameLevel->localPart->units.end(); it != end; ++it)
 			{
-				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
+				if((*it)->dontAttack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
-					(*it)->dont_attack = false;
+					(*it)->dontAttack = false;
 					(*it)->ai->changeAiMode = true;
 				}
 			}
@@ -8996,28 +8996,28 @@ bool Unit::DoShieldSmash()
 	if(!mesh)
 		return false;
 
-	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), meshInst->mesh->GetPoint(NAMES::point_shield), hitpoint))
+	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), meshInst->mesh->GetPoint(NAMES::pointShield), hitpoint))
 		return false;
 
 	if(!hitted)
 		return true;
 
-	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
+	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->lastBash <= 0.f)
 	{
-		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
+		hitted->lastBash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
 
 		hitted->BreakAction();
 
 		if(hitted->action != A_POSITION)
 			hitted->action = A_PAIN;
 		else
-			hitted->animation_state = AS_POSITION_HURT;
+			hitted->animationState = AS_POSITION_HURT;
 
 		if(hitted->meshInst->mesh->head.n_groups == 2)
-			hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+			hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 		else
 		{
-			hitted->meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+			hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 			hitted->animation = ANI_PLAY;
 		}
 
@@ -9035,10 +9035,10 @@ bool Unit::DoShieldSmash()
 }
 
 //=================================================================================================
-void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash)
+void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmgType, bool bash)
 {
 	// calculate modifiers
-	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
+	int mod = CombatHelper::CalculateModifier(dmgType, hitted.data->flags);
 	float m = 1.f;
 	if(mod == -1)
 		m += 0.25f;
@@ -9101,13 +9101,13 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 				if(hitted.action != A_POSITION)
 					hitted.action = A_PAIN;
 				else
-					hitted.animation_state = AS_POSITION_HURT;
+					hitted.animationState = AS_POSITION_HURT;
 
 				if(hitted.meshInst->mesh->head.n_groups == 2)
-					hitted.meshInst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+					hitted.meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				else
 				{
-					hitted.meshInst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.meshInst->Play(NAMES::aniHurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 					hitted.animation = ANI_PLAY;
 				}
 			}
@@ -9189,17 +9189,17 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 {
 	const float speed = _speed > 0.f ? _speed : GetBowAttackSpeed();
-	meshInst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE, 1);
+	meshInst->Play(NAMES::aniShoot, PLAY_PRIO1 | PLAY_ONCE, 1);
 	meshInst->groups[1].speed = speed;
 	action = A_SHOOT;
 	act.shoot.ability = nullptr;
-	animation_state = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
-	if(!bow_instance)
-		bow_instance = gameLevel->GetBowInstance(GetBow().mesh);
-	bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-	bow_instance->groups[0].speed = speed;
+	animationState = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
+	if(!bowInstance)
+		bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
+	bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+	bowInstance->groups[0].speed = speed;
 
-	if(!fake_unit && Net::IsLocal())
+	if(!fakeUnit && Net::IsLocal())
 	{
 		RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
@@ -9219,8 +9219,8 @@ void Unit::AlertAllies(Unit* target)
 {
 	for(Unit* u : locPart->units)
 	{
-		if(u->to_remove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
-			|| u->ai->alertTarget || u->dont_attack)
+		if(u->toRemove || this == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(*u) || u->ai->state == AIController::Fighting
+			|| u->ai->alertTarget || u->dontAttack)
 			continue;
 
 		if(Vec3::Distance(pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*this, *u))

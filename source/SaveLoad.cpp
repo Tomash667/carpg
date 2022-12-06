@@ -86,7 +86,7 @@ bool Game::CanSaveGame() const
 		if(team->IsAnyoneAlive() && Net::IsServer())
 			return true;
 	}
-	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
+	else if(pc->unit->IsAlive() || pc->unit->inArena != -1)
 		return true;
 
 	return false;
@@ -247,10 +247,10 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	net->mpQuickload = (Net::IsOnline() && Any(gameState, GS_LEVEL, GS_WORLDMAP));
 	if(net->mpQuickload)
 	{
-		bool on_worldmap;
+		bool onWorldmap;
 		try
 		{
-			on_worldmap = ValidateNetSaveForLoading(f, slot);
+			onWorldmap = ValidateNetSaveForLoading(f, slot);
 		}
 		catch(SaveException& ex)
 		{
@@ -259,7 +259,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 		BitStreamWriter f;
 		f << ID_LOADING;
-		f << on_worldmap;
+		f << onWorldmap;
 		net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 
 		net->mpLoad = true;
@@ -365,9 +365,9 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	for(PlayerInfo& info : net->players)
 	{
 		bool ok = false;
-		if(info.pc->name == ss.player_name)
+		if(info.pc->name == ss.playerName)
 			continue;
-		for(string& str : ss.mp_players)
+		for(string& str : ss.mpPlayers)
 		{
 			if(str == info.name)
 			{
@@ -378,7 +378,7 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 		if(!ok)
 			throw SaveException(Format(txMissingPlayerInSave, info.name.c_str()), Format("Missing player '%s' in save.", info.name.c_str()));
 	}
-	return ss.on_worldmap;
+	return ss.onWorldmap;
 }
 
 //=================================================================================================
@@ -424,7 +424,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		f.WriteCasted<byte>(net->activePlayers - 1);
 		for(PlayerInfo& info : net->players)
 		{
-			if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+			if(!info.pc->isLocal && info.left == PlayerInfo::LEFT_NO)
 				f << info.pc->name;
 		}
 	}
@@ -434,28 +434,28 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	if(slot)
 	{
 		slot->valid = true;
-		slot->load_version = V_CURRENT;
-		slot->player_name = pc->name;
-		slot->player_class = pc->unit->data->clas;
-		slot->mp_players.clear();
+		slot->loadVersion = V_CURRENT;
+		slot->playerName = pc->name;
+		slot->playerClass = pc->unit->data->clas;
+		slot->mpPlayers.clear();
 		if(Net::IsOnline())
 		{
 			for(PlayerInfo& info : net->players)
 			{
-				if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
-					slot->mp_players.push_back(info.pc->name);
+				if(!info.pc->isLocal && info.left == PlayerInfo::LEFT_NO)
+					slot->mpPlayers.push_back(info.pc->name);
 			}
 		}
-		slot->save_date = time(nullptr);
-		slot->game_date = world->GetDateValue();
+		slot->saveDate = time(nullptr);
+		slot->gameDate = world->GetDateValue();
 		slot->hardcore = hardcoreMode;
-		slot->on_worldmap = (gameState == GS_WORLDMAP);
+		slot->onWorldmap = (gameState == GS_WORLDMAP);
 		slot->location = gameLevel->GetCurrentLocationText();
-		slot->img_offset = f.GetPos() + 4;
+		slot->imgOffset = f.GetPos() + 4;
 	}
-	uint img_size = app::render->SaveToFile(rtSave->tex, f);
+	uint imgSize = app::render->SaveToFile(rtSave->tex, f);
 	if(slot)
-		slot->img_size = img_size;
+		slot->imgSize = imgSize;
 
 	// ids
 	f << ParticleEmitter::impl.idCounter;
@@ -558,8 +558,8 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	f.Skip<int>();
 
 	// save version
-	f >> slot.load_version;
-	if(slot.load_version < MIN_SUPPORT_LOAD_VERSION)
+	f >> slot.loadVersion;
+	if(slot.loadVersion < MIN_SUPPORT_LOAD_VERSION)
 		return false;
 
 	// start version
@@ -572,19 +572,19 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	byte flags;
 	f >> flags;
 	slot.hardcore = IsSet(flags, SF_HARDCORE);
-	slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
+	slot.onWorldmap = IsSet(flags, SF_ON_WORLDMAP);
 	f >> slot.text;
-	f >> slot.player_name;
-	slot.player_class = Class::TryGet(f.ReadString1());
+	f >> slot.playerName;
+	slot.playerClass = Class::TryGet(f.ReadString1());
 	if(IsSet(flags, SF_ONLINE))
-		f.ReadStringArray<byte, byte>(slot.mp_players);
+		f.ReadStringArray<byte, byte>(slot.mpPlayers);
 	else
-		slot.mp_players.clear();
-	f >> slot.save_date;
-	f >> slot.game_date;
+		slot.mpPlayers.clear();
+	f >> slot.saveDate;
+	f >> slot.gameDate;
 	f >> slot.location;
-	f >> slot.img_size;
-	slot.img_offset = f.GetPos();
+	f >> slot.imgSize;
+	slot.imgOffset = f.GetPos();
 
 	return true;
 }
@@ -667,7 +667,7 @@ void Game::LoadGame(GameReader& f)
 	f.SkipString1(); // player class
 	if(net->mpLoad) // mp players
 		f.SkipStringArray<byte, byte>();
-	f.Skip<time_t>(); // save_date
+	f.Skip<time_t>(); // saveDate
 	f.Skip<int>(); // game_year
 	f.Skip<int>(); // game_month
 	f.Skip<int>(); // game_day
@@ -873,8 +873,8 @@ void Game::LoadGame(GameReader& f)
 	// unit event handlers
 	for(Unit* unit : loadUnitHandler)
 	{
-		unit->event_handler = dynamic_cast<UnitEventHandler*>(questMgr->FindAnyQuest((int)unit->event_handler));
-		assert(unit->event_handler);
+		unit->eventHandler = dynamic_cast<UnitEventHandler*>(questMgr->FindAnyQuest((int)unit->eventHandler));
+		assert(unit->eventHandler);
 	}
 
 	// chest event handlers
@@ -922,7 +922,7 @@ void Game::LoadGame(GameReader& f)
 			throw "Failed to read multiplayer data.";
 	}
 	else
-		pc->is_local = true;
+		pc->isLocal = true;
 
 	// end of save
 	char eos[3];
@@ -955,7 +955,7 @@ void Game::LoadGame(GameReader& f)
 	{
 		gameLevel->ready = true;
 		SetMusic();
-		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
+		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animationState, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
 			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
 			gameGui->craft->Show();
 	}

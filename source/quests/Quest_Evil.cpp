@@ -422,7 +422,7 @@ void Quest_Evil::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 	if(event_type == UnitEventHandler::DIE && prog == Progress::AllPortalsClosed)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = nullptr;
+		unit->eventHandler = nullptr;
 	}
 }
 
@@ -629,11 +629,11 @@ void Quest_Evil::GeneratePortal()
 	float rot = PI * Random(0, 3);
 	gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
-	inside->portal->target_loc = -1;
-	inside->portal->next_portal = nullptr;
+	inside->portal->targetLoc = -1;
+	inside->portal->nextPortal = nullptr;
 	inside->portal->rot = rot;
 	inside->portal->pos = portal_pos;
-	inside->portal->at_level = gameLevel->dungeonLevel;
+	inside->portal->atLevel = gameLevel->dungeonLevel;
 
 	int d = GetLocId(world->GetCurrentLocation());
 	loc[d].pos = portal_pos;
@@ -668,7 +668,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 			Unit* u2 = gameLevel->SpawnUnitNearLocation(locPart, u->pos, *UnitData::Get("zombie_ancient"));
 			if(u2)
 			{
-				u2->dont_attack = true;
+				u2->dontAttack = true;
 				u2->OrderGuard(u);
 			}
 		}

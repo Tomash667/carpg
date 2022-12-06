@@ -298,14 +298,14 @@ void Quest_Mages2::SetProgress(int prog2)
 			team->RemoveMember(u);
 			mages_state = State::MageLeaving;
 			good_mage_name = u->hero->name;
-			hd_mage.Get(*u->human_data);
+			hd_mage.Get(*u->humanData);
 
 			if(world->GetCurrentLocationIndex() == mage_loc)
 				u->OrderGoToInn();
 			else
 			{
 				u->OrderLeave();
-				u->event_handler = this;
+				u->eventHandler = this;
 			}
 
 			targetLoc->SetKnown();
@@ -451,7 +451,7 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 	else if(unit->data->id == "q_magowie_boss" && event_type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = nullptr;
+		unit->eventHandler = nullptr;
 	}
 }
 

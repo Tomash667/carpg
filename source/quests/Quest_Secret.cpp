@@ -70,7 +70,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 		state = SECRET_FIGHT;
 		game->arena->units.clear();
 
-		ctx.talker->in_arena = 1;
+		ctx.talker->inArena = 1;
 		game->arena->units.push_back(ctx.talker);
 		if(Net::IsOnline())
 		{
@@ -81,7 +81,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 
 		for(Unit& unit : team->members)
 		{
-			unit.in_arena = 0;
+			unit.inArena = 0;
 			game->arena->units.push_back(&unit);
 			if(Net::IsOnline())
 			{
@@ -174,7 +174,7 @@ void Quest_Secret::UpdateFight()
 	for(vector<Unit*>::iterator it = arena->units.begin(), end = arena->units.end(); it != end; ++it)
 	{
 		if((*it)->IsStanding())
-			count[(*it)->in_arena]++;
+			count[(*it)->inArena]++;
 	}
 
 	if(arena->units[0]->hp < 10.f)
@@ -185,7 +185,7 @@ void Quest_Secret::UpdateFight()
 		// revive all
 		for(Unit* unit : arena->units)
 		{
-			unit->in_arena = -1;
+			unit->inArena = -1;
 			if(unit->hp <= 0.f)
 				unit->Standup();
 

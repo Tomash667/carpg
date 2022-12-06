@@ -83,7 +83,7 @@ void Game::SaveOptions()
 void Game::StartNewGame()
 {
 	HumanData hd;
-	hd.Get(*gameGui->createCharacter->unit->human_data);
+	hd.Get(*gameGui->createCharacter->unit->humanData);
 	NewGameCommon(gameGui->createCharacter->clas, gameGui->createCharacter->playerName.c_str(), hd, gameGui->createCharacter->cc, false);
 }
 
@@ -143,7 +143,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	pc = new PlayerController;
 	pc->id = 0;
-	pc->is_local = true;
+	pc->isLocal = true;
 	pc->name = name;
 	pc->Init(*u, &cc);
 
@@ -1392,7 +1392,7 @@ void Game::UpdateServerTransfer(float dt)
 				pc = u->player;
 				u->player->dialogCtx = &dialogContext;
 				u->player->dialogCtx->isLocal = true;
-				u->player->is_local = true;
+				u->player->isLocal = true;
 				gameGui->ability->Refresh();
 				gameLevel->camera.target = u;
 			}
@@ -2087,7 +2087,7 @@ void Game::OnCreateCharacter(int id)
 		// set data
 		Class* old_class = info.clas;
 		info.clas = gameGui->createCharacter->clas;
-		info.hd.Get(*gameGui->createCharacter->unit->human_data);
+		info.hd.Get(*gameGui->createCharacter->unit->humanData);
 		info.cc = gameGui->createCharacter->cc;
 		// send info to other active players about changing my class
 		if(Net::IsServer())

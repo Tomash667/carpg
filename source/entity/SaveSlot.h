@@ -8,12 +8,12 @@ struct SaveSlot
 {
 	static const int MAX_SLOTS = 11;
 
-	string text, player_name, location;
-	vector<string> mp_players;
-	Date game_date;
-	int load_version;
-	Class* player_class;
-	time_t save_date;
-	uint img_size, img_offset;
-	bool valid, hardcore, on_worldmap;
+	string text, playerName, location;
+	vector<string> mpPlayers;
+	Date gameDate;
+	int loadVersion;
+	Class* playerClass;
+	time_t saveDate;
+	uint imgSize, imgOffset;
+	bool valid, hardcore, onWorldmap;
 };

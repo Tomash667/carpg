@@ -245,7 +245,7 @@ void LevelGui::DrawFront()
 		for(auto& it : sorted_units)
 		{
 			Unit& u = *it.unit;
-			Vec3 text_pos = u.visual_pos;
+			Vec3 text_pos = u.visualPos;
 			text_pos.y += u.GetUnitHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
@@ -276,12 +276,12 @@ void LevelGui::DrawFront()
 							str += Format(" %s(%d)", unit->data->id.c_str(), unit->id);
 						break;
 					case ORDER_AUTO_TALK:
-						str += u.order->auto_talk == AutoTalkMode::Leader ? " leader" : " normal";
-						if(u.order->auto_talk_dialog)
+						str += u.order->autoTalk == AutoTalkMode::Leader ? " leader" : " normal";
+						if(u.order->autoTalkDialog)
 						{
-							str += Format(",%s", u.order->auto_talk_dialog->id.c_str());
-							if(u.order->auto_talk_quest)
-								str += Format(",%d", u.order->auto_talk_quest->id);
+							str += Format(",%s", u.order->autoTalkDialog->id.c_str());
+							if(u.order->autoTalkQuest)
+								str += Format(",%d", u.order->autoTalkQuest->id);
 						}
 						break;
 					}
@@ -801,7 +801,7 @@ void LevelGui::DrawSpeechBubbles()
 		else
 			pos = sb.lastPos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !gameLevel->CanSee(locPart, game->pc->unit->pos, sb.lastPos))
+		if(Vec3::Distance(game->pc->unit->visualPos, pos) > ALERT_RANGE || !gameLevel->CanSee(locPart, game->pc->unit->pos, sb.lastPos))
 		{
 			sb.visible = false;
 			continue;
@@ -1345,7 +1345,7 @@ void LevelGui::AddSpeechBubble(Unit* unit, cstring text)
 	unit->bubble->lastPos = unit->GetHeadPoint();
 
 	unit->talking = true;
-	unit->talk_timer = 0.f;
+	unit->talkTimer = 0.f;
 }
 
 //=================================================================================================
@@ -1581,8 +1581,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			case BAR_STAMINA:
 				{
 					int stamina = (int)u->stamina;
-					int stamina_max = (int)u->stamina_max;
-					tooltip.text = Format("%s: %d/%d", txStamina, stamina, stamina_max);
+					int staminaMax = (int)u->staminaMax;
+					tooltip.text = Format("%s: %d/%d", txStamina, stamina, staminaMax);
 				}
 				break;
 			}
@@ -1892,7 +1892,7 @@ void LevelGui::UpdatePlayerView(float dt)
 	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(&u == &u2 || u2.to_remove)
+		if(&u == &u2 || u2.toRemove)
 			continue;
 
 		bool mark = false;
@@ -1907,8 +1907,8 @@ void LevelGui::UpdatePlayerView(float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
-			if(dist < ALERT_RANGE && gameLevel->camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && gameLevel->CanSee(u, u2))
+			float dist = Vec3::Distance(u.visualPos, u2.visualPos);
+			if(dist < ALERT_RANGE && gameLevel->camera.frustum.SphereToFrustum(u2.visualPos, u2.GetSphereRadius()) && gameLevel->CanSee(u, u2))
 				AddUnitView(&u2);
 		}
 	}

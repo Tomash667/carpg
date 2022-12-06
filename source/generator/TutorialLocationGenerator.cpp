@@ -133,7 +133,7 @@ void TutorialLocationGenerator::OnEnter()
 	Int2 start_tile;
 
 	lvl.w = lvl.h = 22;
-	inside->SetActiveLevel(dungeon_level);
+	inside->SetActiveLevel(dungeonLevel);
 	gameLevel->lvl = &inside->GetLevelData();
 	gameLevel->Apply();
 	SetDungeonParamsAndTextures(g_base_locations[TUTORIAL_FORT]);
@@ -196,7 +196,7 @@ void TutorialLocationGenerator::OnEnter()
 					tt.id = int(c - '0');
 					tt.state = (tt.id == 0 ? 1 : 0);
 					tt.text = quest.txTut[tt.id];
-					tt.pos = Vec3(2.f*x + 1, 0, 2.f*y + 1);
+					tt.pos = Vec3(2.f * x + 1, 0, 2.f * y + 1);
 				}
 				break;
 			case 'S':
@@ -219,7 +219,7 @@ void TutorialLocationGenerator::OnEnter()
 					case 1:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f * x + 1, 0, 2.f * y + o->size.y), PI);
 							chest->AddItem(Item::Get("sword_long"));
 							chest->AddItem(Item::Get("shield_wood"));
 							chest->AddItem(Item::Get("al_leather"));
@@ -229,21 +229,21 @@ void TutorialLocationGenerator::OnEnter()
 						}
 						break;
 					case 2:
-						quest.dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
+						quest.dummy = Vec3(2.f * x + 1, 0, 2.f * y + 1);
 						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("melee_target"), quest.dummy, PI / 2);
 						break;
 					case 3:
 						{
-							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
+							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f * x + 1, 0, 2.f * y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->ai->startRot = PI;
-							u->event_handler = &quest;
+							u->eventHandler = &quest;
 						}
 						break;
 					case 4:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f * x + 1, 0, 2.f * y + o->size.y), PI);
 							chest->AddItem(Item::Get("bow_short"));
 							chest->AddItem(Item::Get("p_hp"));
 							chest->AddItem(Item::gold, Random(75, 100));
@@ -252,11 +252,11 @@ void TutorialLocationGenerator::OnEnter()
 						}
 						break;
 					case 5:
-						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("bow_target"), Vec3(2.f * x + 1, 0, 2.f * y + 1), -PI / 2);
 						break;
 					case 6:
 						{
-							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
+							Unit* u = gameLevel->SpawnUnitNearLocation(lvl, Vec3(2.f * x + 1, 0, 2.f * y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 							u->ai->startRot = PI;
 						}
@@ -296,5 +296,5 @@ void TutorialLocationGenerator::OnEnter()
 
 	gameLevel->SpawnDungeonColliders();
 	CreateMinimap();
-	gameLevel->AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0);
+	gameLevel->AddPlayerTeam(Vec3(2.f * start_tile.x + 1, 0, 2.f * start_tile.y + 1), 0);
 }

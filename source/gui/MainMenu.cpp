@@ -261,7 +261,7 @@ void MainMenu::PlaceButtons()
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].globalPos = Int2(16 + gui->wndSize.x - 200 + int(sin(kat)*(gui->wndSize.x - 200)), 100 + int(cos(kat)*gui->wndSize.y));
+		bt[i].pos = bt[i].globalPos = Int2(16 + gui->wndSize.x - 200 + int(sin(kat) * (gui->wndSize.x - 200)), 100 + int(cos(kat) * gui->wndSize.y));
 		kat += PI / 4 / BUTTONS;
 	}
 }

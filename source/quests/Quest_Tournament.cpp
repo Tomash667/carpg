@@ -96,13 +96,13 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 		StartTournament(ctx.talker);
 		units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "ironfist_join") == 0)
 	{
 		units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "ironfist_train") == 0)
 	{
@@ -155,7 +155,7 @@ bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 			// winner can stop dialog and talk
 			if(winner == ctx.pc->unit && state2 == 2 && state3 == 1)
 			{
-				master->look_target = nullptr;
+				master->lookTarget = nullptr;
 				state = TOURNAMENT_NOT_DONE;
 			}
 			else
@@ -249,7 +249,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 void Quest_Tournament::GenerateUnits()
 {
 	LocationPart& locPart = *gameLevel->cityCtx;
-	Vec3 pos = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
+	Vec3 pos = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walkPt;
 	master = locPart.FindUnit(UnitData::Get("arena_master"));
 
 	// warp heroes in front of arena
@@ -320,14 +320,14 @@ void Quest_Tournament::Update(float dt)
 			timer += dt;
 
 		// team members joining
-		const Vec3& walk_pt = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
+		const Vec3& walkPt = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walkPt;
 		for(Unit& unit : team->members)
 		{
-			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dont_attack && ShouldJoin(unit))
+			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dontAttack && ShouldJoin(unit))
 			{
 				unit.busy = Unit::Busy_Tournament;
 				unit.ai->st.idle.action = AIController::Idle_Move;
-				unit.ai->st.idle.pos = walk_pt;
+				unit.ai->st.idle.pos = walkPt;
 				unit.ai->timer = Random(5.f, 10.f);
 
 				unit.Talk(RandomString(txAiJoinTour));
@@ -483,24 +483,24 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct())
 				{
 					auto& p = pairs.back();
-					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
+					if(p.first->toRemove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->locPart == arena))
 					{
 						// first unit left or can't fight, check other
 						state3 = 2;
 						other_fighter = p.second;
 						Talk(Format(txTour[11], p.first->GetRealName()));
-						if(!p.first->to_remove && p.first->IsPlayer())
+						if(!p.first->toRemove && p.first->IsPlayer())
 							gameGui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
-					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
+					else if(p.second->toRemove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->locPart == arena))
 					{
 						// second unit left or can't fight, first automaticaly goes to next round
 						state3 = 3;
 						units.push_back(p.first);
 						Talk(Format(txTour[12], p.second->GetRealName(), p.first->GetRealName()));
-						if(!p.second->to_remove && p.second->IsPlayer())
+						if(!p.second->toRemove && p.second->IsPlayer())
 							gameGui->messages->AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
 					}
 					else
@@ -516,8 +516,8 @@ void Quest_Tournament::Update(float dt)
 						p.first->frozen = FROZEN::YES;
 						if(p.first->IsPlayer())
 						{
-							p.first->player->arena_fights++;
-							p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.first->player->arenaFights++;
+							p.first->player->statFlags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == game->pc)
 							{
 								game->fallbackType = FALLBACK::ARENA;
@@ -534,8 +534,8 @@ void Quest_Tournament::Update(float dt)
 						p.second->frozen = FROZEN::YES;
 						if(p.second->IsPlayer())
 						{
-							p.second->player->arena_fights++;
-							p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.second->player->arenaFights++;
+							p.second->player->statFlags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == game->pc)
 							{
 								game->fallbackType = FALLBACK::ARENA;
@@ -556,12 +556,12 @@ void Quest_Tournament::Update(float dt)
 				// check if second unit is here
 				if(master->CanAct())
 				{
-					if(other_fighter->to_remove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
+					if(other_fighter->toRemove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f || other_fighter->locPart == arena))
 					{
 						// second unit left too
 						Talk(Format(txTour[13], other_fighter->GetRealName()));
-						if(!other_fighter->to_remove && other_fighter->IsPlayer())
+						if(!other_fighter->toRemove && other_fighter->IsPlayer())
 							gameGui->messages->AddGameMsg3(other_fighter->player, GMS_LEFT_EVENT);
 					}
 					else
@@ -694,11 +694,11 @@ void Quest_Tournament::Update(float dt)
 					const int REWARD = 5000;
 
 					state3 = 1;
-					master->look_target = winner;
+					master->lookTarget = winner;
 					winner->ModGold(REWARD);
 					if(winner->IsHero())
 					{
-						winner->look_target = master;
+						winner->lookTarget = master;
 						winner->hero->AddExp(15000);
 					}
 					else
@@ -713,11 +713,11 @@ void Quest_Tournament::Update(float dt)
 					// end of tournament
 					if(winner && winner->IsHero())
 					{
-						winner->look_target = nullptr;
+						winner->lookTarget = nullptr;
 						winner->ai->st.idle.action = AIController::Idle_None;
 						winner->busy = Unit::Busy_No;
 					}
-					master->look_target = nullptr;
+					master->lookTarget = nullptr;
 					Clean();
 				}
 				else if(state3 == 2)
@@ -734,18 +734,18 @@ void Quest_Tournament::Update(float dt)
 //=================================================================================================
 void Quest_Tournament::VerifyUnit(Unit* unit)
 {
-	if(!unit || !unit->IsPlayer() || unit->to_remove)
+	if(!unit || !unit->IsPlayer() || unit->toRemove)
 		return;
-	bool leaving_event = true;
+	bool leavingEvent = true;
 	if(unit->locPart == arena)
-		leaving_event = false;
+		leavingEvent = false;
 	else if(unit->locPart->partType == LocationPart::Type::Outside)
-		leaving_event = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
+		leavingEvent = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
 
-	if(leaving_event != unit->player->leaving_event)
+	if(leavingEvent != unit->player->leavingEvent)
 	{
-		unit->player->leaving_event = leaving_event;
-		if(leaving_event)
+		unit->player->leavingEvent = leavingEvent;
+		if(leavingEvent)
 			gameGui->messages->AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
 	}
 }

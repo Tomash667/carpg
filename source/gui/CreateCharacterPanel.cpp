@@ -44,22 +44,22 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 {
 	size = Int2(600, 500);
 	unit = new Unit;
-	unit->human_data = new Human;
+	unit->humanData = new Human;
 	unit->player = nullptr;
 	unit->ai = nullptr;
 	unit->hero = nullptr;
-	unit->used_item = nullptr;
-	unit->weapon_state = WeaponState::Hidden;
-	unit->pos = unit->visual_pos = Vec3(0, 0, 0);
+	unit->usedItem = nullptr;
+	unit->weaponState = WeaponState::Hidden;
+	unit->pos = unit->visualPos = Vec3(0, 0, 0);
 	unit->rot = 0.f;
-	unit->fake_unit = true;
+	unit->fakeUnit = true;
 	unit->action = A_NONE;
 	unit->stats = new UnitStats;
 	unit->stats->fixed = false;
 	unit->stats->subprofile.value = 0;
-	unit->stamina = unit->stamina_max = 100.f;
+	unit->stamina = unit->staminaMax = 100.f;
 	unit->usable = nullptr;
-	unit->live_state = Unit::ALIVE;
+	unit->liveState = Unit::ALIVE;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &customClose;
@@ -622,25 +622,25 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			game->SaveCfg();
 			break;
 		case IdHair:
-			unit->human_data->hair = slider[0].val - 1;
+			unit->humanData->hair = slider[0].val - 1;
 			slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
 			break;
 		case IdMustache:
-			unit->human_data->mustache = slider[1].val - 1;
+			unit->humanData->mustache = slider[1].val - 1;
 			slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
 			break;
 		case IdBeard:
-			unit->human_data->beard = slider[2].val - 1;
+			unit->humanData->beard = slider[2].val - 1;
 			slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 			break;
 		case IdColor:
-			unit->human_data->hairColor = gHairColors[slider[3].val];
+			unit->humanData->hairColor = gHairColors[slider[3].val];
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			unit->human_data->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
+			unit->humanData->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->meshInst);
+			unit->humanData->ApplyScale(unit->meshInst);
 			unit->meshInst->needUpdate = true;
 			break;
 		case IdRandomSet:
@@ -714,7 +714,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			}
 			break;
 		case DA_BATTLE_MODE:
-			if(unit->weapon_taken == W_ONE_HANDED)
+			if(unit->weaponTaken == W_ONE_HANDED)
 			{
 				int what = Rand() % (unit->HaveShield() ? 3 : 2);
 				if(what == 0)
@@ -761,19 +761,19 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		{
 		case DA_ATTACK:
 			unit->action = A_ATTACK;
-			unit->animation_state = AS_ATTACK_PREPARE;
+			unit->animationState = AS_ATTACK_PREPARE;
 			unit->act.attack.index = unit->GetRandomAttack();
 			unit->act.attack.run = false;
-			unit->meshInst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+			unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 			unit->meshInst->groups[1].speed = unit->GetAttackSpeed();
 			t = 100.f;
 			break;
 		case DA_BLOCK:
-			unit->meshInst->Play(NAMES::ani_block, PLAY_PRIO2, 1);
+			unit->meshInst->Play(NAMES::aniBlock, PLAY_PRIO2, 1);
 			t = 1.f;
 			break;
 		case DA_BATTLE_MODE:
-			if(unit->weapon_taken == W_ONE_HANDED)
+			if(unit->weaponTaken == W_ONE_HANDED)
 				unit->animation = ANI_BATTLE;
 			else
 				unit->animation = ANI_BATTLE_BOW;
@@ -838,7 +838,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		break;
 	case DA_HIDE_WEAPON:
 	case DA_HIDE_BOW:
-		if(unit->weapon_state == WeaponState::Hidden)
+		if(unit->weaponState == WeaponState::Hidden)
 		{
 			anim = DA_STAND;
 			t = 1.f;
@@ -857,11 +857,11 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		}
 		break;
 	case DA_SHOW_WEAPON:
-		if(unit->weapon_state == WeaponState::Taken)
+		if(unit->weaponState == WeaponState::Taken)
 			anim = DA_ATTACK;
 		break;
 	case DA_SHOW_BOW:
-		if(unit->weapon_state == WeaponState::Taken)
+		if(unit->weaponState == WeaponState::Taken)
 			anim = DA_SHOOT;
 		break;
 	case DA_LOOKS_AROUND:
@@ -899,13 +899,13 @@ void CreateCharacterPanel::Init()
 void CreateCharacterPanel::RandomAppearance()
 {
 	Unit& u = *unit;
-	u.human_data->beard = Rand() % MAX_BEARD - 1;
-	u.human_data->hair = Rand() % MAX_HAIR - 1;
-	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
+	u.humanData->beard = Rand() % MAX_BEARD - 1;
+	u.humanData->hair = Rand() % MAX_HAIR - 1;
+	u.humanData->mustache = Rand() % MAX_MUSTACHE - 1;
 	hairColorIndex = Rand() % nHairColors;
-	u.human_data->hairColor = gHairColors[hairColorIndex];
-	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(u.meshInst);
+	u.humanData->hairColor = gHairColors[hairColorIndex];
+	u.humanData->height = Random(0.95f, 1.05f);
+	u.humanData->ApplyScale(u.meshInst);
 	SetControls();
 }
 
@@ -954,15 +954,15 @@ void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter
 //=================================================================================================
 void CreateCharacterPanel::SetControls()
 {
-	slider[0].val = unit->human_data->hair + 1;
+	slider[0].val = unit->humanData->hair + 1;
 	slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
-	slider[1].val = unit->human_data->mustache + 1;
+	slider[1].val = unit->humanData->mustache + 1;
 	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
-	slider[2].val = unit->human_data->beard + 1;
+	slider[2].val = unit->humanData->beard + 1;
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 	slider[3].val = hairColorIndex;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
-	slider[4].val = int((unit->human_data->height - MIN_HEIGHT) * 500);
+	slider[4].val = int((unit->humanData->height - MIN_HEIGHT) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 }
 
@@ -971,8 +971,8 @@ void CreateCharacterPanel::SetCharacter()
 {
 	anim = anim2 = DA_STAND;
 	unit->animation = ANI_STAND;
-	unit->current_animation = ANI_STAND;
-	unit->meshInst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
+	unit->currentAnimation = ANI_STAND;
+	unit->meshInst->Play(NAMES::aniStand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 }
 
 //=================================================================================================
@@ -1515,7 +1515,7 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		UpdateUnit(0.f);
 		unit->SetAnimationAtEnd();
 	}
-	if(unit->bow_instance)
-		gameLevel->FreeBowInstance(unit->bow_instance);
+	if(unit->bowInstance)
+		gameLevel->FreeBowInstance(unit->bowInstance);
 	unit->action = A_NONE;
 }

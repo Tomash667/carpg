@@ -33,7 +33,7 @@ void Quest_Tutorial::Start()
 	game->LoadingStart(1);
 
 	HumanData hd;
-	hd.Get(*gameGui->createCharacter->unit->human_data);
+	hd.Get(*gameGui->createCharacter->unit->humanData);
 	game->NewGameCommon(gameGui->createCharacter->clas, gameGui->createCharacter->playerName.c_str(), hd, gameGui->createCharacter->cc, true);
 	in_tutorial = true;
 	state = 0;

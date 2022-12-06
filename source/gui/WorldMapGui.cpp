@@ -140,8 +140,8 @@ void WorldMapGui::Draw()
 					c = Color::Lerp(Color::Green, Color::Yellow, float(st - 2) / 6);
 				else
 					c = Color::Lerp(Color::Yellow, Color::Red, float(st - 9) / 7);
-				Rect rect(Int2(WorldPosToScreen(Vec2((float)x*World::TILE_SIZE, (float)y*World::TILE_SIZE))),
-					Int2(WorldPosToScreen(Vec2((float)(x + 1)*World::TILE_SIZE, (float)(y + 1)*World::TILE_SIZE))));
+				Rect rect(Int2(WorldPosToScreen(Vec2((float)x * World::TILE_SIZE, (float)y * World::TILE_SIZE))),
+					Int2(WorldPosToScreen(Vec2((float)(x + 1) * World::TILE_SIZE, (float)(y + 1) * World::TILE_SIZE))));
 				gui->DrawArea(c, rect);
 			}
 		}
@@ -274,7 +274,7 @@ void WorldMapGui::Draw()
 		buttons[i].Draw();
 
 	// magnifying glass & combo box
-	Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 16.f*gui->wndSize.x / 1024),
+	Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 16.f * gui->wndSize.x / 1024),
 		int(float(gui->wndSize.y) - 138.f * gui->wndSize.y / 768));
 	rect.p2.x += int(32.f * gui->wndSize.x / 1024);
 	rect.p2.y += int(32.f * gui->wndSize.y / 768);
@@ -564,7 +564,7 @@ void WorldMapGui::Event(GuiEvent e)
 	case GuiEvent_Show:
 	case GuiEvent_WindowResize:
 		{
-			Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 52.f*gui->wndSize.x / 1024),
+			Rect rect(int(float(gui->wndSize.x) * 2 / 3 + 52.f * gui->wndSize.x / 1024),
 				int(float(gui->wndSize.y) - 140.f * gui->wndSize.y / 768));
 			rect.p2.x = int(float(gui->wndSize.x) - 20.f * gui->wndSize.y / 1024);
 			rect.p2.y += int(32.f * gui->wndSize.y / 768);

@@ -48,7 +48,7 @@ int InsideLocationGenerator::GetNumberOfSteps()
 //=================================================================================================
 void InsideLocationGenerator::OnEnter()
 {
-	inside->SetActiveLevel(dungeon_level);
+	inside->SetActiveLevel(dungeonLevel);
 	gameLevel->lvl = &inside->GetLevelData();
 	int days;
 	bool need_reset = inside->CheckUpdate(days, world->GetWorldtime());
@@ -133,7 +133,7 @@ void InsideLocationGenerator::OnEnter()
 		Quest_Event* event = quest ? quest->GetEvent(gameLevel->location) : nullptr;
 		if(event)
 		{
-			if(event->atLevel == dungeon_level)
+			if(event->atLevel == dungeonLevel)
 			{
 				if(!event->done)
 				{
@@ -150,14 +150,14 @@ void InsideLocationGenerator::OnEnter()
 							{
 								Unit* u = gameLevel->SpawnUnitInsideRoom(*room, *ud, -2, Int2(-999, -999), Int2(-999, -999));
 								if(u)
-									u->dont_attack = true;
+									u->dontAttack = true;
 							}
 						}
 
 						UnitData* orc_smith = UnitData::Get("q_orkowie_kowal");
 						Unit* u = gameLevel->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
-							u->dont_attack = true;
+							u->dontAttack = true;
 					}
 				}
 
@@ -169,7 +169,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && gameLevel->location->type != L_CAVE && inside->target != LABYRINTH
-		&& !gameLevel->location->active_quest && dungeon_level == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
+		&& !gameLevel->location->active_quest && dungeonLevel == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -202,12 +202,12 @@ void InsideLocationGenerator::OnEnter()
 			int loc_id = world->AddLocation(loc);
 
 			Portal* portal = new Portal;
-			portal->at_level = 2;
-			portal->next_portal = nullptr;
+			portal->atLevel = 2;
+			portal->nextPortal = nullptr;
 			portal->pos = o->pos;
 			portal->rot = o->rot.y;
 			portal->index = 0;
-			portal->target_loc = loc_id;
+			portal->targetLoc = loc_id;
 
 			inside->portal = portal;
 			secret->where2 = loc_id;
@@ -329,7 +329,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	InsideLocationLevel& lvl = GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	static vector<Chest*> room_chests;
-	static vector<Vec3> on_wall;
+	static vector<Vec3> onWall;
 	static vector<Int2> blocks;
 	int chest_lvl = gameLevel->GetChestDifficultyLevel();
 
@@ -513,16 +513,16 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		// try to spawn all objects
 		for(uint i = 0, size = rt->objs.size(); i < size && fail > 0; ++i)
 		{
-			RoomType::Obj& room_obj = rt->objs[i];
-			int count = room_obj.count.Random();
+			RoomType::Obj& roomObj = rt->objs[i];
+			int count = roomObj.count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
-				BaseObject* base = room_obj.is_group ? room_obj.group->GetRandom() : room_obj.obj;
-				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &room_obj, on_wall, blocks, flags);
+				BaseObject* base = roomObj.is_group ? roomObj.group->GetRandom() : roomObj.obj;
+				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &roomObj, onWall, blocks, flags);
 				if(!e)
 				{
-					if(IsSet(base->flags, OBJ_IMPORTANT) || IsSet(room_obj.flags, RoomType::Obj::F_REQUIRED))
+					if(IsSet(base->flags, OBJ_IMPORTANT) || IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
 						--j;
 					--fail;
 					continue;
@@ -531,7 +531,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				if(e.type == ObjectEntity::CHEST)
 					room_chests.push_back(e);
 
-				if(IsSet(room_obj.flags, RoomType::Obj::F_REQUIRED))
+				if(IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
 					required_object = true;
 			}
 		}
@@ -546,7 +546,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			room_chests.clear();
 		}
 
-		on_wall.clear();
+		onWall.clear();
 		blocks.clear();
 	}
 
@@ -559,14 +559,14 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		BaseObject* base = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
-			on_wall.clear();
+			onWall.clear();
 			blocks.clear();
 			Room& room = *lvl.rooms[Rand() % lvl.rooms.size()];
 			if(room.target == RoomTarget::None)
 			{
 				AddRoomColliders(lvl, room, blocks);
 
-				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, on_wall, blocks, flags);
+				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, onWall, blocks, flags);
 				if(e)
 				{
 					GenerateDungeonTreasure(lvl.chests, chest_lvl);
@@ -596,8 +596,8 @@ void InsideLocationGenerator::GenerateDungeonEntry(InsideLocationLevel& lvl, Ent
 }
 
 //=================================================================================================
-ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* room_obj,
-	vector<Vec3>& on_wall, vector<Int2>& blocks, int flags)
+ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* roomObj,
+	vector<Vec3>& onWall, vector<Int2>& blocks, int flags)
 {
 	Vec3 pos;
 	float rot;
@@ -611,11 +611,11 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	else
 		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
 
-	if(room_obj && room_obj->force_pos)
+	if(roomObj && roomObj->force_pos)
 	{
-		pos = room.Center() + room_obj->pos;
-		if(room_obj->force_rot)
-			rot = room_obj->rot;
+		pos = room.Center() + roomObj->pos;
+		if(roomObj->force_rot)
+			rot = roomObj->rot;
 		else
 			rot = PI / 2 * (Rand() % 4);
 	}
@@ -650,7 +650,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 				break;
 			}
 
-			for(vector<Vec3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
+			for(vector<Vec3>::iterator it2 = onWall.begin(), end2 = onWall.end(); it2 != end2; ++it2)
 			{
 				float dist = Vec3::Distance2d(*it2, pos);
 				if(dist < 2.f)
@@ -676,7 +676,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 			}
 		}
 	}
-	else if(room_obj && IsSet(room_obj->flags, RoomType::Obj::F_IN_MIDDLE))
+	else if(roomObj && IsSet(roomObj->flags, RoomType::Obj::F_IN_MIDDLE))
 	{
 		rot = PI / 2 * (Rand() % 4);
 		pos = room.Center();
@@ -770,7 +770,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	}
 
 	if(IsSet(base->flags, OBJ_ON_WALL))
-		on_wall.push_back(pos);
+		onWall.push_back(pos);
 
 	return gameLevel->SpawnObjectEntity(lvl, base, pos, rot, 1.f, flags);
 }
@@ -822,7 +822,7 @@ void InsideLocationGenerator::GenerateTraps()
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
-		if(dungeon_level != 0)
+		if(dungeonLevel != 0)
 			return;
 		chance = 10;
 		pt = lvl.prevEntryPt;
@@ -839,35 +839,35 @@ void InsideLocationGenerator::GenerateTraps()
 				chance = 25;
 				break;
 			case 1:
-				if(dungeon_level == 1)
+				if(dungeonLevel == 1)
 					chance = 25;
 				else
 					chance = 0;
 				break;
 			case 2:
-				if(dungeon_level == 2)
+				if(dungeonLevel == 2)
 					chance = 25;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 15;
 				else
 					chance = 0;
 				break;
 			case 3:
-				if(dungeon_level == 3)
+				if(dungeonLevel == 3)
 					chance = 25;
-				else if(dungeon_level == 2)
+				else if(dungeonLevel == 2)
 					chance = 15;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 10;
 				else
 					chance = 0;
 				break;
 			default:
-				if(dungeon_level == size - 1)
+				if(dungeonLevel == size - 1)
 					chance = 25;
-				else if(dungeon_level == size - 2)
+				else if(dungeonLevel == size - 2)
 					chance = 15;
-				else if(dungeon_level == size - 3)
+				else if(dungeonLevel == size - 3)
 					chance = 10;
 				else
 					chance = 0;
@@ -924,7 +924,7 @@ void InsideLocationGenerator::RegenerateTraps()
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
-		if(dungeon_level != 0)
+		if(dungeonLevel != 0)
 			return;
 		chance = 0;
 		pt = lvl.prevEntryPt;
@@ -941,35 +941,35 @@ void InsideLocationGenerator::RegenerateTraps()
 				chance = 25;
 				break;
 			case 1:
-				if(dungeon_level == 1)
+				if(dungeonLevel == 1)
 					chance = 25;
 				else
 					chance = 0;
 				break;
 			case 2:
-				if(dungeon_level == 2)
+				if(dungeonLevel == 2)
 					chance = 25;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 15;
 				else
 					chance = 0;
 				break;
 			case 3:
-				if(dungeon_level == 3)
+				if(dungeonLevel == 3)
 					chance = 25;
-				else if(dungeon_level == 2)
+				else if(dungeonLevel == 2)
 					chance = 15;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 10;
 				else
 					chance = 0;
 				break;
 			default:
-				if(dungeon_level == size - 1)
+				if(dungeonLevel == size - 1)
 					chance = 25;
-				else if(dungeon_level == size - 2)
+				else if(dungeonLevel == size - 2)
 					chance = 15;
-				else if(dungeon_level == size - 3)
+				else if(dungeonLevel == size - 3)
 					chance = 10;
 				else
 					chance = 0;
@@ -1440,20 +1440,20 @@ void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& floor, T
 }
 
 //=================================================================================================
-void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def)
+void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& texOverride, LocationTexturePack::Entry& e, TexOverride& texOverrideDefault)
 {
 	if(e.tex)
 	{
-		tex_o.diffuse = e.tex;
-		tex_o.normal = e.tex_normal;
-		tex_o.specular = e.tex_specular;
+		texOverride.diffuse = e.tex;
+		texOverride.normal = e.tex_normal;
+		texOverride.specular = e.tex_specular;
 	}
 	else
-		tex_o = tex_o_def;
+		texOverride = texOverrideDefault;
 
-	resMgr->Load(tex_o.diffuse);
-	if(tex_o.normal)
-		resMgr->Load(tex_o.normal);
-	if(tex_o.specular)
-		resMgr->Load(tex_o.specular);
+	resMgr->Load(texOverride.diffuse);
+	if(texOverride.normal)
+		resMgr->Load(texOverride.normal);
+	if(texOverride.specular)
+		resMgr->Load(texOverride.specular);
 }

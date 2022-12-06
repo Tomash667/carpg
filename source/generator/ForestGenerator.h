@@ -15,5 +15,5 @@ public:
 	void RandomizeTerrainTexture() override;
 
 private:
-	bool have_sawmill;
+	bool haveSawmill;
 };

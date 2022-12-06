@@ -44,14 +44,14 @@ void DungeonGenerator::Generate()
 	}
 
 	MapSettings settings;
-	settings.corridor_chance = base.corridor_chance;
-	settings.map_w = settings.map_h = base.size + base.size_lvl * dungeon_level;
-	settings.corridor_size = base.corridor_size;
-	settings.room_size = base.room_size;
+	settings.corridorChance = base.corridor_chance;
+	settings.mapW = settings.mapH = base.size + base.size_lvl * dungeonLevel;
+	settings.corridorSize = base.corridor_size;
+	settings.roomSize = base.room_size;
 	settings.rooms = &lvl.rooms;
 	settings.groups = &lvl.groups;
-	settings.corridor_join_chance = base.join_corridor;
-	settings.room_join_chance = base.join_room;
+	settings.corridorJoinChance = base.join_corridor;
+	settings.roomJoinChance = base.join_room;
 	settings.shape = IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE;
 	if(gameLevel->dungeonLevel == 0)
 	{
@@ -83,11 +83,11 @@ void DungeonGenerator::Generate()
 	if(settings.prevEntryLoc == MapSettings::ENTRY_RANDOM && settings.prevEntryType == ENTRY_DOOR)
 		settings.prevEntryLoc = MapSettings::ENTRY_BORDER;
 	settings.nextEntryLoc = inside->HaveNextEntry() ? MapSettings::ENTRY_RANDOM : MapSettings::ENTRY_NONE;
-	settings.bars_chance = base.bars_chance;
+	settings.barsChance = base.bars_chance;
 	settings.devmode = game->devmode;
-	settings.remove_dead_end_corridors = true;
+	settings.removeDeadEndCorridors = true;
 
-	bool skip_normal_handling = false;
+	bool skipNormalHandling = false;
 	if(event_handler)
 	{
 		ScriptEvent e(EVENT_GENERATE);
@@ -95,10 +95,10 @@ void DungeonGenerator::Generate()
 		e.on_generate.map_settings = &settings;
 		e.on_generate.stage = 0;
 		event_handler->FireEvent(e);
-		skip_normal_handling = e.cancel;
+		skipNormalHandling = e.cancel;
 	}
 
-	if(skip_normal_handling)
+	if(skipNormalHandling)
 	{
 	}
 	else if(Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveNextEntry())
@@ -108,7 +108,7 @@ void DungeonGenerator::Generate()
 		room->target = RoomTarget::Treasury;
 		room->type = nullptr;
 		room->size = Int2(7, 7);
-		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
+		room->pos.x = room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
 		inside->special_room = 0;
@@ -122,8 +122,8 @@ void DungeonGenerator::Generate()
 		room->target = RoomTarget::Throne;
 		room->type = nullptr;
 		room->size = Int2(13, 7);
-		room->pos.x = (settings.map_w - 13) / 2;
-		room->pos.y = (settings.map_w - 7) / 2;
+		room->pos.x = (settings.mapW - 13) / 2;
+		room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
 		inside->special_room = 0;
@@ -138,7 +138,7 @@ void DungeonGenerator::Generate()
 		room->target = RoomTarget::PortalCreate;
 		room->type = nullptr;
 		room->size = Int2(7, 7);
-		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
+		room->pos.x = room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
 		inside->special_room = 0;
@@ -152,7 +152,7 @@ void DungeonGenerator::Generate()
 	}
 
 	if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->questOrcs->targetLoc
-		&& dungeon_level == gameLevel->location->GetLastLevel())
+		&& dungeonLevel == gameLevel->location->GetLastLevel())
 	{
 		// search for room for cell
 		settings.stop = true;
@@ -162,7 +162,7 @@ void DungeonGenerator::Generate()
 
 		while(true)
 		{
-			map_gen.Generate(settings, !first);
+			mapGenerator.Generate(settings, !first);
 			first = false;
 
 			for(Room* room : lvl.rooms)
@@ -182,20 +182,20 @@ void DungeonGenerator::Generate()
 
 			Room* room = RandomItem(possible_rooms);
 			room->target = RoomTarget::Prison;
-			Int2 pt = map_gen.GetConnectingTile(room, room->connected.front());
-			Tile& p = map_gen.GetMap()[pt.x + pt.y * settings.map_w];
+			Int2 pt = mapGenerator.GetConnectingTile(room, room->connected.front());
+			Tile& p = mapGenerator.GetMap()[pt.x + pt.y * settings.mapW];
 			p.type = DOORS;
 			p.flags |= Tile::F_SPECIAL;
 
-			map_gen.ContinueGenerating();
+			mapGenerator.ContinueGenerating();
 			break;
 		}
 	}
 	else
-		map_gen.Generate(settings);
+		mapGenerator.Generate(settings);
 
-	lvl.w = lvl.h = settings.map_w;
-	lvl.map = map_gen.GetMap();
+	lvl.w = lvl.h = settings.mapW;
+	lvl.map = mapGenerator.GetMap();
 	lvl.prevEntryType = settings.prevEntryType;
 	lvl.prevEntryPt = settings.prevEntryPt;
 	lvl.prevEntryDir = settings.prevEntryDir;
@@ -204,7 +204,7 @@ void DungeonGenerator::Generate()
 	lvl.nextEntryDir = settings.nextEntryDir;
 
 	// different texture in crypt treasure room
-	if(!skip_normal_handling && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveNextEntry())
+	if(!skipNormalHandling && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT) && !inside->HaveNextEntry())
 	{
 		Room& r = *lvl.rooms[0];
 		for(int y = 0; y < r.size.y; ++y)
@@ -493,7 +493,7 @@ UnitGroup* DungeonGenerator::GetGroup()
 	if(group->IsChallange())
 	{
 		assert(group->is_list);
-		group = group->entries[dungeon_level % group->entries.size()].group;
+		group = group->entries[dungeonLevel % group->entries.size()].group;
 	}
 	return group;
 }

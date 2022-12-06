@@ -281,10 +281,10 @@ void DungeonMeshBuilder::Build()
 
 	int index = 18;
 
-	FillPart(dungeon_part, id, index, 8);
-	FillPart(dungeon_part2, id, index, 28);
-	FillPart(dungeon_part3, id, index, 44);
-	FillPart(dungeon_part4, id, index, 60);
+	FillPart(dungeonPart, id, index, 8);
+	FillPart(dungeonPart2, id, index, 28);
+	FillPart(dungeonPart3, id, index, 44);
+	FillPart(dungeonPart4, id, index, 60);
 
 	// create index buffer
 	desc.ByteWidth = size;
@@ -451,8 +451,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						{
 							DungeonPart& dp = Add1(batch.dungeonParts);
 							dp.texOverride = &gameRes->tWall[tex_id];
-							dp.startIndex = dungeon_part[d2].x;
-							dp.primitiveCount = dungeon_part[d2].y;
+							dp.startIndex = dungeonPart[d2].x;
+							dp.primitiveCount = dungeonPart[d2].y;
 							dp.group = group;
 						}
 
@@ -462,8 +462,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						{
 							DungeonPart& dp = Add1(batch.dungeonParts);
 							dp.texOverride = &gameRes->tWall[tex_id];
-							dp.startIndex = dungeon_part3[d2].x;
-							dp.primitiveCount = dungeon_part3[d2].y;
+							dp.startIndex = dungeonPart3[d2].x;
+							dp.primitiveCount = dungeonPart3[d2].y;
 							dp.group = group;
 						}
 
@@ -473,8 +473,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						{
 							DungeonPart& dp = Add1(batch.dungeonParts);
 							dp.texOverride = &gameRes->tWall[tex_id];
-							dp.startIndex = dungeon_part4[d2].x;
-							dp.primitiveCount = dungeon_part4[d2].y;
+							dp.startIndex = dungeonPart4[d2].x;
+							dp.primitiveCount = dungeonPart4[d2].y;
 							dp.group = group;
 						}
 					}
@@ -577,8 +577,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				{
 					DungeonPart& dp = Add1(batch.dungeonParts);
 					dp.texOverride = &gameRes->tWall[tex_id];
-					dp.startIndex = dungeon_part[d2].x;
-					dp.primitiveCount = dungeon_part[d2].y;
+					dp.startIndex = dungeonPart[d2].x;
+					dp.primitiveCount = dungeonPart[d2].y;
 					dp.group = group;
 				}
 
@@ -588,8 +588,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				{
 					DungeonPart& dp = Add1(batch.dungeonParts);
 					dp.texOverride = &gameRes->tWall[tex_id];
-					dp.startIndex = dungeon_part2[d2].x;
-					dp.primitiveCount = dungeon_part2[d2].y;
+					dp.startIndex = dungeonPart2[d2].x;
+					dp.primitiveCount = dungeonPart2[d2].y;
 					dp.group = group;
 				}
 
@@ -599,8 +599,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				{
 					DungeonPart& dp = Add1(batch.dungeonParts);
 					dp.texOverride = &gameRes->tWall[tex_id];
-					dp.startIndex = dungeon_part3[d2].x;
-					dp.primitiveCount = dungeon_part3[d2].y;
+					dp.startIndex = dungeonPart3[d2].x;
+					dp.primitiveCount = dungeonPart3[d2].y;
 					dp.group = group;
 				}
 
@@ -610,8 +610,8 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				{
 					DungeonPart& dp = Add1(batch.dungeonParts);
 					dp.texOverride = &gameRes->tWall[tex_id];
-					dp.startIndex = dungeon_part4[d2].x;
-					dp.primitiveCount = dungeon_part4[d2].y;
+					dp.startIndex = dungeonPart4[d2].x;
+					dp.primitiveCount = dungeonPart4[d2].y;
 					dp.group = group;
 				}
 			}

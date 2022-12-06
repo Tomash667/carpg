@@ -23,8 +23,8 @@ protected:
 	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonObjects();
 	void GenerateDungeonEntry(InsideLocationLevel& lvl, EntryType type, const Int2& pt, GameDirection dir);
-	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* room_obj,
-		vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
+	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* roomObj,
+		vector<Vec3>& onWall, vector<Int2>& blocks, int flags);
 	void GenerateTraps();
 	void RegenerateTraps();
 	void RespawnTraps();
@@ -34,7 +34,7 @@ protected:
 	void OpenDoorsByTeam(const Int2& pt);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex);
-	void ApplyLocationTextureOverride(TexOverride& tex_o, LocationTexturePack::Entry& e, TexOverride& tex_o_def);
+	void ApplyLocationTextureOverride(TexOverride& texOverride, LocationTexturePack::Entry& e, TexOverride& texOverrideDefault);
 
 	InsideLocation* inside;
 };

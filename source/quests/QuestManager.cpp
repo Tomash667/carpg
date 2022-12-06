@@ -1045,7 +1045,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 			if(u)
 			{
 				questSawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
-				questSawmill->hd_lumberjack.Get(*u->human_data);
+				questSawmill->hd_lumberjack.Get(*u->humanData);
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
@@ -1139,7 +1139,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 			if(u)
 			{
 				questGoblins->nobleman = u;
-				questGoblins->hd_nobleman.Get(*u->human_data);
+				questGoblins->hd_nobleman.Get(*u->humanData);
 				questGoblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
@@ -1149,7 +1149,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 		if(gameLevel->location == questEvil->startLoc && questEvil->evil_state == Quest_Evil::State::None)
 		{
 			CityBuilding* b = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_INN);
-			Unit* u = gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
+			Unit* u = gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, b->walkPt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
 			assert(u);
 			if(u)
 			{
@@ -1367,12 +1367,12 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 		}
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
-		spawned->dont_attack = event->unitDontAttack;
+		spawned->dontAttack = event->unitDontAttack;
 		if(event->unitAutoTalk)
 			spawned->OrderAutoTalk();
-		spawned->event_handler = event->unitEventHandler;
-		if(spawned->event_handler && event->sendSpawnEvent)
-			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
+		spawned->eventHandler = event->unitEventHandler;
+		if(spawned->eventHandler && event->sendSpawnEvent)
+			spawned->eventHandler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
 		if(game->devmode)
 			Info("Generated unit %s (%g,%g).", event->unitToSpawn->id.c_str(), spawned->pos.x, spawned->pos.z);
 
@@ -1384,7 +1384,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			{
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
-					unit->dont_attack = spawned->dont_attack;
+					unit->dontAttack = spawned->dontAttack;
 					unit->OrderGuard(spawned);
 				}
 			}
@@ -1406,7 +1406,7 @@ void QuestManager::HandleQuestEvent(Quest_Event* event)
 			Info("Generated unit %s (%g,%g).", event->unitToSpawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z);
 		if(spawned && event->spawnGuards)
 		{
-			spawned2->dont_attack = spawned->dont_attack;
+			spawned2->dontAttack = spawned->dontAttack;
 			spawned2->OrderGuard(spawned);
 		}
 	}

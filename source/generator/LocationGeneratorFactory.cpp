@@ -121,7 +121,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 		break;
 	}
 	loc_gen->loc = loc;
-	loc_gen->dungeon_level = gameLevel->dungeonLevel;
+	loc_gen->dungeonLevel = gameLevel->dungeonLevel;
 	loc_gen->first = first;
 	loc_gen->Init();
 	return loc_gen;

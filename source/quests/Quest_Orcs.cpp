@@ -306,7 +306,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				questMgr->questOrcs->targetLoc = nullptr;
 			}
 			// join team
-			DialogContext::current->talker->dont_attack = false;
+			DialogContext::current->talker->dontAttack = false;
 			team->AddMember(DialogContext::current->talker, HeroType::Free);
 			if(team->freeRecruits > 0)
 				--team->freeRecruits;
@@ -477,7 +477,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				{
 					if(u.data == ud_weak_orc)
 					{
-						u.dont_attack = false;
+						u.dontAttack = false;
 						u.ai->changeAiMode = true;
 					}
 					else
@@ -602,7 +602,7 @@ void Quest_Orcs2::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWhereIsBase)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = nullptr;
+		unit->eventHandler = nullptr;
 	}
 }
 

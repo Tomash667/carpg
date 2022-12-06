@@ -10,7 +10,7 @@ namespace UnitHelper
 	{
 		const Item* item;
 		float value;
-		float prev_value;
+		float prevValue;
 	};
 
 	const Item* GetBaseWeapon(const Unit& unit, const ItemList* lis = nullptr);
@@ -18,6 +18,6 @@ namespace UnitHelper
 	const Item* GetBaseItem(ITEM_TYPE type, const ItemList* lis = nullptr);
 	BetterItem GetBetterAmulet(const Unit& unit);
 	array<BetterItem, 2> GetBetterRings(const Unit& unit);
-	array<pair<const Item*, float>, 2> GetBetterRingsInternal(const Unit& unit, float min_value);
+	array<pair<const Item*, float>, 2> GetBetterRingsInternal(const Unit& unit, float minValue);
 	int CalculateChance(int value, int min, int max);
 }

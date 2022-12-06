@@ -130,7 +130,7 @@ bool Chest::AddItem(const Item* item, uint count, uint teamCount, bool notify)
 
 	if(user && user->IsPlayer())
 	{
-		if(user->player->is_local)
+		if(user->player->isLocal)
 			gameGui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{

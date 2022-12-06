@@ -18,5 +18,5 @@ private:
 	void OnLoad() override;
 
 	Building* building;
-	Vec3 unit_pos;
+	Vec3 unitPos;
 };

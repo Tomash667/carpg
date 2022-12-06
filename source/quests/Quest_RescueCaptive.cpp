@@ -96,7 +96,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
@@ -116,7 +116,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			OnUpdate(questMgr->txQuest[37]);
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 		}
@@ -135,7 +135,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			team->RemoveMember(captive);
 
 			gameLevel->RemoveUnit(captive);
-			captive->event_handler = nullptr;
+			captive->eventHandler = nullptr;
 			OnUpdate(Format(questMgr->txQuest[38], GetStartLocationName()));
 
 			captive = nullptr;
@@ -146,7 +146,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
@@ -159,7 +159,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
@@ -179,7 +179,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			team->AddReward(reward / 4, reward * 3 / 2);
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
@@ -196,10 +196,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			if(captive->hero->teamMember)
 				team->RemoveMember(captive);
-			captive->dont_attack = false;
+			captive->dontAttack = false;
 			captive->OrderGoToInn();
 			captive->temporary = true;
-			captive->event_handler = nullptr;
+			captive->eventHandler = nullptr;
 			captive = nullptr;
 
 			OnUpdate(Format(questMgr->txQuest[42], gameLevel->cityCtx->name.c_str()));
@@ -245,7 +245,7 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 	{
 		if(captive)
 		{
-			captive->event_handler = nullptr;
+			captive->eventHandler = nullptr;
 			ForLocation(targetLoc, atLevel)->RemoveUnit(captive);
 			captive = nullptr;
 		}

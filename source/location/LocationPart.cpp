@@ -1031,7 +1031,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.meshInst->mesh->GetPoint(NAMES::point_weapon);
+		point = unit.meshInst->mesh->GetPoint(NAMES::pointWeapon);
 		assert(point);
 	}
 	else

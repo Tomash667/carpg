@@ -15,9 +15,9 @@ struct LocationContext
 	vector<Entry> entries;
 
 public:
-	bool FindUnit(Unit* unit, LocationContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(UnitData* data, LocationContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry = nullptr, int* unit_index = nullptr);
+	bool FindUnit(Unit* unit, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
+	Unit* FindUnit(UnitData* data, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
+	Unit* FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
 	bool RemoveUnit(Unit* unit);
 };
 

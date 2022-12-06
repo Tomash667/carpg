@@ -254,7 +254,7 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 	tMiniSave.Release();
 	if(!slot.valid)
 		return nullptr;
-	if(slot.img_size == 0)
+	if(slot.imgSize == 0)
 	{
 		cstring filename = Format("saves/%s/%d.jpg", isOnline ? "multi" : "single", slotIndex);
 		if(io::FileExists(filename))
@@ -268,7 +268,7 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 	else
 	{
 		cstring filename = Format("saves/%s/%d.sav", isOnline ? "multi" : "single", slotIndex);
-		Buffer* buf = GameReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
+		Buffer* buf = GameReader::ReadToBuffer(filename, slot.imgOffset, slot.imgSize);
 		tMiniSave.tex = resMgr->LoadRawTexture(buf);
 		tMiniSave.state = ResourceState::Loaded;
 		buf->Free();
@@ -294,16 +294,16 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 	saveText.clear();
 
 	bool exists = false;
-	if(!slot.player_name.empty())
+	if(!slot.playerName.empty())
 	{
-		saveText += slot.player_name;
+		saveText += slot.playerName;
 		exists = true;
 	}
-	if(slot.player_class)
+	if(slot.playerClass)
 	{
 		if(exists)
 			saveText += " ";
-		saveText += slot.player_class->name;
+		saveText += slot.playerClass->name;
 		exists = true;
 	}
 	if(slot.hardcore)
@@ -315,11 +315,11 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 	}
 	if(exists)
 		saveText += "\n";
-	if(online && !slot.mp_players.empty())
+	if(online && !slot.mpPlayers.empty())
 	{
 		saveText += txSavePlayers;
 		bool first = true;
-		for(string& str : slot.mp_players)
+		for(string& str : slot.mpPlayers)
 		{
 			if(first)
 				first = false;
@@ -329,14 +329,14 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 		}
 		saveText += "\n";
 	}
-	if(slot.save_date != 0)
+	if(slot.saveDate != 0)
 	{
 		tm t;
-		localtime_s(&t, &slot.save_date);
+		localtime_s(&t, &slot.saveDate);
 		saveText += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
-	if(slot.game_date.IsValid())
-		saveText += Format(txSaveTime, world->GetDate(slot.game_date));
+	if(slot.gameDate.IsValid())
+		saveText += Format(txSaveTime, world->GetDate(slot.gameDate));
 	if(!slot.location.empty())
 		saveText += slot.location;
 	return saveText;

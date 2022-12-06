@@ -246,7 +246,7 @@ public:
 	bool isOpen, // is location loaded & team is inside
 		ready, // true when everything is read, false when entering/loading/leaving location
 		canFastTravel; // used by MP clients
-	vector<Unit*> to_remove;
+	vector<Unit*> toRemove;
 	vector<CollisionObject> globalCol;
 	vector<Unit*> bloodToSpawn;
 

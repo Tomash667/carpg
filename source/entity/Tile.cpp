@@ -68,9 +68,9 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryT
 					p.flags |= Tile::F_HOLE_RIGHT;
 				if(!Any(tiles[x + 1 + y * size.x].type, BARS, BARS_FLOOR))
 					p.flags |= Tile::F_HOLE_LEFT;
-				if(!Any(tiles[x + (y - 1)*size.x].type, BARS, BARS_FLOOR))
+				if(!Any(tiles[x + (y - 1) * size.x].type, BARS, BARS_FLOOR))
 					p.flags |= Tile::F_HOLE_BACK;
-				if(!Any(tiles[x + (y + 1)*size.x].type, BARS, BARS_FLOOR))
+				if(!Any(tiles[x + (y + 1) * size.x].type, BARS, BARS_FLOOR))
 					p.flags |= Tile::F_HOLE_FRONT;
 			}
 			else if(ok != 0)
@@ -85,9 +85,9 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryT
 					p.flags |= Tile::F_CEIL_RIGHT;
 				if(IsSet(tiles[x + 1 + y * size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_LEFT;
-				if(IsSet(tiles[x + (y - 1)*size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x + (y - 1) * size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_BACK;
-				if(IsSet(tiles[x + (y + 1)*size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x + (y + 1) * size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_FRONT;
 
 				// ceiling
@@ -99,9 +99,9 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryT
 						p.flags |= Tile::F_UP_RIGHT;
 					if(!Any(tiles[x + 1 + y * size.x].type, BARS, BARS_CEILING))
 						p.flags |= Tile::F_UP_LEFT;
-					if(!Any(tiles[x + (y - 1)*size.x].type, BARS, BARS_CEILING))
+					if(!Any(tiles[x + (y - 1) * size.x].type, BARS, BARS_CEILING))
 						p.flags |= Tile::F_UP_BACK;
-					if(!Any(tiles[x + (y + 1)*size.x].type, BARS, BARS_CEILING))
+					if(!Any(tiles[x + (y + 1) * size.x].type, BARS, BARS_CEILING))
 						p.flags |= Tile::F_UP_FRONT;
 				}
 				else
@@ -113,9 +113,9 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size, EntryType prevEntry, EntryT
 				p.flags |= Tile::F_WALL_RIGHT;
 			if(Any(tiles[x + 1 + y * size.x].type, WALL, BLOCKADE_WALL))
 				p.flags |= Tile::F_WALL_LEFT;
-			if(Any(tiles[x + (y - 1)*size.x].type, WALL, BLOCKADE_WALL))
+			if(Any(tiles[x + (y - 1) * size.x].type, WALL, BLOCKADE_WALL))
 				p.flags |= Tile::F_WALL_BACK;
-			if(Any(tiles[x + (y + 1)*size.x].type, WALL, BLOCKADE_WALL))
+			if(Any(tiles[x + (y + 1) * size.x].type, WALL, BLOCKADE_WALL))
 				p.flags |= Tile::F_WALL_FRONT;
 		}
 	}

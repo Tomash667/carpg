@@ -278,7 +278,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	// weight
 	str += Format(txWeight, item->GetWeight());
 	if(count > 1)
-		str += Format(" (%g)\n", item->GetWeight()*count);
+		str += Format(" (%g)\n", item->GetWeight() * count);
 	else
 		str += "\n";
 

@@ -59,7 +59,7 @@ public:
 	void PvpEvent(int id);
 	void ClosePvpDialog();
 	void ShowPvpRequest(Unit* unit);
-	void RewardExp(Unit* dead_unit);
+	void RewardExp(Unit* deadUnit);
 	void SpawnUnit(const vector<Enemy>& units);
 
 	Mode mode;

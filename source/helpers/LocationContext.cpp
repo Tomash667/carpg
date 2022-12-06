@@ -146,7 +146,7 @@ ForLocation::~ForLocation()
 }
 
 //=================================================================================================
-bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* unit_index)
+bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* unitIndex)
 {
 	assert(unit);
 
@@ -159,8 +159,8 @@ bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* 
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return true;
 			}
 		}
@@ -170,7 +170,7 @@ bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* 
 }
 
 //=================================================================================================
-Unit* LocationContext::FindUnit(UnitData* data, LocationContext::Entry** entry, int* unit_index)
+Unit* LocationContext::FindUnit(UnitData* data, LocationContext::Entry** entry, int* unitIndex)
 {
 	assert(data);
 
@@ -183,8 +183,8 @@ Unit* LocationContext::FindUnit(UnitData* data, LocationContext::Entry** entry, 
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return unit;
 			}
 		}
@@ -194,7 +194,7 @@ Unit* LocationContext::FindUnit(UnitData* data, LocationContext::Entry** entry, 
 }
 
 //=================================================================================================
-Unit* LocationContext::FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry, int* unit_index)
+Unit* LocationContext::FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry, int* unitIndex)
 {
 	for(LocationContext::Entry& e : entries)
 	{
@@ -205,8 +205,8 @@ Unit* LocationContext::FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Ent
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return unit2;
 			}
 		}
@@ -222,16 +222,16 @@ bool LocationContext::RemoveUnit(Unit* unit)
 	assert(unit);
 
 	LocationContext::Entry* entry;
-	int unit_index;
-	if(FindUnit(unit, &entry, &unit_index))
+	int unitIndex;
+	if(FindUnit(unit, &entry, &unitIndex))
 	{
 		if(entry->active)
 		{
-			unit->to_remove = true;
-			gameLevel->to_remove.push_back(unit);
+			unit->toRemove = true;
+			gameLevel->toRemove.push_back(unit);
 		}
 		else
-			RemoveElementIndex(entry->locPart->units, unit_index);
+			RemoveElementIndex(entry->locPart->units, unitIndex);
 		return true;
 	}
 	else

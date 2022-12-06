@@ -144,7 +144,7 @@ void Level::Init()
 void Level::Reset()
 {
 	unitWarpData.clear();
-	to_remove.clear();
+	toRemove.clear();
 	minimapReveal.clear();
 	minimapRevealMp.clear();
 }
@@ -159,8 +159,8 @@ void Level::ProcessUnitWarps()
 		if(warp.where == warp.unit->locPart->partId)
 		{
 			// unit left location
-			if(warp.unit->event_handler)
-				warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
+			if(warp.unit->eventHandler)
+				warp.unit->eventHandler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
 			RemoveUnit(warp.unit);
 		}
 		else if(warp.where == WARP_OUTSIDE)
@@ -177,7 +177,7 @@ void Level::ProcessUnitWarps()
 			else
 			{
 				CityBuilding& cityBuilding = cityCtx->buildings[warp.building];
-				WarpUnit(*warp.unit, cityBuilding.walk_pt);
+				WarpUnit(*warp.unit, cityBuilding.walkPt);
 				warp.unit->RotateTo(PtToPos(cityBuilding.pt));
 			}
 			localPart->units.push_back(warp.unit);
@@ -189,7 +189,7 @@ void Level::ProcessUnitWarps()
 			RemoveElement(warp.unit->locPart->units, warp.unit);
 			warp.unit->locPart = &building;
 			Vec3 pos;
-			if(!WarpToRegion(building, (warp.unit->in_arena == 0 ? building.region1 : building.region2), warp.unit->GetUnitRadius(), pos, 20))
+			if(!WarpToRegion(building, (warp.unit->inArena == 0 ? building.region1 : building.region2), warp.unit->GetUnitRadius(), pos, 20))
 			{
 				// failed to warp to arena, spawn outside of arena
 				warp.unit->locPart = localPart;
@@ -200,7 +200,7 @@ void Level::ProcessUnitWarps()
 			}
 			else
 			{
-				warp.unit->rot = (warp.unit->in_arena == 0 ? PI : 0);
+				warp.unit->rot = (warp.unit->inArena == 0 ? PI : 0);
 				WarpUnit(*warp.unit, pos);
 				building.units.push_back(warp.unit);
 				warped_to_arena = true;
@@ -244,7 +244,7 @@ void Level::ProcessUnitWarps()
 
 		for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
 		{
-			if((*it)->in_arena == 0)
+			if((*it)->inArena == 0)
 			{
 				pt1 += (*it)->pos;
 				++count1;
@@ -272,7 +272,7 @@ void Level::ProcessUnitWarps()
 		}
 
 		for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
-			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
+			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->inArena == 0 ? pt2 : pt1);
 	}
 }
 
@@ -281,7 +281,7 @@ void Level::ProcessRemoveUnits(bool leave)
 {
 	if(leave)
 	{
-		for(Unit* unit : to_remove)
+		for(Unit* unit : toRemove)
 		{
 			RemoveElement(unit->locPart->units, unit);
 			delete unit;
@@ -289,10 +289,10 @@ void Level::ProcessRemoveUnits(bool leave)
 	}
 	else
 	{
-		for(Unit* unit : to_remove)
+		for(Unit* unit : toRemove)
 			game->DeleteUnit(unit);
 	}
-	to_remove.clear();
+	toRemove.clear();
 }
 
 //=================================================================================================
@@ -596,8 +596,8 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 	if(unit->action == A_DESPAWN || (Net::IsClient() && unit->summoner))
 		SpawnUnitEffect(*unit);
 	unit->RemoveAllEventHandlers();
-	unit->to_remove = true;
-	to_remove.push_back(unit);
+	unit->toRemove = true;
+	toRemove.push_back(unit);
 	if(notify && Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1078,7 +1078,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 {
 	if(mesh->attachPoints.empty())
 	{
-		cityBuilding->walk_pt = shift;
+		cityBuilding->walkPt = shift;
 		assert(!inside);
 		return;
 	}
@@ -1448,8 +1448,8 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				{
 					if(cityBuilding)
 					{
-						cityBuilding->walk_pt = pos;
-						terrain->SetY(cityBuilding->walk_pt);
+						cityBuilding->walkPt = pos;
+						terrain->SetY(cityBuilding->walkPt);
 					}
 					else if(outPoint)
 						*outPoint = pos;
@@ -2040,7 +2040,7 @@ Unit* Level::CreateUnitWithAI(LocationPart& locPart, UnitData& unit, int level, 
 		else
 			u->pos = *pos;
 		u->UpdatePhysics();
-		u->visual_pos = u->pos;
+		u->visualPos = u->pos;
 	}
 
 	if(rot)
@@ -2915,7 +2915,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	if(unit.cobj)
 		unit.UpdatePhysics();
 
-	unit.visual_pos = unit.pos;
+	unit.visualPos = unit.pos;
 
 	if(Net::IsOnline())
 	{
@@ -2971,7 +2971,7 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 
 	unit.pos = tmp_pos;
 	unit.Moved(true);
-	unit.visual_pos = unit.pos;
+	unit.visualPos = unit.pos;
 
 	if(Net::IsOnline())
 	{
@@ -3390,7 +3390,7 @@ void Level::CheckIfLocationCleared()
 
 		// remove camp in 4-8 days
 		if(location->type == L_CAMP)
-			static_cast<Camp*>(location)->create_time = world->GetWorldtime() - 30 + Random(4, 8);
+			static_cast<Camp*>(location)->createTime = world->GetWorldtime() - 30 + Random(4, 8);
 
 		// add news
 		if(!prevent && !location->group->IsEmpty())
@@ -3972,8 +3972,8 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 
 		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
 		unit.rot = rot;
-		unit.animation = unit.current_animation = ANI_STAND;
-		unit.meshInst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		unit.animation = unit.currentAnimation = ANI_STAND;
+		unit.meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
 		unit.BreakAction();
 		unit.SetAnimationAtEnd();
 		unit.locPart = localPart;
@@ -3988,7 +3988,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		}
 
 		WarpNearLocation(*localPart, unit, pos, cityCtx ? 4.f : 2.f, true, 20);
-		unit.visual_pos = unit.pos;
+		unit.visualPos = unit.pos;
 
 		if(!location->outside)
 			FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimapReveal);
@@ -4200,7 +4200,7 @@ void Level::CleanLevel(int buildingId)
 			locPart.bloods.clear();
 			for(Unit* unit : locPart.units)
 			{
-				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->to_remove)
+				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->toRemove)
 					RemoveUnit(unit, false);
 			}
 		}
@@ -4501,7 +4501,7 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 	if(endT)
 	{
 		if(callback.end)
-			*endT = callback.end_t;
+			*endT = callback.endT;
 		else
 			*endT = 1.f;
 	}
