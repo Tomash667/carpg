@@ -837,7 +837,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_SAVE:
-		if(game->CanSaveGame())
+		if(game->CanSaveGame() == ActionResult::Yes)
 		{
 			int slot = 1;
 			LocalString text;
@@ -868,7 +868,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			Msg(Net::IsClient() ? "Only server can save game." : "You can't save game in this moment.");
 		break;
 	case CMD_LOAD:
-		if(game->CanLoadGame())
+		if(game->CanLoadGame() == ActionResult::Yes)
 		{
 			LocalString name;
 			int slot = 1;

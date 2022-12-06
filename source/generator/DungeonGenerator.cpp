@@ -33,12 +33,12 @@ void DungeonGenerator::Generate()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
-	Quest2* event_handler = nullptr;
+	Quest2* eventHandler = nullptr;
 	for(Event& event : inside->events)
 	{
 		if(event.type == EVENT_GENERATE)
 		{
-			event_handler = event.quest;
+			eventHandler = event.quest;
 			break;
 		}
 	}
@@ -88,13 +88,13 @@ void DungeonGenerator::Generate()
 	settings.removeDeadEndCorridors = true;
 
 	bool skipNormalHandling = false;
-	if(event_handler)
+	if(eventHandler)
 	{
 		ScriptEvent e(EVENT_GENERATE);
 		e.on_generate.location = inside;
 		e.on_generate.map_settings = &settings;
 		e.on_generate.stage = 0;
-		event_handler->FireEvent(e);
+		eventHandler->FireEvent(e);
 		skipNormalHandling = e.cancel;
 	}
 
@@ -158,7 +158,7 @@ void DungeonGenerator::Generate()
 		settings.stop = true;
 		bool first = true;
 		int tries = 0;
-		vector<Room*> possible_rooms;
+		vector<Room*> possibleRooms;
 
 		while(true)
 		{
@@ -168,10 +168,10 @@ void DungeonGenerator::Generate()
 			for(Room* room : lvl.rooms)
 			{
 				if(room->target == RoomTarget::None && room->connected.size() == 1)
-					possible_rooms.push_back(room);
+					possibleRooms.push_back(room);
 			}
 
-			if(possible_rooms.empty())
+			if(possibleRooms.empty())
 			{
 				++tries;
 				if(tries == 100)
@@ -180,7 +180,7 @@ void DungeonGenerator::Generate()
 					continue;
 			}
 
-			Room* room = RandomItem(possible_rooms);
+			Room* room = RandomItem(possibleRooms);
 			room->target = RoomTarget::Prison;
 			Int2 pt = mapGenerator.GetConnectingTile(room, room->connected.front());
 			Tile& p = mapGenerator.GetMap()[pt.x + pt.y * settings.mapW];
@@ -214,13 +214,13 @@ void DungeonGenerator::Generate()
 		}
 	}
 
-	if(event_handler)
+	if(eventHandler)
 	{
 		ScriptEvent e(EVENT_GENERATE);
 		e.on_generate.location = inside;
 		e.on_generate.map_settings = nullptr;
 		e.on_generate.stage = 1;
-		event_handler->FireEvent(e);
+		eventHandler->FireEvent(e);
 	}
 
 	if(inside->from_portal)
@@ -230,7 +230,7 @@ void DungeonGenerator::Generate()
 //=================================================================================================
 void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 {
-	vector<pair<Int2, GameDirection>> good_pts;
+	vector<pair<Int2, GameDirection>> goodPts;
 
 	for(int tries = 0; tries < 100; ++tries)
 	{
@@ -282,17 +282,17 @@ void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 					}
 
 					if(dir != GDIR_INVALID)
-						good_pts.push_back(std::make_pair(r.pos + Int2(x, y), dir));
+						goodPts.push_back(std::make_pair(r.pos + Int2(x, y), dir));
 #undef P
 #undef B
 				}
 			}
 		}
 
-		if(good_pts.empty())
+		if(goodPts.empty())
 			continue;
 
-		pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
+		pair<Int2, GameDirection>& pt = goodPts[Rand() % goodPts.size()];
 
 		const Vec3 pos(2.f * pt.first.x + 1, 0, 2.f * pt.first.y + 1);
 		float rot = Clip(DirToRot(pt.second) + PI);
@@ -319,16 +319,16 @@ void DungeonGenerator::GenerateUnits()
 		return;
 
 	UnitGroup* group = GetGroup();
-	int base_level;
+	int baseLevel;
 	if(gameLevel->location->group->IsChallange())
-		base_level = gameLevel->location->st; // all levels have max st
+		baseLevel = gameLevel->location->st; // all levels have max st
 	else
-		base_level = gameLevel->GetDifficultyLevel();
+		baseLevel = gameLevel->GetDifficultyLevel();
 
 	Pooled<TmpUnitGroup> tmp;
-	tmp->Fill(group, base_level);
+	tmp->Fill(group, baseLevel);
 
-	const bool canSpawnSlime = (base_level >= 3 && base_level <= 5);
+	const bool canSpawnSlime = (baseLevel >= 3 && baseLevel <= 5);
 
 	// chance for spawning units
 	const int chance_for_none = 10,
@@ -398,7 +398,7 @@ void DungeonGenerator::GenerateUnits()
 		}
 		else
 		{
-			for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
+			for(TmpUnitGroup::Spawn& spawn : tmp->Roll(baseLevel, count))
 			{
 				Room& room = *lvl.rooms[RandomItem(group.rooms)];
 				gameLevel->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, awayPt, excludedPt);

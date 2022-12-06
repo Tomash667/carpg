@@ -726,17 +726,17 @@ void Game::OnUpdate(float dt)
 			TakeScreenshot(input->Down(Key::Shift));
 
 		// pause/resume game
-		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
+		if(Any(gameState, GS_LEVEL, GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
 			PauseGame();
 
 		if(!cutscene)
 		{
 			// quicksave, quickload
-			bool console_open = gui->HaveTopDialog("console");
-			bool special_key_allowed = (GKey.allowInput == GameKeys::ALLOW_KEYBOARD || GKey.allowInput == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
-			if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+			bool consoleOpen = gui->HaveTopDialog("console");
+			bool specialKeyAllowed = (GKey.allowInput == GameKeys::ALLOW_KEYBOARD || GKey.allowInput == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || consoleOpen));
+			if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, specialKeyAllowed))
 				Quicksave();
-			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+			if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, specialKeyAllowed))
 				Quickload();
 		}
 	}
@@ -1006,9 +1006,9 @@ void Game::RestartGame()
 {
 	// create mutex
 	HANDLE mutex = CreateMutex(nullptr, TRUE, RESTART_MUTEX_NAME);
-	DWORD dwLastError = GetLastError();
-	bool AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
-	if(AlreadyRunning)
+	DWORD lastError = GetLastError();
+	bool alreadyRunning = (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED);
+	if(alreadyRunning)
 	{
 		WaitForSingleObject(mutex, INFINITE);
 		CloseHandle(mutex);
@@ -1105,6 +1105,7 @@ void Game::SetGameText()
 	txGameLoaded = Str("gameLoaded");
 	txLoadError = Str("loadError");
 	txLoadErrorGeneric = Str("loadErrorGeneric");
+	txMissingQuicksave = Str("missingQuicksave");
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");

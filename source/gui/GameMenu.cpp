@@ -93,8 +93,8 @@ void GameMenu::Update(float dt)
 //=================================================================================================
 void GameMenu::CheckButtons()
 {
-	bool canSave = game->CanSaveGame(),
-		canLoad = game->CanLoadGame(),
+	bool canSave = game->CanSaveGame() == ActionResult::Yes,
+		canLoad = game->CanLoadGame() == ActionResult::Yes,
 		hardcoreMode = game->hardcoreMode;
 
 	if(canSave != prevCanSave)

@@ -88,6 +88,13 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
+enum class ActionResult
+{
+	Ignore,
+	No,
+	Yes
+};
+
 class Game final : public App
 {
 public:
@@ -172,8 +179,8 @@ public:
 	void UpdateCamera(float dt);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	bool CanLoadGame() const;
-	bool CanSaveGame() const;
+	ActionResult CanLoadGame() const;
+	ActionResult CanSaveGame() const;
 	void ChangeLevel(int where);
 	void ExitToMap();
 	void SaveGame(GameWriter& f, SaveSlot* slot);
@@ -397,7 +404,7 @@ public:
 	cstring txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingData, txEndOfLoading, txCantSaveNow, txOnlyServerCanSave,
 		txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError, txCantLoadMultiplayer,
-		txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
+		txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric, txMissingQuicksave;
 	cstring txPvpRefuse, txWin, txWinHardcore, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
 	cstring txRumor[29], txRumorD[7];
 	cstring txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2], txAllCampDiscovered[2],

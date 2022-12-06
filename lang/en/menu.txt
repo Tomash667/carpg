@@ -548,6 +548,7 @@ cantLoadMultiplayer = "Can't quick load this save: %s"
 tooOldVersion = "Too old save version."
 missingPlayerInSave = "Missing player '%s' in save."
 gameLoaded = "Game loaded"
+missingQuicksave = "Missing quick save."
 
 // game
 gamePausedBig = "GAME PAUSED"

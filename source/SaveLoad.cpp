@@ -64,45 +64,60 @@ enum SaveFlags
 int LOAD_VERSION;
 
 //=================================================================================================
-bool Game::CanSaveGame() const
+ActionResult Game::CanSaveGame() const
 {
-	if(gameState == GS_MAIN_MENU || questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
-		return false;
+	if(!Any(gameState, GS_LEVEL, GS_WORLDMAP))
+		return ActionResult::Ignore;
+
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog) { return dialog->name != "console" && dialog->name != "gameMenu"; };
+	if(gui->HaveDialog(pred))
+		return ActionResult::Ignore;
+
+	if(GS_MAIN_MENU || questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
+		return ActionResult::No;
 
 	if(gameState == GS_WORLDMAP)
 	{
 		if(Any(world->GetState(), World::State::TRAVEL, World::State::ENCOUNTER))
-			return false;
+			return ActionResult::No;
 	}
 	else
 	{
 		if(questMgr->questTutorial->in_tutorial || arena->mode != Arena::NONE || questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
 			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			return false;
+			return ActionResult::No;
 	}
 
 	if(Net::IsOnline())
 	{
 		if(team->IsAnyoneAlive() && Net::IsServer())
-			return true;
+			return ActionResult::Yes;
 	}
 	else if(pc->unit->IsAlive() || pc->unit->inArena != -1)
-		return true;
+		return ActionResult::Yes;
 
-	return false;
+	return ActionResult::No;
 }
 
 //=================================================================================================
-bool Game::CanLoadGame() const
+ActionResult Game::CanLoadGame() const
 {
+	if(!Any(gameState, GS_MAIN_MENU, GS_LEVEL, GS_WORLDMAP))
+		return ActionResult::Ignore;
+
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog) { return dialog->name != "console" && dialog->name != "gameMenu"; };
+	if(gui->HaveDialog(pred))
+		return ActionResult::Ignore;
+
 	if(Net::IsOnline())
 	{
 		if(Net::IsClient() || !Any(gameState, GS_LEVEL, GS_WORLDMAP))
-			return false;
+			return ActionResult::No;
 	}
 	else if(hardcoreMode)
-		return false;
-	return true;
+		return ActionResult::No;
+
+	return ActionResult::Yes;
 }
 
 //=================================================================================================
@@ -110,15 +125,20 @@ bool Game::SaveGameSlot(int slot, cstring text)
 {
 	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
-	if(!CanSaveGame())
+	ActionResult actionResult = CanSaveGame();
+	if(actionResult == ActionResult::Yes)
+	{
+		LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+		return SaveGameCommon(filename, slot, text);
+	}
+	else if(actionResult == ActionResult::No)
 	{
 		// can't save right now
 		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gameGui->saveload->visible ? gameGui->saveload : nullptr);
 		return false;
 	}
-
-	LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
-	return SaveGameCommon(filename, slot, text);
+	else
+		return false;
 }
 
 //=================================================================================================
@@ -144,11 +164,11 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 	CreateSaveImage();
 
-	LocalString tmp_filename = Format("%s.new", filename);
-	GameWriter f(tmp_filename);
+	LocalString tmpFilename = Format("%s.new", filename);
+	GameWriter f(tmpFilename);
 	if(!f)
 	{
-		Error(txLoadOpenError, tmp_filename, GetLastError());
+		Error("Failed to save game '%s' (%d).", tmpFilename.c_str(), GetLastError());
 		gui->SimpleDialog(txSaveFailed, gameGui->saveload->visible ? gameGui->saveload : nullptr);
 		return false;
 	}
@@ -165,7 +185,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 	if(io::FileExists(filename))
 		io::MoveFile(filename, Format("%s.bak", filename));
-	io::MoveFile(tmp_filename, filename);
+	io::MoveFile(tmpFilename, filename);
 
 	cstring msg = Format("Game saved '%s'.", filename);
 	gameGui->console->AddMsg(msg);
@@ -238,8 +258,9 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	GameReader f(filename);
 	if(!f)
 	{
-		DWORD last_error = GetLastError();
-		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
+		DWORD lastError = GetLastError();
+		throw SaveException(Format(txLoadOpenError, filename, lastError), Format("Failed to open file '%s' (%d).", filename, lastError),
+			lastError == ERROR_FILE_NOT_FOUND);
 	}
 
 	Info("Loading save '%s'.", filename);
@@ -698,6 +719,7 @@ void Game::LoadGame(GameReader& f)
 
 	// game state
 	f >> game_state2;
+	gameLevel->isOpen = game_state2 == GS_LEVEL;
 
 	if(LOAD_VERSION >= V_0_17)
 		aiMgr->Load(f);
@@ -706,14 +728,14 @@ void Game::LoadGame(GameReader& f)
 	LoadingStep(txLoadingLocations);
 	world->Load(f, loading);
 
-	uint count;
-	int location_event_handler_quest_id;
+	int locationEventHandlerQuestId;
 	if(game_state2 == GS_LEVEL)
-		f >> location_event_handler_quest_id;
+		f >> locationEventHandlerQuestId;
 	else
 	{
-		location_event_handler_quest_id = -1;
+		locationEventHandlerQuestId = -1;
 		// load team
+		uint count;
 		f >> count;
 		for(uint i = 0; i < count; ++i)
 		{
@@ -815,8 +837,6 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
-		gameLevel->isOpen = true;
-
 		LocationGenerator* loc_gen = locGenFactory->Get(gameLevel->location);
 		loc_gen->OnLoad();
 
@@ -831,8 +851,6 @@ void Game::LoadGame(GameReader& f)
 
 		RemoveUnusedAiAndCheck();
 	}
-	else
-		gameLevel->isOpen = false;
 
 	// gui
 	gameGui->levelGui->PositionPanels();
@@ -885,9 +903,9 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// current location event handler
-	if(location_event_handler_quest_id != -1)
+	if(locationEventHandlerQuestId != -1)
 	{
-		Quest* quest = questMgr->FindAnyQuest(location_event_handler_quest_id);
+		Quest* quest = questMgr->FindAnyQuest(locationEventHandlerQuestId);
 		if(quest->isNew)
 			gameLevel->eventHandler = nullptr;
 		else
@@ -971,16 +989,17 @@ bool Game::TryLoadGame(int slot, bool quickload, bool fromConsole)
 {
 	try
 	{
-		game->LoadGameSlot(slot);
+		LoadGameSlot(slot);
 		return true;
 	}
 	catch(const SaveException& ex)
 	{
 		if(quickload && ex.missingFile)
 		{
-			Warn("Missing quicksave.");
 			if(fromConsole)
 				gameGui->console->AddMsg("Missing quicksave.");
+			else
+				gui->SimpleDialog(txMissingQuicksave, nullptr);
 			return false;
 		}
 
@@ -990,15 +1009,16 @@ bool Game::TryLoadGame(int slot, bool quickload, bool fromConsole)
 			gameGui->console->AddMsg(msg);
 		else
 		{
-			cstring dialog_text;
+			cstring dialogText;
 			if(ex.localizedMsg)
-				dialog_text = Format("%s%s", txLoadError, ex.localizedMsg);
+				dialogText = Format("%s%s", txLoadError, ex.localizedMsg);
 			else
-				dialog_text = txLoadErrorGeneric;
+				dialogText = txLoadErrorGeneric;
+
 			Control* parent = nullptr;
 			if(gameGui->gameMenu->visible)
 				parent = gameGui->gameMenu;
-			gui->SimpleDialog(dialog_text, parent, "fatal");
+			gui->SimpleDialog(dialogText, parent, "fatal");
 		}
 		net->mpLoad = false;
 		return false;
@@ -1008,26 +1028,24 @@ bool Game::TryLoadGame(int slot, bool quickload, bool fromConsole)
 //=================================================================================================
 void Game::Quicksave()
 {
-	if(!CanSaveGame())
+	ActionResult actionResult = CanSaveGame();
+	if(actionResult == ActionResult::Yes)
 	{
-		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
-		return;
+		if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
+			gameGui->messages->AddGameMsg3(GMS_GAME_SAVED);
 	}
-
-	if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
-		gameGui->messages->AddGameMsg3(GMS_GAME_SAVED);
+	else if(actionResult == ActionResult::No)
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 }
 
 //=================================================================================================
 void Game::Quickload()
 {
-	if(!CanLoadGame())
-	{
+	ActionResult actionResult = CanLoadGame();
+	if(actionResult == ActionResult::Yes)
+		TryLoadGame(SaveSlot::MAX_SLOTS, true, false);
+	else if(actionResult == ActionResult::No)
 		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
-		return;
-	}
-
-	TryLoadGame(SaveSlot::MAX_SLOTS, true, false);
 }
 
 //=================================================================================================

@@ -548,6 +548,7 @@ cantLoadMultiplayer = "Nie mo¿na szybko wczytaæ tego zapisu: %s"
 tooOldVersion = "Zbyt stara wersja zapisu."
 missingPlayerInSave = "Brak gracza '%s' w zapisie."
 gameLoaded = "Gra wczytana"
+missingQuicksave = "Brak szybkiego zapisu."
 
 // game
 gamePausedBig = "GRA ZATRZYMANA"

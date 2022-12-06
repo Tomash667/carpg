@@ -1830,6 +1830,6 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 //=================================================================================================
 void Game::UvModChanged()
 {
-	gameLevel->terrain->uv_mod = uvMod;
+	gameLevel->terrain->uvMod = uvMod;
 	gameLevel->terrain->RebuildUv();
 }
