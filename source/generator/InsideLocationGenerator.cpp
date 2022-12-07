@@ -741,7 +741,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		Level::IgnoreObjects ignore = { 0 };
+		Level::IgnoreObjects ignore{};
 		ignore.ignoreBlocks = true;
 		gameLevel->globalCol.clear();
 		gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
@@ -761,7 +761,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		Level::IgnoreObjects ignore = { 0 };
+		Level::IgnoreObjects ignore{};
 		ignore.ignoreBlocks = true;
 		gameLevel->globalCol.clear();
 		gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, base->r, &ignore);
@@ -798,7 +798,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 
 	float rot = Random(MAX_ANGLE);
 	Vec3 pos = allowed_region.GetRandomPos3();
-	Level::IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore{};
 	ignore.ignoreBlocks = true;
 	gameLevel->globalCol.clear();
 	gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, base->r + EXTRA_RADIUS, &ignore);
@@ -904,7 +904,7 @@ void InsideLocationGenerator::GenerateTraps()
 				&& !Any(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
 				if(Rand() % 500 < chance + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
-					gameLevel->CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
+					gameLevel->TryCreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
 	}
@@ -1031,7 +1031,7 @@ void InsideLocationGenerator::RegenerateTraps()
 					}
 
 					if(ok)
-						gameLevel->CreateTrap(Int2(x, y), TRAP_FIREBALL);
+						gameLevel->TryCreateTrap(Int2(x, y), TRAP_FIREBALL);
 				}
 			}
 		}

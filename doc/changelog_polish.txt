@@ -20,6 +20,7 @@ Wersja 0.19 (???):
 - brak celownika podczas rozmowy
 - brak odświeżania czasu zdolności podczas krótkiej podróży
 - czasami generowało schody obok drzwi
+- nie generowanie pułapek pod obiektami
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

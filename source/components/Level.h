@@ -141,8 +141,7 @@ public:
 	void WarpUnit(Unit& unit, const Vec3& pos);
 	bool WarpToRegion(LocationPart& locPart, const Box2d& region, float radius, Vec3& pos, int tries = 10);
 	void WarpNearLocation(LocationPart& locPart, Unit& uint, const Vec3& pos, float extraRadius, bool allowExact, int tries = 20);
-	// return pointer to temporary or nullptr (can fail only for arrow and poison traps)
-	Trap* CreateTrap(Int2 pt, TRAP_TYPE type);
+	Trap* TryCreateTrap(Int2 pt, TRAP_TYPE type);
 	Trap* CreateTrap(const Vec3& pos, TRAP_TYPE type, int id = -1);
 	void UpdateLocation(int days, int openChance, bool reset);
 	int GetDifficultyLevel() const;

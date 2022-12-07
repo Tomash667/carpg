@@ -20,6 +20,7 @@ Version 0.19 (???):
 - hide crosshair when talking
 - not refreshing ability cooldowns on short travels
 - sometimes stairs was generated next to doors
+- don't spawn traps under objects
 
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):

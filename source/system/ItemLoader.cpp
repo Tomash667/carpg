@@ -138,7 +138,7 @@ void ItemLoader::InitTokenizer()
 		{ "list", IT_LIST },
 		{ "stock", IT_STOCK },
 		{ "book_scheme", IT_BOOK_SCHEME },
-		{ "startItems", IT_START_ITEMS },
+		{ "start_items", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS },
 		{ "recipe", IT_RECIPE }

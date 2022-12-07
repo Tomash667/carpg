@@ -2989,126 +2989,135 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 }
 
 //=================================================================================================
-Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type)
+Trap* Level::TryCreateTrap(Int2 pt, TRAP_TYPE type)
 {
 	assert(lvl);
 
-	struct TrapLocation
-	{
-		Int2 pt;
-		int dist;
-		GameDirection dir;
-	};
-
-	Trap* t = new Trap;
-	Trap& trap = *t;
-	localPart->traps.push_back(t);
-
 	BaseTrap& base = BaseTrap::traps[type];
-	trap.base = &base;
-	trap.meshInst = nullptr;
-	trap.hitted = nullptr;
-	trap.state = 0;
-	trap.attack = 0;
-	trap.pos = Vec3(2.f * pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f * pt.y + Random(trap.base->h, 2.f - trap.base->h));
+	const Vec3 pos = Vec3(2.f * pt.x + Random(base.rw, 2.f - base.rw), 0.f, 2.f * pt.y + Random(base.h, 2.f - base.h));
 
+	// check for collisions
+	Level::IgnoreObjects ignore{};
+	ignore.ignoreBlocks = true;
+	globalCol.clear();
+	const Box2d box(pos.x - base.rw / 2 - 0.1f, pos.z - base.h / 2 - 0.1f, pos.x + base.rw / 2 + 0.1f, pos.y + base.h / 2 + 0.1f);
+	GatherCollisionObjects(*localPart, globalCol, box, &ignore);
+	if(!globalCol.empty() && Collide(globalCol, box))
+		return nullptr;
+
+	// check if can shoot at this position
+	Int2 shootTile;
+	GameDirection shootDir;
+	if(type == TRAP_ARROW || type == TRAP_POISON)
+	{
+		struct TrapLocation
+		{
+			Int2 pt;
+			int dist;
+			GameDirection dir;
+		};
+
+		static vector<TrapLocation> possible;
+
+		for(int i = 0; i < 4; ++i)
+		{
+			GameDirection dir = (GameDirection)i;
+			bool ok = false;
+			int j;
+
+			for(j = 1; j <= 10; ++j)
+			{
+				if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
+				{
+					if(j != 1)
+						ok = true;
+					break;
+				}
+			}
+
+			if(ok)
+			{
+				const Int2 tile = pt + DirToPos(dir) * j;
+				if(CanShootAtLocation(Vec3(pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
+					Vec3(pos.x, 1.f, pos.z)))
+				{
+					TrapLocation& tr = Add1(possible);
+					tr.pt = tile;
+					tr.dist = j;
+					tr.dir = dir;
+				}
+			}
+		}
+
+		if(!possible.empty())
+		{
+			if(possible.size() > 1)
+			{
+				std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
+				{
+					return abs(pt1.dist - 5) < abs(pt2.dist - 5);
+				});
+			}
+
+			shootTile = possible[0].pt;
+			shootDir = possible[0].dir;
+
+			possible.clear();
+		}
+		else
+			return nullptr;
+	}
+
+	// create trap
+	Trap* trap = new Trap;
+	localPart->traps.push_back(trap);
+
+	trap->base = &base;
+	trap->meshInst = nullptr;
+	trap->hitted = nullptr;
+	trap->state = 0;
+	trap->attack = 0;
+	trap->pos = pos;
 	switch(type)
 	{
 	case TRAP_ARROW:
 	case TRAP_POISON:
-		{
-			trap.rot = 0;
-
-			static vector<TrapLocation> possible;
-
-			// ustal tile i dir
-			for(int i = 0; i < 4; ++i)
-			{
-				GameDirection dir = (GameDirection)i;
-				bool ok = false;
-				int j;
-
-				for(j = 1; j <= 10; ++j)
-				{
-					if(IsBlocking(lvl->map[pt.x + DirToPos(dir).x * j + (pt.y + DirToPos(dir).y * j) * lvl->w]))
-					{
-						if(j != 1)
-							ok = true;
-						break;
-					}
-				}
-
-				if(ok)
-				{
-					trap.tile = pt + DirToPos(dir) * j;
-
-					if(CanShootAtLocation(Vec3(trap.pos.x + (2.f * j - 1.2f) * DirToPos(dir).x, 1.f, trap.pos.z + (2.f * j - 1.2f) * DirToPos(dir).y),
-						Vec3(trap.pos.x, 1.f, trap.pos.z)))
-					{
-						TrapLocation& tr = Add1(possible);
-						tr.pt = trap.tile;
-						tr.dist = j;
-						tr.dir = dir;
-					}
-				}
-			}
-
-			if(!possible.empty())
-			{
-				if(possible.size() > 1)
-				{
-					std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
-					{
-						return abs(pt1.dist - 5) < abs(pt2.dist - 5);
-					});
-				}
-
-				trap.tile = possible[0].pt;
-				trap.dir = possible[0].dir;
-
-				possible.clear();
-			}
-			else
-			{
-				localPart->traps.pop_back();
-				delete t;
-				return nullptr;
-			}
-		}
+		trap->rot = 0;
+		trap->tile = shootTile;
+		trap->dir = shootDir;
 		break;
 	case TRAP_SPEAR:
-		trap.rot = Random(MAX_ANGLE);
-		trap.hitted = new vector<Unit*>;
+		trap->rot = Random(MAX_ANGLE);
+		trap->hitted = new vector<Unit*>;
 		break;
 	case TRAP_FIREBALL:
-		trap.rot = PI / 2 * (Rand() % 4);
+		trap->rot = PI / 2 * (Rand() % 4);
 		break;
 	case TRAP_BEAR:
-		trap.rot = Random(MAX_ANGLE);
+		trap->rot = Random(MAX_ANGLE);
 		break;
 	}
 
-	trap.Register();
-	return &trap;
+	trap->Register();
+	return trap;
 }
 
 //=================================================================================================
 Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 {
-	Trap* t = new Trap;
-	Trap& trap = *t;
-	GetLocationPart(pos).traps.push_back(t);
+	Trap* trap = new Trap;
+	GetLocationPart(pos).traps.push_back(trap);
 
 	BaseTrap& base = BaseTrap::traps[type];
-	trap.id = id;
-	trap.Register();
-	trap.base = &base;
-	trap.meshInst = nullptr;
-	trap.hitted = nullptr;
-	trap.state = 0;
-	trap.attack = 0;
-	trap.pos = pos;
-	trap.mpTrigger = false;
+	trap->id = id;
+	trap->Register();
+	trap->base = &base;
+	trap->meshInst = nullptr;
+	trap->hitted = nullptr;
+	trap->state = 0;
+	trap->attack = 0;
+	trap->pos = pos;
+	trap->mpTrigger = false;
 
 	switch(type)
 	{
@@ -3117,31 +3126,31 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 		assert(0); // TODO
 		break;
 	case TRAP_SPEAR:
-		trap.rot = Random(MAX_ANGLE);
-		trap.hitted = new vector<Unit*>;
+		trap->rot = Random(MAX_ANGLE);
+		trap->hitted = new vector<Unit*>;
 		break;
 	case TRAP_FIREBALL:
-		trap.rot = PI / 2 * (Rand() % 4);
+		trap->rot = PI / 2 * (Rand() % 4);
 		break;
 	case TRAP_BEAR:
-		trap.rot = Random(MAX_ANGLE);
+		trap->rot = Random(MAX_ANGLE);
 		break;
 	}
 
-	gameRes->LoadTrap(trap.base);
-	if(trap.base->mesh->IsAnimated())
-		trap.meshInst = new MeshInstance(trap.base->mesh);
+	gameRes->LoadTrap(trap->base);
+	if(trap->base->mesh->IsAnimated())
+		trap->meshInst = new MeshInstance(trap->base->mesh);
 
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CREATE_TRAP;
-		c.extraId = trap.id;
+		c.extraId = trap->id;
 		c.id = type;
 		c.pos = pos;
 	}
 
-	return t;
+	return trap;
 }
 
 //=================================================================================================
