@@ -386,13 +386,13 @@ void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int
 void LabyrinthGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	assert(!lvl.map);
 
 	Int2 roomPos;
-	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.prevEntryPt, lvl.prevEntryDir, roomPos, base.bars_chance);
+	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.roomSize, lvl.prevEntryPt, lvl.prevEntryDir, roomPos, base.barsChance);
 	lvl.prevEntryType = ENTRY_STAIRS_UP;
 	lvl.nextEntryPt = Int2(-1000, -1000);
 
@@ -401,7 +401,7 @@ void LabyrinthGenerator::Generate()
 	room->target = RoomTarget::Treasury;
 	room->type = nullptr;
 	room->pos = roomPos;
-	room->size = base.room_size;
+	room->size = base.roomSize;
 	room->connected.clear();
 	room->index = 0;
 	room->group = -1;

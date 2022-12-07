@@ -1194,7 +1194,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	{
 		// add perk
 		Perk* perk = (Perk*)id;
-		switch(perk->value_type)
+		switch(perk->valueType)
 		{
 		case Perk::Attribute:
 			PickAttribute(txPickAttribIncrease, perk);
@@ -1215,7 +1215,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		taken.Remove(ctx);
 		cc.takenPerks.erase(cc.takenPerks.begin() + id);
 		vector<Perk*> removed;
-		ctx.check_remove = true;
+		ctx.checkRemove = true;
 		LoopAndRemove(cc.takenPerks, [&](TakenPerk& perk)
 		{
 			if(perk.CanTake(ctx))
@@ -1255,7 +1255,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 
 	for(Skill& si : Skill::skills)
 	{
-		int i = (int)si.skill_id;
+		int i = (int)si.skillId;
 		if(cc.s[i].value >= 0)
 		{
 			if(si.group != last_group)
@@ -1293,7 +1293,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	for(int i = 0; i < (int)cc.takenPerks.size(); ++i)
 	{
 		Perk* perk = cc.takenPerks[i].perk;
-		if(perk->value_type != Perk::None)
+		if(perk->valueType != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = cc.takenPerks[i].FormatName();
@@ -1375,7 +1375,7 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk* perk)
 	SkillGroupId last_group = SkillGroupId::NONE;
 	for(Skill& info : Skill::skills)
 	{
-		int i = (int)info.skill_id;
+		int i = (int)info.skillId;
 		if(cc.s[i].value > 0)
 		{
 			if(info.group != last_group)

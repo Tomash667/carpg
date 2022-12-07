@@ -281,7 +281,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 	if(weapon->type == IT_WEAPON)
 	{
 		const Weapon& w = weapon->ToWeapon();
-		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
+		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weaponType];
 		float p;
 		if(str >= w.reqStr)
 			p = 1.f;
@@ -416,7 +416,7 @@ bool Unit::CanWear(const Item* item) const
 	if(item->IsWearable())
 	{
 		if(item->type == IT_ARMOR)
-			return item->ToArmor().armor_unit_type == data->armor_type;
+			return item->ToArmor().armorUnitType == data->armor_type;
 		return true;
 	}
 	return false;
@@ -903,7 +903,7 @@ void Unit::AddEffect(Effect& e, bool send)
 			c.type = NetChangePlayer::ADD_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
-			c.a1 = e.source_id;
+			c.a1 = e.sourceId;
 			c.a2 = e.value;
 			c.pos.x = e.power;
 			c.pos.y = e.time;
@@ -953,13 +953,13 @@ void Unit::ApplyItemEffects(const Item* item, ITEM_SLOT slot)
 		return;
 	for(const ItemEffect& e : item->effects)
 	{
-		if(e.on_attack)
+		if(e.onAttack)
 			continue;
 		Effect effect;
 		effect.effect = e.effect;
 		effect.power = e.power;
 		effect.source = EffectSource::Item;
-		effect.source_id = (int)slot;
+		effect.sourceId = (int)slot;
 		effect.value = e.value;
 		effect.time = 0.f;
 		AddEffect(effect);
@@ -1004,7 +1004,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					Effect e;
 					e.effect = effect.effect;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
 					e.time = item.time;
 					e.power = effect.power / item.time * poison_res;
@@ -1036,7 +1036,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				Effect e;
 				e.effect = effect.effect;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = -1;
 				e.time = item.time;
 				e.power = effect.power / item.time;
@@ -1077,7 +1077,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				Effect e;
 				e.effect = effect.effect;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = -1;
 				e.time = item.time;
 				e.power = effect.power;
@@ -1097,7 +1097,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 		if((effect == EffectId::None || e.effect == effect)
 			&& (value == -1 || e.value == value)
 			&& (source == EffectSource::None || e.source == source)
-			&& (sourceId == -1 || e.source_id == sourceId))
+			&& (sourceId == -1 || e.sourceId == sourceId))
 			_to_remove.push_back(index);
 		++index;
 	}
@@ -1161,7 +1161,7 @@ void Unit::UpdateEffects(float dt)
 					Effect e;
 					e.effect = EffectId::SlowMove;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.power = 1.f;
 					e.time = 1.f;
 					e.value = -1;
@@ -1517,7 +1517,7 @@ void Unit::GetBox(Box& box) const
 int Unit::GetDmgType() const
 {
 	if(HaveWeapon())
-		return GetWeapon().dmg_type;
+		return GetWeapon().dmgType;
 	else
 		return data->dmg_type;
 }
@@ -1689,7 +1689,7 @@ int Unit::GetRandomAttack() const
 	{
 		int a;
 
-		switch(GetWeapon().weapon_type)
+		switch(GetWeapon().weaponType)
 		{
 		case WT_LONG_BLADE:
 			a = A_LONG_BLADE;
@@ -1739,7 +1739,7 @@ void Unit::Save(GameWriter& f)
 			f << slot.count;
 			f << slot.teamCount;
 			if(slot.item->id[0] == '$')
-				f << slot.item->quest_id;
+				f << slot.item->questId;
 		}
 		else
 			f.Write0();
@@ -1963,7 +1963,7 @@ void Unit::SaveStock(GameWriter& f)
 			f << slot.item->id;
 			f << slot.count;
 			if(slot.item->id[0] == '$')
-				f << slot.item->quest_id;
+				f << slot.item->questId;
 		}
 		else
 			f.Write0();
@@ -2304,7 +2304,7 @@ void Unit::Load(GameReader& f)
 			for(Effect& e : effects)
 			{
 				if(e.source == EffectSource::Perk)
-					e.source_id = old::Convert((old::Perk)e.source_id)->hash;
+					e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
 			}
 		}
 	}
@@ -2315,12 +2315,12 @@ void Unit::Load(GameReader& f)
 		{
 			f >> e.effect;
 			f >> e.source;
-			f >> e.source_id;
+			f >> e.sourceId;
 			f >> e.time;
 			f >> e.power;
 			e.value = -1;
 			if(e.source == EffectSource::Perk)
-				e.source_id = old::Convert((old::Perk)e.source_id)->hash;
+				e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
 		}
 	}
 	if(content.require_update)
@@ -3014,7 +3014,7 @@ bool Unit::Read(BitStreamReader& f)
 			f.ReadCasted<byte>(e.effect);
 			f >> e.time;
 			e.source = EffectSource::Temporary;
-			e.source_id = -1;
+			e.sourceId = -1;
 			e.value = -1;
 			e.power = 0;
 		}
@@ -3373,20 +3373,20 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	+ brakuj¹ca si³a
 	+ udŸwig */
 	float mod = 1.f;
-	float base_speed;
+	float baseSpeed;
 	if(wep)
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float dex_mod = min(0.25f, info.dex_speed * Get(AttributeId::DEX));
-		mod += float(Get(info.skill)) / 200 + dex_mod - GetAttackSpeedModFromStrength(*wep);
-		base_speed = info.base_speed;
+		float dexMod = min(0.25f, info.dexSpeed * Get(AttributeId::DEX));
+		mod += float(Get(info.skill)) / 200 + dexMod - GetAttackSpeedModFromStrength(*wep);
+		baseSpeed = info.baseSpeed;
 	}
 	else
 	{
-		float dex_mod = min(0.25f, 0.02f * Get(AttributeId::DEX));
-		mod += float(Get(SkillId::UNARMED)) / 200 + dex_mod;
-		base_speed = 1.f;
+		float dexMod = min(0.25f, 0.02f * Get(AttributeId::DEX));
+		mod += float(Get(SkillId::UNARMED)) / 200 + dexMod;
+		baseSpeed = 1.f;
 	}
 
 	float mobility = CalculateMobility();
@@ -3398,7 +3398,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	if(mod < 0.5f)
 		mod = 0.5f;
 
-	float speed = mod * base_speed;
+	float speed = mod * baseSpeed;
 	return speed;
 }
 
@@ -3558,9 +3558,9 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 		// szukaj w za³o¿onych przedmiotach
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] && slots[i]->IsQuest() && (questId == -1 || questId == slots[i]->quest_id))
+			if(slots[i] && slots[i]->IsQuest() && (questId == -1 || questId == slots[i]->questId))
 			{
-				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !notActive);
+				Quest* quest = questMgr->FindQuest(slots[i]->questId, !notActive);
 				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(iIndex)
@@ -3576,9 +3576,9 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && it2->item->IsQuest() && (questId == -1 || questId == it2->item->quest_id))
+			if(it2->item && it2->item->IsQuest() && (questId == -1 || questId == it2->item->questId))
 			{
-				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !notActive);
+				Quest* quest = questMgr->FindQuest(it2->item->questId, !notActive);
 				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(iIndex)
@@ -3597,7 +3597,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 		{
 			if(slots[i] && slots[i]->IsQuest() && slots[i]->id == id)
 			{
-				Quest* quest = questMgr->FindQuest(slots[i]->quest_id, !notActive);
+				Quest* quest = questMgr->FindQuest(slots[i]->questId, !notActive);
 				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(iIndex)
@@ -3615,7 +3615,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 		{
 			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
-				Quest* quest = questMgr->FindQuest(it2->item->quest_id, !notActive);
+				Quest* quest = questMgr->FindQuest(it2->item->questId, !notActive);
 				if(quest && (notActive || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(iIndex)
@@ -3970,8 +3970,8 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 			return IsBetterWeapon(item->ToWeapon(), value, prevValue);
 		else
 		{
-			int v = item->ai_value;
-			int prev_v = HaveWeapon() ? GetWeapon().ai_value : 0;
+			int v = item->aiValue;
+			int prev_v = HaveWeapon() ? GetWeapon().aiValue : 0;
 			if(value)
 			{
 				*value = v;
@@ -4006,8 +4006,8 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 			return IsBetterArmor(item->ToArmor(), value, prevValue);
 		else
 		{
-			int v = item->ai_value;
-			int prev_v = HaveArmor() ? GetArmor().ai_value : 0;
+			int v = item->aiValue;
+			int prev_v = HaveArmor() ? GetArmor().aiValue : 0;
 			if(value)
 			{
 				*value = v;
@@ -4076,14 +4076,14 @@ float Unit::GetItemAiValue(const Item* item) const
 {
 	assert(Any(item->type, IT_AMULET, IT_RING)); // TODO
 
-	const float* priorities = stats->tag_priorities;
+	const float* priorities = stats->tagPriorities;
 	const ItemTag* tags;
 	if(item->type == IT_AMULET)
 		tags = item->ToAmulet().tag;
 	else
 		tags = item->ToRing().tag;
 
-	float value = (float)item->ai_value;
+	float value = (float)item->aiValue;
 	for(int i = 0; i < MAX_ITEM_TAGS; ++i)
 	{
 		if(tags[i] == TAG_NONE)
@@ -4208,7 +4208,7 @@ float Unit::GetBackstabMod(const Item* item) const
 	{
 		for(const ItemEffect& e : item->effects)
 		{
-			if(e.on_attack && e.effect == EffectId::Backstab)
+			if(e.onAttack && e.effect == EffectId::Backstab)
 				mod += e.power;
 		}
 	}
@@ -4245,7 +4245,7 @@ void Unit::RemoveEffects(bool send)
 			c.type = NetChangePlayer::REMOVE_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
-			c.a1 = e.source_id;
+			c.a1 = e.sourceId;
 			c.a2 = e.value;
 		}
 
@@ -4651,7 +4651,7 @@ void Unit::UpdateStaminaAction()
 {
 	if(usable)
 	{
-		if(IsSet(usable->base->use_flags, BaseUsable::SLOW_STAMINA_RESTORE))
+		if(IsSet(usable->base->useFlags, BaseUsable::SLOW_STAMINA_RESTORE))
 			staminaAction = SA_RESTORE_SLOW;
 		else
 			staminaAction = SA_RESTORE_MORE;
@@ -5556,7 +5556,7 @@ bool Unit::IsDrunkman() const
 	if(IsSet(data->flags, F_AI_DRUNKMAN))
 		return true;
 	else if(IsSet(data->flags3, F3_DRUNK_MAGE))
-		return questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured;
+		return questMgr->questMages2->magesState < Quest_Mages2::State::MageCured;
 	else if(IsSet(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
 		return questMgr->questContest->state == Quest_Contest::CONTEST_DONE;
 	else
@@ -6753,7 +6753,7 @@ float Unit::GetAbilityPower(Ability& ability) const
 		bonus = float(Get(AttributeId::STR));
 	else
 		bonus = float(CalculateMagicPower()) / 10 + level;
-	return bonus * ability.dmg_bonus + ability.dmg;
+	return bonus * ability.dmgBonus + ability.dmg;
 }
 
 //=================================================================================================
@@ -6827,10 +6827,10 @@ void Unit::CastSpell()
 					bullet->yspeed = h / t;
 				}
 
-				if(ability.tex_particle)
+				if(ability.texParticle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
+					pe->tex = ability.texParticle;
 					pe->emissionInterval = 0.1f;
 					pe->life = -1;
 					pe->particleLife = 0.5f;
@@ -6843,7 +6843,7 @@ void Unit::CastSpell()
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
+					pe->size = ability.sizeParticle;
 					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -7105,10 +7105,10 @@ void Unit::CastSpell()
 			// spawn new
 			Trap* trap = gameLevel->CreateTrap(targetPos, ability.trap->type);
 			trap->owner = this;
-			trap->attack = ability.dmg + ability.dmg_bonus * (level + CalculateMagicPower());
+			trap->attack = ability.dmg + ability.dmgBonus * (level + CalculateMagicPower());
 
 			// particle effect
-			if(ability.tex_particle)
+			if(ability.texParticle)
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, targetPos, Vec2::Zero);
 		}
 		break;
@@ -7127,9 +7127,9 @@ void Unit::CastSpell()
 	}
 
 	// sound effect
-	if(ability.sound_cast)
+	if(ability.soundCast)
 	{
-		soundMgr->PlaySound3d(ability.sound_cast, coord, ability.sound_cast_dist);
+		soundMgr->PlaySound3d(ability.soundCast, coord, ability.soundCastDist);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -7953,7 +7953,7 @@ void Unit::Update(float dt)
 					// odtwarzanie dŸwiêku
 					if(bu.sound)
 					{
-						if(meshInst->GetProgress() >= bu.sound_timer)
+						if(meshInst->GetProgress() >= bu.soundTimer)
 						{
 							if(animationState == AS_USE_USABLE_USING)
 							{
@@ -7975,9 +7975,9 @@ void Unit::Update(float dt)
 				{
 					// ustal docelowy obrót postaci
 					float target_rot;
-					if(bu.limit_rot == 0)
+					if(bu.limitRot == 0)
 						target_rot = rot;
-					else if(bu.limit_rot == 1)
+					else if(bu.limitRot == 1)
 					{
 						float rot1 = Clip(act.useUsable.rot + PI / 2),
 							dif1 = AngleDiff(rot1, usable->rot),
@@ -7989,9 +7989,9 @@ void Unit::Update(float dt)
 						else
 							target_rot = rot2;
 					}
-					else if(bu.limit_rot == 2)
+					else if(bu.limitRot == 2)
 						target_rot = usable->rot;
-					else if(bu.limit_rot == 3)
+					else if(bu.limitRot == 3)
 					{
 						float rot1 = Clip(act.useUsable.rot + PI),
 							dif1 = AngleDiff(rot1, usable->rot),
@@ -8030,7 +8030,7 @@ void Unit::Update(float dt)
 						{
 							timer = 0.5f;
 							animationState = AS_USE_USABLE_USING;
-							if(IsLocalPlayer() && IsSet(usable->base->use_flags, BaseUsable::ALCHEMY))
+							if(IsLocalPlayer() && IsSet(usable->base->useFlags, BaseUsable::ALCHEMY))
 								gameGui->craft->Show();
 						}
 
@@ -8214,7 +8214,7 @@ void Unit::Update(float dt)
 								Effect e;
 								e.effect = EffectId::Stun;
 								e.source = EffectSource::Temporary;
-								e.source_id = -1;
+								e.sourceId = -1;
 								e.value = -1;
 								e.power = 0;
 								e.time = act.dash.ability->time;
@@ -8324,7 +8324,7 @@ void Unit::Update(float dt)
 				Effect e;
 				e.effect = EffectId::Stun;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = -1;
 				e.power = 0;
 				e.time = 2.5f;
@@ -8364,9 +8364,9 @@ void Unit::Moved(bool warped, bool dash)
 
 					if(gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveExit))
 					{
-						for(vector<EntryPoint>::const_iterator it = gameLevel->cityCtx->entry_points.begin(), end = gameLevel->cityCtx->entry_points.end(); it != end; ++it)
+						for(vector<EntryPoint>::const_iterator it = gameLevel->cityCtx->entryPoints.begin(), end = gameLevel->cityCtx->entryPoints.end(); it != end; ++it)
 						{
-							if(it->exit_region.IsInside(pos))
+							if(it->exitRegion.IsInside(pos))
 							{
 								if(!team->IsLeader())
 									gameGui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -8430,9 +8430,9 @@ void Unit::Moved(bool warped, bool dash)
 			if(IsPlayer() && gameLevel->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
 				int id = 0;
-				for(vector<InsideBuilding*>::iterator it = gameLevel->cityCtx->inside_buildings.begin(), end = gameLevel->cityCtx->inside_buildings.end(); it != end; ++it, ++id)
+				for(vector<InsideBuilding*>::iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it, ++id)
 				{
-					if((*it)->enter_region.IsInside(pos))
+					if((*it)->enterRegion.IsInside(pos))
 					{
 						if(Net::IsLocal())
 						{
@@ -8467,7 +8467,7 @@ void Unit::Moved(bool warped, bool dash)
 			// sprawdŸ czy nie wszed³ na wyjœcie (tylko gracz mo¿e opuszczaæ budynek, na razie)
 			InsideBuilding& building = *static_cast<InsideBuilding*>(locPart);
 
-			if(IsPlayer() && building.exit_region.IsInside(pos) && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
+			if(IsPlayer() && building.exitRegion.IsInside(pos) && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
 				if(Net::IsLocal())
 				{
@@ -9176,7 +9176,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 			Effect e;
 			e.effect = EffectId::Poison;
 			e.source = EffectSource::Temporary;
-			e.source_id = -1;
+			e.sourceId = -1;
 			e.value = -1;
 			e.power = dmg / 10 * poison_res;
 			e.time = 5.f;

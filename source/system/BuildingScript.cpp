@@ -21,9 +21,9 @@ BuildingScript* BuildingScript::TryGet(Cstring id)
 
 //=================================================================================================
 // Checks if building script have building from selected building group
-bool BuildingScript::HaveBuilding(const string& group_id) const
+bool BuildingScript::HaveBuilding(const string& groupId) const
 {
-	auto group = BuildingGroup::TryGet(group_id);
+	auto group = BuildingGroup::TryGet(groupId);
 	if(!group)
 		return false;
 	for(Variant* v : variants)

@@ -26,14 +26,14 @@ void Quest_DireWolf::SetProgress(int p)
 		forest = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
 		forest->AddEventHandler(this, EVENT_ENTER);
 		forest->SetKnown();
-		forest->active_quest = this;
+		forest->activeQuest = this;
 
 		OnStart(GetText(0));
 		msgs.push_back(GetText(1));
 		msgs.push_back(GetText(2));
 		break;
 	case Killed:
-		forest->active_quest = nullptr;
+		forest->activeQuest = nullptr;
 		OnUpdate(GetText(3));
 		break;
 	case Complete:

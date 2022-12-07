@@ -1012,7 +1012,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 					break;
 				case Building::SCHEME_UNIT:
 					t.Set(TT_SAND, TM_BUILDING_SAND);
-					build_it->unit_pt = pt2;
+					build_it->unitPt = pt2;
 					break;
 				case Building::SCHEME_BUILDING_PART:
 					t.Set(TT_SAND, TM_BUILDING);
@@ -1365,102 +1365,102 @@ void CityGenerator::CreateEntry(vector<EntryPoint>& entryPoints, EntryDir dir)
 	case ED_Left:
 		{
 			Vec2 p(SPAWN_RATIO * w * 2, float(h) + 1);
-			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x - EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI * 3 / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x - EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_Right:
 		{
 			Vec2 p((1.f - SPAWN_RATIO) * w * 2, float(h) + 1);
-			ep.spawn_rot = PI / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_Bottom:
 		{
 			Vec2 p(float(w) + 1, SPAWN_RATIO * h * 2);
-			ep.spawn_rot = PI;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y - EXIT_START);
+			ep.spawnRot = PI;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y - EXIT_START);
 		}
 		break;
 	case ED_Top:
 		{
 			Vec2 p(float(w) + 1, (1.f - SPAWN_RATIO) * h * 2);
-			ep.spawn_rot = 0;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawnRot = 0;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	case ED_LeftBottom:
 		{
 			Vec2 p(SPAWN_RATIO * w * 2, float(h / 2 - roadPart) * 2 + 1);
-			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI * 3 / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_LeftTop:
 		{
 			Vec2 p(SPAWN_RATIO * w * 2, float(h / 2 + roadPart) * 2 + 1);
-			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI * 3 / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_RightBottom:
 		{
 			Vec2 p((1.f - SPAWN_RATIO) * w * 2, float(h / 2 - roadPart) * 2 + 1);
-			ep.spawn_rot = PI / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_RightTop:
 		{
 			Vec2 p((1.f - SPAWN_RATIO) * w * 2, float(h / 2 + roadPart) * 2 + 1);
-			ep.spawn_rot = PI / 2;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawnRot = PI / 2;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_BottomLeft:
 		{
 			Vec2 p(float(w / 2 - roadPart) * 2 + 1, SPAWN_RATIO * h * 2);
-			ep.spawn_rot = PI;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
+			ep.spawnRot = PI;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
 		}
 		break;
 	case ED_BottomRight:
 		{
 			Vec2 p(float(w / 2 + roadPart) * 2 + 1, SPAWN_RATIO * h * 2);
-			ep.spawn_rot = PI;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
+			ep.spawnRot = PI;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
 		}
 		break;
 	case ED_TopLeft:
 		{
 			Vec2 p(float(w / 2 - roadPart) * 2 + 1, (1.f - SPAWN_RATIO) * h * 2);
-			ep.spawn_rot = 0;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawnRot = 0;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	case ED_TopRight:
 		{
 			Vec2 p(float(w / 2 + roadPart) * 2 + 1, (1.f - SPAWN_RATIO) * h * 2);
-			ep.spawn_rot = 0;
-			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawnRot = 0;
+			ep.spawnRegion = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exitRegion = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	}
 
-	ep.exit_y = 0;
+	ep.exitY = 0;
 }
 
 //=================================================================================================
@@ -2136,7 +2136,7 @@ int CityGenerator::GetNumberOfSteps()
 	else
 	{
 		steps += 2; // txGeneratingUnits, txGeneratingPhysics
-		if(loc->last_visit != world->GetWorldtime())
+		if(loc->lastVisit != world->GetWorldtime())
 			++steps; // txGeneratingItems
 	}
 	++steps; // txRecreatingObjects
@@ -2213,7 +2213,7 @@ void CityGenerator::Generate()
 			break;
 		}
 
-		GenerateMainRoad(rtype, dir, roads, plaza, swap, city->entry_points, city->gates, extra_roads);
+		GenerateMainRoad(rtype, dir, roads, plaza, swap, city->entryPoints, city->gates, extra_roads);
 		if(extra_roads)
 			GenerateRoads(TT_SAND, 5);
 		FlattenRoadExits();
@@ -2251,7 +2251,7 @@ void CityGenerator::Generate()
 			break;
 		}
 
-		GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
+		GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entryPoints, city->gates, true);
 		FlattenRoadExits();
 		GenerateRoads(TT_ROAD, 25);
 		for(int i = 0; i < 2; ++i)
@@ -2282,15 +2282,15 @@ void CityGenerator::Generate()
 		it->building = build_it->building;
 		it->pt = build_it->pt;
 		it->dir = build_it->dir;
-		it->unitPt = build_it->unit_pt;
+		it->unitPt = build_it->unitPt;
 	}
 
 	if(!village)
 	{
 		// set exits y
 		terrain->SetHeightMap(city->h);
-		for(vector<EntryPoint>::iterator entry_it = city->entry_points.begin(), entry_end = city->entry_points.end(); entry_it != entry_end; ++entry_it)
-			entry_it->exit_y = terrain->GetH(entry_it->exit_region.Midpoint()) + 0.1f;
+		for(vector<EntryPoint>::iterator entry_it = city->entryPoints.begin(), entry_end = city->entryPoints.end(); entry_it != entry_end; ++entry_it)
+			entry_it->exitY = terrain->GetH(entry_it->exitRegion.Midpoint()) + 0.1f;
 		terrain->RemoveHeightMap();
 	}
 
@@ -2377,16 +2377,16 @@ void CityGenerator::OnEnter()
 	gameLevel->SpawnTerrainCollider();
 	SpawnCityPhysics();
 	SpawnOutsideBariers();
-	for(InsideBuilding* b : city->inside_buildings)
+	for(InsideBuilding* b : city->insideBuildings)
 	{
-		b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+		b->mine = Int2(b->levelShift.x * 256, b->levelShift.y * 256);
 		b->maxe = b->mine + Int2(256, 256);
 	}
 
 	// spawn quest units
-	if(gameLevel->location->active_quest && gameLevel->location->active_quest != ACTIVE_QUEST_HOLDER)
+	if(gameLevel->location->activeQuest && gameLevel->location->activeQuest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(gameLevel->location->active_quest);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(gameLevel->location->activeQuest);
 		if(quest && !quest->done)
 			questMgr->HandleQuestEvent(quest);
 	}
@@ -2505,7 +2505,7 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		gameLevel->ProcessBuildingObjects(locPart, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->dir), it->dir,
+		gameLevel->ProcessBuildingObjects(locPart, city, nullptr, b->mesh, b->insideMesh, DirToRot(it->dir), it->dir,
 			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 0.f, float(it->pt.y + b->shift[it->dir].y) * 2), b, &*it);
 	}
 }
@@ -2598,7 +2598,7 @@ void CityGenerator::SpawnUnits()
 		Unit* u = gameLevel->CreateUnitWithAI(*city, *ud, -2, &pos, &rot);
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
-			city->arena_pos = u->pos;
+			city->arenaPos = u->pos;
 	}
 
 	UnitData* dweller = UnitData::Get(city->IsVillage() ? "villager" : "citizen");
@@ -2922,9 +2922,9 @@ void CityGenerator::RespawnBuildingPhysics()
 			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, true);
 	}
 
-	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
+	for(vector<InsideBuilding*>::iterator it = city->insideBuildings.begin(), end = city->insideBuildings.end(); it != end; ++it)
 	{
-		gameLevel->ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, GDIR_DOWN,
+		gameLevel->ProcessBuildingObjects(**it, city, *it, (*it)->building->insideMesh, nullptr, 0.f, GDIR_DOWN,
 			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, true);
 	}
 }
@@ -2932,7 +2932,7 @@ void CityGenerator::RespawnBuildingPhysics()
 //=================================================================================================
 void CityGenerator::SetBuildingsParams()
 {
-	for(InsideBuilding* insideBuilding : city->inside_buildings)
+	for(InsideBuilding* insideBuilding : city->insideBuildings)
 	{
 		Scene* scene = insideBuilding->lvlPart->scene;
 		scene->clearColor = Color::White;

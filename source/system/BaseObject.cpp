@@ -11,14 +11,14 @@ BaseObject* ObjectGroup::EntryList::GetRandom()
 	EntryList* list = this;
 	while(true)
 	{
-		uint c = Rand() % list->total_chance;
+		uint c = Rand() % list->totalChance;
 		uint total = 0u;
 		for(auto& e : list->entries)
 		{
 			total += e.chance;
 			if(c <= total)
 			{
-				if(e.is_list)
+				if(e.isList)
 				{
 					list = e.list;
 					break;
@@ -35,9 +35,9 @@ BaseObject::~BaseObject()
 {
 	delete shape;
 	if(IsSet(flags, OBJ_DOUBLE_PHYSICS))
-		delete next_obj;
+		delete nextObj;
 	else if(IsSet(flags, OBJ_MULTI_PHYSICS))
-		delete[] next_obj;
+		delete[] nextObj;
 }
 
 //=================================================================================================
@@ -50,7 +50,7 @@ BaseObject& BaseObject::operator = (BaseObject& o)
 	centery = o.centery;
 	flags = o.flags;
 	variants = o.variants;
-	extra_dist = o.extra_dist;
+	extraDist = o.extraDist;
 	return *this;
 }
 

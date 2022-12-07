@@ -129,7 +129,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Timeout;
 			state = Quest::Failed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 
 			OnUpdate(questMgr->txQuest[20]);
 		}
@@ -139,7 +139,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Finished;
 			state = Quest::Completed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::None;
 			team->AddReward(500, 2000);
 
 			OnUpdate(questMgr->txQuest[21]);

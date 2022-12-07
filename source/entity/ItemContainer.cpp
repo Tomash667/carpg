@@ -16,7 +16,7 @@ void ItemContainer::Save(GameWriter& f)
 		f << slot.count;
 		f << slot.teamCount;
 		if(slot.item->id[0] == '$')
-			f << slot.item->quest_id;
+			f << slot.item->questId;
 	}
 }
 

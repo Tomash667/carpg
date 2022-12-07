@@ -32,7 +32,7 @@ void Quest_KillAnimals::SetProgress(int p)
 			else
 				targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, { FOREST, HILLS });
 			targetLoc->AddEventHandler(this, EVENT_CLEARED);
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			targetLoc->SetKnown();
 			if(targetLoc->st < 5)
 				targetLoc->st = 5;
@@ -49,7 +49,7 @@ void Quest_KillAnimals::SetProgress(int p)
 	case ClearedLocation:
 		// player cleared location from animals
 		{
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			OnUpdate(GetText(3));
 		}
 		break;
@@ -72,7 +72,7 @@ void Quest_KillAnimals::SetProgress(int p)
 	case OnTimeout:
 		{
 			targetLoc->RemoveEventHandler(this, EVENT_CLEARED);
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			OnUpdate(GetText(5));
 		}
 		break;

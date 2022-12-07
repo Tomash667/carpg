@@ -59,7 +59,7 @@ public:
 	string id;
 	vector<Variant*> variants;
 	int vars[MAX_VARS];
-	uint required_offset;
+	uint requiredOffset;
 
 	~BuildingScript()
 	{
@@ -67,7 +67,7 @@ public:
 	}
 
 	// Checks if building script have building from selected building group
-	bool HaveBuilding(const string& group_id) const;
+	bool HaveBuilding(const string& groupId) const;
 	bool HaveBuilding(BuildingGroup* group, Variant* variant) const;
 
 	static vector<BuildingScript*> scripts;

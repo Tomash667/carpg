@@ -59,7 +59,7 @@ public:
 	void Init();
 	void RegisterCommon();
 	void RegisterGame();
-	void SetException(cstring ex) { last_exception = ex; }
+	void SetException(cstring ex) { lastException = ex; }
 	void RunScript(cstring code);
 	asIScriptFunction* PrepareScript(cstring name, cstring code);
 	void RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
@@ -89,12 +89,12 @@ public:
 		InvalidType,
 		AlreadyExists
 	};
-	RegisterResult RegisterGlobalVar(const string& type, bool is_ref, const string& name);
+	RegisterResult RegisterGlobalVar(const string& type, bool isRef, const string& name);
 	ScriptContext& GetContext() { return ctx; }
 	asIScriptEngine* GetEngine() { return engine; }
-	void AddVarType(Var::Type type, cstring name, bool is_ref);
-	Var::Type GetVarType(int type_id);
-	bool CheckVarType(int type_id, bool is_ref);
+	void AddVarType(Var::Type type, cstring name, bool isRef);
+	Var::Type GetVarType(int typeId);
+	bool CheckVarType(int typeId, bool isRef);
 	void ScriptSleep(float time);
 	void UpdateScripts(float dt);
 	bool ExecuteScript(asIScriptContext* ctx);
@@ -112,21 +112,21 @@ private:
 	struct ScriptTypeInfo
 	{
 		ScriptTypeInfo() {}
-		ScriptTypeInfo(Var::Type type, bool require_ref) : type(type), require_ref(require_ref) {}
+		ScriptTypeInfo(Var::Type type, bool requireRef) : type(type), requireRef(requireRef) {}
 
 		Var::Type type;
-		bool require_ref;
+		bool requireRef;
 	};
 
 	asIScriptEngine* engine;
 	asIScriptModule* module;
 	string output;
-	cstring last_exception;
-	bool gather_output;
-	std::map<int, ScriptTypeInfo> script_type_infos;
-	std::map<string, int> var_type_map;
-	std::unordered_map<int, Vars*> unit_vars;
+	cstring lastException;
+	std::map<int, ScriptTypeInfo> scriptTypeInfos;
+	std::map<string, int> varTypeMap;
+	std::unordered_map<int, Vars*> unitVars;
 	ScriptContext ctx;
 	vector<SuspendedScript> suspended_scripts;
 	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
+	bool gatherOutput;
 };

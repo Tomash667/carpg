@@ -358,7 +358,7 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 {
 	InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	Box box;
 
 	if(!IsSet(base.options, BLO_LABYRINTH))

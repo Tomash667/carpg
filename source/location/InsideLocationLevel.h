@@ -29,9 +29,9 @@ struct InsideLocationLevel : public LocationPart
 
 	bool IsInside(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }
 	bool IsInside(const Int2& pt) const { return IsInside(pt.x, pt.y); }
-	Vec3 GetRandomPos() const { return Vec3(Random(2.f*w), 0, Random(2.f*h)); }
+	Vec3 GetRandomPos() const { return Vec3(Random(2.f * w), 0, Random(2.f * h)); }
 	Room* GetNearestRoom(const Vec3& pos);
-	Room* FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos);
+	Room* FindEscapeRoom(const Vec3& myPos, const Vec3& enemyPos);
 	Int2 GetPrevEntryFrontTile() const;
 	Int2 GetNextEntryFrontTile() const;
 	Room* GetRandomRoom() { return rooms[Rand() % rooms.size()]; }
@@ -61,7 +61,7 @@ struct InsideLocationLevel : public LocationPart
 
 	bool IsValidWalkPos(const Vec3& pos, float radius) const
 	{
-		return !(pos.x < 2.f + radius || pos.y < 2.f + radius || pos.x > 2.f*w - 2.f - radius || pos.y > 2.f*h - 2.f - radius);
+		return !(pos.x < 2.f + radius || pos.y < 2.f + radius || pos.x > 2.f * w - 2.f - radius || pos.y > 2.f * h - 2.f - radius);
 	}
 
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!

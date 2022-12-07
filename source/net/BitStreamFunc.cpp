@@ -65,7 +65,7 @@ void BitStreamWriter::operator << (const Item& item)
 {
 	operator << (item.id);
 	if(item.id[0] == '$')
-		operator << (item.quest_id);
+		operator << (item.questId);
 }
 
 void BitStreamWriter::Reset()
@@ -179,14 +179,14 @@ int BitStreamReader::ReadItemAndFind(const Item*& item)
 
 	if(item_id[0] == '$')
 	{
-		int quest_id = Read<int>();
+		int questId = Read<int>();
 		if(!IsOk())
 			return -2;
 
-		item = questMgr->FindQuestItemClient(item_id.c_str(), quest_id);
+		item = questMgr->FindQuestItemClient(item_id.c_str(), questId);
 		if(!item)
 		{
-			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_id);
+			Warn("Missing quest item '%s' (%d).", item_id.c_str(), questId);
 			return -1;
 		}
 		else

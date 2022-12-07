@@ -1387,7 +1387,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 
 	bool first = false;
 
-	if(l.last_visit == -1)
+	if(l.lastVisit == -1)
 		first = true;
 
 	InitQuadTree();
@@ -1471,7 +1471,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
-	l.last_visit = world->GetWorldtime();
+	l.lastVisit = world->GetWorldtime();
 	gameLevel->CheckIfLocationCleared();
 	gameLevel->camera.Reset();
 	pc->data.rotBuf = 0.f;
@@ -1539,8 +1539,8 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 	Info("Leaving location.");
 
-	if(Net::IsLocal() && (questMgr->questCrazies->check_stone
-		|| (questMgr->questCrazies->crazies_state >= Quest_Crazies::State::PickedStone && questMgr->questCrazies->crazies_state < Quest_Crazies::State::End)))
+	if(Net::IsLocal() && (questMgr->questCrazies->checkStone
+		|| (questMgr->questCrazies->craziesState >= Quest_Crazies::State::PickedStone && questMgr->questCrazies->craziesState < Quest_Crazies::State::End)))
 		questMgr->questCrazies->CheckStone();
 
 	// drinking contest
@@ -1549,9 +1549,9 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && gameLevel->location == questMgr->questOrcs2->targetLoc)
+	if(Net::IsLocal() && questMgr->questOrcs2->orcsState == Quest_Orcs2::State::ClearDungeon && gameLevel->location == questMgr->questOrcs2->targetLoc)
 	{
-		questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::End;
+		questMgr->questOrcs2->orcsState = Quest_Orcs2::State::End;
 		gameLevel->UpdateLocation(31, 100, false);
 	}
 
@@ -1574,7 +1574,7 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(gameLevel->location);
 			outside->Clear();
-			outside->last_visit = -1;
+			outside->lastVisit = -1;
 		}
 	}
 
@@ -1770,7 +1770,7 @@ void Game::UpdateGame(float dt)
 
 	gameLevel->minimapOpenedDoors = false;
 
-	if(questMgr->questTutorial->in_tutorial && !Net::IsOnline())
+	if(questMgr->questTutorial->inTutorial && !Net::IsOnline())
 		questMgr->questTutorial->Update();
 
 	portalAnim += dt;
@@ -1779,7 +1779,7 @@ void Game::UpdateGame(float dt)
 	gameLevel->lightAngle = Clip(gameLevel->lightAngle + dt / 100);
 	gameLevel->localPart->lvlPart->scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
 
-	if(Net::IsLocal() && !questMgr->questTutorial->in_tutorial)
+	if(Net::IsLocal() && !questMgr->questTutorial->inTutorial)
 	{
 		// arena
 		if(arena->mode != Arena::NONE)
@@ -2414,8 +2414,8 @@ void Game::ChangeLevel(int where)
 	gameLevel->eventHandler = nullptr;
 	gameLevel->UpdateDungeonMinimap(false);
 
-	if(!questMgr->questTutorial->in_tutorial && questMgr->questCrazies->crazies_state >= Quest_Crazies::State::PickedStone
-		&& questMgr->questCrazies->crazies_state < Quest_Crazies::State::End)
+	if(!questMgr->questTutorial->inTutorial && questMgr->questCrazies->craziesState >= Quest_Crazies::State::PickedStone
+		&& questMgr->questCrazies->craziesState < Quest_Crazies::State::End)
 		questMgr->questCrazies->CheckStone();
 
 	if(Net::IsOnline() && net->activePlayers > 1)
@@ -2436,7 +2436,7 @@ void Game::ChangeLevel(int where)
 		// upper leve
 		if(gameLevel->dungeonLevel == 0)
 		{
-			if(questMgr->questTutorial->in_tutorial)
+			if(questMgr->questTutorial->inTutorial)
 			{
 				questMgr->questTutorial->OnEvent(Quest_Tutorial::Exit);
 				fallbackType = FALLBACK::CLIENT;
@@ -2505,7 +2505,7 @@ void Game::ChangeLevel(int where)
 		EnterLevel(locGen);
 	}
 
-	gameLevel->location->last_visit = world->GetWorldtime();
+	gameLevel->location->lastVisit = world->GetWorldtime();
 	gameLevel->CheckIfLocationCleared();
 	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
@@ -2806,7 +2806,7 @@ void Game::LeaveLevel(bool clear)
 			locPart.lvlPart = nullptr;
 		}
 		if(gameLevel->cityCtx && (Net::IsClient() || net->wasClient))
-			DeleteElements(gameLevel->cityCtx->inside_buildings);
+			DeleteElements(gameLevel->cityCtx->insideBuildings);
 		if(Net::IsClient() && !gameLevel->location->outside)
 		{
 			InsideLocation* inside = (InsideLocation*)gameLevel->location;
@@ -3196,8 +3196,8 @@ void Game::PreloadResources(bool worldmap)
 					{
 						if(building.mesh)
 							resMgr->Load(building.mesh);
-						if(building.inside_mesh)
-							resMgr->Load(building.inside_mesh);
+						if(building.insideMesh)
+							resMgr->Load(building.insideMesh);
 						building.state = ResourceState::Loaded;
 					}
 				}
@@ -3618,7 +3618,7 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && questMgr->questOrcs2->targetLoc == gameLevel->location
+	if(questMgr->questOrcs2->orcsState == Quest_Orcs2::State::ToldAboutCamp && questMgr->questOrcs2->targetLoc == gameLevel->location
 		&& questMgr->questOrcs2->talked == Quest_Orcs2::Talked::No)
 	{
 		questMgr->questOrcs2->talked = Quest_Orcs2::Talked::AboutCamp;
@@ -3687,9 +3687,9 @@ void Game::OnEnterLevel()
 
 	// cleric talking after entering location
 	Quest_Evil* questEvil = questMgr->questEvil;
-	if(questEvil->evil_state == Quest_Evil::State::ClosingPortals || questEvil->evil_state == Quest_Evil::State::KillBoss)
+	if(questEvil->evilState == Quest_Evil::State::ClosingPortals || questEvil->evilState == Quest_Evil::State::KillBoss)
 	{
-		if(questEvil->evil_state == Quest_Evil::State::ClosingPortals)
+		if(questEvil->evilState == Quest_Evil::State::ClosingPortals)
 		{
 			int d = questEvil->GetLocId(gameLevel->location);
 			if(d != -1)
@@ -3713,9 +3713,9 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(gameLevel->location == questEvil->targetLoc && !questEvil->told_about_boss)
+		else if(gameLevel->location == questEvil->targetLoc && !questEvil->toldAboutBoss)
 		{
-			questEvil->told_about_boss = true;
+			questEvil->toldAboutBoss = true;
 			talker = questEvil->cleric;
 			text = txXarDanger;
 		}
@@ -3723,7 +3723,7 @@ void Game::OnEnterLevel()
 
 	// orc talking after entering level
 	Quest_Orcs2* questOrcs2 = questMgr->questOrcs2;
-	if(!talker && (questOrcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || questOrcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && gameLevel->location == questOrcs2->targetLoc)
+	if(!talker && (questOrcs2->orcsState == Quest_Orcs2::State::GenerateOrcs || questOrcs2->orcsState == Quest_Orcs2::State::GeneratedOrcs) && gameLevel->location == questOrcs2->targetLoc)
 	{
 		if(gameLevel->dungeonLevel == 0)
 		{
@@ -3747,11 +3747,11 @@ void Game::OnEnterLevel()
 
 	// old mage talking after entering location
 	Quest_Mages2* questMages2 = questMgr->questMages2;
-	if(!talker && (questMages2->mages_state == Quest_Mages2::State::OldMageJoined || questMages2->mages_state == Quest_Mages2::State::MageRecruited))
+	if(!talker && (questMages2->magesState == Quest_Mages2::State::OldMageJoined || questMages2->magesState == Quest_Mages2::State::MageRecruited))
 	{
 		if(questMages2->targetLoc == gameLevel->location)
 		{
-			if(questMages2->mages_state == Quest_Mages2::State::OldMageJoined)
+			if(questMages2->magesState == Quest_Mages2::State::OldMageJoined)
 			{
 				if(gameLevel->dungeonLevel == 0 && questMages2->talked == Quest_Mages2::Talked::No)
 				{
@@ -3766,7 +3766,7 @@ void Game::OnEnterLevel()
 					if(questMages2->talked < Quest_Mages2::Talked::AfterEnter)
 					{
 						questMages2->talked = Quest_Mages2::Talked::AfterEnter;
-						text = Format(txMageEnter, questMages2->evil_mage_name.c_str());
+						text = Format(txMageEnter, questMages2->evilMageName.c_str());
 					}
 				}
 				else if(gameLevel->dungeonLevel == gameLevel->location->GetLastLevel() && questMages2->talked < Quest_Mages2::Talked::BeforeBoss)

@@ -67,7 +67,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 
 			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, group);
 			targetLoc->SetKnown();
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			st = targetLoc->st;
 			unitToSpawn = UnitData::Get("captive");
 			unitDontAttack = true;
@@ -108,9 +108,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
 			OnUpdate(questMgr->txQuest[37]);
@@ -128,9 +128,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 			team->RemoveMember(captive);
 
@@ -163,9 +163,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
 			OnUpdate(questMgr->txQuest[40]);
@@ -183,9 +183,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 
 			OnUpdate(Format(questMgr->txQuest[41], GetStartLocationName()));
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
@@ -257,11 +257,11 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
+void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit)
 {
 	assert(unit);
 
-	switch(event_type)
+	switch(eventType)
 	{
 	case UnitEventHandler::DIE:
 		SetProgress(Progress::CaptiveDie);

@@ -31,8 +31,8 @@ LocationPart* LocationHelper::GetLocationPart(Location* loc, int index)
 		if(loc->type == L_CITY)
 		{
 			City* city = static_cast<City*>(loc);
-			if(index >= 0 && index < (int)city->inside_buildings.size())
-				return city->inside_buildings[index];
+			if(index >= 0 && index < (int)city->insideBuildings.size())
+				return city->insideBuildings[index];
 		}
 	}
 	else
@@ -58,7 +58,7 @@ LocationPart* LocationHelper::GetBuildingLocationPart(Location* loc, const strin
 	if(loc->type == L_CITY)
 	{
 		City* city = static_cast<City*>(loc);
-		for(InsideBuilding* building : city->inside_buildings)
+		for(InsideBuilding* building : city->insideBuildings)
 		{
 			if(building->building->group->id == name)
 				return building;

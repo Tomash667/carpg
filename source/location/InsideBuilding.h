@@ -8,11 +8,11 @@
 struct InsideBuilding final : public LocationPart
 {
 	Vec2 offset;
-	Vec3 inside_spawn, outside_spawn, xsphere_pos;
-	Box2d enter_region, exit_region, region1, region2;
-	float outside_rot, top, xsphere_radius, enter_y;
+	Vec3 insideSpawn, outsideSpawn, xspherePos;
+	Box2d enterRegion, exitRegion, region1, region2;
+	float outsideRot, top, xsphereRadius, enterY;
 	Building* building;
-	Int2 level_shift;
+	Int2 levelShift;
 
 	InsideBuilding(int partId) : LocationPart(LocationPart::Type::Building, partId, false) {}
 	void Save(GameWriter& f);

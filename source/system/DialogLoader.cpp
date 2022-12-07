@@ -149,7 +149,7 @@ void DialogLoader::LoadEntity(int top, const string& id)
 GameDialog* DialogLoader::LoadDialog(const string& id)
 {
 	Ptr<GameDialog> dialog;
-	current_dialog = dialog.Get();
+	currentDialog = dialog.Get();
 	dialog->max_index = -1;
 	dialog->id = id;
 	dialog->quest = nullptr;
@@ -162,7 +162,7 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	t.Next();
 
 	Pooled<Node> root(GetNode());
-	root->node_op = NodeOp::Block;
+	root->nodeOp = NodeOp::Block;
 
 	while(true)
 	{
@@ -222,7 +222,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				break;
 			}
 			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
+			node->nodeOp = NodeOp::Statement;
 			node->type = type;
 			node->op = OP_NONE;
 			node->value = 0;
@@ -236,7 +236,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				t.Throw("Invalid quest type %d.", type);
 			t.Next();
 			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
+			node->nodeOp = NodeOp::Statement;
 			node->type = DTF_CHECK_QUEST_TIMEOUT;
 			node->op = OP_NONE;
 			node->value = type;
@@ -247,7 +247,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 			t.Next();
 			int value = ParseProgress();
 			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
+			node->nodeOp = NodeOp::Statement;
 			node->type = DTF_SET_QUEST_PROGRESS;
 			node->op = OP_NONE;
 			node->value = value;
@@ -263,15 +263,15 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 			if(!t.IsSymbol(','))
 			{
 				Node* node = GetNode();
-				node->node_op = NodeOp::Statement;
+				node->nodeOp = NodeOp::Statement;
 				node->type = DTF_TALK;
 				node->op = OP_NONE;
 				node->value = index;
 				++index;
-				if(index > current_dialog->max_index)
+				if(index > currentDialog->max_index)
 				{
-					current_dialog->texts.resize(index, GameDialog::Text());
-					current_dialog->max_index = index;
+					currentDialog->texts.resize(index, GameDialog::Text());
+					currentDialog->max_index = index;
 				}
 				return node;
 			}
@@ -286,10 +286,10 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				for(int i = 0; i < 4; ++i)
 					map.index[i] = index;
 				++index;
-				if(index > current_dialog->max_index)
+				if(index > currentDialog->max_index)
 				{
-					current_dialog->texts.resize(index, GameDialog::Text());
-					current_dialog->max_index = index;
+					currentDialog->texts.resize(index, GameDialog::Text());
+					currentDialog->max_index = index;
 				}
 
 				// parse next texts
@@ -304,10 +304,10 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 						t.Throw("Index %d already used.", index);
 					map.index[pos] = index;
 					++index;
-					if(index > current_dialog->max_index)
+					if(index > currentDialog->max_index)
 					{
-						current_dialog->texts.resize(index, GameDialog::Text());
-						current_dialog->max_index = index;
+						currentDialog->texts.resize(index, GameDialog::Text());
+						currentDialog->max_index = index;
 					}
 					t.Next();
 					if(t.IsSymbol(','))
@@ -322,7 +322,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 
 				// setup node
 				Node* node = GetNode();
-				node->node_op = NodeOp::Statement;
+				node->nodeOp = NodeOp::Statement;
 				node->type = DTF_MULTI_TALK;
 				node->op = OP_NONE;
 				node->value = map.val;
@@ -360,11 +360,11 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				type = DTF_NEXT;
 				break;
 			}
-			int index = current_dialog->strs.size();
-			current_dialog->strs.push_back(t.MustGetString());
+			int index = currentDialog->strs.size();
+			currentDialog->strs.push_back(t.MustGetString());
 			t.Next();
 			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
+			node->nodeOp = NodeOp::Statement;
 			node->type = type;
 			node->op = OP_NONE;
 			node->value = index;
@@ -376,7 +376,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 			int index = scripts->AddCode(DialogScripts::F_SCRIPT, t.MustGetString());
 			t.Next();
 			Node* node = GetNode();
-			node->node_op = NodeOp::Statement;
+			node->nodeOp = NodeOp::Statement;
 			node->type = DTF_SCRIPT;
 			node->op = OP_NONE;
 			node->value = index;
@@ -390,7 +390,7 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 		{
 			t.Next();
 			Node* node = GetNode();
-			node->node_op = NodeOp::Goto;
+			node->nodeOp = NodeOp::Goto;
 			node->str = t.MustGetItem();
 			t.Next();
 			return node;
@@ -428,7 +428,7 @@ DialogLoader::Node* DialogLoader::ParseBlock()
 		}
 		else
 		{
-			block->node_op = NodeOp::Block;
+			block->nodeOp = NodeOp::Block;
 			return block.Pin();
 		}
 	}
@@ -440,7 +440,7 @@ DialogLoader::Node* DialogLoader::ParseBlock()
 DialogLoader::Node* DialogLoader::ParseIf()
 {
 	Pooled<Node> node(GetNode());
-	node->node_op = NodeOp::If;
+	node->nodeOp = NodeOp::If;
 	t.Next();
 
 	bool negate = false;
@@ -492,15 +492,15 @@ DialogLoader::Node* DialogLoader::ParseIf()
 					}
 					else
 						node->type = DTF_IF_HAVE_QUEST_ITEM;
-					node->value = current_dialog->strs.size();
-					current_dialog->strs.push_back(t.MustGetString());
+					node->value = currentDialog->strs.size();
+					currentDialog->strs.push_back(t.MustGetString());
 					t.Next();
 				}
 				break;
 			case K_NEED_TALK:
 				node->type = DTF_IF_NEED_TALK;
-				node->value = current_dialog->strs.size();
-				current_dialog->strs.push_back(t.MustGetString());
+				node->value = currentDialog->strs.size();
+				currentDialog->strs.push_back(t.MustGetString());
 				t.Next();
 				break;
 			case K_ONCE:
@@ -511,8 +511,8 @@ DialogLoader::Node* DialogLoader::ParseIf()
 				break;
 			case K_QUEST_SPECIAL:
 				{
-					int index = current_dialog->strs.size();
-					current_dialog->strs.push_back(t.MustGetString());
+					int index = currentDialog->strs.size();
+					currentDialog->strs.push_back(t.MustGetString());
 					node->type = DTF_IF_QUEST_SPECIAL;
 					node->value = index;
 					t.Next();
@@ -548,8 +548,8 @@ DialogLoader::Node* DialogLoader::ParseIf()
 				break;
 			case K_SPECIAL:
 				{
-					int index = current_dialog->strs.size();
-					current_dialog->strs.push_back(t.MustGetString());
+					int index = currentDialog->strs.size();
+					currentDialog->strs.push_back(t.MustGetString());
 					node->type = DTF_IF_SPECIAL;
 					node->value = index;
 					t.Next();
@@ -628,17 +628,17 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 	if(index < 0)
 		t.Throw("Invalid text index %d.", index);
 	Pooled<Node> node(GetNode());
-	node->node_op = NodeOp::Choice;
+	node->nodeOp = NodeOp::Choice;
 	node->type = DTF_CHOICE;
 	node->op = (escape ? OP_ESCAPE : OP_NONE);
 	node->value = index;
 	t.Next();
 
 	++index;
-	if(index > current_dialog->max_index)
+	if(index > currentDialog->max_index)
 	{
-		current_dialog->texts.resize(index, GameDialog::Text());
-		current_dialog->max_index = index;
+		currentDialog->texts.resize(index, GameDialog::Text());
+		currentDialog->max_index = index;
 	}
 
 	node->childs.push_back(ParseBlock());
@@ -649,7 +649,7 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 DialogLoader::Node* DialogLoader::ParseSwitch()
 {
 	Pooled<Node> node(GetNode());
-	node->node_op = NodeOp::Switch;
+	node->nodeOp = NodeOp::Switch;
 	t.Next();
 
 	DialogType type;
@@ -671,7 +671,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 		t.Next();
 
 		Node* cas = GetNode();
-		cas->node_op = NodeOp::Case;
+		cas->nodeOp = NodeOp::Case;
 		node->childs.push_back(cas);
 		if(t.IsItem("default"))
 		{
@@ -715,7 +715,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 		else
 		{
 			child = GetNode();
-			child->node_op = NodeOp::Block;
+			child->nodeOp = NodeOp::Block;
 			for(Node* n2 : n->childs)
 				child->childs.push_back(n2);
 		}
@@ -728,7 +728,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 		}
 
 		Node* converted = Node::Get();
-		converted->node_op = NodeOp::If;
+		converted->nodeOp = NodeOp::If;
 		converted->type = type;
 		converted->op = DialogOp::OP_EQUAL;
 		converted->value = n->value;
@@ -756,7 +756,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 DialogLoader::Node* DialogLoader::ParseRandom()
 {
 	Pooled<Node> node(GetNode());
-	node->node_op = NodeOp::Random;
+	node->nodeOp = NodeOp::Random;
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -769,7 +769,7 @@ DialogLoader::Node* DialogLoader::ParseRandom()
 		t.Next();
 
 		Node* cas = GetNode();
-		cas->node_op = NodeOp::Chance;
+		cas->nodeOp = NodeOp::Chance;
 		cas->value = t.MustGetInt();
 		if(cas->value < 1)
 			t.Throw("Invaid chance %d.", cas->value);
@@ -790,10 +790,10 @@ DialogLoader::Node* DialogLoader::ParseRandom()
 
 	// convert to if..else
 	Pooled<Node> block(GetNode());
-	block->node_op = NodeOp::Block;
+	block->nodeOp = NodeOp::Block;
 
 	Node* randVar = GetNode();
-	randVar->node_op = NodeOp::Statement;
+	randVar->nodeOp = NodeOp::Statement;
 	randVar->type = DTF_RAND_VAR;
 	randVar->value = total;
 	block->childs.push_back(randVar);
@@ -808,7 +808,7 @@ DialogLoader::Node* DialogLoader::ParseRandom()
 		else
 		{
 			child = GetNode();
-			child->node_op = NodeOp::Block;
+			child->nodeOp = NodeOp::Block;
 			for(Node* n2 : n->childs)
 				child->childs.push_back(n2);
 		}
@@ -817,7 +817,7 @@ DialogLoader::Node* DialogLoader::ParseRandom()
 		counter += n->value;
 
 		Node* converted = Node::Get();
-		converted->node_op = NodeOp::If;
+		converted->nodeOp = NodeOp::If;
 		converted->type = DTF_IF_VAR;
 		converted->op = DialogOp::OP_LESS;
 		converted->value = counter;
@@ -961,8 +961,8 @@ int DialogLoader::ParseProgress()
 //=================================================================================================
 bool DialogLoader::BuildDialog(Node* node)
 {
-	vector<DialogEntry>& code = current_dialog->code;
-	switch(node->node_op)
+	vector<DialogEntry>& code = currentDialog->code;
+	switch(node->nodeOp)
 	{
 	case NodeOp::Statement:
 		code.push_back(DialogEntry(node->type, node->op, node->value));
@@ -1028,7 +1028,7 @@ bool DialogLoader::BuildDialog(Node* node)
 bool DialogLoader::BuildDialogBlock(Node* node)
 {
 	if(!node->str.empty())
-		labels.push_back(std::make_pair(node->str, current_dialog->code.size()));
+		labels.push_back(std::make_pair(node->str, currentDialog->code.size()));
 
 	int have_exit = 0;
 	for(Node* child : node->childs)
@@ -1059,7 +1059,7 @@ void DialogLoader::PatchJumps()
 		{
 			if(jump.first == label.first)
 			{
-				current_dialog->code[jump.second].value = label.second;
+				currentDialog->code[jump.second].value = label.second;
 				ok = true;
 				break;
 			}
@@ -1190,7 +1190,7 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 			scripts = &DialogScripts::global;
 		}
 		quest = scheme;
-		current_dialog = dialog;
+		currentDialog = dialog;
 		if(!dialog)
 			t.Throw("Missing dialog '%s'.", id.c_str());
 
@@ -1326,12 +1326,12 @@ cstring DialogLoader::GetEntityName()
 {
 	if(loadingTexts)
 	{
-		if(current_dialog)
+		if(currentDialog)
 		{
 			if(quest)
-				return Format("quest '%s' dialog '%s' texts", quest->id.c_str(), current_dialog->id.c_str());
+				return Format("quest '%s' dialog '%s' texts", quest->id.c_str(), currentDialog->id.c_str());
 			else
-				return Format("dialog '%s' texts", current_dialog->id.c_str());
+				return Format("dialog '%s' texts", currentDialog->id.c_str());
 		}
 		else
 			return "dialog texts";

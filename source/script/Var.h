@@ -35,7 +35,7 @@ struct Var
 		const Item* item;
 		Location* location;
 		Encounter* encounter;
-		GroundItem* ground_item;
+		GroundItem* groundItem;
 		Unit* unit;
 		void* ptr;
 	};
@@ -163,5 +163,5 @@ struct Vars
 private:
 	std::map<string, Var*> vars;
 	int refs;
-	static string tmp_str;
+	static string tmpStr;
 };

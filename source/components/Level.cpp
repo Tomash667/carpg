@@ -171,8 +171,8 @@ void Level::ProcessUnitWarps()
 			warp.unit->locPart = localPart;
 			if(warp.building == -1)
 			{
-				warp.unit->rot = building.outside_rot;
-				WarpUnit(*warp.unit, building.outside_spawn);
+				warp.unit->rot = building.outsideRot;
+				WarpUnit(*warp.unit, building.outsideSpawn);
 			}
 			else
 			{
@@ -193,8 +193,8 @@ void Level::ProcessUnitWarps()
 			{
 				// failed to warp to arena, spawn outside of arena
 				warp.unit->locPart = localPart;
-				warp.unit->rot = building.outside_rot;
-				WarpUnit(*warp.unit, building.outside_spawn);
+				warp.unit->rot = building.outsideRot;
+				WarpUnit(*warp.unit, building.outsideSpawn);
 				localPart->units.push_back(warp.unit);
 				RemoveElement(game->arena->units, warp.unit);
 			}
@@ -209,11 +209,11 @@ void Level::ProcessUnitWarps()
 		else
 		{
 			// enter building
-			InsideBuilding& building = *cityCtx->inside_buildings[warp.where];
+			InsideBuilding& building = *cityCtx->insideBuildings[warp.where];
 			RemoveElement(warp.unit->locPart->units, warp.unit);
 			warp.unit->locPart = &building;
 			warp.unit->rot = PI;
-			WarpUnit(*warp.unit, building.inside_spawn);
+			WarpUnit(*warp.unit, building.insideSpawn);
 			building.units.push_back(warp.unit);
 		}
 
@@ -322,9 +322,9 @@ LocationPart& Level::GetLocationPart(const Vec3& pos)
 		if(offset.y % 2 == 1)
 			++offset.y;
 		offset /= 2;
-		for(InsideBuilding* inside : cityCtx->inside_buildings)
+		for(InsideBuilding* inside : cityCtx->insideBuildings)
 		{
-			if(inside->level_shift == offset)
+			if(inside->levelShift == offset)
 				return *inside;
 		}
 		return *localPart;
@@ -338,8 +338,8 @@ LocationPart* Level::GetLocationPartById(int partId)
 		return localPart;
 	if(cityCtx)
 	{
-		if(partId >= 0 && partId < (int)cityCtx->inside_buildings.size())
-			return cityCtx->inside_buildings[partId];
+		if(partId >= 0 && partId < (int)cityCtx->insideBuildings.size())
+			return cityCtx->insideBuildings[partId];
 	}
 	else if(LocationHelper::IsMultiLevel(location))
 	{
@@ -495,7 +495,7 @@ Chest* Level::GetTreasureChest()
 	if(location->target == LABYRINTH)
 		room = lvl->rooms[0];
 	else
-		room = lvl->rooms[static_cast<InsideLocation*>(location)->special_room];
+		room = lvl->rooms[static_cast<InsideLocation*>(location)->specialRoom];
 
 	Chest* bestChest = nullptr;
 	const Vec3 center = room->Center();
@@ -712,7 +712,7 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 		u->pos = pos;
 		u->rot = rot;
 
-		if(IsSet(base_use->use_flags, BaseUsable::CONTAINER))
+		if(IsSet(base_use->useFlags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
 			const Item* item = Book::GetRandom();
@@ -735,7 +735,7 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 			if(base->variants)
 			{
 				// extra code for bench
-				if(IsSet(base_use->use_flags, BaseUsable::IS_BENCH))
+				if(IsSet(base_use->useFlags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -977,13 +977,13 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 
 		if(IsSet(obj->flags, OBJ_DOUBLE_PHYSICS))
-			SpawnObjectExtras(locPart, obj->next_obj, pos, rot, userPtr, scale, flags);
+			SpawnObjectExtras(locPart, obj->nextObj, pos, rot, userPtr, scale, flags);
 		else if(IsSet(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
-				if(obj->next_obj[i].shape)
-					SpawnObjectExtras(locPart, &obj->next_obj[i], pos, rot, userPtr, scale, flags);
+				if(obj->nextObj[i].shape)
+					SpawnObjectExtras(locPart, &obj->nextObj[i], pos, rot, userPtr, scale, flags);
 				else
 					break;
 			}
@@ -1305,8 +1305,8 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			else if(token == "xsphere")
 			{
-				inside->xsphere_pos = pos;
-				inside->xsphere_radius = pt.size.x;
+				inside->xspherePos = pos;
+				inside->xsphereRadius = pt.size.x;
 			}
 			else
 				assert(0);
@@ -1318,19 +1318,19 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				{
 					assert(!inside);
 
-					inside = new InsideBuilding((int)city->inside_buildings.size());
+					inside = new InsideBuilding((int)city->insideBuildings.size());
 					inside->lvlPart = new LevelPart(inside);
-					inside->level_shift = city->inside_offset;
-					inside->offset = Vec2(512.f * city->inside_offset.x + 256.f, 512.f * city->inside_offset.y + 256.f);
-					if(city->inside_offset.x > city->inside_offset.y)
+					inside->levelShift = city->insideOffset;
+					inside->offset = Vec2(512.f * city->insideOffset.x + 256.f, 512.f * city->insideOffset.y + 256.f);
+					if(city->insideOffset.x > city->insideOffset.y)
 					{
-						--city->inside_offset.x;
-						++city->inside_offset.y;
+						--city->insideOffset.x;
+						++city->insideOffset.y;
 					}
 					else
 					{
-						city->inside_offset.x += 2;
-						city->inside_offset.y = 0;
+						city->insideOffset.x += 2;
+						city->insideOffset.y = 0;
 					}
 					float w, h;
 					if(dir == GDIR_DOWN || dir == GDIR_UP)
@@ -1343,17 +1343,17 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 						w = pt.size.z;
 						h = pt.size.x;
 					}
-					inside->enter_region.v1.x = pos.x - w;
-					inside->enter_region.v1.y = pos.z - h;
-					inside->enter_region.v2.x = pos.x + w;
-					inside->enter_region.v2.y = pos.z + h;
-					Vec2 mid = inside->enter_region.Midpoint();
-					inside->enter_y = terrain->GetH(mid.x, mid.y) + 0.1f;
+					inside->enterRegion.v1.x = pos.x - w;
+					inside->enterRegion.v1.y = pos.z - h;
+					inside->enterRegion.v2.x = pos.x + w;
+					inside->enterRegion.v2.y = pos.z + h;
+					Vec2 mid = inside->enterRegion.Midpoint();
+					inside->enterY = terrain->GetH(mid.x, mid.y) + 0.1f;
 					inside->building = building;
-					inside->outside_rot = rot;
+					inside->outsideRot = rot;
 					inside->top = -1.f;
-					inside->xsphere_radius = -1.f;
-					city->inside_buildings.push_back(inside);
+					inside->xsphereRadius = -1.f;
+					city->insideBuildings.push_back(inside);
 					locParts.push_back(*inside);
 
 					assert(insideMesh);
@@ -1380,17 +1380,17 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				{
 					assert(inside);
 
-					inside->exit_region.v1.x = pos.x - pt.size.x;
-					inside->exit_region.v1.y = pos.z - pt.size.z;
-					inside->exit_region.v2.x = pos.x + pt.size.x;
-					inside->exit_region.v2.y = pos.z + pt.size.z;
+					inside->exitRegion.v1.x = pos.x - pt.size.x;
+					inside->exitRegion.v1.y = pos.z - pt.size.z;
+					inside->exitRegion.v2.x = pos.x + pt.size.x;
+					inside->exitRegion.v2.y = pos.z + pt.size.z;
 
 					have_exit = true;
 				}
 				else if(token == "spawn")
 				{
 					if(is_inside)
-						inside->inside_spawn = pos;
+						inside->insideSpawn = pos;
 					else
 					{
 						spawn_point = pos;
@@ -1612,7 +1612,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			assert(have_exit && have_spawn);
 
 		if(!is_inside && inside)
-			inside->outside_spawn = spawn_point;
+			inside->outsideSpawn = spawn_point;
 	}
 }
 
@@ -1631,7 +1631,7 @@ void Level::RecreateObjects(bool spawnParticles)
 		if(locPart.partType == LocationPart::Type::Inside)
 		{
 			InsideLocation* inside = (InsideLocation*)location;
-			BaseLocation& base = g_base_locations[inside->target];
+			BaseLocation& base = gBaseLocations[inside->target];
 			if(IsSet(base.options, BLO_MAGIC_LIGHT))
 				flags |= Level::SOE_MAGIC_LIGHT;
 		}
@@ -3311,7 +3311,7 @@ bool Level::HaveArena()
 InsideBuilding* Level::GetArena()
 {
 	assert(cityCtx);
-	for(InsideBuilding* b : cityCtx->inside_buildings)
+	for(InsideBuilding* b : cityCtx->insideBuildings)
 	{
 		if(b->building->group == BuildingGroup::BG_ARENA)
 			return b;
@@ -3624,15 +3624,15 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 	if(location->outside)
 	{
 		if(u.locPart->partType == LocationPart::Type::Building)
-			return static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
+			return static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 		else if(cityCtx && !forceBorder)
 		{
 			float best_dist, dist;
 			int best_index = -1, index = 0;
 
-			for(vector<EntryPoint>::const_iterator it = cityCtx->entry_points.begin(), end = cityCtx->entry_points.end(); it != end; ++it, ++index)
+			for(vector<EntryPoint>::const_iterator it = cityCtx->entryPoints.begin(), end = cityCtx->entryPoints.end(); it != end; ++it, ++index)
 			{
-				if(it->exit_region.IsInside(u.pos))
+				if(it->exitRegion.IsInside(u.pos))
 				{
 					// unit is already inside exitable location part, go to outside exit
 					best_index = -1;
@@ -3640,7 +3640,7 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 				}
 				else
 				{
-					dist = Vec2::Distance(Vec2(u.pos.x, u.pos.z), it->exit_region.Midpoint());
+					dist = Vec2::Distance(Vec2(u.pos.x, u.pos.z), it->exitRegion.Midpoint());
 					if(best_index == -1 || dist < best_dist)
 					{
 						best_dist = dist;
@@ -3650,7 +3650,7 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 			}
 
 			if(best_index != -1)
-				return cityCtx->entry_points[best_index].exit_region.Midpoint().XZ();
+				return cityCtx->entryPoints[best_index].exitRegion.Midpoint().XZ();
 		}
 
 		int best = 0;
@@ -3697,7 +3697,7 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 	else
 	{
 		InsideLocation* inside = (InsideLocation*)location;
-		if(dungeonLevel == 0 && inside->from_portal)
+		if(dungeonLevel == 0 && inside->fromPortal)
 			return inside->portal->pos;
 		const Int2& pt = inside->GetLevelData().prevEntryPt;
 		return PtToPos(pt);
@@ -4356,7 +4356,7 @@ bool Level::IsSafe()
 			{
 				if(dungeonLevel == 0)
 				{
-					if(!multi->from_portal)
+					if(!multi->fromPortal)
 						return true;
 				}
 				else
@@ -4377,7 +4377,7 @@ bool Level::CanFastTravel()
 		if(!location->outside
 			|| !IsSafe()
 			|| game->arena->mode != Arena::NONE
-			|| questMgr->questTutorial->in_tutorial
+			|| questMgr->questTutorial->inTutorial
 			|| questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
 			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
@@ -4970,7 +4970,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = ability->tex_particle;
+	pe->tex = ability->texParticle;
 	pe->emissionInterval = 0.01f;
 	pe->life = 0.f;
 	pe->particleLife = 0.5f;
@@ -4986,7 +4986,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 		pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 		pe->posMax = Vec3(ability->size, ability->size, ability->size);
-		pe->size = ability->size_particle;
+		pe->size = ability->sizeParticle;
 		pe->alpha = 1.f;
 		break;
 	case Ability::Heal:
@@ -4997,7 +4997,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = ability->size_particle;
+		pe->size = ability->sizeParticle;
 		pe->alpha = 0.9f;
 		break;
 	default:
@@ -5008,7 +5008,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
 		pe->posMin = Vec3(-0.5f, 0, -0.5f);
 		pe->posMax = Vec3(0.5f, 0, 0.5f);
-		pe->size = ability->size_particle / 2;
+		pe->size = ability->sizeParticle / 2;
 		pe->alpha = 1.f;
 		break;
 	}

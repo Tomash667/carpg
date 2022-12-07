@@ -367,7 +367,7 @@ void QuestManager::Update(int days)
 		if(in_camp)
 			return false;
 
-		loc->active_quest = nullptr;
+		loc->activeQuest = nullptr;
 
 		if(loc->type == L_CAMP)
 		{
@@ -444,7 +444,7 @@ void QuestManager::Write(BitStreamWriter& f)
 		f << c.item2->id;
 		f << c.item2->name;
 		f << c.item2->desc;
-		f << c.item2->quest_id;
+		f << c.item2->questId;
 	}
 	Net::changes.clear();
 }
@@ -514,7 +514,7 @@ bool QuestManager::Read(BitStreamReader& f)
 		f >> item->id;
 		f >> item->name;
 		f >> item->desc;
-		f >> item->quest_id;
+		f >> item->questId;
 		if(!f)
 		{
 			Error("Read world: Broken packet for quest item %u (2).", i);
@@ -551,7 +551,7 @@ void QuestManager::Save(GameWriter& f)
 	for(Item* item : questItems)
 	{
 		f << item->id;
-		f << item->quest_id;
+		f << item->questId;
 		f << item->name;
 	}
 
@@ -619,7 +619,7 @@ void QuestManager::Load(GameReader& f)
 		Item* base = Item::Get(id.c_str() + 1);
 		item = base->CreateCopy();
 		item->id = id;
-		f >> item->quest_id;
+		f >> item->questId;
 		f >> item->name;
 	}
 
@@ -864,7 +864,7 @@ const Item* QuestManager::FindQuestItem(cstring item_id, int questId)
 {
 	for(Item* item : questItems)
 	{
-		if(item->quest_id == questId && item->id == item_id)
+		if(item->questId == questId && item->id == item_id)
 			return item;
 	}
 
@@ -1038,70 +1038,70 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 {
 	if(onEnter)
 	{
-		if(questSawmill->sawmill_state == Quest_Sawmill::State::None && gameLevel->location == questSawmill->startLoc)
+		if(questSawmill->sawmillState == Quest_Sawmill::State::None && gameLevel->location == questSawmill->startLoc)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 			assert(u);
 			if(u)
 			{
-				questSawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
-				questSawmill->hd_lumberjack.Get(*u->humanData);
+				questSawmill->sawmillState = Quest_Sawmill::State::GeneratedUnit;
+				questSawmill->hdLumberjack.Get(*u->humanData);
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->location == questMine->startLoc && questMine->mine_state == Quest_Mine::State::None)
+		if(gameLevel->location == questMine->startLoc && questMine->mineState == Quest_Mine::State::None)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 			assert(u);
 			if(u)
 			{
-				questMine->mine_state = Quest_Mine::State::SpawnedInvestor;
+				questMine->mineState = Quest_Mine::State::SpawnedInvestor;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->location == questBandits->startLoc && questBandits->bandits_state == Quest_Bandits::State::None)
+		if(gameLevel->location == questBandits->startLoc && questBandits->banditsState == Quest_Bandits::State::None)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 			assert(u);
 			if(u)
 			{
-				questBandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
+				questBandits->banditsState = Quest_Bandits::State::GeneratedMaster;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->location == questMages->startLoc && questMages2->mages_state == Quest_Mages2::State::None)
+		if(gameLevel->location == questMages->startLoc && questMages2->magesState == Quest_Mages2::State::None)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 			assert(u);
 			if(u)
 			{
-				questMages2->mages_state = Quest_Mages2::State::GeneratedScholar;
+				questMages2->magesState = Quest_Mages2::State::GeneratedScholar;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->locationIndex == questMages2->mage_loc)
+		if(gameLevel->locationIndex == questMages2->mageLoc)
 		{
-			if(questMages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
+			if(questMages2->magesState == Quest_Mages2::State::TalkedWithCaptain)
 			{
 				Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 				assert(u);
 				if(u)
 				{
-					questMages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
-					questMages2->good_mage_name = u->hero->name;
+					questMages2->magesState = Quest_Mages2::State::GeneratedOldMage;
+					questMages2->goodMageName = u->hero->name;
 					if(game->devmode)
 						Info("Generated quest unit '%s'.", u->GetRealName());
 				}
 			}
-			else if(questMages2->mages_state == Quest_Mages2::State::MageLeft)
+			else if(questMages2->magesState == Quest_Mages2::State::MageLeft)
 			{
 				Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 				assert(u);
@@ -1109,44 +1109,44 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 				{
 					questMages2->scholar = u;
 					u->hero->knowName = true;
-					u->hero->name = questMages2->good_mage_name;
-					u->ApplyHumanData(questMages2->hd_mage);
-					questMages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
+					u->hero->name = questMages2->goodMageName;
+					u->ApplyHumanData(questMages2->hdMage);
+					questMages2->magesState = Quest_Mages2::State::MageGeneratedInCity;
 					if(game->devmode)
 						Info("Generated quest unit '%s'.", u->GetRealName());
 				}
 			}
 		}
 
-		if(gameLevel->location == questOrcs->startLoc && questOrcs2->orcs_state == Quest_Orcs2::State::None)
+		if(gameLevel->location == questOrcs->startLoc && questOrcs2->orcsState == Quest_Orcs2::State::None)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 			assert(u);
 			if(u)
 			{
 				u->OrderAutoTalk();
-				questOrcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
+				questOrcs2->orcsState = Quest_Orcs2::State::GeneratedGuard;
 				questOrcs2->guard = u;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->location == questGoblins->startLoc && questGoblins->goblins_state == Quest_Goblins::State::None)
+		if(gameLevel->location == questGoblins->startLoc && questGoblins->goblinsState == Quest_Goblins::State::None)
 		{
 			Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 			assert(u);
 			if(u)
 			{
 				questGoblins->nobleman = u;
-				questGoblins->hd_nobleman.Get(*u->humanData);
-				questGoblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
+				questGoblins->hdNobleman.Get(*u->humanData);
+				questGoblins->goblinsState = Quest_Goblins::State::GeneratedNobleman;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 
-		if(gameLevel->location == questEvil->startLoc && questEvil->evil_state == Quest_Evil::State::None)
+		if(gameLevel->location == questEvil->startLoc && questEvil->evilState == Quest_Evil::State::None)
 		{
 			CityBuilding* b = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_INN);
 			Unit* u = gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, b->walkPt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
@@ -1155,7 +1155,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 			{
 				u->OrderAutoTalk();
 				questEvil->cleric = u;
-				questEvil->evil_state = Quest_Evil::State::GeneratedCleric;
+				questEvil->evilState = Quest_Evil::State::GeneratedCleric;
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
@@ -1164,7 +1164,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 		if(!team->isBandit)
 		{
 			// sawmill quest
-			if(questSawmill->sawmill_state == Quest_Sawmill::State::InBuild)
+			if(questSawmill->sawmillState == Quest_Sawmill::State::InBuild)
 			{
 				if(questSawmill->days >= 30 && gameLevel->cityCtx)
 				{
@@ -1178,11 +1178,11 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 				}
 			}
 
-			if(questMine->days >= questMine->days_required
-				&& ((questMine->mine_state2 == Quest_Mine::State2::InBuild && questMine->mine_state == Quest_Mine::State::Shares) // inform player about building mine & give gold
-				|| questMine->mine_state2 == Quest_Mine::State2::Built // inform player about possible investment
-				|| questMine->mine_state2 == Quest_Mine::State2::InExpand // inform player about finished mine expanding
-				|| questMine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+			if(questMine->days >= questMine->daysRequired
+				&& ((questMine->mineState2 == Quest_Mine::State2::InBuild && questMine->mineState == Quest_Mine::State::Shares) // inform player about building mine & give gold
+				|| questMine->mineState2 == Quest_Mine::State2::Built // inform player about possible investment
+				|| questMine->mineState2 == Quest_Mine::State2::InExpand // inform player about finished mine expanding
+				|| questMine->mineState2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 			{
 				Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 				if(u)
@@ -1192,13 +1192,13 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 				}
 			}
 
-			if(questEvil->evil_state == Quest_Evil::State::GenerateMage && gameLevel->locationIndex == questEvil->mage_loc)
+			if(questEvil->evilState == Quest_Evil::State::GenerateMage && gameLevel->locationIndex == questEvil->mageLoc)
 			{
 				Unit* u = gameLevel->SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
 				assert(u);
 				if(u)
 				{
-					questEvil->evil_state = Quest_Evil::State::GeneratedMage;
+					questEvil->evilState = Quest_Evil::State::GeneratedMage;
 					if(game->devmode)
 						Info("Generated quest unit '%s'.", u->GetRealName());
 				}
@@ -1214,7 +1214,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 	// spawn on enter or update
 	if(!team->isBandit)
 	{
-		if(questGoblins->goblins_state == Quest_Goblins::State::Counting && questGoblins->days <= 0)
+		if(questGoblins->goblinsState == Quest_Goblins::State::Counting && questGoblins->days <= 0)
 		{
 			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &team->leader->pos, -2, 2.f);
 			if(u)
@@ -1226,13 +1226,13 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 			}
 		}
 
-		if(questGoblins->goblins_state == Quest_Goblins::State::NoblemanLeft && questGoblins->days <= 0)
+		if(questGoblins->goblinsState == Quest_Goblins::State::NoblemanLeft && questGoblins->days <= 0)
 		{
 			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("q_gobliny_mag"), &team->leader->pos, 5, 2.f);
 			if(u)
 			{
 				questGoblins->messenger = u;
-				questGoblins->goblins_state = Quest_Goblins::State::GeneratedMage;
+				questGoblins->goblinsState = Quest_Goblins::State::GeneratedMage;
 				u->OrderAutoTalk(true);
 				if(game->devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
@@ -1258,69 +1258,69 @@ void QuestManager::RemoveQuestUnits(bool onLeave)
 			questMine->messenger = nullptr;
 		}
 
-		if(gameLevel->isOpen && gameLevel->location == questSawmill->startLoc && questSawmill->sawmill_state == Quest_Sawmill::State::InBuild
-			&& questSawmill->build_state == Quest_Sawmill::BuildState::None)
+		if(gameLevel->isOpen && gameLevel->location == questSawmill->startLoc && questSawmill->sawmillState == Quest_Sawmill::State::InBuild
+			&& questSawmill->buildState == Quest_Sawmill::BuildState::None)
 		{
 			Unit* u = gameLevel->cityCtx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
 			if(u && u->IsAlive())
 			{
-				questSawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
+				questSawmill->buildState = Quest_Sawmill::BuildState::LumberjackLeft;
 				gameLevel->RemoveUnit(u, !onLeave);
 			}
 		}
 
-		if(questMages2->scholar && questMages2->mages_state == Quest_Mages2::State::ScholarWaits)
+		if(questMages2->scholar && questMages2->magesState == Quest_Mages2::State::ScholarWaits)
 		{
 			gameLevel->RemoveUnit(UnitData::Get("q_magowie_uczony"), onLeave);
 			questMages2->scholar = nullptr;
-			questMages2->mages_state = Quest_Mages2::State::Counting;
+			questMages2->magesState = Quest_Mages2::State::Counting;
 			questMages2->days = Random(15, 30);
 		}
 
-		if(questOrcs2->guard && questOrcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
+		if(questOrcs2->guard && questOrcs2->orcsState >= Quest_Orcs2::State::GuardTalked)
 		{
 			gameLevel->RemoveUnit(UnitData::Get("q_orkowie_straznik"), onLeave);
 			questOrcs2->guard = nullptr;
 		}
 	}
 
-	if(questBandits->bandits_state == Quest_Bandits::State::AgentTalked)
+	if(questBandits->banditsState == Quest_Bandits::State::AgentTalked)
 	{
-		questBandits->bandits_state = Quest_Bandits::State::AgentLeft;
+		questBandits->banditsState = Quest_Bandits::State::AgentLeft;
 		questBandits->agent = nullptr;
 	}
 
-	if(questMages2->mages_state == Quest_Mages2::State::MageLeaving)
+	if(questMages2->magesState == Quest_Mages2::State::MageLeaving)
 	{
-		questMages2->mages_state = Quest_Mages2::State::MageLeft;
+		questMages2->magesState = Quest_Mages2::State::MageLeft;
 		questMages2->scholar = nullptr;
 	}
 
-	if(questGoblins->goblins_state == Quest_Goblins::State::MessengerTalked && questGoblins->messenger)
+	if(questGoblins->goblinsState == Quest_Goblins::State::MessengerTalked && questGoblins->messenger)
 	{
 		gameLevel->RemoveUnit(UnitData::Get("q_gobliny_poslaniec"), onLeave);
 		questGoblins->messenger = nullptr;
 	}
 
-	if(questGoblins->goblins_state == Quest_Goblins::State::GivenBow && questGoblins->nobleman)
+	if(questGoblins->goblinsState == Quest_Goblins::State::GivenBow && questGoblins->nobleman)
 	{
 		gameLevel->RemoveUnit(UnitData::Get("q_gobliny_szlachcic"), onLeave);
 		questGoblins->nobleman = nullptr;
-		questGoblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
+		questGoblins->goblinsState = Quest_Goblins::State::NoblemanLeft;
 		questGoblins->days = Random(15, 30);
 	}
 
-	if(questGoblins->goblins_state == Quest_Goblins::State::MageTalked && questGoblins->messenger)
+	if(questGoblins->goblinsState == Quest_Goblins::State::MageTalked && questGoblins->messenger)
 	{
 		gameLevel->RemoveUnit(UnitData::Get("q_gobliny_mag"), onLeave);
 		questGoblins->messenger = nullptr;
-		questGoblins->goblins_state = Quest_Goblins::State::MageLeft;
+		questGoblins->goblinsState = Quest_Goblins::State::MageLeft;
 	}
 
-	if(questEvil->evil_state == Quest_Evil::State::ClericLeaving)
+	if(questEvil->evilState == Quest_Evil::State::ClericLeaving)
 	{
 		questEvil->cleric = nullptr;
-		questEvil->evil_state = Quest_Evil::State::ClericLeft;
+		questEvil->evilState = Quest_Evil::State::ClericLeft;
 	}
 }
 

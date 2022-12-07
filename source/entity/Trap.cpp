@@ -57,7 +57,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 			if(trigger)
 			{
-				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 				state = 1;
 				time = Random(0.5f, 0.75f);
 
@@ -91,7 +91,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				meshInst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
-				soundMgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
+				soundMgr->PlaySound3d(base->sound2, pos, base->soundDist2);
 
 				if(Net::IsServer())
 				{
@@ -174,7 +174,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 			{
 				state = 4;
 				meshInst->Play("hide", PLAY_ONCE);
-				soundMgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
+				soundMgr->PlaySound3d(base->sound3, pos, base->soundDist3);
 			}
 		}
 		else if(state == 4)
@@ -254,7 +254,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				// someone step on trap, shoot arrow
 				state = Net::IsLocal() ? 1 : 2;
 				time = Random(5.f, 7.5f);
-				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 
 				if(Net::IsLocal())
 				{
@@ -383,9 +383,9 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				explo->dmg = GetAttack();
 				explo->owner = owner;
 
-				if(fireball->sound_hit)
+				if(fireball->soundHit)
 				{
-					soundMgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
+					soundMgr->PlaySound3d(fireball->soundHit, pos, fireball->soundHitDist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -434,7 +434,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 			if(trigger)
 			{
-				soundMgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 				state = 1;
 				meshInst->Play("trigger", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
 
@@ -502,7 +502,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 						Effect e;
 						e.effect = EffectId::Rooted;
 						e.source = EffectSource::Temporary;
-						e.source_id = -1;
+						e.sourceId = -1;
 						e.power = 0;
 						e.time = 5.f;
 						e.value = EffectValue_Generic;

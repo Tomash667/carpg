@@ -1452,7 +1452,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						f >> item->id;
 						f >> item->name;
 						f >> item->desc;
-						f >> item->quest_id;
+						f >> item->questId;
 						if(!f)
 							Error("Update client: Broken REGISTER_ITEM(3).");
 						else
@@ -1537,8 +1537,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// item rename
 		case NetChange::RENAME_ITEM:
 			{
-				int quest_id;
-				f >> quest_id;
+				int questId;
+				f >> questId;
 				const string& item_id = f.ReadString1();
 				if(!f)
 					Error("Update client: Broken RENAME_ITEM.");
@@ -1547,7 +1547,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					bool found = false;
 					for(Item* item : questMgr->questItems)
 					{
-						if(item->quest_id == quest_id && item->id == item_id)
+						if(item->questId == questId && item->id == item_id)
 						{
 							f >> item->name;
 							if(!f)
@@ -1558,7 +1558,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					}
 					if(!found)
 					{
-						Error("Update client: RENAME_ITEM, missing quest item %d.", quest_id);
+						Error("Update client: RENAME_ITEM, missing quest item %d.", questId);
 						f.SkipString1();
 					}
 				}
@@ -1667,15 +1667,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				BaseUsable& base = *usable->base;
 				if(state == USE_USABLE_START || state == USE_USABLE_START_SPECIAL)
 				{
-					if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
+					if(!IsSet(base.useFlags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_USE_USABLE;
 						unit->animation = ANI_PLAY;
 						unit->meshInst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->targetPos = unit->pos;
 						unit->targetPos2 = usable->pos;
-						if(base.limit_rot == 4)
-							unit->targetPos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
+						if(base.limitRot == 4)
+							unit->targetPos2 -= Vec3(sin(usable->rot) * 1.5f, 0, cos(usable->rot) * 1.5f);
 						unit->timer = 0.f;
 						unit->animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
 						unit->act.useUsable.rot = Vec3::LookAtAngle(unit->pos, usable->pos);
@@ -1695,7 +1695,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 				else
 				{
-					if(unit->player != game->pc && !IsSet(base.use_flags, BaseUsable::CONTAINER))
+					if(unit->player != game->pc && !IsSet(base.useFlags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -2322,10 +2322,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				bullet->owner = unit;
 				bullet->yspeed = speedY;
 
-				if(ability.tex_particle)
+				if(ability.texParticle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.tex_particle;
+					pe->tex = ability.texParticle;
 					pe->emissionInterval = 0.1f;
 					pe->life = -1;
 					pe->particleLife = 0.5f;
@@ -2338,7 +2338,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.size_particle;
+					pe->size = ability.sizeParticle;
 					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -2370,9 +2370,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!ability)
 					Error("Update client: SPELL_SOUND, missing ability %u.", ability_hash);
 				else if(type == 0)
-					soundMgr->PlaySound3d(ability->sound_cast, pos, ability->sound_cast_dist);
+					soundMgr->PlaySound3d(ability->soundCast, pos, ability->soundCastDist);
 				else
-					soundMgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
+					soundMgr->PlaySound3d(ability->soundHit, pos, ability->soundHitDist);
 			}
 			break;
 		// drain blood effect
@@ -2465,14 +2465,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Ability* ability = Ability::Get("thunder_bolt");
 
 					// sound
-					if(ability->sound_hit)
-						soundMgr->PlaySound3d(ability->sound_hit, pos, ability->sound_hit_dist);
+					if(ability->soundHit)
+						soundMgr->PlaySound3d(ability->soundHit, pos, ability->soundHitDist);
 
 					// particles
-					if(ability->tex_particle)
+					if(ability->texParticle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = ability->tex_particle;
+						pe->tex = ability->texParticle;
 						pe->emissionInterval = 0.01f;
 						pe->life = 0.f;
 						pe->particleLife = 0.5f;
@@ -2485,7 +2485,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 						pe->posMax = Vec3(ability->size, ability->size, ability->size);
-						pe->size = ability->size_particle;
+						pe->size = ability->sizeParticle;
 						pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
 						pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -3040,7 +3040,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						Effect e;
 						e.effect = effect;
 						e.source = EffectSource::Temporary;
-						e.source_id = -1;
+						e.sourceId = -1;
 						e.value = (effect == EffectId::Rooted ? EffectValue_Rooted_Vines : EffectValue_Generic);
 						e.power = 0;
 						e.time = time;
@@ -3773,7 +3773,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				{
 					int set_flags = CountBits(flags);
 					// read to buffer
-					f.Read(BUF, sizeof(int)*set_flags);
+					f.Read(BUF, sizeof(int) * set_flags);
 					if(!f)
 						Error("Update single client: Broken PLAYER_STATS(2).");
 					else
@@ -3895,7 +3895,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 				Effect e;
 				f.ReadCasted<char>(e.effect);
 				f.ReadCasted<char>(e.source);
-				f.ReadCasted<char>(e.source_id);
+				f.ReadCasted<char>(e.sourceId);
 				f.ReadCasted<char>(e.value);
 				f >> e.power;
 				f >> e.time;
@@ -3910,15 +3910,15 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 			{
 				EffectId effect;
 				EffectSource source;
-				int source_id, value;
+				int sourceId, value;
 				f.ReadCasted<char>(effect);
 				f.ReadCasted<char>(source);
-				f.ReadCasted<char>(source_id);
+				f.ReadCasted<char>(sourceId);
 				f.ReadCasted<char>(value);
 				if(!f)
 					Error("Update single client: Broken REMOVE_EFFECT.");
 				else
-					pc.unit->RemoveEffects(effect, source, source_id, value);
+					pc.unit->RemoveEffects(effect, source, sourceId, value);
 			}
 			break;
 		// player is resting
@@ -4306,22 +4306,22 @@ bool Net::ReadLevelData(BitStreamReader& f)
 		}
 		else
 		{
-			int quest_id = f.Read<int>();
+			int questId = f.Read<int>();
 			if(!f)
 			{
 				Error("Read level: Broken quest item preload '%u'.", i);
 				return false;
 			}
-			const Item* item = questMgr->FindQuestItemClient(item_id.c_str(), quest_id);
+			const Item* item = questMgr->FindQuestItemClient(item_id.c_str(), questId);
 			if(!item)
 			{
-				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), quest_id);
+				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), questId);
 				return false;
 			}
 			const Item* base = Item::TryGet(item_id.c_str() + 1);
 			if(!base)
 			{
-				Error("Read level: Missing quest item preload base '%s' (%d).", item_id.c_str(), quest_id);
+				Error("Read level: Missing quest item preload base '%s' (%d).", item_id.c_str(), questId);
 				return false;
 			}
 			itemsLoad.insert(base);
@@ -4485,7 +4485,7 @@ bool Net::ReadPlayerData(BitStreamReader& f)
 		}
 
 		if(unit->usable && unit->action == A_USE_USABLE && Any(unit->animationState, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
-			&& IsSet(unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			&& IsSet(unit->usable->base->useFlags, BaseUsable::ALCHEMY))
 			gameGui->craft->Show();
 	}
 

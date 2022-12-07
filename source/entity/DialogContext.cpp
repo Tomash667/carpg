@@ -894,11 +894,11 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	if(strcmp(msg, "mayor_quest") == 0)
 	{
 		bool have_quest = true;
-		if(world->GetWorldtime() - gameLevel->cityCtx->quest_mayor_time > 30
-			|| gameLevel->cityCtx->quest_mayor_time == -1
-			|| gameLevel->cityCtx->quest_mayor == CityQuestState::Failed)
+		if(world->GetWorldtime() - gameLevel->cityCtx->questMayorTime > 30
+			|| gameLevel->cityCtx->questMayorTime == -1
+			|| gameLevel->cityCtx->questMayor == CityQuestState::Failed)
 		{
-			if(gameLevel->cityCtx->quest_mayor == CityQuestState::InProgress)
+			if(gameLevel->cityCtx->questMayor == CityQuestState::InProgress)
 			{
 				Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Mayor);
 				if(quest)
@@ -906,8 +906,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			gameLevel->cityCtx->quest_mayor_time = world->GetWorldtime();
-			gameLevel->cityCtx->quest_mayor = CityQuestState::InProgress;
+			gameLevel->cityCtx->questMayorTime = world->GetWorldtime();
+			gameLevel->cityCtx->questMayor = CityQuestState::InProgress;
 
 			Quest* quest = questMgr->GetMayorQuest();
 			if(quest)
@@ -915,7 +915,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			else
 				have_quest = false;
 		}
-		else if(gameLevel->cityCtx->quest_mayor == CityQuestState::InProgress)
+		else if(gameLevel->cityCtx->questMayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
 			Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Mayor);
@@ -949,11 +949,11 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "captain_quest") == 0)
 	{
 		bool have_quest = true;
-		if(world->GetWorldtime() - gameLevel->cityCtx->quest_captain_time > 30
-			|| gameLevel->cityCtx->quest_captain_time == -1
-			|| gameLevel->cityCtx->quest_captain == CityQuestState::Failed)
+		if(world->GetWorldtime() - gameLevel->cityCtx->questCaptainTime > 30
+			|| gameLevel->cityCtx->questCaptainTime == -1
+			|| gameLevel->cityCtx->questCaptain == CityQuestState::Failed)
 		{
-			if(gameLevel->cityCtx->quest_captain == CityQuestState::InProgress)
+			if(gameLevel->cityCtx->questCaptain == CityQuestState::InProgress)
 			{
 				Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Captain);
 				if(quest)
@@ -961,8 +961,8 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			gameLevel->cityCtx->quest_captain_time = world->GetWorldtime();
-			gameLevel->cityCtx->quest_captain = CityQuestState::InProgress;
+			gameLevel->cityCtx->questCaptainTime = world->GetWorldtime();
+			gameLevel->cityCtx->questCaptain = CityQuestState::InProgress;
 
 			Quest* quest = questMgr->GetCaptainQuest();
 			if(quest)
@@ -970,7 +970,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			else
 				have_quest = false;
 		}
-		else if(gameLevel->cityCtx->quest_captain == CityQuestState::InProgress)
+		else if(gameLevel->cityCtx->questCaptain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
 			Quest* quest = questMgr->FindUnacceptedQuest(gameLevel->location, QuestCategory::Captain);
@@ -1271,17 +1271,17 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			type = 4;
 			what = ability->hash;
 			train = nullptr;
-			cost = ability->learning_points;
+			cost = ability->learningPoints;
 		}
 		else if(Attribute* attrib = Attribute::Find(s))
 		{
 			type = 0;
-			what = (int)attrib->attrib_id;
+			what = (int)attrib->attribId;
 			train = &pc->attrib[what].train;
 		}
 		else if(const Skill* skill = Skill::Find(s))
 		{
-			if(skill->locked && pc->unit->GetBase(skill->skill_id) <= 0)
+			if(skill->locked && pc->unit->GetBase(skill->skillId) <= 0)
 			{
 				Talk(game->txCantLearnSkill);
 				forceEnd = true;
@@ -1289,7 +1289,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 
 			type = 1;
-			what = (int)skill->skill_id;
+			what = (int)skill->skillId;
 			train = &pc->skill[what].train;
 		}
 		else
@@ -1669,7 +1669,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "can_join") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
 	else if(strcmp(msg, "is_near_arena") == 0)
-		return gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, gameLevel->cityCtx->arena_pos) < 5.f;
+		return gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, gameLevel->cityCtx->arenaPos) < 5.f;
 	else if(strcmp(msg, "is_ginger") == 0)
 		return pc->unit->humanData->hairColor.Equal(gHairColors[8]);
 	else if(strcmp(msg, "is_bald") == 0)
@@ -1687,10 +1687,10 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return talker->level <= 8 && team->freeRecruits > 0 && !talker->hero->otherTeam;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
-		return (((questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::Accepted || questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+		return (((questMgr->questOrcs2->orcsState == Quest_Orcs2::State::Accepted || questMgr->questOrcs2->orcsState == Quest_Orcs2::State::OrcJoined)
 			&& questMgr->questOrcs->startLoc == gameLevel->location)
-			|| (questMgr->questMages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
-			&& questMgr->questMages2->mages_state < Quest_Mages2::State::Completed
+			|| (questMgr->questMages2->magesState >= Quest_Mages2::State::TalkedWithCaptain
+			&& questMgr->questMages2->magesState < Quest_Mages2::State::Completed
 			&& questMgr->questMages2->startLoc == gameLevel->location));
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
@@ -1705,13 +1705,13 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "is_before_contest") == 0)
 		return questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "is_drunkmage") == 0)
-		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured;
+		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState < Quest_Mages2::State::MageCured;
 	else if(strcmp(msg, "is_guard") == 0)
 		return IsSet(talker->data->flags2, F2_GUARD);
 	else if(strcmp(msg, "mayor_quest_failed") == 0)
-		return gameLevel->cityCtx->quest_mayor == CityQuestState::Failed;
+		return gameLevel->cityCtx->questMayor == CityQuestState::Failed;
 	else if(strcmp(msg, "captain_quest_failed") == 0)
-		return gameLevel->cityCtx->quest_captain == CityQuestState::Failed;
+		return gameLevel->cityCtx->questCaptain == CityQuestState::Failed;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -1773,14 +1773,14 @@ cstring DialogContext::FormatString(const string& strPart)
 			talkMsg = ability->name.c_str();
 			const SkillId skill = ability->GetSkill();
 			cstring type = IsSet(ability->flags, Ability::Mage) ? game->txSpell : game->txAbility;
-			cstring points = ability->learning_points == 1 ? game->txLearningPoint : game->txLearningPoints;
+			cstring points = ability->learningPoints == 1 ? game->txLearningPoint : game->txLearningPoints;
 			if(skill != SkillId::NONE)
 			{
 				return Format("%s: %s (%d %s, %d %s)", type, ability->name.c_str(), ability->skill,
-					Skill::Get(skill).name.c_str(), ability->learning_points, points);
+					Skill::Get(skill).name.c_str(), ability->learningPoints, points);
 			}
 			else
-				return Format("%s: %s (%d %s)", type, ability->name.c_str(), ability->learning_points, points);
+				return Format("%s: %s (%d %s)", type, ability->name.c_str(), ability->learningPoints, points);
 		}
 		else
 		{
@@ -1789,12 +1789,12 @@ cstring DialogContext::FormatString(const string& strPart)
 			if(Attribute* attrib = Attribute::Find(s))
 			{
 				name = attrib->name.c_str();
-				cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
+				cost = pc->GetTrainCost(pc->attrib[(int)attrib->attribId].train);
 			}
 			else if(const Skill* skill = Skill::Find(s))
 			{
 				name = skill->name.c_str();
-				cost = pc->GetTrainCost(pc->skill[(int)skill->skill_id].train);
+				cost = pc->GetTrainCost(pc->skill[(int)skill->skillId].train);
 			}
 			else
 			{

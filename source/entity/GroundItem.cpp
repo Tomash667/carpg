@@ -41,7 +41,7 @@ void GroundItem::Save(GameWriter& f)
 	f << teamCount;
 	f << item->id;
 	if(item->id[0] == '$')
-		f << item->quest_id;
+		f << item->questId;
 }
 
 //=================================================================================================
@@ -66,8 +66,8 @@ void GroundItem::Load(GameReader& f)
 		item = Item::Get(item_id);
 	else
 	{
-		int quest_id = f.Read<int>();
-		questMgr->AddQuestItemRequest(&item, item_id.c_str(), quest_id, nullptr);
+		int questId = f.Read<int>();
+		questMgr->AddQuestItemRequest(&item, item_id.c_str(), questId, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	if(LOAD_VERSION < V_0_12)
@@ -84,7 +84,7 @@ void GroundItem::Write(BitStreamWriter& f)
 	f << teamCount;
 	f << item->id;
 	if(item->IsQuest())
-		f << item->quest_id;
+		f << item->questId;
 }
 
 //=================================================================================================

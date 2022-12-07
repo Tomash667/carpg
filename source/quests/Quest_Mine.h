@@ -71,15 +71,15 @@ public:
 	int GetChestEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	int GenerateMine(CaveGenerator* cave_gen, bool first);
+	int GenerateMine(CaveGenerator* caveGen, bool first);
 	void OnProgress(int days);
 
 	Quest_Event sub;
-	int dungeon_loc;
-	State mine_state;
-	State2 mine_state2;
-	State3 mine_state3;
-	int days, days_required;
+	int dungeonLoc;
+	State mineState;
+	State2 mineState2;
+	State3 mineState3;
+	int days, daysRequired;
 	Unit* messenger;
 
 private:

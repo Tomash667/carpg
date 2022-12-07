@@ -35,7 +35,7 @@ void Quest_Tutorial::Start()
 	HumanData hd;
 	hd.Get(*gameGui->createCharacter->unit->humanData);
 	game->NewGameCommon(gameGui->createCharacter->clas, gameGui->createCharacter->playerName.c_str(), hd, gameGui->createCharacter->cc, true);
-	in_tutorial = true;
+	inTutorial = true;
 	state = 0;
 	texts.clear();
 	questMgr->questContest->state = Quest_Contest::CONTEST_NOT_DONE;
@@ -173,7 +173,7 @@ void Quest_Tutorial::Update()
 void Quest_Tutorial::Finish(int)
 {
 	gui->GetDialog("tut_end")->visible = false;
-	finished_tutorial = true;
+	finishedTutorial = true;
 	game->ClearGame();
 	game->StartNewGame();
 }

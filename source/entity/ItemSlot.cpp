@@ -101,7 +101,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	{
 		cstring id = ReplaceAll(item->id.c_str(), "$", "$$");
 		if(item->IsQuest())
-			str += Format(" (%s,%d)", id, item->quest_id);
+			str += Format(" (%s,%d)", id, item->questId);
 		else
 			str += Format(" (%s)", id);
 	}
@@ -119,32 +119,32 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			*/
 			const Weapon& weapon = item->ToWeapon();
 
-			cstring dmg_type;
-			switch(weapon.dmg_type)
+			cstring dmgType;
+			switch(weapon.dmgType)
 			{
 			case DMG_BLUNT:
-				dmg_type = txDTBlunt;
+				dmgType = txDTBlunt;
 				break;
 			case DMG_PIERCE:
-				dmg_type = txDTPierce;
+				dmgType = txDTPierce;
 				break;
 			case DMG_SLASH:
-				dmg_type = txDTSlash;
+				dmgType = txDTSlash;
 				break;
 			case DMG_BLUNT | DMG_PIERCE:
-				dmg_type = txDTBluntPierce;
+				dmgType = txDTBluntPierce;
 				break;
 			case DMG_BLUNT | DMG_SLASH:
-				dmg_type = txDTBluntSlash;
+				dmgType = txDTBluntSlash;
 				break;
 			case DMG_SLASH | DMG_PIERCE:
-				dmg_type = txDTSlashPierce;
+				dmgType = txDTSlashPierce;
 				break;
 			case DMG_BLUNT | DMG_PIERCE | DMG_SLASH:
-				dmg_type = txDTMagical;
+				dmgType = txDTMagical;
 				break;
 			default:
-				dmg_type = "???";
+				dmgType = "???";
 				break;
 			}
 
@@ -157,11 +157,11 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
 
 			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
-				WeaponTypeInfo::info[weapon.weapon_type].name,
+				WeaponTypeInfo::info[weapon.weaponType].name,
 				txAttack,
 				weapon.dmg,
 				atk_desc,
-				dmg_type,
+				dmgType,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= weapon.reqStr ? '-' : 'r'),
 				weapon.reqStr);
@@ -206,7 +206,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			cstring mob_str, armor_type_text;
 
 			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
-			if(unit->data->armor_type == armor.armor_unit_type)
+			if(unit->data->armor_type == armor.armorUnitType)
 				armor_type_text = skill;
 			else
 				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);

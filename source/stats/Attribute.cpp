@@ -30,7 +30,7 @@ void Attribute::Validate(uint& err)
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		Attribute& ai = attributes[i];
-		if(ai.attrib_id != (AttributeId)i)
+		if(ai.attribId != (AttributeId)i)
 		{
 			Warn("Test: AttributeId %s: id mismatch.", ai.id);
 			++err;

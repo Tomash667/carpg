@@ -220,7 +220,7 @@ void World::UpdateLocations()
 	for(auto it = locations.begin(), end = locations.end(); it != end; ++it)
 	{
 		Location* loc = *it;
-		if(!loc || loc->active_quest || loc->type == L_ENCOUNTER)
+		if(!loc || loc->activeQuest || loc->type == L_ENCOUNTER)
 			continue;
 		if(loc->type == L_CAMP)
 		{
@@ -243,7 +243,7 @@ void World::UpdateLocations()
 				}
 			}
 		}
-		else if(loc->last_visit != -1 && worldtime - loc->last_visit >= 30)
+		else if(loc->lastVisit != -1 && worldtime - loc->lastVisit >= 30)
 		{
 			loc->reset = true;
 			if(loc->state == LS_CLEARED)
@@ -251,7 +251,7 @@ void World::UpdateLocations()
 			if(loc->type == L_DUNGEON)
 			{
 				InsideLocation* inside = static_cast<InsideLocation*>(loc);
-				inside->group = g_base_locations[inside->target].GetRandomGroup();
+				inside->group = gBaseLocations[inside->target].GetRandomGroup();
 				if(inside->IsMultilevel())
 					static_cast<MultiInsideLocation*>(inside)->Reset();
 			}
@@ -272,9 +272,9 @@ Location* World::CreateCamp(const Vec2& pos, UnitGroup* group)
 
 	Camp* loc = new Camp;
 	loc->state = LS_UNKNOWN;
-	loc->active_quest = nullptr;
+	loc->activeQuest = nullptr;
 	loc->type = L_CAMP;
-	loc->last_visit = -1;
+	loc->lastVisit = -1;
 	loc->reset = false;
 	loc->group = group;
 	loc->pos = pos;
@@ -345,7 +345,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 	if(type == L_DUNGEON)
 	{
 		assert(target != -1);
-		BaseLocation& base = g_base_locations[target];
+		BaseLocation& base = gBaseLocations[target];
 		if(dungeonLevels == -1)
 			levels = base.levels.Random();
 		else if(dungeonLevels == 0)
@@ -371,7 +371,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 	if(type == L_DUNGEON)
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
-		inside->group = g_base_locations[target].GetRandomGroup();
+		inside->group = gBaseLocations[target].GetRandomGroup();
 		if(target == LABYRINTH)
 		{
 			inside->st = GetTileSt(loc->pos);
@@ -655,7 +655,7 @@ void World::GenerateWorld()
 			{
 				City& city = (City&)loc;
 				city.citizens = 0;
-				city.citizens_world = 0;
+				city.citizensWorld = 0;
 				city.st = 1;
 				city.group = UnitGroup::empty;
 				LocalVector<Building*> buildings;
@@ -748,7 +748,7 @@ void World::GenerateWorld()
 					break;
 				}
 
-				BaseLocation& base = g_base_locations[target];
+				BaseLocation& base = gBaseLocations[target];
 				int levels = base.levels.Random();
 
 				if(levels == 1)
@@ -828,7 +828,7 @@ void World::GenerateWorld()
 			case HUNTERS_CAMP:
 				loc.target = HUNTERS_CAMP;
 				loc.st = 3;
-				loc.active_quest = ACTIVE_QUEST_HOLDER;
+				loc.activeQuest = ACTIVE_QUEST_HOLDER;
 				loc.group = UnitGroup::empty;
 				if(knowsHuntersCamp)
 					loc.state = LS_KNOWN;
@@ -1534,7 +1534,7 @@ void World::Write(BitStreamWriter& f)
 		{
 			City& city = (City&)loc;
 			f.WriteCasted<byte>(city.citizens);
-			f.WriteCasted<word>(city.citizens_world);
+			f.WriteCasted<word>(city.citizensWorld);
 		}
 		f.WriteCasted<byte>(loc.state);
 		f.WriteCasted<byte>(loc.target);
@@ -1651,7 +1651,7 @@ bool World::Read(BitStreamReader& f)
 				City* city = new City;
 				loc = city;
 				city->citizens = citizens;
-				city->citizens_world = world_citizens;
+				city->citizensWorld = world_citizens;
 			}
 			break;
 		case L_OFFSCREEN:
@@ -1798,7 +1798,7 @@ Location* World::GetRandomFreeSettlement(Location* excluded) const
 	do
 	{
 		Location* loc = locations[index];
-		if(loc != excluded && !loc->active_quest)
+		if(loc != excluded && !loc->activeQuest)
 			return loc;
 		index = (index + 1) % settlements;
 	}
@@ -1873,7 +1873,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, 
 		Location* loc = *it;
 		if(!loc || loc->type != type)
 			continue;
-		if(!allow_active && loc->active_quest)
+		if(!allow_active && loc->activeQuest)
 			continue;
 		if(target != ANY_TARGET)
 		{
@@ -1906,7 +1906,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* t
 		Location* loc = *it;
 		if(!loc || loc->type != type)
 			continue;
-		if(!allow_active && loc->active_quest)
+		if(!allow_active && loc->activeQuest)
 			continue;
 		bool ok = false;
 		for(int i = 0; i < targetsCount; ++i)
@@ -2050,7 +2050,7 @@ Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float
 	{
 		if(!*it)
 			continue;
-		if(!(*it)->active_quest && (*it)->type == L_DUNGEON)
+		if(!(*it)->activeQuest && (*it)->type == L_DUNGEON)
 		{
 			InsideLocation* inside = (InsideLocation*)*it;
 			if((*it)->state == LS_CLEARED || inside->group == group || !inside->group)
@@ -2898,8 +2898,8 @@ void World::AbadonLocation(Location* loc)
 	}
 
 	loc->group = UnitGroup::empty;
-	if(loc->last_visit != -1)
-		loc->last_visit = worldtime;
+	if(loc->lastVisit != -1)
+		loc->lastVisit = worldtime;
 }
 
 //=================================================================================================
@@ -2924,7 +2924,7 @@ void World::VerifyObjects()
 			if(l->type == L_CITY)
 			{
 				City* city = static_cast<City*>(outside);
-				for(InsideBuilding* ib : city->inside_buildings)
+				for(InsideBuilding* ib : city->insideBuildings)
 				{
 					e = 0;
 					VerifyObjects(ib->objects, e);

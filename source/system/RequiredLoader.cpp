@@ -80,7 +80,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 				Error("Missing required item list '%s'.", id.c_str());
 				++content.errors;
 			}
-			else if(lis->is_leveled != leveled)
+			else if(lis->isLeveled != leveled)
 			{
 				if(leveled)
 					Error("Required list '%s' must be leveled.", id.c_str());
@@ -293,7 +293,7 @@ void RequiredLoader::CheckStartItems(SkillId skill, bool required)
 {
 	bool have_0 = !required, have_heirloom = false;
 
-	for(StartItem& si : StartItem::start_items)
+	for(StartItem& si : StartItem::startItems)
 	{
 		if(si.skill == skill)
 		{
@@ -343,7 +343,7 @@ void RequiredLoader::CheckBaseItems()
 				++have_wand;
 			else
 			{
-				switch(item->ToWeapon().weapon_type)
+				switch(item->ToWeapon().weaponType)
 				{
 				case WT_SHORT_BLADE:
 					++have_short_blade;
@@ -370,7 +370,7 @@ void RequiredLoader::CheckBaseItems()
 				++have_mage_armor;
 			else
 			{
-				switch(item->ToArmor().armor_type)
+				switch(item->ToArmor().armorType)
 				{
 				case AT_LIGHT:
 					++have_light_armor;

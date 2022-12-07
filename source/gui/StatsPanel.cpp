@@ -204,7 +204,7 @@ void StatsPanel::SetText()
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
 		Perk* perk = pc->perks[i].perk;
-		if(perk->value_type != Perk::None)
+		if(perk->valueType != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();

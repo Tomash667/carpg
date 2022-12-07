@@ -211,9 +211,9 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnOutsideBariers();
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != ACTIVE_QUEST_HOLDER)
+	if(outside->activeQuest && outside->activeQuest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(outside->active_quest);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(outside->activeQuest);
 		Quest_Event* event = quest ? quest->GetEvent(gameLevel->location) : nullptr;
 		if(event)
 		{
@@ -230,9 +230,9 @@ void OutsideLocationGenerator::OnEnter()
 	SpawnTeam();
 
 	// generate guards for bandits quest
-	if(questMgr->questBandits->bandits_state == Quest_Bandits::State::GenerateGuards && gameLevel->location == questMgr->questBandits->targetLoc)
+	if(questMgr->questBandits->banditsState == Quest_Bandits::State::GenerateGuards && gameLevel->location == questMgr->questBandits->targetLoc)
 	{
-		questMgr->questBandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
+		questMgr->questBandits->banditsState = Quest_Bandits::State::GeneratedGuards;
 		UnitData* ud = UnitData::Get("guard_q_bandyci");
 		int count = Random(4, 5);
 		Vec3 pos = teamPos + Vec3(sin(teamDir + PI) * 8, 0, cos(teamDir + PI) * 8);

@@ -50,15 +50,15 @@ void OutsideLocation::Save(GameWriter& f)
 {
 	Location::Save(f);
 
-	if(last_visit != -1)
+	if(lastVisit != -1)
 	{
 		LocationPart::Save(f);
 
 		// terrain
-		f.Write(tiles, sizeof(TerrainTile)*size*size);
+		f.Write(tiles, sizeof(TerrainTile) * size * size);
 		int size2 = size + 1;
 		size2 *= size2;
-		f.Write(h, sizeof(float)*size2);
+		f.Write(h, sizeof(float) * size2);
 	}
 }
 
@@ -67,7 +67,7 @@ void OutsideLocation::Load(GameReader& f)
 {
 	Location::Load(f);
 
-	if(last_visit != -1)
+	if(lastVisit != -1)
 	{
 		if(LOAD_VERSION >= V_0_11)
 			LocationPart::Load(f);
@@ -78,17 +78,17 @@ void OutsideLocation::Load(GameReader& f)
 		int size2 = size + 1;
 		size2 *= size2;
 		h = new float[size2];
-		tiles = new TerrainTile[size*size];
-		f.Read(tiles, sizeof(TerrainTile)*size*size);
-		f.Read(h, sizeof(float)*size2);
+		tiles = new TerrainTile[size * size];
+		f.Read(tiles, sizeof(TerrainTile) * size * size);
+		f.Read(h, sizeof(float) * size2);
 	}
 }
 
 //=================================================================================================
 void OutsideLocation::Write(BitStreamWriter& f)
 {
-	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
-	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
+	f.Write((cstring)tiles, sizeof(TerrainTile) * size * size);
+	f.Write((cstring)h, sizeof(float) * (size + 1) * (size + 1));
 	f << gameLevel->lightAngle;
 
 	LocationPart::Write(f);
@@ -106,8 +106,8 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		tiles = new TerrainTile[size11];
 	if(!h)
 		h = new float[size22];
-	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
-	f.Read((char*)h, sizeof(float)*size22);
+	f.Read((char*)tiles, sizeof(TerrainTile) * size11);
+	f.Read((char*)h, sizeof(float) * size22);
 	f >> gameLevel->lightAngle;
 	if(!f)
 	{

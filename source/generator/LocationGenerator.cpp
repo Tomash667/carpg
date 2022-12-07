@@ -11,7 +11,7 @@
 int LocationGenerator::GetNumberOfSteps()
 {
 	int steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete
-	if(loc->last_visit == -1)
+	if(loc->lastVisit == -1)
 		++steps; // txGeneratingMap
 	return steps;
 }

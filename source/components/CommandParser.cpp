@@ -114,8 +114,8 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect <value_type> power [source [perk/time]])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk] [value_type])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect <valueType> power [source [perk/time]])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk] [valueType])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "display selected unit effects", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add perk to selected unit (add_perk perk)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from selected unit (remove_perk perk)", F_GAME | F_CHEAT));
@@ -530,7 +530,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			Attribute* ai = Attribute::Find(s);
 			if(ai)
 			{
-				value = (int)ai->attrib_id;
+				value = (int)ai->attribId;
 				skill = false;
 			}
 			else
@@ -538,7 +538,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				const Skill* si = Skill::Find(s);
 				if(si)
 				{
-					value = (int)si->skill_id;
+					value = (int)si->skillId;
 					skill = true;
 				}
 				else
@@ -962,7 +962,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			bool inside = true;
-			if((t.Next() && t.IsItem("front")) || !city_building->building->inside_mesh)
+			if((t.Next() && t.IsItem("front")) || !city_building->building->insideMesh)
 				inside = false;
 			else
 				gameLevel->cityCtx->FindInsideBuilding(city_building->building, &index);
@@ -1372,7 +1372,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				Effect e;
 				e.effect = EffectId::Stun;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = -1;
 				e.power = 0;
 				e.time = length;
@@ -1426,24 +1426,24 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			t.Next();
 
 			EffectInfo& info = EffectInfo::effects[(int)e.effect];
-			if(info.value_type == EffectInfo::None)
+			if(info.valueType == EffectInfo::None)
 				e.value = -1;
 			else
 			{
 				const string& value = t.MustGetItem();
-				if(info.value_type == EffectInfo::Attribute)
+				if(info.valueType == EffectInfo::Attribute)
 				{
 					Attribute* attrib = Attribute::Find(value);
 					if(!attrib)
 						t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
-					e.value = (int)attrib->attrib_id;
+					e.value = (int)attrib->attribId;
 				}
 				else
 				{
 					const Skill* skill = Skill::Find(value);
 					if(!skill)
 						t.Throw("Invalid skill '%s' for effect '%s'.", value.c_str(), info.id);
-					e.value = (int)skill->skill_id;
+					e.value = (int)skill->skillId;
 				}
 				t.Next();
 			}
@@ -1455,7 +1455,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				if(source_name == "permanent")
 				{
 					e.source = EffectSource::Permanent;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.time = 0;
 				}
 				else if(source_name == "perk")
@@ -1466,13 +1466,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Perk* perk = Perk::Get(perk_id);
 					if(!perk)
 						t.Throw("Invalid perk source '%s'.", perk_id.c_str());
-					e.source_id = perk->hash;
+					e.sourceId = perk->hash;
 					e.time = 0;
 				}
 				else if(source_name == "temporary")
 				{
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					t.Next();
 					e.time = t.MustGetFloat();
 				}
@@ -1481,8 +1481,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					e.source = EffectSource::Item;
 					t.Next();
 					const string slot_id = t.MustGetItem();
-					e.source_id = ItemSlotInfo::Find(slot_id);
-					if(e.source_id == SLOT_INVALID)
+					e.sourceId = ItemSlotInfo::Find(slot_id);
+					if(e.sourceId == SLOT_INVALID)
 						t.Throw("Invalid item source '%s'.", slot_id.c_str());
 					e.time = 0;
 				}
@@ -1492,7 +1492,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			else
 			{
 				e.source = EffectSource::Permanent;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.time = 0;
 			}
 
@@ -1504,7 +1504,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					<< game->pc->data.selectedUnit->id
 					<< (char)e.effect
 					<< (char)e.source
-					<< e.source_id
+					<< e.sourceId
 					<< (char)e.value
 					<< e.power
 					<< e.time;
@@ -1518,7 +1518,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			EffectSource source = EffectSource::None;
 			EffectId effect = EffectId::None;
-			int source_id = -1;
+			int sourceId = -1;
 			int value = -1;
 
 			const string& str = t.MustGetItem();
@@ -1541,7 +1541,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Perk* perk = Perk::Get(perk_name);
 					if(perk)
 					{
-						source_id = perk->hash;
+						sourceId = perk->hash;
 						t.Next();
 					}
 				}
@@ -1555,7 +1555,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					ITEM_SLOT slot = ItemSlotInfo::Find(slot_id);
 					if(slot != SLOT_INVALID)
 					{
-						source_id = slot;
+						sourceId = slot;
 						t.Next();
 					}
 				}
@@ -1572,10 +1572,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 
 				EffectInfo& info = EffectInfo::effects[(int)effect];
-				if(info.value_type != EffectInfo::None && t.Next())
+				if(info.valueType != EffectInfo::None && t.Next())
 				{
 					const string& value_str = t.MustGetItem();
-					if(info.value_type == EffectInfo::Attribute)
+					if(info.valueType == EffectInfo::Attribute)
 					{
 						Attribute* attrib = Attribute::Find(value_str);
 						if(!attrib)
@@ -1583,7 +1583,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 							Msg("Invalid effect attribute '%s'.", value_str.c_str());
 							break;
 						}
-						value = (int)attrib->attrib_id;
+						value = (int)attrib->attribId;
 					}
 					else
 					{
@@ -1593,20 +1593,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 							Msg("Invalid effect skill '%s'.", value_str.c_str());
 							break;
 						}
-						value = (int)skill->skill_id;
+						value = (int)skill->skillId;
 					}
 				}
 			}
 
 			if(Net::IsLocal())
-				RemoveEffect(game->pc->data.selectedUnit, effect, source, source_id, value);
+				RemoveEffect(game->pc->data.selectedUnit, effect, source, sourceId, value);
 			else
 			{
 				PushGenericCmd(CMD_REMOVE_EFFECT)
 					<< game->pc->data.selectedUnit->id
 					<< (char)effect
 					<< (char)source
-					<< (char)source_id
+					<< (char)sourceId
 					<< (char)value;
 			}
 		}
@@ -1633,7 +1633,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			int value = -1;
-			if(perk->value_type == Perk::Attribute)
+			if(perk->valueType == Perk::Attribute)
 			{
 				if(!t.Next())
 				{
@@ -1647,9 +1647,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
 					break;
 				}
-				value = (int)attrib->attrib_id;
+				value = (int)attrib->attribId;
 			}
-			else if(perk->value_type == Perk::Skill)
+			else if(perk->valueType == Perk::Skill)
 			{
 				if(!t.Next())
 				{
@@ -1663,7 +1663,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
 					break;
 				}
-				value = (int)skill->skill_id;
+				value = (int)skill->skillId;
 			}
 
 			if(Net::IsLocal())
@@ -1693,7 +1693,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			int value = -1;
-			if(perk->value_type == Perk::Attribute)
+			if(perk->valueType == Perk::Attribute)
 			{
 				if(!t.Next())
 				{
@@ -1707,9 +1707,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
 					break;
 				}
-				value = (int)attrib->attrib_id;
+				value = (int)attrib->attribId;
 			}
-			else if(perk->value_type == Perk::Skill)
+			else if(perk->valueType == Perk::Skill)
 			{
 				if(!t.Next())
 				{
@@ -1723,7 +1723,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
 					break;
 				}
-				value = (int)skill->skill_id;
+				value = (int)skill->skillId;
 			}
 
 			if(Net::IsLocal())
@@ -1984,7 +1984,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			f >> id;
 			f.ReadCasted<char>(e.effect);
 			f.ReadCasted<char>(e.source);
-			f >> e.source_id;
+			f >> e.sourceId;
 			f.ReadCasted<char>(e.value);
 			f >> e.power;
 			f >> e.time;
@@ -2007,23 +2007,23 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			if(e.source == EffectSource::Perk)
 			{
-				if(!Perk::Get(e.source_id))
+				if(!Perk::Get(e.sourceId))
 				{
-					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for perk source.", e.source_id);
+					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for perk source.", e.sourceId);
 					return false;
 				}
 			}
 			else if(e.source == EffectSource::Item)
 			{
-				if(e.source_id < 0 || e.source_id >= SLOT_MAX)
+				if(e.sourceId < 0 || e.sourceId >= SLOT_MAX)
 				{
-					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for item source.", e.source_id);
+					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for item source.", e.sourceId);
 					return false;
 				}
 			}
-			else if(e.source_id != -1)
+			else if(e.sourceId != -1)
 			{
-				Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for source %d.", e.source_id, e.source);
+				Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for source %d.", e.sourceId, e.source);
 				return false;
 			}
 			if(e.time > 0 && e.source != EffectSource::Temporary)
@@ -2034,9 +2034,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 
 			EffectInfo& info = EffectInfo::effects[(int)e.effect];
 			bool ok_value;
-			if(info.value_type == EffectInfo::None)
+			if(info.valueType == EffectInfo::None)
 				ok_value = (e.value == -1);
-			else if(info.value_type == EffectInfo::Attribute)
+			else if(info.valueType == EffectInfo::Attribute)
 				ok_value = (e.value >= 0 && e.value < (int)AttributeId::MAX);
 			else
 				ok_value = (e.value >= 0 && e.value < (int)SkillId::MAX);
@@ -2054,13 +2054,13 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			int id;
 			EffectId effect;
 			EffectSource source;
-			int source_id;
+			int sourceId;
 			int value;
 
 			f >> id;
 			f.ReadCasted<char>(effect);
 			f.ReadCasted<char>(source);
-			f >> source_id;
+			f >> sourceId;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = gameLevel->FindUnit(id);
@@ -2081,23 +2081,23 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			if(source == EffectSource::Perk)
 			{
-				if(!Perk::Get(source_id))
+				if(!Perk::Get(sourceId))
 				{
-					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for perk source.", source_id);
+					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for perk source.", sourceId);
 					return false;
 				}
 			}
 			else if(source == EffectSource::Item)
 			{
-				if(source_id < 0 || source_id >= SLOT_MAX)
+				if(sourceId < 0 || sourceId >= SLOT_MAX)
 				{
-					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for item source.", source_id);
+					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for item source.", sourceId);
 					return false;
 				}
 			}
-			else if(source_id != -1)
+			else if(sourceId != -1)
 			{
-				Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for source %d.", source_id, source);
+				Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for source %d.", sourceId, source);
 				return false;
 			}
 
@@ -2105,9 +2105,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			{
 				EffectInfo& info = EffectInfo::effects[(int)effect];
 				bool ok_value;
-				if(info.value_type == EffectInfo::None)
+				if(info.valueType == EffectInfo::None)
 					ok_value = (value == -1);
-				else if(info.value_type == EffectInfo::Attribute)
+				else if(info.valueType == EffectInfo::Attribute)
 					ok_value = (value >= 0 && value < (int)AttributeId::MAX);
 				else
 					ok_value = (value >= 0 && value < (int)SkillId::MAX);
@@ -2118,7 +2118,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				}
 			}
 
-			RemoveEffect(unit, effect, source, source_id, value);
+			RemoveEffect(unit, effect, source, sourceId, value);
 		}
 		break;
 	case CMD_LIST_EFFECTS:
@@ -2160,7 +2160,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				Error("CommandParser CMD_ADD_PERK: Invalid perk %u.", perk_hash);
 				return false;
 			}
-			if(perk->value_type == Perk::None)
+			if(perk->valueType == Perk::None)
 			{
 				if(value != -1)
 				{
@@ -2168,7 +2168,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					return false;
 				}
 			}
-			else if(perk->value_type == Perk::Attribute)
+			else if(perk->valueType == Perk::Attribute)
 			{
 				if(value <= (int)AttributeId::MAX)
 				{
@@ -2176,7 +2176,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					return false;
 				}
 			}
-			else if(perk->value_type == Perk::Skill)
+			else if(perk->valueType == Perk::Skill)
 			{
 				if(value <= (int)SkillId::MAX)
 				{
@@ -2214,7 +2214,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				Error("CommandParser CMD_REMOVE_PERK: Invalid perk %u.", perk_hash);
 				return false;
 			}
-			if(perk->value_type == Perk::None)
+			if(perk->valueType == Perk::None)
 			{
 				if(value != -1)
 				{
@@ -2222,7 +2222,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					return false;
 				}
 			}
-			else if(perk->value_type == Perk::Attribute)
+			else if(perk->valueType == Perk::Attribute)
 			{
 				if(value <= (int)AttributeId::MAX)
 				{
@@ -2230,7 +2230,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					return false;
 				}
 			}
-			else if(perk->value_type == Perk::Skill)
+			else if(perk->valueType == Perk::Skill)
 			{
 				if(value <= (int)SkillId::MAX)
 				{
@@ -2404,7 +2404,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			if(inside)
 			{
-				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->inside_buildings.size())
+				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->insideBuildings.size())
 				{
 					Error("CommandParser CMD_WARP: Invalid inside building index %u.", building_index);
 					break;
@@ -2502,7 +2502,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					Effect e;
 					e.effect = EffectId::Stun;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
 					e.power = 0;
 					e.time = length;
@@ -2638,9 +2638,9 @@ void CommandParser::ListEffects(Unit* u)
 		EffectInfo& info = EffectInfo::effects[(int)e.effect];
 		s += '\n';
 		s += info.id;
-		if(info.value_type == EffectInfo::Attribute)
+		if(info.valueType == EffectInfo::Attribute)
 			s += Format("(%s)", Attribute::attributes[e.value].id);
-		else if(info.value_type == EffectInfo::Skill)
+		else if(info.valueType == EffectInfo::Skill)
 			s += Format("(%s)", Skill::skills[e.value].id);
 		s += Format(", power %g, source ", e.power);
 		switch(e.source)
@@ -2649,17 +2649,17 @@ void CommandParser::ListEffects(Unit* u)
 			s += Format("temporary, time %g", e.time);
 			break;
 		case EffectSource::Perk:
-			s += Format("perk (%s)", Perk::Get(e.source_id)->id.c_str());
+			s += Format("perk (%s)", Perk::Get(e.sourceId)->id.c_str());
 			break;
 		case EffectSource::Permanent:
 			s += "permanent";
 			break;
 		case EffectSource::Item:
 			s += "item (";
-			if(e.source_id < 0 || e.source_id >= SLOT_MAX)
-				s += Format("invalid %d", e.source_id);
+			if(e.sourceId < 0 || e.sourceId >= SLOT_MAX)
+				s += Format("invalid %d", e.sourceId);
 			else
-				s += ItemSlotInfo::slots[e.source_id].id;
+				s += ItemSlotInfo::slots[e.sourceId].id;
 			s += ')';
 			break;
 		}
@@ -2695,9 +2695,9 @@ void CommandParser::ListPerks(PlayerController* pc)
 	for(TakenPerk& tp : pc->perks)
 	{
 		s += Format("\n%s", tp.perk->id.c_str());
-		if(tp.perk->value_type == Perk::Attribute)
+		if(tp.perk->valueType == Perk::Attribute)
 			s += Format(" (%s)", Attribute::attributes[tp.value].id);
-		else if(tp.perk->value_type == Perk::Skill)
+		else if(tp.perk->valueType == Perk::Skill)
 			s += Format(" (%s)", Skill::skills[tp.value].id);
 	}
 	Msg(s.c_str());

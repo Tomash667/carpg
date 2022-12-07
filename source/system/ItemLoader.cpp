@@ -109,7 +109,7 @@ void ItemLoader::DoLoading()
 //=================================================================================================
 void ItemLoader::Cleanup()
 {
-	DeleteElements(BookScheme::book_schemes);
+	DeleteElements(BookScheme::bookSchemes);
 	DeleteElements(ItemList::lists);
 	DeleteElements(Stock::stocks);
 	DeleteElements(Recipe::items);
@@ -138,7 +138,7 @@ void ItemLoader::InitTokenizer()
 		{ "list", IT_LIST },
 		{ "stock", IT_STOCK },
 		{ "book_scheme", IT_BOOK_SCHEME },
-		{ "start_items", IT_START_ITEMS },
+		{ "startItems", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS },
 		{ "recipe", IT_RECIPE }
@@ -268,7 +268,7 @@ void ItemLoader::InitTokenizer()
 		});
 
 	for(Skill& si : Skill::skills)
-		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
+		t.AddKeyword(si.id, (int)si.skillId, G_SKILL);
 
 	for(int i = 0; i < (int)EffectId::Max; ++i)
 		t.AddKeyword(EffectInfo::effects[i].id, i, G_EFFECT);
@@ -447,9 +447,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				t.Throw("Can't have negative value %d.", item->value);
 			break;
 		case P_AI_VALUE:
-			item->ai_value = t.MustGetInt();
+			item->aiValue = t.MustGetInt();
 			if(item->value < 0)
-				t.Throw("Can't have negative ai value %d.", item->ai_value);
+				t.Throw("Can't have negative ai value %d.", item->aiValue);
 			break;
 		case P_MESH:
 			{
@@ -510,10 +510,10 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			switch(item->type)
 			{
 			case IT_WEAPON:
-				item->ToWeapon().weapon_type = (WEAPON_TYPE)t.MustGetKeywordId(G_WEAPON_TYPE);
+				item->ToWeapon().weaponType = (WEAPON_TYPE)t.MustGetKeywordId(G_WEAPON_TYPE);
 				break;
 			case IT_ARMOR:
-				item->ToArmor().armor_type = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
+				item->ToArmor().armorType = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
 				break;
 			case IT_CONSUMABLE:
 				item->ToConsumable().subtype = (Consumable::Subtype)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
@@ -527,7 +527,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			}
 			break;
 		case P_UNIT_TYPE:
-			item->ToArmor().armor_unit_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
+			item->ToArmor().armorUnitType = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
 			break;
 		case P_MATERIAL:
 			{
@@ -547,7 +547,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			}
 			break;
 		case P_DMG_TYPE:
-			t.ParseFlags(G_DMG_TYPE, item->ToWeapon().dmg_type);
+			t.ParseFlags(G_DMG_TYPE, item->ToWeapon().dmgType);
 			break;
 		case P_FLAGS:
 			{
@@ -582,7 +582,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TEX_OVERRIDE:
 			{
-				vector<TexOverride>& tex_o = item->ToArmor().tex_override;
+				vector<TexOverride>& tex_o = item->ToArmor().texOverride;
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
@@ -658,25 +658,25 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			t.Next();
 			while(!t.IsSymbol('}'))
 			{
-				bool on_attack = false;
+				bool onAttack = false;
 				if(t.IsItem("on_attack"))
 				{
-					on_attack = true;
+					onAttack = true;
 					t.Next();
 				}
 				EffectId effect = (EffectId)t.MustGetKeywordId(G_EFFECT);
 				t.Next();
 				int effect_value;
 				EffectInfo& info = EffectInfo::effects[(int)effect];
-				if(info.value_type != EffectInfo::None)
+				if(info.valueType != EffectInfo::None)
 				{
-					if(info.value_type == EffectInfo::Attribute)
+					if(info.valueType == EffectInfo::Attribute)
 					{
 						const string& value = t.MustGetItemKeyword();
 						Attribute* attrib = Attribute::Find(value);
 						if(!attrib)
 							t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
-						effect_value = (int)attrib->attrib_id;
+						effect_value = (int)attrib->attribId;
 					}
 					else
 						effect_value = t.MustGetKeywordId(G_SKILL);
@@ -686,7 +686,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 					effect_value = -1;
 				float power = t.MustGetFloat();
 				t.Next();
-				item->effects.push_back({ effect, power, effect_value, on_attack });
+				item->effects.push_back({ effect, power, effect_value, onAttack });
 			}
 			break;
 		case P_TAG:
@@ -804,17 +804,17 @@ void ItemLoader::ParseItemList(const string& id)
 	// id
 	lis->id = id;
 	lis->total = 0;
-	lis->is_leveled = false;
-	lis->is_priority = false;
+	lis->isLeveled = false;
+	lis->isPriority = false;
 	t.Next();
 
 	// [leveled|priority]
 	if(t.IsKeywordGroup(G_LIST_TYPE))
 	{
 		if(t.IsKeyword(LT_LEVELED, G_LIST_TYPE))
-			lis->is_leveled = true;
+			lis->isLeveled = true;
 		else
-			lis->is_priority = true;
+			lis->isPriority = true;
 		t.Next();
 	}
 
@@ -826,7 +826,7 @@ void ItemLoader::ParseItemList(const string& id)
 	{
 		ItemList::Entry entry;
 
-		if(lis->is_priority && t.IsInt())
+		if(lis->isPriority && t.IsInt())
 		{
 			entry.chance = t.GetInt();
 			if(entry.chance < 0)
@@ -843,7 +843,7 @@ void ItemLoader::ParseItemList(const string& id)
 			t.Throw("Missing item %s.", item_id.c_str());
 		t.Next();
 
-		if(lis->is_leveled)
+		if(lis->isLeveled)
 		{
 			entry.level = t.MustGetInt();
 			if(entry.level < 0)
@@ -856,8 +856,8 @@ void ItemLoader::ParseItemList(const string& id)
 		lis->items.push_back(entry);
 	}
 
-	if(lis->is_priority && lis->total == (int)lis->items.size())
-		lis->is_priority = false;
+	if(lis->isPriority && lis->total == (int)lis->items.size())
+		lis->isPriority = false;
 
 	ItemList::lists.push_back(lis.Pin());
 }
@@ -1151,13 +1151,13 @@ void ItemLoader::ParseBookScheme(const string& id)
 	if(!scheme->tex)
 		t.Throw("No texture.");
 
-	BookScheme::book_schemes.push_back(scheme.Pin());
+	BookScheme::bookSchemes.push_back(scheme.Pin());
 }
 
 //=================================================================================================
 void ItemLoader::ParseStartItems()
 {
-	if(!StartItem::start_items.empty())
+	if(!StartItem::startItems.empty())
 		t.Throw("Start items already declared.");
 
 	// {
@@ -1199,20 +1199,20 @@ void ItemLoader::ParseStartItems()
 				t.Throw("Missing item '%s'.", str.c_str());
 			t.Next();
 
-			StartItem::start_items.push_back(StartItem(skill, item, num, mage));
+			StartItem::startItems.push_back(StartItem(skill, item, num, mage));
 		}
 
 		t.Next();
 	}
 
-	std::sort(StartItem::start_items.begin(), StartItem::start_items.end(),
+	std::sort(StartItem::startItems.begin(), StartItem::startItems.end(),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 }
 
 //=================================================================================================
 void ItemLoader::ParseBetterItems()
 {
-	if(!better_items.empty())
+	if(!betterItems.empty())
 		t.Throw("Better items already declared.");
 
 	// {
@@ -1232,7 +1232,7 @@ void ItemLoader::ParseBetterItems()
 		if(!item2)
 			t.Throw("Missing item '%s'.", str2.c_str());
 
-		better_items[item] = item2;
+		betterItems[item] = item2;
 		t.Next();
 	}
 }
@@ -1345,7 +1345,7 @@ void ItemLoader::ParseAlias(const string& id)
 	if(item2)
 		t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 
-	item_aliases[alias] = item;
+	itemAliases[alias] = item;
 }
 
 //=================================================================================================
@@ -1359,7 +1359,7 @@ void ItemLoader::CalculateCrc()
 
 		crc.Update(item->id);
 		crc.Update(item->value);
-		crc.Update(item->ai_value);
+		crc.Update(item->aiValue);
 		if(item->mesh)
 			crc.Update(item->mesh->filename);
 		else if(item->tex)
@@ -1373,7 +1373,7 @@ void ItemLoader::CalculateCrc()
 			crc.Update(effect.effect);
 			crc.Update(effect.power);
 			crc.Update(effect.value);
-			crc.Update(effect.on_attack);
+			crc.Update(effect.onAttack);
 		}
 
 		switch(item->type)
@@ -1382,9 +1382,9 @@ void ItemLoader::CalculateCrc()
 			{
 				Weapon& w = item->ToWeapon();
 				crc.Update(w.dmg);
-				crc.Update(w.dmg_type);
+				crc.Update(w.dmgType);
 				crc.Update(w.reqStr);
-				crc.Update(w.weapon_type);
+				crc.Update(w.weaponType);
 				crc.Update(w.material);
 			}
 			break;
@@ -1412,10 +1412,10 @@ void ItemLoader::CalculateCrc()
 				crc.Update(a.reqStr);
 				crc.Update(a.mobility);
 				crc.Update(a.material);
-				crc.Update(a.armor_type);
-				crc.Update(a.armor_unit_type);
-				crc.Update(a.tex_override.size());
-				for(TexOverride& tex_o : a.tex_override)
+				crc.Update(a.armorType);
+				crc.Update(a.armorUnitType);
+				crc.Update(a.texOverride.size());
+				for(TexOverride& tex_o : a.texOverride)
 					crc.Update(tex_o.diffuse ? tex_o.diffuse->filename : "");
 			}
 			break;
@@ -1473,7 +1473,7 @@ void ItemLoader::CalculateCrc()
 		}
 	}
 
-	for(BookScheme* scheme : BookScheme::book_schemes)
+	for(BookScheme* scheme : BookScheme::bookSchemes)
 	{
 		crc.Update(scheme->id);
 		crc.Update(scheme->tex->filename);

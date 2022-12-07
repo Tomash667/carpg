@@ -76,7 +76,7 @@ void Explo::Load(GameReader& f)
 		const string& tex = f.ReadString1();
 		for(Ability* ability : Ability::abilities)
 		{
-			if(ability->tex_explode.diffuse && ability->tex_explode.diffuse->filename == tex)
+			if(ability->texExplode.diffuse && ability->texExplode.diffuse->filename == tex)
 			{
 				this->ability = ability;
 				break;

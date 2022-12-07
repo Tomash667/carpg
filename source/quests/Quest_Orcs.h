@@ -114,17 +114,17 @@ public:
 	int GetLocationEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	OrcClass GetOrcClass() const { return orc_class; }
+	OrcClass GetOrcClass() const { return orcClass; }
 	void OnProgress(int days);
 
-	State orcs_state;
+	State orcsState;
 	Talked talked;
 	int days;
 	Unit* guard, *orc;
 
 private:
-	void ChangeClass(OrcClass new_orc_class);
+	void ChangeClass(OrcClass newOrcClass);
 
 	int near_loc;
-	OrcClass orc_class;
+	OrcClass orcClass;
 };

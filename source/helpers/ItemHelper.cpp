@@ -280,8 +280,8 @@ const Item* ItemHelper::GetBetterItem(const Item* item)
 {
 	assert(item);
 
-	auto it = better_items.find(item);
-	if(it != better_items.end())
+	auto it = betterItems.find(item);
+	if(it != betterItems.end())
 		return it->second;
 
 	return nullptr;

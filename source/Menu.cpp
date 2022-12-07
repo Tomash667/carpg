@@ -125,7 +125,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 {
 	ClearGameVars(true);
 	gameLevel->ready = false;
-	questMgr->questTutorial->in_tutorial = tutorial;
+	questMgr->questTutorial->inTutorial = tutorial;
 	gameGui->mainMenu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
 	hardcoreMode = hardcoreOption;
@@ -152,10 +152,10 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	pc->dialogCtx->pc = pc;
 	pc->dialogCtx->isLocal = true;
 
-	if(questMgr->questTutorial->finished_tutorial)
+	if(questMgr->questTutorial->finishedTutorial)
 	{
 		u->AddItem(Item::Get("book_adventurer"), 1u, false);
-		questMgr->questTutorial->finished_tutorial = false;
+		questMgr->questTutorial->finishedTutorial = false;
 	}
 
 	gameLevel->camera.target = u;
@@ -1613,8 +1613,8 @@ void Game::UpdateServerTransfer(float dt)
 					if(center_unit->locPart->partType == LocationPart::Type::Building)
 					{
 						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->locPart);
-						Vec2 p = inside->enter_region.Midpoint();
-						pos = Vec3(p.x, inside->enter_y, p.y);
+						Vec2 p = inside->enterRegion.Midpoint();
+						pos = Vec3(p.x, inside->enterY, p.y);
 					}
 					else
 						pos = center_unit->pos;

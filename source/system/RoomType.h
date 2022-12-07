@@ -26,7 +26,7 @@ struct RoomType
 		Vec3 pos;
 		float rot;
 		int flags;
-		bool is_group, force_pos, force_rot;
+		bool isGroup, forcePos, forceRot;
 	};
 
 	string id;

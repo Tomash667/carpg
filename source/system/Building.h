@@ -28,11 +28,11 @@ struct Building
 	vector<TileScheme> scheme;
 	int flags;
 	BuildingGroup* group;
-	Mesh* mesh, *inside_mesh;
+	Mesh* mesh, *insideMesh;
 	UnitData* unit;
 	ResourceState state;
 
-	Building() : size(0, 0), shift{Int2::Zero, Int2::Zero, Int2::Zero, Int2::Zero}, flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr),
+	Building() : size(0, 0), shift{Int2::Zero, Int2::Zero, Int2::Zero, Int2::Zero}, flags(0), mesh(nullptr), insideMesh(nullptr), group(nullptr),
 		unit(nullptr), state(ResourceState::NotLoaded) {}
 
 	static vector<Building*> buildings;
@@ -50,7 +50,7 @@ struct Building
 struct ToBuild
 {
 	Building* building;
-	Int2 pt, unit_pt;
+	Int2 pt, unitPt;
 	GameDirection dir;
 	bool required;
 

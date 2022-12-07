@@ -261,20 +261,20 @@ void GameResources::PreloadBuildings()
 			if(!b->mesh->FindPoint("o_s_point"))
 				Warn("Missing building '%s' point.", b->id.c_str());
 		}
-		if(b->inside_mesh)
-			resMgr->LoadMeshMetadata(b->inside_mesh);
+		if(b->insideMesh)
+			resMgr->LoadMeshMetadata(b->insideMesh);
 	}
 }
 
 //=================================================================================================
 void GameResources::PreloadTraps()
 {
-	for(uint i = 0; i < BaseTrap::n_traps; ++i)
+	for(uint i = 0; i < BaseTrap::nTraps; ++i)
 	{
 		BaseTrap& t = BaseTrap::traps[i];
-		if(t.mesh_id)
+		if(t.meshId)
 		{
-			t.mesh = resMgr->Get<Mesh>(t.mesh_id);
+			t.mesh = resMgr->Get<Mesh>(t.meshId);
 			resMgr->LoadMeshMetadata(t.mesh);
 
 			Mesh::Point* pt = t.mesh->FindPoint("hitbox");
@@ -287,12 +287,12 @@ void GameResources::PreloadTraps()
 			else
 				t.h = t.rw = pt->size.x;
 		}
-		if(t.sound_id)
-			t.sound = resMgr->Get<Sound>(t.sound_id);
-		if(t.sound_id2)
-			t.sound2 = resMgr->Get<Sound>(t.sound_id2);
-		if(t.sound_id3)
-			t.sound3 = resMgr->Get<Sound>(t.sound_id3);
+		if(t.soundId)
+			t.sound = resMgr->Get<Sound>(t.soundId);
+		if(t.soundId2)
+			t.sound2 = resMgr->Get<Sound>(t.soundId2);
+		if(t.soundId3)
+			t.sound3 = resMgr->Get<Sound>(t.soundId3);
 	}
 }
 
@@ -303,18 +303,18 @@ void GameResources::PreloadAbilities()
 	{
 		Ability& ability = *ptr_ability;
 
-		if(ability.sound_cast)
-			resMgr->Load(ability.sound_cast);
-		if(ability.sound_hit)
-			resMgr->Load(ability.sound_hit);
+		if(ability.soundCast)
+			resMgr->Load(ability.soundCast);
+		if(ability.soundHit)
+			resMgr->Load(ability.soundHit);
 		if(ability.tex)
 			resMgr->Load(ability.tex);
-		if(ability.tex_particle)
-			resMgr->Load(ability.tex_particle);
-		if(ability.tex_explode.diffuse)
-			resMgr->Load(ability.tex_explode.diffuse);
-		if(ability.tex_icon)
-			resMgr->Load(ability.tex_icon);
+		if(ability.texParticle)
+			resMgr->Load(ability.texParticle);
+		if(ability.texExplode.diffuse)
+			resMgr->Load(ability.texExplode.diffuse);
+		if(ability.texIcon)
+			resMgr->Load(ability.texIcon);
 		if(ability.mesh)
 			resMgr->Load(ability.mesh);
 
@@ -396,10 +396,10 @@ void GameResources::PreloadObjects()
 					}
 
 					assert(points.size() > 1u);
-					obj.next_obj = new BaseObject[points.size() + 1];
+					obj.nextObj = new BaseObject[points.size() + 1];
 					for(uint i = 0, size = points.size(); i < size; ++i)
 					{
-						BaseObject& o2 = obj.next_obj[i];
+						BaseObject& o2 = obj.nextObj[i];
 						o2.shape = new btBoxShape(ToVector3(points[i]->size));
 						if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
 							o2.flags = OBJ_PHY_BLOCKS_CAM;
@@ -407,7 +407,7 @@ void GameResources::PreloadObjects()
 						o2.size = points[i]->size.XZ();
 						o2.type = obj.type;
 					}
-					obj.next_obj[points.size()].shape = nullptr;
+					obj.nextObj[points.size()].shape = nullptr;
 				}
 				else if(IsSet(obj.flags, OBJ_DOUBLE_PHYSICS))
 				{
@@ -415,19 +415,19 @@ void GameResources::PreloadObjects()
 					if(point2 && point2->IsBox())
 					{
 						assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-						obj.next_obj = new BaseObject;
+						obj.nextObj = new BaseObject;
 						if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 						{
 							btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
-							obj.next_obj->shape = shape;
+							obj.nextObj->shape = shape;
 							if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
-								obj.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
+								obj.nextObj->flags = OBJ_PHY_BLOCKS_CAM;
 						}
 						else
-							obj.next_obj->shape = nullptr;
-						obj.next_obj->matrix = &point2->mat;
-						obj.next_obj->size = point2->size.XZ();
-						obj.next_obj->type = obj.type;
+							obj.nextObj->shape = nullptr;
+						obj.nextObj->matrix = &point2->mat;
+						obj.nextObj->size = point2->size.XZ();
+						obj.nextObj->type = obj.type;
 					}
 				}
 			}
@@ -449,9 +449,9 @@ void GameResources::PreloadItem(const Item* p_item)
 			if(item.type == IT_ARMOR)
 			{
 				Armor& armor = item.ToArmor();
-				if(!armor.tex_override.empty())
+				if(!armor.texOverride.empty())
 				{
-					for(TexOverride& tex_o : armor.tex_override)
+					for(TexOverride& tex_o : armor.texOverride)
 					{
 						if(tex_o.diffuse)
 							resMgr->Load(tex_o.diffuse);
@@ -479,9 +479,9 @@ void GameResources::PreloadItem(const Item* p_item)
 		if(item.type == IT_ARMOR)
 		{
 			Armor& armor = item.ToArmor();
-			if(!armor.tex_override.empty())
+			if(!armor.texOverride.empty())
 			{
-				for(TexOverride& tex_o : armor.tex_override)
+				for(TexOverride& tex_o : armor.texOverride)
 				{
 					if(tex_o.diffuse)
 						resMgr->Load(tex_o.diffuse);
@@ -534,7 +534,7 @@ void GameResources::GenerateItemIcon(Item& item)
 	// try to find icon using same mesh
 	bool use_tex_override = false;
 	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().tex_override.empty();
+		use_tex_override = !item.ToArmor().texOverride.empty();
 	ItemTextureMap::iterator it;
 	if(!use_tex_override)
 	{
@@ -574,10 +574,10 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	node->texOverride = nullptr;
 	if(item.type == IT_ARMOR)
 	{
-		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
+		if(const Armor& armor = item.ToArmor(); !armor.texOverride.empty())
 		{
 			node->texOverride = armor.GetTextureOverride();
-			assert(armor.tex_override.size() == mesh.head.n_subs);
+			assert(armor.texOverride.size() == mesh.head.n_subs);
 		}
 	}
 
@@ -643,7 +643,7 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_SHIELD:
 		return sItem[5];
 	case IT_ARMOR:
-		if(item->ToArmor().armor_type != AT_LIGHT)
+		if(item->ToArmor().armorType != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];

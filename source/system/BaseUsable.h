@@ -17,7 +17,7 @@ struct BaseUsable : public BaseObject
 	};
 
 	string anim, name;
-	float sound_timer;
+	float soundTimer;
 	const Item* item;
 	SoundPtr sound;
 	/* For container:
@@ -31,18 +31,18 @@ struct BaseUsable : public BaseObject
 	3 - can be used from one of two sides (front/back)
 	4 - use object rotation, can be used from 90* angle
 	*/
-	int limit_rot;
-	int use_flags;
+	int limitRot;
+	int useFlags;
 	ResourceState state;
 
-	BaseUsable() : sound_timer(0), item(nullptr), sound(nullptr), limit_rot(0), use_flags(0), state(ResourceState::NotLoaded)
+	BaseUsable() : soundTimer(0), item(nullptr), sound(nullptr), limitRot(0), useFlags(0), state(ResourceState::NotLoaded)
 	{
 	}
 
 	BaseUsable& operator = (BaseObject& o);
 	BaseUsable& operator = (BaseUsable& u);
 
-	bool IsContainer() const { return IsSet(use_flags, CONTAINER); }
+	bool IsContainer() const { return IsSet(useFlags, CONTAINER); }
 
 	static vector<BaseUsable*> usables;
 	static BaseUsable* TryGet(int hash)

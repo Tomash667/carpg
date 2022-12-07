@@ -30,7 +30,7 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 {
 	assert(group != G_PLAYER);
 	typedef std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
-	pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
+	pair<M::iterator, bool> const& result = UnitStats::sharedStats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
 	if(result.second)
 	{
 		UnitStats*& stats = result.first->second;
@@ -43,12 +43,12 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 			if(!stat_profile->subprofiles.empty())
 			{
 				stats->priorities = stat_profile->subprofiles[sub.index]->priorities;
-				stats->tag_priorities = stat_profile->subprofiles[sub.index]->tag_priorities;
+				stats->tagPriorities = stat_profile->subprofiles[sub.index]->tag_priorities;
 			}
 			else
 			{
 				stats->priorities = StatProfile::Subprofile::default_priorities;
-				stats->tag_priorities = StatProfile::Subprofile::default_tag_priorities;
+				stats->tagPriorities = StatProfile::Subprofile::default_tag_priorities;
 			}
 		}
 		else

@@ -103,8 +103,8 @@ struct Location
 	int target;
 	Vec2 pos;
 	string name;
-	Quest* active_quest;
-	int last_visit; // worldtime from last time when team entered location or -1
+	Quest* activeQuest;
+	int lastVisit; // worldtime from last time when team entered location or -1
 	int st;
 	uint seed;
 	UnitGroup* group; // cannot be null (use UnitGroup::empty)
@@ -113,11 +113,11 @@ struct Location
 	vector<Event> events;
 	bool reset; // force reset location when entering
 	bool outside; // czy poziom jest otwarty
-	bool dont_clean;
-	bool loaded_resources;
+	bool dontClean;
+	bool loadedResources;
 
-	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), group(nullptr),
-		portal(nullptr), dont_clean(false), loaded_resources(false), target(0)
+	Location(bool outside) : activeQuest(nullptr), lastVisit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), group(nullptr),
+		portal(nullptr), dontClean(false), loadedResources(false), target(0)
 	{
 	}
 
@@ -129,15 +129,15 @@ struct Location
 	virtual void Load(GameReader& f);
 	virtual void Write(BitStreamWriter& f) = 0;
 	virtual bool Read(BitStreamReader& f) = 0;
-	virtual bool CheckUpdate(int& days_passed, int worldtime);
+	virtual bool CheckUpdate(int& daysPassed, int worldtime);
 	virtual int GetRandomLevel() const { return -1; }
 	virtual int GetLastLevel() const { return 0; }
-	virtual bool RequireLoadingResources(bool* to_set);
+	virtual bool RequireLoadingResources(bool* toSet);
 
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStreamWriter& f) const;
-	bool ReadPortals(BitStreamReader& f, int at_level);
+	bool ReadPortals(BitStreamReader& f, int atLevel);
 	LOCATION_IMAGE GetImage() const { return image; }
 	const string& GetName() const { return name; }
 	void SetVisited()
@@ -153,7 +153,7 @@ struct Location
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
 	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
-	bool IsVisited() const { return last_visit != -1; }
+	bool IsVisited() const { return lastVisit != -1; }
 };
 
 //-----------------------------------------------------------------------------

@@ -730,7 +730,7 @@ void LocationPart::RemoveGroundItem(int questId)
 
 	for(GroundItem* groundItem : groundItems)
 	{
-		if(groundItem->item->quest_id == questId)
+		if(groundItem->item->questId == questId)
 		{
 			RemoveGroundItem(groundItem);
 			break;
@@ -764,13 +764,13 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 }
 
 //=================================================================================================
-Object* LocationPart::FindObject(BaseObject* base_obj)
+Object* LocationPart::FindObject(BaseObject* baseObj)
 {
-	assert(base_obj);
+	assert(baseObj);
 
 	for(Object* obj : objects)
 	{
-		if(obj->base == base_obj)
+		if(obj->base == baseObj)
 			return obj;
 	}
 
@@ -778,14 +778,14 @@ Object* LocationPart::FindObject(BaseObject* base_obj)
 }
 
 //=================================================================================================
-Object* LocationPart::FindNearestObject(BaseObject* base_obj, const Vec3& pos)
+Object* LocationPart::FindNearestObject(BaseObject* baseObj, const Vec3& pos)
 {
 	Object* found_obj = nullptr;
 	float best_dist = 9999.f;
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
-		if(obj.base == base_obj)
+		if(obj.base == baseObj)
 		{
 			float dist = Vec3::Distance(pos, obj.pos);
 			if(dist < best_dist)
@@ -895,11 +895,11 @@ Chest* LocationPart::FindChestWithItem(const Item* item, int* index)
 }
 
 //=================================================================================================
-Chest* LocationPart::FindChestWithQuestItem(int quest_id, int* index)
+Chest* LocationPart::FindChestWithQuestItem(int questId, int* index)
 {
 	for(Chest* chest : chests)
 	{
-		int idx = chest->FindQuestItem(quest_id);
+		int idx = chest->FindQuestItem(questId);
 		if(idx != -1)
 		{
 			if(index)
@@ -961,9 +961,9 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	Ability& ability = *bullet.ability;
 
 	// sound
-	if(ability.sound_hit)
+	if(ability.soundHit)
 	{
-		soundMgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+		soundMgr->PlaySound3d(ability.soundHit, pos, ability.soundHitDist);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -982,7 +982,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 			Explo* explo = CreateExplo(&ability, pos);
 			explo->dmg = (float)ability.dmg;
 			if(bullet.owner)
-				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
+				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmgBonus);
 			explo->owner = bullet.owner;
 			if(hitted)
 				explo->hitted.push_back(hitted);
@@ -991,10 +991,10 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	else
 	{
 		// particles
-		if(ability.tex_particle && ability.type == Ability::Ball)
+		if(ability.texParticle && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = ability.tex_particle;
+			pe->tex = ability.texParticle;
 			pe->emissionInterval = 0.01f;
 			pe->life = 0.f;
 			pe->particleLife = 0.5f;
@@ -1140,7 +1140,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
-					if(questMgr->questTutorial->in_tutorial)
+					if(questMgr->questTutorial->inTutorial)
 						questMgr->questTutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
@@ -1162,7 +1162,7 @@ Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 	explo->ability = ability;
 	explo->pos = pos;
 	explo->size = 0;
-	explo->sizemax = ability->explode_range;
+	explo->sizemax = ability->explodeRange;
 	lvlPart->explos.push_back(explo);
 
 	if(Net::IsServer())

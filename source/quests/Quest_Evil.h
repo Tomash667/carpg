@@ -23,7 +23,7 @@ public:
 			PortalClosed
 		};
 
-		int near_loc;
+		int nearLoc;
 		Vec3 pos;
 		State state;
 	};
@@ -70,7 +70,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfQuestEvent() const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override;
 	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
@@ -78,9 +78,9 @@ public:
 	void Update(float dt);
 
 	Loc loc[3];
-	int closed, mage_loc;
-	bool changed, told_about_boss;
-	State evil_state;
+	int closed, mageLoc;
+	bool changed, toldAboutBoss;
+	State evilState;
 	Vec3 pos;
 	float timer;
 	Unit* cleric;

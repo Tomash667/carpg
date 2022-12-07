@@ -1516,7 +1516,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					if(gameLevel->cityCtx && building_index < gameLevel->cityCtx->inside_buildings.size())
+					if(gameLevel->cityCtx && building_index < gameLevel->cityCtx->insideBuildings.size())
 					{
 						WarpData& warp = Add1(warps);
 						warp.u = &unit;
@@ -1621,14 +1621,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						BaseUsable& base = *usable->base;
-						if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
+						if(!IsSet(base.useFlags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_USE_USABLE;
 							unit.animation = ANI_PLAY;
 							unit.meshInst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.targetPos = unit.pos;
 							unit.targetPos2 = usable->pos;
-							if(usable->base->limit_rot == 4)
+							if(usable->base->limitRot == 4)
 								unit.targetPos2 -= Vec3(sin(usable->rot) * 1.5f, 0, cos(usable->rot) * 1.5f);
 							unit.timer = 0.f;
 							unit.animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
@@ -1660,7 +1660,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(state == USE_USABLE_STOP)
 						{
 							BaseUsable& base = *usable->base;
-							if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
+							if(!IsSet(base.useFlags, BaseUsable::CONTAINER))
 							{
 								unit.action = A_USE_USABLE;
 								unit.animation = ANI_STAND;
@@ -2860,7 +2860,7 @@ bool Net::CheckMove(Unit& unit, const Vec3& pos)
 
 	const float radius = unit.GetUnitRadius();
 	Level::IgnoreObjects ignore{};
-	const Unit* ignoredUnits[2] { &unit };
+	const Unit* ignoredUnits[2]{ &unit };
 	const void* ignoredObjects[2]{};
 	if(unit.usable)
 		ignoredObjects[0] = unit.usable;
@@ -3091,7 +3091,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				f << c.item2->id;
 				f << c.item2->name;
 				f << c.item2->desc;
-				f << c.item2->quest_id;
+				f << c.item2->questId;
 			}
 			break;
 		case NetChange::ADD_QUEST:
@@ -3116,7 +3116,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::RENAME_ITEM:
 			{
 				const Item* item = c.baseItem;
-				f << item->quest_id;
+				f << item->questId;
 				f << item->id;
 				f << item->name;
 			}
@@ -3436,7 +3436,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << c.count;
 				f << c.item->id;
 				if(c.item->id[0] == '$')
-					f << c.item->quest_id;
+					f << c.item->questId;
 			}
 			break;
 		case NetChangePlayer::TRAIN:
@@ -3793,7 +3793,7 @@ void Net::WriteLevelData(BitStreamWriter& f, bool loaded_resources)
 	{
 		f << item->id;
 		if(item->IsQuest())
-			f << item->quest_id;
+			f << item->questId;
 	}
 
 	f.WriteCasted<byte>(0xFF);

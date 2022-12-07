@@ -668,11 +668,11 @@ void WorldMapGui::AppendLocationText(Location& loc, string& s)
 		{
 			InsideLocation* inside = (InsideLocation*)&loc;
 			s += Format("%s, %s, st %d, levels %d, ",
-				g_base_locations[inside->target].name, loc.group->id.c_str(), loc.st, inside->GetLastLevel() + 1);
+				gBaseLocations[inside->target].name, loc.group->id.c_str(), loc.st, inside->GetLastLevel() + 1);
 		}
 		else if(loc.type == L_OUTSIDE || loc.type == L_CAMP || loc.type == L_CAVE)
 			s += Format("%s, st %d, ", loc.group->id.c_str(), loc.st);
-		s += Format("quest 0x%p)", loc.active_quest);
+		s += Format("quest 0x%p)", loc.activeQuest);
 	}
 	if(loc.state >= LS_VISITED && loc.type == L_CITY)
 		GetCityText((City&)loc, s);
@@ -682,7 +682,7 @@ void WorldMapGui::AppendLocationText(Location& loc, string& s)
 void WorldMapGui::GetCityText(City& city, string& s)
 {
 	// Citizens: X
-	s += Format("\n%s: %d", txCitizens, city.citizens_world);
+	s += Format("\n%s: %d", txCitizens, city.citizensWorld);
 
 	// Buildings
 	LocalVector3<pair<string*, uint>> items;

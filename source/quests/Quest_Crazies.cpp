@@ -27,9 +27,9 @@ void Quest_Crazies::Start()
 {
 	category = QuestCategory::Unique;
 	type = Q_CRAZIES;
-	crazies_state = State::None;
+	craziesState = State::None;
 	days = 0;
-	check_stone = false;
+	checkStone = false;
 	stone = Item::Get("q_szaleni_kamien");
 }
 
@@ -57,12 +57,12 @@ void Quest_Crazies::SetProgress(int prog2)
 			startLoc = world->GetCurrentLocation();
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), LABYRINTH);
 			loc.group = UnitGroup::Get("unk");
-			loc.active_quest = this;
+			loc.activeQuest = this;
 			loc.SetKnown();
 			loc.st = 13;
 			targetLoc = &loc;
 
-			crazies_state = State::TalkedTrainer;
+			craziesState = State::TalkedTrainer;
 
 			OnUpdate(Format(questMgr->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
@@ -70,9 +70,9 @@ void Quest_Crazies::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 
-			crazies_state = State::End;
+			craziesState = State::End;
 			world->RemoveGlobalEncounter(this);
 			team->AddExp(12000);
 
@@ -107,9 +107,9 @@ void Quest_Crazies::Save(GameWriter& f)
 {
 	Quest_Dungeon::Save(f);
 
-	f << crazies_state;
+	f << craziesState;
 	f << days;
-	f << check_stone;
+	f << checkStone;
 }
 
 //=================================================================================================
@@ -119,11 +119,11 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 
 	stone = Item::Get("q_szaleni_kamien");
 
-	f >> crazies_state;
+	f >> craziesState;
 	f >> days;
-	f >> check_stone;
+	f >> checkStone;
 
-	if(crazies_state == State::TalkedWithCrazy)
+	if(craziesState == State::TalkedWithCrazy)
 	{
 		GlobalEncounter* globalEnc = new GlobalEncounter;
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
@@ -132,7 +132,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 		globalEnc->text = questMgr->txQuest[251];
 		world->AddGlobalEncounter(globalEnc);
 	}
-	else if(crazies_state == State::PickedStone && crazies_state < State::End && days <= 0)
+	else if(craziesState == State::PickedStone && craziesState < State::End && days <= 0)
 	{
 		GlobalEncounter* globalEnc = new GlobalEncounter;
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
@@ -151,7 +151,7 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 	if(strcmp(msg, "crazies_talked") == 0)
 	{
 		ctx.talker->ai->morale = -100.f;
-		crazies_state = State::TalkedWithCrazy;
+		craziesState = State::TalkedWithCrazy;
 
 		GlobalEncounter* globalEnc = new GlobalEncounter;
 		globalEnc->callback = GlobalEncounter::Callback(this, &Quest_Crazies::OnEncounter);
@@ -174,9 +174,9 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 bool Quest_Crazies::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "crazies_not_asked") == 0)
-		return crazies_state == State::None;
+		return craziesState == State::None;
 	else if(strcmp(msg, "crazies_need_talk") == 0)
-		return crazies_state == State::FirstAttack;
+		return craziesState == State::FirstAttack;
 	assert(0);
 	return false;
 }
@@ -184,7 +184,7 @@ bool Quest_Crazies::SpecialIf(DialogContext& ctx, cstring msg)
 //=================================================================================================
 void Quest_Crazies::CheckStone()
 {
-	check_stone = false;
+	checkStone = false;
 
 	if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
@@ -213,9 +213,9 @@ void Quest_Crazies::CheckStone()
 		gameGui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
 	}
 
-	if(crazies_state == State::TalkedWithCrazy)
+	if(craziesState == State::TalkedWithCrazy)
 	{
-		crazies_state = State::PickedStone;
+		craziesState = State::PickedStone;
 		days = 13;
 		world->RemoveGlobalEncounter(this);
 	}
@@ -224,7 +224,7 @@ void Quest_Crazies::CheckStone()
 //=================================================================================================
 void Quest_Crazies::OnProgress(int d)
 {
-	if(crazies_state == Quest_Crazies::State::PickedStone && days > 0)
+	if(craziesState == Quest_Crazies::State::PickedStone && days > 0)
 	{
 		days -= d;
 		if(days <= 0)
@@ -242,7 +242,7 @@ void Quest_Crazies::OnProgress(int d)
 //=================================================================================================
 void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 {
-	if(crazies_state == State::TalkedWithCrazy)
+	if(craziesState == State::TalkedWithCrazy)
 	{
 		spawn.groupName = nullptr;
 		spawn.essential = UnitData::Get("q_szaleni_szaleniec");
@@ -251,16 +251,16 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 		spawn.dialog = GameDialog::TryGet("q_crazies");
 		spawn.count = 1;
 
-		check_stone = true;
+		checkStone = true;
 	}
 	else
 	{
 		spawn.groupName = "unk";
 		spawn.level = 13;
 		spawn.backAttack = true;
-		if(crazies_state == State::PickedStone)
+		if(craziesState == State::PickedStone)
 		{
-			crazies_state = State::FirstAttack;
+			craziesState = State::FirstAttack;
 			spawn.count = 1;
 			SetProgress(Progress::Started);
 		}

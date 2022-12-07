@@ -42,8 +42,8 @@ public:
 	void OnProgress(int days);
 	void OnEncounter(EncounterSpawn& spawn);
 
-	State crazies_state;
-	bool check_stone;
+	State craziesState;
+	bool checkStone;
 
 private:
 	const Item* stone;

@@ -14,7 +14,7 @@ BaseUsable& BaseUsable::operator = (BaseObject& o)
 	centery = o.centery;
 	flags = o.flags;
 	variants = o.variants;
-	extra_dist = o.extra_dist;
+	extraDist = o.extraDist;
 	return *this;
 }
 
@@ -25,9 +25,9 @@ BaseUsable& BaseUsable::operator = (BaseUsable& u)
 	anim = u.anim;
 	item = u.item;
 	sound = u.sound;
-	sound_timer = u.sound_timer;
-	limit_rot = u.limit_rot;
-	use_flags = u.use_flags;
+	soundTimer = u.soundTimer;
+	limitRot = u.limitRot;
+	useFlags = u.useFlags;
 	return *this;
 }
 

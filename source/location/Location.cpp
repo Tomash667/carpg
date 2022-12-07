@@ -23,17 +23,17 @@ Location::~Location()
 }
 
 //=================================================================================================
-bool Location::CheckUpdate(int& days_passed, int worldtime)
+bool Location::CheckUpdate(int& daysPassed, int worldtime)
 {
 	bool need_reset = reset;
 	reset = false;
-	if(last_visit == -1)
-		days_passed = -1;
+	if(lastVisit == -1)
+		daysPassed = -1;
 	else
-		days_passed = worldtime - last_visit;
-	last_visit = worldtime;
-	if(dont_clean)
-		days_passed = 0;
+		daysPassed = worldtime - lastVisit;
+	lastVisit = worldtime;
+	if(dontClean)
+		daysPassed = 0;
 	return need_reset;
 }
 
@@ -45,22 +45,22 @@ void Location::Save(GameWriter& f)
 	f << state;
 	f << target;
 	int quest_id;
-	if(active_quest)
+	if(activeQuest)
 	{
-		if(active_quest == ACTIVE_QUEST_HOLDER)
+		if(activeQuest == ACTIVE_QUEST_HOLDER)
 			quest_id = (int)ACTIVE_QUEST_HOLDER;
 		else
-			quest_id = active_quest->id;
+			quest_id = activeQuest->id;
 	}
 	else
 		quest_id = -1;
 	f << quest_id;
-	f << last_visit;
+	f << lastVisit;
 	f << st;
 	f << outside;
 	f << reset;
 	f << group;
-	f << dont_clean;
+	f << dontClean;
 	f << seed;
 	f << image;
 
@@ -130,20 +130,20 @@ void Location::Load(GameReader& f)
 		f >> target;
 	int quest_id = f.Read<int>();
 	if(quest_id == -1)
-		active_quest = nullptr;
+		activeQuest = nullptr;
 	else if(quest_id == (int)ACTIVE_QUEST_HOLDER)
-		active_quest = ACTIVE_QUEST_HOLDER;
+		activeQuest = ACTIVE_QUEST_HOLDER;
 	else
 	{
 		game->loadLocationQuest.push_back(this);
-		active_quest = (Quest_Dungeon*)quest_id;
+		activeQuest = (Quest_Dungeon*)quest_id;
 	}
-	f >> last_visit;
+	f >> lastVisit;
 	f >> st;
 	f >> outside;
 	f >> reset;
 	f >> group;
-	f >> dont_clean;
+	f >> dontClean;
 	f >> seed;
 	f >> image;
 
@@ -355,16 +355,16 @@ void Location::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 
 //=================================================================================================
 // set if passed, returns prev value
-bool Location::RequireLoadingResources(bool* to_set)
+bool Location::RequireLoadingResources(bool* toSet)
 {
-	if(to_set)
+	if(toSet)
 	{
-		bool result = loaded_resources;
-		loaded_resources = *to_set;
+		bool result = loadedResources;
+		loadedResources = *toSet;
 		return result;
 	}
 	else
-		return loaded_resources;
+		return loadedResources;
 }
 
 //=================================================================================================

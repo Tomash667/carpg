@@ -80,14 +80,14 @@ struct LocationTexturePack
 {
 	struct Entry
 	{
-		cstring id, id_normal, id_specular;
-		TexturePtr tex, tex_normal, tex_specular;
+		cstring id, idNormal, idSpecular;
+		TexturePtr tex, texNormal, texSpecular;
 
-		Entry() : id(nullptr), id_normal(nullptr), id_specular(nullptr), tex(nullptr), tex_normal(nullptr), tex_specular(nullptr)
+		Entry() : id(nullptr), idNormal(nullptr), idSpecular(nullptr), tex(nullptr), texNormal(nullptr), texSpecular(nullptr)
 		{
 		}
-		Entry(cstring id, cstring id_normal, cstring id_specular) : id(id), id_normal(id_normal), id_specular(id_specular), tex(nullptr), tex_normal(nullptr),
-			tex_specular(nullptr)
+		Entry(cstring id, cstring idNormal, cstring idSpecular) : id(id), idNormal(idNormal), idSpecular(idSpecular), tex(nullptr), texNormal(nullptr),
+			texSpecular(nullptr)
 		{
 		}
 	};
@@ -97,12 +97,12 @@ struct LocationTexturePack
 	LocationTexturePack()
 	{
 	}
-	LocationTexturePack(cstring id_floor, cstring id_wall, cstring id_ceil) : floor(id_floor, nullptr, nullptr), wall(id_wall, nullptr, nullptr), ceil(id_ceil, nullptr, nullptr)
+	LocationTexturePack(cstring idFloor, cstring idWall, cstring idCeil) : floor(idFloor, nullptr, nullptr), wall(idWall, nullptr, nullptr), ceil(idCeil, nullptr, nullptr)
 	{
 	}
-	LocationTexturePack(cstring id_floor, cstring id_floor_nrm, cstring id_floor_spec, cstring id_wall, cstring id_wall_nrm, cstring id_wall_spec, cstring id_ceil,
-		cstring id_ceil_nrm, cstring id_ceil_spec) : floor(id_floor, id_floor_nrm, id_floor_spec), wall(id_wall, id_wall_nrm, id_wall_spec),
-		ceil(id_ceil, id_ceil_nrm, id_ceil_spec)
+	LocationTexturePack(cstring idFloor, cstring idFloorNormal, cstring idFloorSpecular, cstring idWall, cstring idWallNormal, cstring idWallSpecular,
+		cstring idCeil, cstring idCeilNormal, cstring idCeilSpecular) : floor(idFloor, idFloorNormal, idFloorSpecular), wall(idWall, idWallNormal,
+		idWallSpecular), ceil(idCeil, idCeilNormal, idCeilSpecular)
 	{
 	}
 };
@@ -113,18 +113,18 @@ struct BaseLocation
 {
 	cstring name;
 	Int2 levels;
-	int size, size_lvl, join_room, join_corridor, corridor_chance;
-	Int2 corridor_size, room_size;
+	int size, sizeLvl, joinRoom, joinCorridor, corridorChance;
+	Int2 corridorSize, roomSize;
 	int options;
 	RoomStr stairs, required;
-	Color fog_color, ambient_color;
-	Vec2 fog_range;
-	float draw_range;
+	Color fogColor, ambientColor;
+	Vec2 fogRange;
+	float drawRange;
 	RoomStrChance* rooms;
-	uint room_count, room_total;
-	int door_chance, door_open, bars_chance;
+	uint roomCount, roomTotal;
+	int doorChance, doorOpen, barsChance;
 	GroupStr group[3];
-	int group_chance[3];
+	int groupChance[3];
 	int traps, tex2;
 	LocationTexturePack tex;
 
@@ -133,5 +133,5 @@ struct BaseLocation
 	static void PreloadTextures();
 	static uint SetRoomPointers();
 };
-extern BaseLocation g_base_locations[];
-extern const uint n_base_locations;
+extern BaseLocation gBaseLocations[];
+extern const uint nBaseLocations;

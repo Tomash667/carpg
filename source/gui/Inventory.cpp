@@ -801,7 +801,7 @@ void InventoryPanel::Update(float dt)
 							bool ok = true;
 							if(type == SLOT_ARMOR)
 							{
-								if(item->ToArmor().armor_unit_type != ArmorUnitType::HUMAN)
+								if(item->ToArmor().armorUnitType != ArmorUnitType::HUMAN)
 								{
 									ok = false;
 									gui->SimpleDialog(base.txCantWear, this);

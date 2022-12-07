@@ -107,7 +107,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 	case L_DUNGEON:
 		{
 			InsideLocation* inside = (InsideLocation*)loc;
-			BaseLocation& base = g_base_locations[inside->target];
+			BaseLocation& base = gBaseLocations[inside->target];
 			if(inside->target == TUTORIAL_FORT)
 				loc_gen = tutorial;
 			else if(IsSet(base.options, BLO_LABYRINTH))

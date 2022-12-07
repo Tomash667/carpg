@@ -66,7 +66,7 @@ ScriptManager::~ScriptManager()
 		p.second->Release();
 	if(engine)
 		engine->ShutDownAndRelease();
-	DeleteElements(unit_vars);
+	DeleteElements(unitVars);
 }
 
 void ScriptManager::Init()
@@ -87,22 +87,22 @@ void ScriptManager::Init()
 	RegisterGame();
 }
 
-asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
+asIScriptFunction* FindToString(asIScriptEngine* engine, int typeId)
 {
 	// find mapped type
-	auto it = tostring_map.find(type_id);
+	auto it = tostring_map.find(typeId);
 	if(it != tostring_map.end())
 		return it->second;
 
 	// get type
-	asITypeInfo* type = engine->GetTypeInfoById(type_id);
+	asITypeInfo* type = engine->GetTypeInfoById(typeId);
 	assert(type);
 
 	// special case - cast to string
 	cstring name = type->GetName();
 	if(strcmp(name, "string") == 0)
 	{
-		tostring_map[type_id] = nullptr;
+		tostring_map[typeId] = nullptr;
 		return nullptr;
 	}
 
@@ -114,14 +114,14 @@ asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
 		throw ScriptException("Missing ToString method for object '%s'.", name);
 
 	// add mapping
-	tostring_map[type_id] = func;
+	tostring_map[typeId] = func;
 	return func;
 }
 
-string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
+string& ToString(asIScriptGeneric* gen, void* adr, int typeId)
 {
 	asIScriptEngine* engine = gen->GetEngine();
-	asIScriptFunction* func = FindToString(engine, type_id);
+	asIScriptFunction* func = FindToString(engine, typeId);
 
 	if(!func)
 	{
@@ -142,7 +142,7 @@ string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
 	}
 	if(r < 0)
 	{
-		asITypeInfo* type = engine->GetTypeInfoById(type_id);
+		asITypeInfo* type = engine->GetTypeInfoById(typeId);
 		cstring name = type->GetName();
 		throw ScriptException("Failed to call ToString on object '%s' (%d).", name, r);
 	}
@@ -155,9 +155,9 @@ string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
 
 static cstring ArgToString(asIScriptGeneric* gen, int index)
 {
-	auto type_id = gen->GetArgTypeId(index);
+	auto typeId = gen->GetArgTypeId(index);
 	void* adr = gen->GetAddressOfArg(index);
-	switch(type_id)
+	switch(typeId)
 	{
 	case asTYPEID_BOOL:
 		{
@@ -216,7 +216,7 @@ static cstring ArgToString(asIScriptGeneric* gen, int index)
 			return Format("%g", value);
 		}
 	default:
-		return ToString(gen, adr, type_id).c_str();
+		return ToString(gen, adr, typeId).c_str();
 	}
 }
 
@@ -871,7 +871,7 @@ void ScriptManager::RegisterGame()
 		.Member("const bool outside", offsetof(Location, outside))
 		.Member("int st", offsetof(Location, st))
 		.Member("bool reset", offsetof(Location, reset))
-		.Member("Quest@ active_quest", offsetof(Location, active_quest))
+		.Member("Quest@ active_quest", offsetof(Location, activeQuest))
 		.Member("UnitGroup@ group", offsetof(Location, group))
 		.Method("const string& get_name() const property", asMETHOD(Location, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Location, SetNameS))
@@ -1089,7 +1089,7 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		return;
 	}
 
-	last_exception = nullptr;
+	lastException = nullptr;
 	r = tmp_context->Execute();
 
 	if(r == asEXECUTION_SUSPENDED)
@@ -1104,7 +1104,7 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			cstring msg = lastException ? lastException : tmp_context->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
 				tmp_context->GetExceptionLineNumber()));
 		}
@@ -1117,13 +1117,13 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 
 string& ScriptManager::OpenOutput()
 {
-	gather_output = true;
+	gatherOutput = true;
 	return output;
 }
 
 void ScriptManager::CloseOutput()
 {
-	gather_output = false;
+	gatherOutput = false;
 	output.clear();
 }
 
@@ -1131,7 +1131,7 @@ void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 {
 	if(code)
 		Logger::GetInstance()->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
-	if(gather_output)
+	if(gatherOutput)
 	{
 		if(!output.empty())
 			output += '\n';
@@ -1197,12 +1197,12 @@ NamespaceBuilder ScriptManager::WithNamespace(cstring name, void* auxiliary)
 Vars* ScriptManager::GetVars(Unit* unit)
 {
 	assert(unit);
-	auto it = unit_vars.find(unit->id);
+	auto it = unitVars.find(unit->id);
 	Vars* vars;
-	if(it == unit_vars.end())
+	if(it == unitVars.end())
 	{
 		vars = new Vars;
-		unit_vars.insert(std::unordered_map<int, Vars*>::value_type(unit->id, vars));
+		unitVars.insert(std::unordered_map<int, Vars*>::value_type(unit->id, vars));
 	}
 	else
 		vars = it->second;
@@ -1218,7 +1218,7 @@ Var& ScriptManager::GetVar(cstring name)
 void ScriptManager::Reset()
 {
 	globals.Clear();
-	DeleteElements(unit_vars);
+	DeleteElements(unitVars);
 	ctx.Clear();
 }
 
@@ -1230,7 +1230,7 @@ void ScriptManager::Save(GameWriter& f)
 	// unit vars
 	uint count = 0;
 	uint pos = f.BeginPatch(count);
-	for(auto& e : unit_vars)
+	for(auto& e : unitVars)
 	{
 		if(e.second->IsEmpty())
 			continue;
@@ -1257,56 +1257,56 @@ void ScriptManager::Load(GameReader& f)
 		Vars* vars = new Vars;
 		vars->Load(f);
 		if(unit)
-			unit_vars[id] = vars;
+			unitVars[id] = vars;
 		else
 			delete vars;
 	}
 }
 
-ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool is_ref, const string& name)
+ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool isRef, const string& name)
 {
-	auto it = var_type_map.find(type);
-	if(it == var_type_map.end())
+	auto it = varTypeMap.find(type);
+	if(it == varTypeMap.end())
 		return InvalidType;
-	ScriptTypeInfo info = script_type_infos[it->second];
-	if(info.require_ref != is_ref)
+	ScriptTypeInfo info = scriptTypeInfos[it->second];
+	if(info.requireRef != isRef)
 		return InvalidType;
 	Var* var = globals.TryGet(name);
 	if(var)
 		return AlreadyExists;
 	var = globals.Add(info.type, name, true);
 	var->_int = 0;
-	cstring decl = Format("%s%s %s", type.c_str(), is_ref ? "@" : "", name.c_str());
+	cstring decl = Format("%s%s %s", type.c_str(), isRef ? "@" : "", name.c_str());
 	CHECKED(engine->RegisterGlobalProperty(decl, &var->ptr));
 	return Ok;
 }
 
-void ScriptManager::AddVarType(Var::Type type, cstring name, bool is_ref)
+void ScriptManager::AddVarType(Var::Type type, cstring name, bool isRef)
 {
-	int type_id = engine->GetTypeIdByDecl(name);
-	var_type_map[name] = type_id;
-	script_type_infos[type_id] = ScriptTypeInfo(type, is_ref);
+	int typeId = engine->GetTypeIdByDecl(name);
+	varTypeMap[name] = typeId;
+	scriptTypeInfos[typeId] = ScriptTypeInfo(type, isRef);
 }
 
-Var::Type ScriptManager::GetVarType(int type_id)
+Var::Type ScriptManager::GetVarType(int typeId)
 {
-	if(IsSet(type_id, asTYPEID_OBJHANDLE))
-		ClearBit(type_id, asTYPEID_OBJHANDLE);
-	auto it = script_type_infos.find(type_id);
-	assert(it != script_type_infos.end());
+	if(IsSet(typeId, asTYPEID_OBJHANDLE))
+		ClearBit(typeId, asTYPEID_OBJHANDLE);
+	auto it = scriptTypeInfos.find(typeId);
+	assert(it != scriptTypeInfos.end());
 	return it->second.type;
 }
 
-bool ScriptManager::CheckVarType(int type_id, bool is_ref)
+bool ScriptManager::CheckVarType(int typeId, bool isRef)
 {
-	if(IsSet(type_id, asTYPEID_OBJHANDLE))
+	if(IsSet(typeId, asTYPEID_OBJHANDLE))
 	{
-		is_ref = true;
-		ClearBit(type_id, asTYPEID_OBJHANDLE);
+		isRef = true;
+		ClearBit(typeId, asTYPEID_OBJHANDLE);
 	}
 
-	auto it = script_type_infos.find(type_id);
-	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
+	auto it = scriptTypeInfos.find(typeId);
+	if(it == scriptTypeInfos.end() || it->second.requireRef != isRef)
 		return false;
 	return true;
 }
@@ -1354,7 +1354,7 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 {
 	assert(ctx);
 
-	last_exception = nullptr;
+	lastException = nullptr;
 
 	int r = ctx->Execute();
 	if(r == asEXECUTION_SUSPENDED)
@@ -1363,7 +1363,7 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			cstring msg = last_exception ? last_exception : ctx->GetExceptionString();
+			cstring msg = lastException ? lastException : ctx->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, ctx->GetExceptionFunction()->GetName(),
 				ctx->GetExceptionLineNumber()));
 		}

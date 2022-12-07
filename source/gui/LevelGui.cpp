@@ -607,21 +607,21 @@ void LevelGui::DrawFront()
 				charge = 0.f;
 
 			if(dragAndDrop == 2 && dragAndDropType == -1 && dragAndDropIndex == i)
-				dragAndDropIcon = ability->tex_icon;
+				dragAndDropIcon = ability->texIcon;
 
 			if(pc.CanUseAbilityPreview(ability))
 			{
 				if(charge == 0.f)
-					gui->DrawSprite2(ability->tex_icon, mat);
+					gui->DrawSprite2(ability->texIcon, mat);
 				else
 				{
 					gui->UseGrayscale(true);
-					gui->DrawSprite2(ability->tex_icon, mat);
+					gui->DrawSprite2(ability->texIcon, mat);
 					gui->UseGrayscale(false);
 					if(charge < 1.f)
 					{
 						Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-						gui->DrawSprite2(ability->tex_icon, mat, &part);
+						gui->DrawSprite2(ability->texIcon, mat, &part);
 					}
 					gui->DrawSprite2(tActionCooldown, mat);
 				}
@@ -629,7 +629,7 @@ void LevelGui::DrawFront()
 			else
 			{
 				gui->UseGrayscale(true);
-				gui->DrawSprite2(ability->tex_icon, mat);
+				gui->DrawSprite2(ability->texIcon, mat);
 				gui->UseGrayscale(false);
 			}
 

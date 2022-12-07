@@ -215,10 +215,10 @@ void AbilityLoader::ParseAbility(const string& id)
 			if(t.IsSymbol('+'))
 			{
 				t.Next();
-				ability->dmg_bonus = t.MustGetInt();
-				if(ability->dmg_bonus < 0)
-					t.Throw("Negative bonus damage %d.", ability->dmg_bonus);
-				crc.Update(ability->dmg_bonus);
+				ability->dmgBonus = t.MustGetInt();
+				if(ability->dmgBonus < 0)
+					t.Throw("Negative bonus damage %d.", ability->dmgBonus);
+				crc.Update(ability->dmgBonus);
 				t.Next();
 			}
 			break;
@@ -243,10 +243,10 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Next();
 			break;
 		case K_EXPLODE_RANGE:
-			ability->explode_range = t.MustGetFloat();
-			if(ability->explode_range < 0.f)
-				t.Throw("Negative explode range %g.", ability->explode_range);
-			crc.Update(ability->explode_range);
+			ability->explodeRange = t.MustGetFloat();
+			if(ability->explodeRange < 0.f)
+				t.Throw("Negative explode range %g.", ability->explodeRange);
+			crc.Update(ability->explodeRange);
 			t.Next();
 			break;
 		case K_MESH:
@@ -282,23 +282,23 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_TEX_PARTICLE:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex_particle = resMgr->TryGet<Texture>(tex_id);
-				if(!ability->tex_particle)
+				ability->texParticle = resMgr->TryGet<Texture>(tex_id);
+				if(!ability->texParticle)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
 				t.Next();
-				ability->size_particle = t.MustGetFloat();
-				if(ability->size_particle <= 0.f)
-					t.Throw("Invalid particle texture size %g.", ability->size_particle);
-				crc.Update(ability->size_particle);
+				ability->sizeParticle = t.MustGetFloat();
+				if(ability->sizeParticle <= 0.f)
+					t.Throw("Invalid particle texture size %g.", ability->sizeParticle);
+				crc.Update(ability->sizeParticle);
 				t.Next();
 			}
 			break;
 		case K_TEX_EXPLODE:
 			{
 				const string& tex_id = t.MustGetString();
-				ability->tex_explode.diffuse = resMgr->TryGet<Texture>(tex_id);
-				if(!ability->tex_explode.diffuse)
+				ability->texExplode.diffuse = resMgr->TryGet<Texture>(tex_id);
+				if(!ability->texExplode.diffuse)
 					t.Throw("Missing texture '%s'.", tex_id.c_str());
 				crc.Update(tex_id);
 				t.Next();
@@ -307,30 +307,30 @@ void AbilityLoader::ParseAbility(const string& id)
 		case K_SOUND_CAST:
 			{
 				const string& sound_id = t.MustGetString();
-				ability->sound_cast = resMgr->TryGet<Sound>(sound_id);
-				if(!ability->sound_cast)
+				ability->soundCast = resMgr->TryGet<Sound>(sound_id);
+				if(!ability->soundCast)
 					t.Throw("Missing sound '%s'.", sound_id.c_str());
 				crc.Update(sound_id);
 				t.Next();
-				ability->sound_cast_dist = t.MustGetFloat();
-				if(ability->sound_cast_dist <= 0.f)
-					t.Throw("Invalid cast sound distance %g.", ability->sound_cast_dist);
-				crc.Update(ability->sound_cast_dist);
+				ability->soundCastDist = t.MustGetFloat();
+				if(ability->soundCastDist <= 0.f)
+					t.Throw("Invalid cast sound distance %g.", ability->soundCastDist);
+				crc.Update(ability->soundCastDist);
 				t.Next();
 			}
 			break;
 		case K_SOUND_HIT:
 			{
 				const string& sound_id = t.MustGetString();
-				ability->sound_hit = resMgr->TryGet<Sound>(sound_id);
-				if(!ability->sound_hit)
+				ability->soundHit = resMgr->TryGet<Sound>(sound_id);
+				if(!ability->soundHit)
 					t.Throw("Missing sound '%s'.", sound_id.c_str());
 				crc.Update(sound_id);
 				t.Next();
-				ability->sound_hit_dist = t.MustGetFloat();
-				if(ability->sound_hit_dist <= 0.f)
-					t.Throw("Invalid hit sound distance %g}.", ability->sound_hit_dist);
-				crc.Update(ability->sound_hit_dist);
+				ability->soundHitDist = t.MustGetFloat();
+				if(ability->soundHitDist <= 0.f)
+					t.Throw("Invalid hit sound distance %g}.", ability->soundHitDist);
+				crc.Update(ability->soundHitDist);
 				t.Next();
 			}
 			break;
@@ -342,14 +342,14 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Next();
 			break;
 		case K_MOVE_RANGE:
-			ability->move_range = t.MustGetFloat();
-			if(ability->move_range < 0.f)
-				t.Throw("Negative move range %g.", ability->move_range);
-			crc.Update(ability->move_range);
+			ability->moveRange = t.MustGetFloat();
+			if(ability->moveRange < 0.f)
+				t.Throw("Negative move range %g.", ability->moveRange);
+			crc.Update(ability->moveRange);
 			t.Next();
 			break;
 		case K_ICON:
-			ability->tex_icon = resMgr->TryGet<Texture>(Format("%s.png", ability->id.c_str()));
+			ability->texIcon = resMgr->TryGet<Texture>(Format("%s.png", ability->id.c_str()));
 			break;
 		case K_CHARGES:
 			ability->charges = t.MustGetInt();
@@ -378,8 +378,8 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Next();
 			break;
 		case K_UNIT:
-			ability->unit_id = t.MustGetItem();
-			crc.Update(ability->unit_id);
+			ability->unitId = t.MustGetItem();
+			crc.Update(ability->unitId);
 			t.Next();
 			break;
 		case K_EFFECT:
@@ -388,8 +388,8 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Next();
 			break;
 		case K_LEARNING_POINTS:
-			ability->learning_points = t.MustGetInt();
-			crc.Update(ability->learning_points);
+			ability->learningPoints = t.MustGetInt();
+			crc.Update(ability->learningPoints);
 			t.Next();
 			break;
 		case K_SKILL:
@@ -434,10 +434,10 @@ void AbilityLoader::ParseAbility(const string& id)
 			}
 			break;
 		case K_CAST_TIME:
-			ability->cast_time = t.MustGetFloat();
-			if(ability->cast_time < 0.f)
+			ability->castTime = t.MustGetFloat();
+			if(ability->castTime < 0.f)
 				t.Throw("Invalid cast time value.");
-			crc.Update(ability->cast_time);
+			crc.Update(ability->castTime);
 			t.Next();
 			break;
 		}
@@ -445,15 +445,15 @@ void AbilityLoader::ParseAbility(const string& id)
 
 	if(Any(ability->type, Ability::Point, Ability::Ball) && ability->speed == 0.f)
 		LoadWarning("Invalid ability speed.");
-	if(IsSet(ability->flags, Ability::Explode) && !ability->tex_explode.diffuse)
+	if(IsSet(ability->flags, Ability::Explode) && !ability->texExplode.diffuse)
 		LoadError("Missing explode texture.");
 
 	if(ability->recharge == 0)
 		ability->recharge = ability->cooldown.x;
-	if(!ability->tex_icon)
-		ability->tex_icon = tPlaceholder;
+	if(!ability->texIcon)
+		ability->texIcon = tPlaceholder;
 
-	Ability::hash_abilities[hash] = ability;
+	Ability::hashAbilities[hash] = ability;
 	Ability::abilities.push_back(ability.Pin());
 }
 
@@ -470,7 +470,7 @@ void AbilityLoader::ParseAlias(const string& id)
 	if(Ability::Get(hash))
 		t.Throw("Alias or ability already exists.");
 
-	Ability::hash_abilities[hash] = ability;
+	Ability::hashAbilities[hash] = ability;
 }
 
 //=================================================================================================
@@ -486,13 +486,13 @@ void AbilityLoader::ApplyUnits()
 {
 	for(Ability* ability : Ability::abilities)
 	{
-		if(ability->unit_id.empty())
+		if(ability->unitId.empty())
 			continue;
-		ability->unit = UnitData::TryGet(ability->unit_id);
+		ability->unit = UnitData::TryGet(ability->unitId);
 		if(!ability->unit)
 		{
 			SetLocalId(ability->id);
-			LoadError("Missing unit '%s'.", ability->unit_id.c_str());
+			LoadError("Missing unit '%s'.", ability->unitId.c_str());
 		}
 	}
 }

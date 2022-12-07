@@ -17,5 +17,5 @@ public:
 	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
-	int other_loc;
+	int otherLoc;
 };

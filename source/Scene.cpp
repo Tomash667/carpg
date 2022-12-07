@@ -299,7 +299,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->center = explo.pos;
 				node->radius *= explo.size;
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
-				node->texOverride = &explo.ability->tex_explode;
+				node->texOverride = &explo.ability->texExplode;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
 				drawBatch.Add(node);
 			}
@@ -577,7 +577,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		}
 	}
 	drawBatch.Add(node);
-	if(u.HaveArmor() && u.GetArmor().armor_unit_type == ArmorUnitType::HUMAN && u.GetArmor().mesh)
+	if(u.HaveArmor() && u.GetArmor().armorUnitType == ArmorUnitType::HUMAN && u.GetArmor().mesh)
 		node->subs = Bit(1) | Bit(2);
 
 	// armor
@@ -1028,26 +1028,26 @@ void Game::ListAreas(LocationPart& locPart)
 		{
 			if(IsSet(gameLevel->cityCtx->flags, City::HaveExit))
 			{
-				for(vector<EntryPoint>::const_iterator entry_it = gameLevel->cityCtx->entry_points.begin(), entry_end = gameLevel->cityCtx->entry_points.end();
+				for(vector<EntryPoint>::const_iterator entry_it = gameLevel->cityCtx->entryPoints.begin(), entry_end = gameLevel->cityCtx->entryPoints.end();
 					entry_it != entry_end; ++entry_it)
 				{
 					const EntryPoint& e = *entry_it;
 					Area& a = Add1(drawBatch.areas);
-					a.v[0] = Vec3(e.exit_region.v1.x, e.exit_y, e.exit_region.v2.y);
-					a.v[1] = Vec3(e.exit_region.v2.x, e.exit_y, e.exit_region.v2.y);
-					a.v[2] = Vec3(e.exit_region.v1.x, e.exit_y, e.exit_region.v1.y);
-					a.v[3] = Vec3(e.exit_region.v2.x, e.exit_y, e.exit_region.v1.y);
+					a.v[0] = Vec3(e.exitRegion.v1.x, e.exitY, e.exitRegion.v2.y);
+					a.v[1] = Vec3(e.exitRegion.v2.x, e.exitY, e.exitRegion.v2.y);
+					a.v[2] = Vec3(e.exitRegion.v1.x, e.exitY, e.exitRegion.v1.y);
+					a.v[3] = Vec3(e.exitRegion.v2.x, e.exitY, e.exitRegion.v1.y);
 				}
 			}
 
-			for(vector<InsideBuilding*>::const_iterator it = gameLevel->cityCtx->inside_buildings.begin(), end = gameLevel->cityCtx->inside_buildings.end(); it != end; ++it)
+			for(vector<InsideBuilding*>::const_iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
 				Area& a = Add1(drawBatch.areas);
-				a.v[0] = Vec3(ib.enter_region.v1.x, ib.enter_y, ib.enter_region.v2.y);
-				a.v[1] = Vec3(ib.enter_region.v2.x, ib.enter_y, ib.enter_region.v2.y);
-				a.v[2] = Vec3(ib.enter_region.v1.x, ib.enter_y, ib.enter_region.v1.y);
-				a.v[3] = Vec3(ib.enter_region.v2.x, ib.enter_y, ib.enter_region.v1.y);
+				a.v[0] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v2.y);
+				a.v[1] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v2.y);
+				a.v[2] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v1.y);
+				a.v[3] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v1.y);
 			}
 		}
 
@@ -1109,7 +1109,7 @@ void Game::ListAreas(LocationPart& locPart)
 	{
 		// exit from building
 		Area& a = Add1(drawBatch.areas);
-		const Box2d& region = static_cast<InsideBuilding&>(locPart).exit_region;
+		const Box2d& region = static_cast<InsideBuilding&>(locPart).exitRegion;
 		a.v[0] = Vec3(region.v1.x, 0.1f, region.v2.y);
 		a.v[1] = Vec3(region.v2.x, 0.1f, region.v2.y);
 		a.v[2] = Vec3(region.v1.x, 0.1f, region.v1.y);

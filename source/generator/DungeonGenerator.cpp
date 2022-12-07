@@ -19,7 +19,7 @@
 void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	inside->SetActiveLevel(gameLevel->dungeonLevel);
 	gameLevel->lvl = &inside->GetLevelData();
 	if(inside->IsMultilevel())
@@ -44,14 +44,14 @@ void DungeonGenerator::Generate()
 	}
 
 	MapSettings settings;
-	settings.corridorChance = base.corridor_chance;
-	settings.mapW = settings.mapH = base.size + base.size_lvl * dungeonLevel;
-	settings.corridorSize = base.corridor_size;
-	settings.roomSize = base.room_size;
+	settings.corridorChance = base.corridorChance;
+	settings.mapW = settings.mapH = base.size + base.sizeLvl * dungeonLevel;
+	settings.corridorSize = base.corridorSize;
+	settings.roomSize = base.roomSize;
 	settings.rooms = &lvl.rooms;
 	settings.groups = &lvl.groups;
-	settings.corridorJoinChance = base.join_corridor;
-	settings.roomJoinChance = base.join_room;
+	settings.corridorJoinChance = base.joinCorridor;
+	settings.roomJoinChance = base.joinRoom;
 	settings.shape = IsSet(base.options, BLO_ROUND) ? MapSettings::SHAPE_CIRCLE : MapSettings::SHAPE_SQUARE;
 	if(gameLevel->dungeonLevel == 0)
 	{
@@ -83,7 +83,7 @@ void DungeonGenerator::Generate()
 	if(settings.prevEntryLoc == MapSettings::ENTRY_RANDOM && settings.prevEntryType == ENTRY_DOOR)
 		settings.prevEntryLoc = MapSettings::ENTRY_BORDER;
 	settings.nextEntryLoc = inside->HaveNextEntry() ? MapSettings::ENTRY_RANDOM : MapSettings::ENTRY_NONE;
-	settings.barsChance = base.bars_chance;
+	settings.barsChance = base.barsChance;
 	settings.devmode = game->devmode;
 	settings.removeDeadEndCorridors = true;
 
@@ -111,7 +111,7 @@ void DungeonGenerator::Generate()
 		room->pos.x = room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
-		inside->special_room = 0;
+		inside->specialRoom = 0;
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
@@ -126,7 +126,7 @@ void DungeonGenerator::Generate()
 		room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
-		inside->special_room = 0;
+		inside->specialRoom = 0;
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
@@ -141,17 +141,17 @@ void DungeonGenerator::Generate()
 		room->pos.x = room->pos.y = (settings.mapW - 7) / 2;
 		room->connected.clear();
 		room->index = 0;
-		inside->special_room = 0;
+		inside->specialRoom = 0;
 		lvl.rooms.push_back(room);
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
-	else if(gameLevel->location == questMgr->questEvil->targetLoc && questMgr->questEvil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(gameLevel->location == questMgr->questEvil->targetLoc && questMgr->questEvil->evilState == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
 		settings.prevEntryLoc = MapSettings::ENTRY_FAR_FROM_ROOM;
 	}
 
-	if(questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->questOrcs->targetLoc
+	if(questMgr->questOrcs2->orcsState == Quest_Orcs2::State::Accepted && gameLevel->location == questMgr->questOrcs->targetLoc
 		&& dungeonLevel == gameLevel->location->GetLastLevel())
 	{
 		// search for room for cell
@@ -223,7 +223,7 @@ void DungeonGenerator::Generate()
 		eventHandler->FireEvent(e);
 	}
 
-	if(inside->from_portal)
+	if(inside->fromPortal)
 		CreatePortal(lvl);
 }
 
@@ -382,7 +382,7 @@ void DungeonGenerator::GenerateUnits()
 		Int2 awayPt;
 		if(group.target == RoomTarget::EntryPrev)
 			awayPt = lvl.prevEntryPt;
-		else if(inside->from_portal && group.target == RoomTarget::Portal)
+		else if(inside->fromPortal && group.target == RoomTarget::Portal)
 			awayPt = PosToPt(inside->portal->pos);
 		else
 			awayPt = Int2(-1000, -1000);
@@ -427,7 +427,7 @@ void DungeonGenerator::GenerateDungeonItems()
 	// determine how much food to spawn
 	int mod = 3;
 	InsideLocation* inside = (InsideLocation*)loc;
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	if(IsSet(base.options, BLO_LESS_FOOD))
 		--mod;

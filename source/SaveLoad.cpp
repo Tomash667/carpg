@@ -83,7 +83,7 @@ ActionResult Game::CanSaveGame() const
 	}
 	else
 	{
-		if(questMgr->questTutorial->in_tutorial || arena->mode != Arena::NONE || questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
+		if(questMgr->questTutorial->inTutorial || arena->mode != Arena::NONE || questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
 			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return ActionResult::No;
 	}
@@ -617,7 +617,7 @@ void Game::LoadGame(GameReader& f)
 	ClearGame();
 	ClearGameVars(false);
 	StopAllSounds();
-	questMgr->questTutorial->in_tutorial = false;
+	questMgr->questTutorial->inTutorial = false;
 	arena->Reset();
 	pc->data.autowalk = false;
 	aiBowTargets.clear();
@@ -884,8 +884,8 @@ void Game::LoadGame(GameReader& f)
 	// location quests
 	for(Location* loc : loadLocationQuest)
 	{
-		loc->active_quest = static_cast<Quest_Dungeon*>(questMgr->FindAnyQuest((int)loc->active_quest));
-		assert(loc->active_quest);
+		loc->activeQuest = static_cast<Quest_Dungeon*>(questMgr->FindAnyQuest((int)loc->activeQuest));
+		assert(loc->activeQuest);
 	}
 
 	// unit event handlers
@@ -974,7 +974,7 @@ void Game::LoadGame(GameReader& f)
 		gameLevel->ready = true;
 		SetMusic();
 		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animationState, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
-			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
+			&& IsSet(pc->unit->usable->base->useFlags, BaseUsable::ALCHEMY))
 			gameGui->craft->Show();
 	}
 	else

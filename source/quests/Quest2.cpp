@@ -263,10 +263,10 @@ void Quest2::SetState(State newState)
 	switch(category)
 	{
 	case QuestCategory::Mayor:
-		static_cast<City*>(startLoc)->quest_mayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->questMayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Captain:
-		static_cast<City*>(startLoc)->quest_captain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->questCaptain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Unique:
 		questMgr->EndUniqueQuest();

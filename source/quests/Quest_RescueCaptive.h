@@ -30,7 +30,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void Save(GameWriter& f) override;

@@ -11,7 +11,7 @@
 
 const Item* Item::gold;
 ItemsMap Item::items;
-std::map<string, Item*> item_aliases;
+std::map<string, Item*> itemAliases;
 vector<ItemList*> ItemList::lists;
 vector<Weapon*> Weapon::weapons;
 vector<Bow*> Bow::bows;
@@ -21,10 +21,10 @@ vector<Amulet*> Amulet::amulets;
 vector<Ring*> Ring::rings;
 vector<Consumable*> Consumable::consumables;
 vector<OtherItem*> OtherItem::others;
-vector<BookScheme*> BookScheme::book_schemes;
+vector<BookScheme*> BookScheme::bookSchemes;
 vector<Book*> Book::books;
-vector<StartItem> StartItem::start_items;
-std::map<const Item*, Item*> better_items;
+vector<StartItem> StartItem::startItems;
+std::map<const Item*, Item*> betterItems;
 std::unordered_map<int, Recipe*> ContentItem<Recipe>::items;
 
 //-----------------------------------------------------------------------------
@@ -55,9 +55,9 @@ Item& Item::operator = (const Item& i)
 			Weapon& w = ToWeapon();
 			const Weapon& w2 = i.ToWeapon();
 			w.dmg = w2.dmg;
-			w.dmg_type = w2.dmg_type;
+			w.dmgType = w2.dmgType;
 			w.reqStr = w2.reqStr;
-			w.weapon_type = w2.weapon_type;
+			w.weaponType = w2.weaponType;
 			w.material = w2.material;
 		}
 		break;
@@ -87,9 +87,9 @@ Item& Item::operator = (const Item& i)
 			a.reqStr = a2.reqStr;
 			a.mobility = a2.mobility;
 			a.material = a2.material;
-			a.armor_type = a2.armor_type;
-			a.armor_unit_type = a2.armor_unit_type;
-			a.tex_override = a2.tex_override;
+			a.armorType = a2.armorType;
+			a.armorUnitType = a2.armorUnitType;
+			a.texOverride = a2.texOverride;
 		}
 		break;
 	case IT_AMULET:
@@ -145,7 +145,7 @@ Item& Item::operator = (const Item& i)
 //=================================================================================================
 const Item* ItemList::Get() const
 {
-	if(is_priority)
+	if(isPriority)
 	{
 		return RandomItemWeight(items, total,
 			[](const ItemList::Entry& e) { return e.chance; },
@@ -158,7 +158,7 @@ const Item* ItemList::Get() const
 //=================================================================================================
 const Item* ItemList::GetLeveled(int level) const
 {
-	assert(is_leveled);
+	assert(isLeveled);
 
 	if(level < 1)
 		level = 1;
@@ -190,8 +190,8 @@ const Item* ItemList::GetLeveled(int level) const
 //=================================================================================================
 void ItemList::Get(int count, const Item** result) const
 {
-	assert(count > 0 && result && !is_leveled);
-	assert(!is_priority); // TODO
+	assert(count > 0 && result && !isLeveled);
+	assert(!isPriority); // TODO
 
 	for(const Entry& e : items)
 		items_to_add.push_back(e.item);
@@ -237,19 +237,19 @@ bool ItemCmp(const Item* a, const Item* b)
 	{
 		if(a->type == IT_WEAPON)
 		{
-			WEAPON_TYPE w1 = a->ToWeapon().weapon_type,
-				w2 = b->ToWeapon().weapon_type;
+			WEAPON_TYPE w1 = a->ToWeapon().weaponType,
+				w2 = b->ToWeapon().weaponType;
 			if(w1 != w2)
 				return w1 < w2;
 		}
 		else if(a->type == IT_ARMOR)
 		{
-			ArmorUnitType aut1 = a->ToArmor().armor_unit_type,
-				aut2 = b->ToArmor().armor_unit_type;
+			ArmorUnitType aut1 = a->ToArmor().armorUnitType,
+				aut2 = b->ToArmor().armorUnitType;
 			if(aut1 != aut2)
 				return aut1 < aut2;
-			ARMOR_TYPE at1 = a->ToArmor().armor_type,
-				at2 = b->ToArmor().armor_type;
+			ARMOR_TYPE at1 = a->ToArmor().armorType,
+				at2 = b->ToArmor().armorType;
 			if(at1 != at2)
 				return at1 < at2;
 		}
@@ -306,7 +306,7 @@ void Item::CreateCopy(Item& item) const
 			o.id = o2.id;
 			o.name = o2.name;
 			o.subtype = o2.subtype;
-			o.quest_id = o2.quest_id;
+			o.questId = o2.questId;
 			o.type = o2.type;
 			o.value = o2.value;
 			o.weight = o2.weight;
@@ -359,7 +359,7 @@ Item* Item::QuestCopy(Quest* quest)
 {
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
-	item->quest_id = quest->id;
+	item->questId = quest->id;
 	questMgr->AddQuestItem(item);
 	return item;
 }
@@ -370,7 +370,7 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
 	item->name = name;
-	item->quest_id = quest->id;
+	item->questId = quest->id;
 	questMgr->AddQuestItem(item);
 	return item;
 }
@@ -412,9 +412,9 @@ void Item::Validate(uint& err)
 //=================================================================================================
 const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 {
-	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
+	auto it = std::lower_bound(StartItem::startItems.begin(), StartItem::startItems.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
-	if(it == StartItem::start_items.end())
+	if(it == StartItem::startItems.end())
 		return nullptr;
 	const Item* best = nullptr;
 	int best_value = -2;
@@ -437,7 +437,7 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 				}
 			}
 			++it;
-			if(it == StartItem::start_items.end() || it->skill != skill)
+			if(it == StartItem::startItems.end() || it->skill != skill)
 				break;
 		}
 		if(best)
@@ -460,7 +460,7 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 			}
 		}
 		++it;
-		if(it == StartItem::start_items.end() || it->skill != skill)
+		if(it == StartItem::startItems.end() || it->skill != skill)
 			break;
 	}
 	return best;
@@ -475,8 +475,8 @@ Item* Item::TryGet(Cstring id)
 		return it->second;
 
 	// search item by old id
-	auto it2 = item_aliases.find(id.s);
-	if(it2 != item_aliases.end())
+	auto it2 = itemAliases.find(id.s);
+	if(it2 != itemAliases.end())
 		return it2->second;
 
 	return nullptr;
@@ -485,7 +485,7 @@ Item* Item::TryGet(Cstring id)
 //=================================================================================================
 BookScheme* BookScheme::TryGet(Cstring id)
 {
-	for(auto scheme : book_schemes)
+	for(auto scheme : bookSchemes)
 	{
 		if(scheme->id == id)
 			return scheme;

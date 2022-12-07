@@ -242,16 +242,16 @@ void PerkLoader::LoadEntity(int, const string& id)
 						e.subtype = 0;
 						break;
 					case SE_PICKED_ATTRIBUTE:
-						if(perk->value_type != Perk::None)
+						if(perk->valueType != Perk::None)
 							t.Throw("Pickable value type already set.");
-						perk->value_type = Perk::Attribute;
+						perk->valueType = Perk::Attribute;
 						e.type = Perk::Effect::ATTRIBUTE;
 						e.subtype = (int)AttributeId::NONE;
 						break;
 					case SE_PICKED_SKILL:
-						if(perk->value_type != Perk::None)
+						if(perk->valueType != Perk::None)
 							t.Throw("Pickable value type already set.");
-						perk->value_type = Perk::Skill;
+						perk->valueType = Perk::Skill;
 						e.type = Perk::Effect::SKILL;
 						e.subtype = (int)SkillId::NONE;
 						break;
@@ -298,7 +298,7 @@ void PerkLoader::LoadEntity(int, const string& id)
 		RemoveElement(Perk::perks, existing_perk);
 		delete existing_perk;
 	}
-	Perk::hash_perks[hash] = perk;
+	Perk::hashPerks[hash] = perk;
 	Perk::perks.push_back(perk.Pin());
 }
 
@@ -314,7 +314,7 @@ Perk* PerkLoader::ParsePerkId()
 		perk = new Perk;
 		perk->hash = hash;
 		perk->id = id;
-		Perk::hash_perks[hash] = perk;
+		Perk::hashPerks[hash] = perk;
 		Perk::perks.push_back(perk);
 	}
 	t.Next();

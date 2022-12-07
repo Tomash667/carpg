@@ -26,7 +26,7 @@ void Quest_Goblins::Start()
 	type = Q_GOBLINS;
 	startLoc = world->GetRandomSettlement(questMgr->GetUsedCities(), CITY);
 	enc = -1;
-	goblins_state = State::None;
+	goblinsState = State::None;
 	nobleman = nullptr;
 	messenger = nullptr;
 	questMgr->AddQuestRumor(id, Format(questMgr->txRumorQ[7], GetStartLocationName()));
@@ -78,7 +78,7 @@ void DodajStraznikow()
 	// warp nobleman to throne
 	gameLevel->WarpUnit(*u, use->pos);
 	u->hero->knowName = true;
-	u->ApplyHumanData(questMgr->questGoblins->hd_nobleman);
+	u->ApplyHumanData(questMgr->questGoblins->hdNobleman);
 
 	// remove other units
 	InsideLocation* inside = (InsideLocation*)world->GetCurrentLocation();
@@ -127,7 +127,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
 			targetLoc->SetKnown();
 			targetLoc->reset = true;
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			targetLoc->st = 7;
 			spawnItem = Quest_Event::Item_OnGround;
 			itemToGive[0] = Item::Get("q_gobliny_luk");
@@ -156,7 +156,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			OnUpdate(questMgr->txQuest[220]);
 			world->RemoveEncounter(enc);
 			enc = -1;
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			world->AddNews(questMgr->txQuest[221]);
 			team->AddExp(1000);
 		}
@@ -165,7 +165,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			OnUpdate(questMgr->txQuest[222]);
-			goblins_state = State::Counting;
+			goblinsState = State::Counting;
 			days = Random(15, 30);
 		}
 		break;
@@ -176,7 +176,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			targetLoc->state = LS_KNOWN;
 			targetLoc->st = 10;
 			targetLoc->reset = true;
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			done = false;
 			spawnItem = Quest_Event::Item_GiveSpawned;
 			unitToSpawn = UnitGroup::Get("goblins")->GetLeader(11);
@@ -184,7 +184,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			itemToGive[0] = Item::Get("q_gobliny_luk");
 			atLevel = targetLoc->GetLastLevel();
 			OnUpdate(Format(questMgr->txQuest[223], targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
-			goblins_state = State::MessengerTalked;
+			goblinsState = State::MessengerTalked;
 		}
 		break;
 	case Progress::GivenBow:
@@ -195,8 +195,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			DialogContext::current->talker->AddItem(item, 1, true);
 			team->AddReward(500, 2500);
 			OnUpdate(questMgr->txQuest[224]);
-			goblins_state = State::GivenBow;
-			targetLoc->active_quest = nullptr;
+			goblinsState = State::GivenBow;
+			targetLoc->activeQuest = nullptr;
 			targetLoc = nullptr;
 			world->AddNews(questMgr->txQuest[225]);
 		}
@@ -204,14 +204,14 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::DidntTalkedAboutBow:
 		{
 			OnUpdate(questMgr->txQuest[226]);
-			goblins_state = State::MageTalkedStart;
+			goblinsState = State::MageTalkedStart;
 		}
 		break;
 	case Progress::TalkedAboutBow:
 		{
 			state = Quest::Started;
 			OnUpdate(questMgr->txQuest[227]);
-			goblins_state = State::MageTalked;
+			goblinsState = State::MageTalked;
 		}
 		break;
 	case Progress::PayedAndTalkedAboutBow:
@@ -220,18 +220,18 @@ void Quest_Goblins::SetProgress(int prog2)
 
 			state = Quest::Started;
 			OnUpdate(questMgr->txQuest[228]);
-			goblins_state = State::MageTalked;
+			goblinsState = State::MageTalked;
 		}
 		break;
 	case Progress::TalkedWithInnkeeper:
 		{
-			goblins_state = State::KnownLocation;
+			goblinsState = State::KnownLocation;
 			const Vec2 pos = world->FindPlace(world->GetWorldPos(), 128.f);
 			Location& target = *world->CreateLocation(L_DUNGEON, pos, THRONE_FORT);
 			target.group = UnitGroup::Get("goblins");
 			target.st = 12;
 			target.SetKnown();
-			target.active_quest = this;
+			target.activeQuest = this;
 			targetLoc = &target;
 			done = false;
 			unitToSpawn = UnitData::Get("q_gobliny_szlachcic2");
@@ -250,7 +250,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(questMgr->txQuest[230]);
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			questMgr->EndUniqueQuest();
 			world->AddNews(questMgr->txQuest[231]);
 			team->AddLearningPoint();
@@ -300,11 +300,11 @@ void Quest_Goblins::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	f << enc;
-	f << goblins_state;
+	f << goblinsState;
 	f << days;
 	f << nobleman;
 	f << messenger;
-	f << hd_nobleman;
+	f << hdNobleman;
 }
 
 //=================================================================================================
@@ -313,11 +313,11 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> enc;
-	f >> goblins_state;
+	f >> goblinsState;
 	f >> days;
 	f >> nobleman;
 	f >> messenger;
-	f >> hd_nobleman;
+	f >> hdNobleman;
 
 	if(!done)
 	{
@@ -370,8 +370,8 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_gobliny_zapytaj") == 0)
 	{
-		return goblins_state >= State::MageTalked
-			&& goblins_state < State::KnownLocation
+		return goblinsState >= State::MageTalked
+			&& goblinsState < State::KnownLocation
 			&& gameLevel->location == startLoc
 			&& prog != Progress::TalkedWithInnkeeper;
 	}
@@ -382,6 +382,6 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 //=================================================================================================
 void Quest_Goblins::OnProgress(int d)
 {
-	if(goblins_state == Quest_Goblins::State::Counting || goblins_state == Quest_Goblins::State::NoblemanLeft)
+	if(goblinsState == Quest_Goblins::State::Counting || goblinsState == Quest_Goblins::State::NoblemanLeft)
 		days -= d;
 }

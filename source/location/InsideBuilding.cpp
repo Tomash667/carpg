@@ -16,19 +16,19 @@
 void InsideBuilding::Save(GameWriter& f)
 {
 	f << offset;
-	f << inside_spawn;
-	f << outside_spawn;
-	f << xsphere_pos;
-	f << enter_region;
-	f << exit_region;
-	f << outside_rot;
+	f << insideSpawn;
+	f << outsideSpawn;
+	f << xspherePos;
+	f << enterRegion;
+	f << exitRegion;
+	f << outsideRot;
 	f << top;
-	f << xsphere_radius;
+	f << xsphereRadius;
 	f << building->id;
-	f << level_shift;
+	f << levelShift;
 	f << region1;
 	f << region2;
-	f << enter_y;
+	f << enterY;
 
 	LocationPart::Save(f);
 }
@@ -37,19 +37,19 @@ void InsideBuilding::Save(GameWriter& f)
 void InsideBuilding::Load(GameReader& f)
 {
 	f >> offset;
-	f >> inside_spawn;
-	f >> outside_spawn;
-	f >> xsphere_pos;
-	f >> enter_region;
-	f >> exit_region;
-	f >> outside_rot;
+	f >> insideSpawn;
+	f >> outsideSpawn;
+	f >> xspherePos;
+	f >> enterRegion;
+	f >> exitRegion;
+	f >> outsideRot;
 	f >> top;
-	f >> xsphere_radius;
+	f >> xsphereRadius;
 	building = Building::Get(f.ReadString1());
-	f >> level_shift;
+	f >> levelShift;
 	f >> region1;
 	f >> region2;
-	f >> enter_y;
+	f >> enterY;
 
 	if(LOAD_VERSION >= V_0_11)
 		LocationPart::Load(f);
@@ -62,14 +62,14 @@ void InsideBuilding::Write(BitStreamWriter& f)
 {
 	LocationPart::Write(f);
 
-	f << level_shift;
+	f << levelShift;
 	f << building->id;
-	f << xsphere_pos;
-	f << enter_region;
-	f << exit_region;
+	f << xspherePos;
+	f << enterRegion;
+	f << exitRegion;
 	f << top;
-	f << xsphere_radius;
-	f << enter_y;
+	f << xsphereRadius;
+	f << enterY;
 }
 
 //=================================================================================================
@@ -78,27 +78,27 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	if(!LocationPart::Read(f))
 		return false;
 
-	f >> level_shift;
+	f >> levelShift;
 	const string& building_id = f.ReadString1();
-	f >> xsphere_pos;
-	f >> enter_region;
-	f >> exit_region;
+	f >> xspherePos;
+	f >> enterRegion;
+	f >> exitRegion;
 	f >> top;
-	f >> xsphere_radius;
-	f >> enter_y;
+	f >> xsphereRadius;
+	f >> enterY;
 	if(!f)
 	{
 		Error("Broken packet for inside building.");
 		return false;
 	}
 	building = Building::Get(building_id);
-	if(!building || !building->inside_mesh)
+	if(!building || !building->insideMesh)
 	{
 		Error("Invalid building id '%s'.", building_id.c_str());
 		return false;
 	}
-	offset = Vec2(512.f*level_shift.x + 256.f, 512.f*level_shift.y + 256.f);
-	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->inside_mesh, nullptr, 0.f, GDIR_DOWN,
+	offset = Vec2(512.f * levelShift.x + 256.f, 512.f * levelShift.y + 256.f);
+	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->insideMesh, nullptr, 0.f, GDIR_DOWN,
 		Vec3(offset.x, 0, offset.y), building, nullptr, true);
 
 	return true;

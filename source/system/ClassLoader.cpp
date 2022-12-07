@@ -81,15 +81,15 @@ void ClassLoader::LoadEntity(int top, const string& id)
 		switch(key)
 		{
 		case K_PLAYER:
-			clas->player_id = t.MustGetItem();
+			clas->playerId = t.MustGetItem();
 			t.Next();
 			break;
 		case K_HERO:
-			clas->hero_id = t.MustGetItem();
+			clas->heroId = t.MustGetItem();
 			t.Next();
 			break;
 		case K_CRAZY:
-			clas->crazy_id = t.MustGetItem();
+			clas->crazyId = t.MustGetItem();
 			t.Next();
 			break;
 		case K_ICON:
@@ -196,7 +196,7 @@ void ClassLoader::ParseLevelEntry(Class::LevelEntry& entry)
 	if(a)
 	{
 		entry.type = Class::LevelEntry::T_ATTRIBUTE;
-		entry.value = (int)a->attrib_id;
+		entry.value = (int)a->attribId;
 		return;
 	}
 
@@ -204,7 +204,7 @@ void ClassLoader::ParseLevelEntry(Class::LevelEntry& entry)
 	if(s)
 	{
 		entry.type = Class::LevelEntry::T_SKILL;
-		entry.value = (int)s->skill_id;
+		entry.value = (int)s->skillId;
 		return;
 	}
 
@@ -223,11 +223,11 @@ void ClassLoader::ApplyUnits()
 	for(Class* clas : Class::classes)
 	{
 		SetLocalId(clas->id);
-		if(!clas->player_id.empty())
+		if(!clas->playerId.empty())
 		{
-			clas->player = UnitData::TryGet(clas->player_id);
+			clas->player = UnitData::TryGet(clas->playerId);
 			if(!clas->player)
-				LoadError("Missing player unit data '%s'.", clas->player_id.c_str());
+				LoadError("Missing player unit data '%s'.", clas->playerId.c_str());
 			else
 			{
 				if(!clas->player->stat_profile)
@@ -248,17 +248,17 @@ void ClassLoader::ApplyUnits()
 			if(clas->level.empty())
 				LoadError("Missing level entries.");
 		}
-		if(!clas->hero_id.empty())
+		if(!clas->heroId.empty())
 		{
-			clas->hero = UnitData::TryGet(clas->hero_id);
+			clas->hero = UnitData::TryGet(clas->heroId);
 			if(!clas->hero)
-				LoadError("Missing hero unit data '%s'.", clas->hero_id.c_str());
+				LoadError("Missing hero unit data '%s'.", clas->heroId.c_str());
 		}
-		if(!clas->crazy_id.empty())
+		if(!clas->crazyId.empty())
 		{
-			clas->crazy = UnitData::TryGet(clas->crazy_id);
+			clas->crazy = UnitData::TryGet(clas->crazyId);
 			if(!clas->crazy)
-				LoadError("Missing crazy unit data '%s'.", clas->crazy_id.c_str());
+				LoadError("Missing crazy unit data '%s'.", clas->crazyId.c_str());
 		}
 	}
 

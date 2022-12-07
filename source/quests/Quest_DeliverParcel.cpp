@@ -13,7 +13,7 @@
 void Quest_DeliverParcel::Start()
 {
 	startLoc = world->GetCurrentLocation();
-	end_loc = world->GetRandomSettlement(startLoc)->index;
+	endLoc = world->GetRandomSettlement(startLoc)->index;
 	type = Q_DELIVER_PARCEL;
 	category = QuestCategory::Mayor;
 }
@@ -48,11 +48,11 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			OnStart(questMgr->txQuest[9]);
 			questMgr->questTimeouts2.push_back(this);
 
-			Location& loc = *world->GetLocation(end_loc);
+			Location& loc = *world->GetLocation(endLoc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(loc) ? questMgr->txForMayor : questMgr->txForSoltys, loc.name.c_str());
-			parcel.quest_id = id;
+			parcel.questId = id;
 			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			msgs.push_back(Format(questMgr->txQuest[3], LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str(), world->GetDate()));
@@ -80,7 +80,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time, but gain some gold anyway
 		{
 			state = Quest::Failed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(300, 2000);
@@ -94,7 +94,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time
 		{
 			state = Quest::Failed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 
 			OnUpdate(questMgr->txQuest[13]);
 			RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
@@ -105,7 +105,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// parcel delivered, end of quest
 		{
 			state = Quest::Completed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::None;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(750, 3000);
@@ -150,7 +150,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_DeliverParcel::FormatString(const string& str)
 {
-	Location& loc = *world->GetLocation(end_loc);
+	Location& loc = *world->GetLocation(endLoc);
 	if(str == "target_burmistrza")
 		return (LocationHelper::IsCity(loc) ? questMgr->txForMayor : questMgr->txForSoltys);
 	else if(str == "target_locname")
@@ -192,7 +192,7 @@ bool Quest_DeliverParcel::IfHaveQuestItem() const
 {
 	if(world->GetCurrentLocation() == world->GetEncounterLocation() && prog == Progress::Started)
 		return true;
-	return world->GetCurrentLocationIndex() == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
+	return world->GetCurrentLocationIndex() == endLoc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
 }
 
 //=================================================================================================
@@ -207,7 +207,7 @@ void Quest_DeliverParcel::Save(GameWriter& f)
 	Quest_Encounter::Save(f);
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
-		f << end_loc;
+		f << endLoc;
 }
 
 //=================================================================================================
@@ -217,20 +217,20 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 	{
-		f >> end_loc;
+		f >> endLoc;
 		if(prog >= Progress::Started)
 		{
-			Location& loc = *world->GetLocation(end_loc);
+			Location& loc = *world->GetLocation(endLoc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(loc) ? questMgr->txForMayor : questMgr->txForSoltys, loc.name.c_str());
-			parcel.quest_id = id;
+			parcel.questId = id;
 		}
 	}
 
 	if(enc != -1)
 	{
-		Location& loc = *world->GetLocation(end_loc);
+		Location& loc = *world->GetLocation(endLoc);
 		Encounter* e = world->RecreateEncounter(enc);
 		e->pos = (loc.pos + startLoc->pos) / 2;
 		e->range = 64;

@@ -77,7 +77,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		nearPlayers.clear();
 		for(Unit& unit : team->activeMembers)
 		{
-			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arena_pos) < 5.f)
+			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arenaPos) < 5.f)
 				nearPlayers.push_back(&unit);
 		}
 		nearPlayersStr.resize(nearPlayers.size());
@@ -93,7 +93,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	{
 		int id = int(msg[4] - '1');
 		Unit* u = nearPlayers[id];
-		if(Vec3::Distance2d(u->pos, gameLevel->cityCtx->arena_pos) > 5.f)
+		if(Vec3::Distance2d(u->pos, gameLevel->cityCtx->arenaPos) > 5.f)
 		{
 			ctx.dialogString = Format(txPvpTooFar, u->player->name.c_str());
 			ctx.Talk(ctx.dialogString.c_str());
@@ -137,7 +137,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 bool Arena::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "arena_can_combat") == 0)
-		return !world->IsSameWeek(gameLevel->cityCtx->arena_time);
+		return !world->IsSameWeek(gameLevel->cityCtx->arenaTime);
 	if(strcmp(msg, "is_arena_free") == 0)
 		return free;
 	else if(strncmp(msg, "have_player/", 12) == 0)
@@ -159,7 +159,7 @@ void Arena::SpawnArenaViewers(int count)
 	vector<Mesh::Point*> points;
 	UnitData& ud = *UnitData::Get("viewer");
 	InsideBuilding* arena = gameLevel->GetArena();
-	Mesh* mesh = arena->building->inside_mesh;
+	Mesh* mesh = arena->building->insideMesh;
 
 	for(vector<Mesh::Point>::iterator it = mesh->attachPoints.begin(), end = mesh->attachPoints.end(); it != end; ++it)
 	{
@@ -200,8 +200,8 @@ void Arena::Clean()
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
 			u.Standup(false, true);
-		gameLevel->WarpUnit(u, arena->outside_spawn);
-		u.rot = arena->outside_rot;
+		gameLevel->WarpUnit(u, arena->outsideSpawn);
+		u.rot = arena->outsideRot;
 	}
 	RemoveArenaViewers();
 	free = true;
@@ -268,7 +268,7 @@ void Arena::StartArenaCombat(int level)
 	state = WAITING_TO_WARP;
 	timer = 0.f;
 	difficulty = level;
-	gameLevel->cityCtx->arena_time = world->GetWorldtime();
+	gameLevel->cityCtx->arenaTime = world->GetWorldtime();
 	units.clear();
 
 	// dodaj gracza na arenê
@@ -297,7 +297,7 @@ void Arena::StartArenaCombat(int level)
 
 	for(Unit& unit : team->members)
 	{
-		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arena_pos) > 5.f)
+		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, gameLevel->cityCtx->arenaPos) > 5.f)
 			continue;
 		if(unit.IsPlayer())
 		{

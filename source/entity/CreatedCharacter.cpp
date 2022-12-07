@@ -63,7 +63,7 @@ void CreatedCharacter::Random(Class* clas)
 		if(!tp.perk)
 			break;
 		int value = tp.value;
-		if(tp.perk->value_type == Perk::Skill)
+		if(tp.perk->valueType == Perk::Skill)
 			value = (int)sub.GetSkill((SkillId)value);
 		TakenPerk perk(tp.perk, value);
 		perk.Apply(ctx);
@@ -209,7 +209,7 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 	{
 		SkillId best = SkillId::NONE;
 		int best_value = 0, best_value2 = 0;
-		for(const StartItem& item : StartItem::start_items)
+		for(const StartItem& item : StartItem::startItems)
 		{
 			if(item.value != HEIRLOOM)
 				continue;
@@ -224,7 +224,7 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 += a[(int)skill.attrib2].value;
 				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					best = skill.skill_id;
+					best = skill.skillId;
 					best_value = value;
 					best_value2 = value2;
 				}
@@ -261,7 +261,7 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 += a[(int)skill.attrib2].value;
 				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					best = skill.skill_id;
+					best = skill.skillId;
 					best_value = value;
 					best_value2 = value2;
 				}
@@ -309,7 +309,7 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 += a[(int)skill.attrib2].value;
 				if(value > best_value || (value == best_value && value2 > best_value2))
 				{
-					best = skill.skill_id;
+					best = skill.skillId;
 					best_value = value;
 					best_value2 = value2;
 				}

@@ -426,10 +426,10 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			min_t = t;
 
 		// xsphere
-		if(building.xsphere_radius > 0.f)
+		if(building.xsphereRadius > 0.f)
 		{
 			Vec3 from = pos + dir;
-			if(RayToSphere(from, -dir, building.xsphere_pos, building.xsphere_radius, t) && t > 0.f)
+			if(RayToSphere(from, -dir, building.xspherePos, building.xsphereRadius, t) && t > 0.f)
 			{
 				t = 1.f - t;
 				if(t < min_t)

@@ -10,8 +10,8 @@ void InsideLocation::Save(GameWriter& f)
 {
 	Location::Save(f);
 
-	f << special_room;
-	f << from_portal;
+	f << specialRoom;
+	f << fromPortal;
 }
 
 //=================================================================================================
@@ -21,21 +21,21 @@ void InsideLocation::Load(GameReader& f)
 
 	if(LOAD_VERSION < V_0_12)
 		f >> target;
-	f >> special_room;
-	f >> from_portal;
+	f >> specialRoom;
+	f >> fromPortal;
 }
 
 //=================================================================================================
 void InsideLocation::Write(BitStreamWriter& f)
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	f << from_portal;
+	f << fromPortal;
 
 	lvl.Write(f);
 
 	// map
 	f.WriteCasted<byte>(lvl.w);
-	f.Write((cstring)lvl.map, sizeof(Tile)*lvl.w*lvl.h);
+	f.Write((cstring)lvl.map, sizeof(Tile) * lvl.w * lvl.h);
 
 	// rooms
 	f.WriteCasted<byte>(lvl.rooms.size());
@@ -59,7 +59,7 @@ bool InsideLocation::Read(BitStreamReader& f)
 	SetActiveLevel(gameLevel->dungeonLevel);
 	InsideLocationLevel& lvl = GetLevelData();
 	gameLevel->lvl = &lvl;
-	f >> from_portal;
+	f >> fromPortal;
 
 	if(!lvl.Read(f))
 		return false;
@@ -127,10 +127,10 @@ bool InsideLocation::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool InsideLocation::RemoveQuestItemFromChest(int quest_id, int& at_level)
+bool InsideLocation::RemoveQuestItemFromChest(int questId, int& atLevel)
 {
 	int index;
-	Chest* chest = FindChestWithQuestItem(quest_id, at_level, &index);
+	Chest* chest = FindChestWithQuestItem(questId, atLevel, &index);
 	if(!chest)
 		return false;
 	else

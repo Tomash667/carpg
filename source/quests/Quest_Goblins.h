@@ -59,10 +59,10 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void OnProgress(int days);
 
-	State goblins_state;
+	State goblinsState;
 	int days;
 	Unit* nobleman, *messenger;
-	HumanData hd_nobleman;
+	HumanData hdNobleman;
 
 private:
 	int enc;

@@ -274,7 +274,7 @@ void Game::UpdateAi(float dt)
 					&& u.mp >= ability->mana
 					&& u.stamina >= ability->stamina)
 				{
-					float spell_range = ability->move_range,
+					float spell_range = ability->moveRange,
 						best_prio = -999.f, dist;
 					Unit* spell_target = nullptr;
 
@@ -520,13 +520,13 @@ void Game::UpdateAi(float dt)
 								{
 									// target is in the building but hero is not - go to the entrance
 									ai.st.idle.region.locPart = order_unit->locPart;
-									ai.st.idle.region.pos = static_cast<InsideBuilding*>(order_unit->locPart)->enter_region.Midpoint().XZ();
+									ai.st.idle.region.pos = static_cast<InsideBuilding*>(order_unit->locPart)->enterRegion.Midpoint().XZ();
 								}
 								else
 								{
 									// target is not in the building but the hero is - leave the building
 									ai.st.idle.region.locPart = gameLevel->localPart;
-									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
+									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 								}
 
 								if(u.IsHero())
@@ -608,7 +608,7 @@ void Game::UpdateAi(float dt)
 						ai.st.idle.region.locPart = gameLevel->localPart;
 						ai.st.idle.region.exit = false;
 						ai.st.idle.region.pos = u.locPart->partType == LocationPart::Type::Building ?
-							static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ() :
+							static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ() :
 							gameLevel->GetExitPos(u);
 					}
 					break;
@@ -675,7 +675,7 @@ void Game::UpdateAi(float dt)
 									ai.st.idle.action = AIController::Idle_MoveRegion;
 									ai.st.idle.region.locPart = inn;
 									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
+									ai.st.idle.region.pos = inn->enterRegion.Midpoint().XZ();
 									ai.timer = Random(30.f, 40.f);
 									ai.cityWander = true;
 								}
@@ -697,7 +697,7 @@ void Game::UpdateAi(float dt)
 									ai.st.idle.action = AIController::Idle_MoveRegion;
 									ai.st.idle.region.locPart = gameLevel->localPart;
 									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
+									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 								}
 							}
 						}
@@ -856,7 +856,7 @@ void Game::UpdateAi(float dt)
 									ai.st.idle.action = AIController::Idle_MoveRegion;
 									ai.st.idle.region.locPart = inn;
 									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = inn->enter_region.Midpoint().XZ();
+									ai.st.idle.region.pos = inn->enterRegion.Midpoint().XZ();
 								}
 								else if(where == 2)
 								{
@@ -874,7 +874,7 @@ void Game::UpdateAi(float dt)
 								ai.st.idle.action = AIController::Idle_MoveRegion;
 								ai.st.idle.region.locPart = gameLevel->localPart;
 								ai.st.idle.region.exit = false;
-								ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exit_region.Midpoint().XZ();
+								ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 							}
 							ai.cityWander = true;
 						}
@@ -929,8 +929,8 @@ void Game::UpdateAi(float dt)
 							goto normal_idle_action;
 					}
 					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE)
-						&& questMgr->questMages2->mages_state >= Quest_Mages2::State::OldMageJoined
-						&& questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured
+						&& questMgr->questMages2->magesState >= Quest_Mages2::State::OldMageJoined
+						&& questMgr->questMages2->magesState < Quest_Mages2::State::MageCured
 						&& Rand() % 3 == 0)
 					{
 						// drink something
@@ -1385,7 +1385,7 @@ void Game::UpdateAi(float dt)
 										u.UseUsable(&use);
 										u.targetPos = u.pos;
 										u.targetPos2 = use.pos;
-										if(use.base->limit_rot == 4)
+										if(use.base->limitRot == 4)
 											u.targetPos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 										u.timer = 0.f;
 										u.animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
@@ -1431,7 +1431,7 @@ void Game::UpdateAi(float dt)
 								run_type = Walk;
 								look_at = LookAtWalk;
 								path_obj_ignore = &use;
-								if(use.base->limit_rot == 4)
+								if(use.base->limitRot == 4)
 									targetPos -= Vec3(sin(use.rot), 0, cos(use.rot));
 							}
 						}

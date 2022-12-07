@@ -130,16 +130,16 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				Effect e;
 				e.effect = EffectId::Rooted;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = EffectValue_Rooted_Vines;
 				e.power = 0.f;
 				e.time = ability->time;
 				hitted->AddEffect(e);
 
-				if(ability->sound_hit)
+				if(ability->soundHit)
 				{
 					preventTooManySounds = true;
-					soundMgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
+					soundMgr->PlaySound3d(ability->soundHit, hitpoint, ability->soundHitDist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -272,7 +272,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
 					e.power = poisonAttack / 5 * poison_res;
 					e.time = 5.f;
@@ -303,7 +303,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 
 			float dmg = attack;
 			if(owner)
-				dmg += owner->level * ability->dmg_bonus;
+				dmg += owner->level * ability->dmgBonus;
 			float angle_dif = AngleDiff(rot.y, hitted->rot);
 			float base_dmg = dmg;
 
@@ -339,7 +339,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
 					e.power = dmg / 5 * poison_res;
 					e.time = 5.f;
@@ -385,7 +385,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 				if(obj && obj->base && obj->base->id == "bow_target")
 				{
-					if(questMgr->questTutorial->in_tutorial)
+					if(questMgr->questTutorial->inTutorial)
 						questMgr->questTutorial->HandleBulletCollision();
 					owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
 				}
@@ -584,10 +584,10 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		trail = nullptr;
 		pe = nullptr;
 
-		if(ability->tex_particle)
+		if(ability->texParticle)
 		{
 			pe = new ParticleEmitter;
-			pe->tex = ability->tex_particle;
+			pe->tex = ability->texParticle;
 			pe->emissionInterval = 0.1f;
 			pe->life = -1;
 			pe->particleLife = 0.5f;
@@ -600,7 +600,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 			pe->speedMax = Vec3(1, 1, 1);
 			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->size_particle;
+			pe->size = ability->sizeParticle;
 			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 1.f;
 			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;

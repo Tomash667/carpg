@@ -30,7 +30,7 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 	for(const ItemList::Entry& e : lis->items)
 	{
 		const Item* item = e.item;
-		if(item->ToWeapon().weapon_type == best)
+		if(item->ToWeapon().weaponType == best)
 			return item;
 	}
 
@@ -52,11 +52,11 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 		}
 	}
 
-	ARMOR_TYPE armor_type = unit.GetBestArmorType();
+	ARMOR_TYPE armorType = unit.GetBestArmorType();
 	for(const ItemList::Entry& e : lis->items)
 	{
 		const Item* item = e.item;
-		if(item->type == IT_ARMOR && item->ToArmor().armor_type == armor_type)
+		if(item->type == IT_ARMOR && item->ToArmor().armorType == armorType)
 			return item;
 	}
 

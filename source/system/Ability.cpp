@@ -2,7 +2,7 @@
 #include "Ability.h"
 
 vector<Ability*> Ability::abilities;
-std::map<int, Ability*> Ability::hash_abilities;
+std::map<int, Ability*> Ability::hashAbilities;
 
 //=================================================================================================
 SkillId Ability::GetSkill() const
@@ -18,8 +18,8 @@ SkillId Ability::GetSkill() const
 //=================================================================================================
 Ability* Ability::Get(int hash)
 {
-	auto it = hash_abilities.find(hash);
-	if(it != hash_abilities.end())
+	auto it = hashAbilities.find(hash);
+	if(it != hashAbilities.end())
 		return it->second;
 	return nullptr;
 }

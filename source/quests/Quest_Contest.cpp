@@ -288,7 +288,7 @@ void Quest_Contest::Update(float dt)
 					}
 					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE))
 					{
-						if(questMgr->questMages2->mages_state < Quest_Mages2::State::MageCured)
+						if(questMgr->questMages2->magesState < Quest_Mages2::State::MageCured)
 							ok = true;
 					}
 

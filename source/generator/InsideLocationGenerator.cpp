@@ -53,7 +53,7 @@ void InsideLocationGenerator::OnEnter()
 	int days;
 	bool need_reset = inside->CheckUpdate(days, world->GetWorldtime());
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	gameLevel->Apply();
 
@@ -80,7 +80,7 @@ void InsideLocationGenerator::OnEnter()
 			need_reset = false;
 
 		if(days > 0)
-			gameLevel->UpdateLocation(days, base.door_open, need_reset);
+			gameLevel->UpdateLocation(days, base.doorOpen, need_reset);
 
 		if(need_reset)
 		{
@@ -127,9 +127,9 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER)
+	if(inside->activeQuest && inside->activeQuest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->active_quest);
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->activeQuest);
 		Quest_Event* event = quest ? quest->GetEvent(gameLevel->location) : nullptr;
 		if(event)
 		{
@@ -140,9 +140,9 @@ void InsideLocationGenerator::OnEnter()
 					questMgr->HandleQuestEvent(event);
 
 					// generowanie orków
-					if(gameLevel->location == questMgr->questOrcs2->targetLoc && questMgr->questOrcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+					if(gameLevel->location == questMgr->questOrcs2->targetLoc && questMgr->questOrcs2->orcsState == Quest_Orcs2::State::GenerateOrcs)
 					{
-						questMgr->questOrcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
+						questMgr->questOrcs2->orcsState = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
 						for(Room* room : lvl.rooms)
 						{
@@ -169,7 +169,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && gameLevel->location->type != L_CAVE && inside->target != LABYRINTH
-		&& !gameLevel->location->active_quest && dungeonLevel == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
+		&& !gameLevel->location->activeQuest && dungeonLevel == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -192,7 +192,7 @@ void InsideLocationGenerator::OnEnter()
 			Object* o = lvl.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
-			loc->active_quest = ACTIVE_QUEST_HOLDER;
+			loc->activeQuest = ACTIVE_QUEST_HOLDER;
 			loc->pos = Vec2(-999, -999);
 			loc->st = 20;
 			loc->name = game->txHiddenPlace;
@@ -327,7 +327,7 @@ void InsideLocationGenerator::AddRoomColliders(InsideLocationLevel& lvl, Room& r
 void InsideLocationGenerator::GenerateDungeonObjects()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	static vector<Chest*> room_chests;
 	static vector<Vec3> onWall;
 	static vector<Int2> blocks;
@@ -407,7 +407,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						o->pos.x -= 0.8229f;
 				}
 
-				if(Rand() % 100 < base.door_chance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
+				if(Rand() % 100 < base.doorChance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
 					LockId lock;
 					bool open;
@@ -420,7 +420,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					else
 					{
 						lock = LOCK_NONE;
-						open = (Rand() % 100 < base.door_open);
+						open = (Rand() % 100 < base.doorOpen);
 					}
 
 					Door* door = new Door;
@@ -518,7 +518,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
-				BaseObject* base = roomObj.is_group ? roomObj.group->GetRandom() : roomObj.obj;
+				BaseObject* base = roomObj.isGroup ? roomObj.group->GetRandom() : roomObj.obj;
 				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &roomObj, onWall, blocks, flags);
 				if(!e)
 				{
@@ -605,16 +605,16 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 
 	if(base->type == OBJ_CYLINDER)
 	{
-		shift.x = base->r + base->extra_dist;
-		shift.y = base->r + base->extra_dist;
+		shift.x = base->r + base->extraDist;
+		shift.y = base->r + base->extraDist;
 	}
 	else
-		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
+		shift = base->size + Vec2(base->extraDist, base->extraDist);
 
-	if(roomObj && roomObj->force_pos)
+	if(roomObj && roomObj->forcePos)
 	{
 		pos = room.Center() + roomObj->pos;
-		if(roomObj->force_rot)
+		if(roomObj->forceRot)
 			rot = roomObj->rot;
 		else
 			rot = PI / 2 * (Rand() % 4);
@@ -811,7 +811,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 //=================================================================================================
 void InsideLocationGenerator::GenerateTraps()
 {
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	if(!IsSet(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
 		return;
@@ -913,7 +913,7 @@ void InsideLocationGenerator::GenerateTraps()
 //=================================================================================================
 void InsideLocationGenerator::RegenerateTraps()
 {
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	if(!IsSet(base.traps, TRAPS_MAGIC))
 		return;
@@ -1108,7 +1108,7 @@ void InsideLocationGenerator::OnLoad()
 	InsideLocation* inside = (InsideLocation*)loc;
 	inside->SetActiveLevel(gameLevel->dungeonLevel);
 	gameLevel->lvl = &inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	SetDungeonParamsAndTextures(base);
 	gameLevel->RecreateObjects(Net::IsClient());
@@ -1405,13 +1405,13 @@ void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// scene parameters
 	LevelPart& lvlPart = *GetLevelData().lvlPart;
-	lvlPart.drawRange = base.draw_range;
+	lvlPart.drawRange = base.drawRange;
 
 	Scene* scene = lvlPart.scene;
-	scene->clearColor = base.fog_color;
-	scene->fogRange = base.fog_range;
-	scene->fogColor = base.fog_color;
-	scene->ambientColor = base.ambient_color;
+	scene->clearColor = base.fogColor;
+	scene->fogRange = base.fogRange;
+	scene->fogColor = base.fogColor;
+	scene->ambientColor = base.ambientColor;
 	scene->useLightDir = false;
 
 	// first dungeon textures
@@ -1420,7 +1420,7 @@ void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
 	// second dungeon textures
 	if(base.tex2 != -1)
 	{
-		BaseLocation& base2 = g_base_locations[base.tex2];
+		BaseLocation& base2 = gBaseLocations[base.tex2];
 		ApplyLocationTextureOverride(gameRes->tFloor[1], gameRes->tWall[1], gameRes->tCeil[1], base2.tex);
 	}
 	else
@@ -1445,8 +1445,8 @@ void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& texOverr
 	if(e.tex)
 	{
 		texOverride.diffuse = e.tex;
-		texOverride.normal = e.tex_normal;
-		texOverride.specular = e.tex_specular;
+		texOverride.normal = e.texNormal;
+		texOverride.specular = e.texSpecular;
 	}
 	else
 		texOverride = texOverrideDefault;

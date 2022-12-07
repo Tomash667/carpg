@@ -119,7 +119,7 @@ void EncounterGenerator::Generate()
 //=================================================================================================
 void EncounterGenerator::OnEnter()
 {
-	outside->loaded_resources = false;
+	outside->loadedResources = false;
 	gameLevel->Apply();
 
 	ApplyTiles();

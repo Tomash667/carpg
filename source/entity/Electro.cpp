@@ -129,14 +129,14 @@ bool Electro::Update(float dt)
 			}
 
 			// play sound
-			if(ability->sound_hit)
-				soundMgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+			if(ability->soundHit)
+				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
 
 			// add particles
-			if(ability->tex_particle)
+			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->tex_particle;
+				pe->tex = ability->texParticle;
 				pe->emissionInterval = 0.01f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
@@ -149,7 +149,7 @@ bool Electro::Update(float dt)
 				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->size_particle;
+				pe->size = ability->sizeParticle;
 				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
 				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
@@ -200,14 +200,14 @@ bool Electro::Update(float dt)
 			const Vec3 target_pos = lines.back().to;
 			hitsome = false;
 
-			if(ability->sound_hit)
-				soundMgr->PlaySound3d(ability->sound_hit, target_pos, ability->sound_hit_dist);
+			if(ability->soundHit)
+				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
 
 			// particles
-			if(ability->tex_particle)
+			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->tex_particle;
+				pe->tex = ability->texParticle;
 				pe->emissionInterval = 0.01f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
@@ -220,7 +220,7 @@ bool Electro::Update(float dt)
 				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->size_particle;
+				pe->size = ability->sizeParticle;
 				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
 				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;

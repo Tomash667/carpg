@@ -109,18 +109,18 @@ void LocationLoader::LoadEntity(int, const string& id)
 					t.Throw("Missing object '%s'.", obj_id.c_str());
 				t.Next();
 				RoomType::Obj room_obj;
-				room_obj.force_pos = false;
-				room_obj.force_rot = false;
+				room_obj.forcePos = false;
+				room_obj.forceRot = false;
 				room_obj.flags = 0;
 				if(group)
 				{
 					room_obj.group = group;
-					room_obj.is_group = true;
+					room_obj.isGroup = true;
 				}
 				else
 				{
 					room_obj.obj = obj;
-					room_obj.is_group = false;
+					room_obj.isGroup = false;
 				}
 				if(t.IsInt())
 				{
@@ -148,11 +148,11 @@ void LocationLoader::LoadEntity(int, const string& id)
 						{
 						case OK_POS:
 							t.Parse(room_obj.pos);
-							room_obj.force_pos = true;
+							room_obj.forcePos = true;
 							break;
 						case OK_ROT:
 							room_obj.rot = t.MustGetFloat();
-							room_obj.force_rot = true;
+							room_obj.forceRot = true;
 							t.Next();
 							break;
 						case OK_FLAGS:

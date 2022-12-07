@@ -25,7 +25,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestId() override { return id; }
@@ -34,10 +34,10 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 
 private:
-	int level, in_location;
+	int level, inLocation;
 	bool crazy;
 	Class* clas;
-	string unit_name;
+	string unitName;
 	OtherItem letter;
-	Unit* target_unit;
+	Unit* targetUnit;
 };

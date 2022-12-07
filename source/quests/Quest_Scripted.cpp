@@ -125,7 +125,7 @@ void Quest_Scripted::Save(GameWriter& f)
 				{
 					f << item->id;
 					if(item->id[0] == '$')
-						f << item->quest_id;
+						f << item->questId;
 				}
 				else
 					f.Write0();
@@ -302,8 +302,8 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 				*(Item**)ptr = Item::Get(item_id);
 			else
 			{
-				int quest_id = f.Read<int>();
-				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), quest_id, nullptr);
+				int questId = f.Read<int>();
+				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), questId, nullptr);
 			}
 		}
 		break;
@@ -446,9 +446,9 @@ void Quest_Scripted::SetCompleted()
 	journalState = JournalState::Changed;
 	state = Quest::Completed;
 	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+		static_cast<City*>(startLoc)->questMayor = CityQuestState::None;
 	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
+		static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
 	if(category == QuestCategory::Unique)
 		questMgr->EndUniqueQuest();
 	Cleanup();
@@ -461,9 +461,9 @@ void Quest_Scripted::SetFailed()
 	journalState = JournalState::Changed;
 	state = Quest::Failed;
 	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
 	Cleanup();
 }
 

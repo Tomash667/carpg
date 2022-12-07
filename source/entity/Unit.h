@@ -586,7 +586,7 @@ public:
 	float GetPowerAttackSpeed() const
 	{
 		if(HaveWeapon())
-			return GetWeapon().GetInfo().power_speed * GetAttackSpeed();
+			return GetWeapon().GetInfo().powerSpeed * GetAttackSpeed();
 		else
 			return 0.33f;
 	}
@@ -823,7 +823,7 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_USE_USABLE && animationState == AS_USE_USABLE_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_USE_USABLE && animationState == AS_USE_USABLE_USING && IsSet(usable->base->useFlags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;

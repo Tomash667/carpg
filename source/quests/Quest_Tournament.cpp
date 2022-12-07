@@ -45,7 +45,7 @@ void Quest_Tournament::LoadLanguage()
 void Quest_Tournament::Init()
 {
 	year = 0;
-	city_year = world->GetDateValue().year;
+	cityYear = world->GetDateValue().year;
 	city = world->GetRandomCity()->index;
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
@@ -67,7 +67,7 @@ void Quest_Tournament::Save(GameWriter& f)
 {
 	f << year;
 	f << city;
-	f << city_year;
+	f << cityYear;
 	f << winner;
 	f << generated;
 }
@@ -77,7 +77,7 @@ void Quest_Tournament::Load(GameReader& f)
 {
 	f >> year;
 	f >> city;
-	f >> city_year;
+	f >> cityYear;
 	f >> winner;
 	f >> generated;
 	state = TOURNAMENT_NOT_DONE;
@@ -190,9 +190,9 @@ cstring Quest_Tournament::FormatString(const string& str)
 void Quest_Tournament::OnProgress()
 {
 	const Date& date = world->GetDateValue();
-	if(date.year != city_year)
+	if(date.year != cityYear)
 	{
-		city_year = date.year;
+		cityYear = date.year;
 		city = world->GetRandomCity(world->GetLocation(city))->index;
 		master = nullptr;
 	}
@@ -210,18 +210,18 @@ UnitData& Quest_Tournament::GetRandomHeroData()
 }
 
 //=================================================================================================
-void Quest_Tournament::StartTournament(Unit* arena_master)
+void Quest_Tournament::StartTournament(Unit* arenaMaster)
 {
 	year = world->GetDateValue().year;
 	state = TOURNAMENT_STARTING;
 	timer = 0.f;
 	state2 = 0;
-	master = arena_master;
+	master = arenaMaster;
 	units.clear();
 	winner = nullptr;
 	pairs.clear();
-	skipped_unit = nullptr;
-	other_fighter = nullptr;
+	skippedCount = nullptr;
+	otherFighter = nullptr;
 	arena = gameLevel->cityCtx->FindInsideBuilding(BuildingGroup::BG_ARENA);
 }
 
@@ -234,7 +234,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 	{
 		if(IsSet(u.data->flags2, F2_TOURNAMENT))
 			return true;
-		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState >= Quest_Mages2::State::MageCured)
 		{
 			// go back to inn
 			if(!u.IsTeamMember())
@@ -311,8 +311,8 @@ void Quest_Tournament::Update(float dt)
 		VerifyUnit(pair.first);
 		VerifyUnit(pair.second);
 	}
-	VerifyUnit(skipped_unit);
-	VerifyUnit(other_fighter);
+	VerifyUnit(skippedCount);
+	VerifyUnit(otherFighter);
 
 	if(state == TOURNAMENT_STARTING)
 	{
@@ -372,7 +372,7 @@ void Quest_Tournament::Update(float dt)
 				round = 0;
 				master->busy = Unit::Busy_Yes;
 				Talk(txTour[2]);
-				skipped_unit = nullptr;
+				skippedCount = nullptr;
 				StartRound();
 			}
 		}
@@ -384,7 +384,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					// tell how many units joined
 					state2 = 4;
-					Talk(Format(txTour[3], pairs.size() * 2 + (skipped_unit ? 1 : 0)));
+					Talk(Format(txTour[3], pairs.size() * 2 + (skippedCount ? 1 : 0)));
 					game->arena->SpawnArenaViewers(5);
 				}
 				else
@@ -423,7 +423,7 @@ void Quest_Tournament::Update(float dt)
 				cstring text;
 				if(state3 == 0)
 					text = Format(txTour[4], round + 1);
-				else if(pairs.size() == 1u && !skipped_unit)
+				else if(pairs.size() == 1u && !skippedCount)
 				{
 					auto& p = pairs[0];
 					text = Format(txTour[23], p.first->GetRealName(), p.second->GetRealName());
@@ -435,8 +435,8 @@ void Quest_Tournament::Update(float dt)
 				}
 				else if(state3 == (int)pairs.size() + 1)
 				{
-					if(skipped_unit)
-						text = Format(txTour[6], skipped_unit->GetRealName());
+					if(skippedCount)
+						text = Format(txTour[6], skippedCount->GetRealName());
 					else
 						text = txTour[round == 0 ? 7 : 8];
 				}
@@ -449,7 +449,7 @@ void Quest_Tournament::Update(float dt)
 				bool end = false;
 				if(state3 == (int)pairs.size() + 1)
 				{
-					if(!skipped_unit)
+					if(!skippedCount)
 						end = true;
 				}
 				else if(state3 == (int)pairs.size() + 2)
@@ -468,7 +468,7 @@ void Quest_Tournament::Update(float dt)
 			if(state3 == 0)
 			{
 				// tell next fight participants (skip talking at final round)
-				if(pairs.size() == 1u && units.empty() && !skipped_unit)
+				if(pairs.size() == 1u && units.empty() && !skippedCount)
 					state3 = 1;
 				else if(master->CanAct())
 				{
@@ -488,7 +488,7 @@ void Quest_Tournament::Update(float dt)
 					{
 						// first unit left or can't fight, check other
 						state3 = 2;
-						other_fighter = p.second;
+						otherFighter = p.second;
 						Talk(Format(txTour[11], p.first->GetRealName()));
 						if(!p.first->toRemove && p.first->IsPlayer())
 							gameGui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
@@ -556,21 +556,21 @@ void Quest_Tournament::Update(float dt)
 				// check if second unit is here
 				if(master->CanAct())
 				{
-					if(other_fighter->toRemove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f || other_fighter->locPart == arena))
+					if(otherFighter->toRemove || !otherFighter->IsStanding() || otherFighter->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(otherFighter->pos, master->pos) <= 64.f || otherFighter->locPart == arena))
 					{
 						// second unit left too
-						Talk(Format(txTour[13], other_fighter->GetRealName()));
-						if(!other_fighter->toRemove && other_fighter->IsPlayer())
-							gameGui->messages->AddGameMsg3(other_fighter->player, GMS_LEFT_EVENT);
+						Talk(Format(txTour[13], otherFighter->GetRealName()));
+						if(!otherFighter->toRemove && otherFighter->IsPlayer())
+							gameGui->messages->AddGameMsg3(otherFighter->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
 						// second unit is here, go automaticaly to next round
-						units.push_back(other_fighter);
-						Talk(Format(txTour[14], other_fighter->GetRealName()));
+						units.push_back(otherFighter);
+						Talk(Format(txTour[14], otherFighter->GetRealName()));
 					}
-					other_fighter = nullptr;
+					otherFighter = nullptr;
 					state3 = 3;
 				}
 			}
@@ -583,13 +583,13 @@ void Quest_Tournament::Update(float dt)
 					if(pairs.empty())
 					{
 						// no more fights in this round
-						if(units.size() <= 1 && !skipped_unit)
+						if(units.size() <= 1 && !skippedCount)
 						{
 							// is there a winner?
 							if(!units.empty())
 								winner = units.back();
 							else
-								winner = skipped_unit;
+								winner = skippedCount;
 
 							if(!winner)
 							{
@@ -756,7 +756,7 @@ void Quest_Tournament::StartRound()
 	Shuffle(units.begin(), units.end());
 	pairs.clear();
 
-	Unit* first = skipped_unit;
+	Unit* first = skippedCount;
 	for(auto& unit : units)
 	{
 		if(!first)
@@ -768,7 +768,7 @@ void Quest_Tournament::StartRound()
 		}
 	}
 
-	skipped_unit = first;
+	skippedCount = first;
 	units.clear();
 }
 
@@ -776,7 +776,7 @@ void Quest_Tournament::StartRound()
 void Quest_Tournament::Talk(cstring text)
 {
 	master->Talk(text);
-	Vec3 pos = gameLevel->GetArena()->exit_region.Midpoint().XZ(1.5f);
+	Vec3 pos = gameLevel->GetArena()->exitRegion.Midpoint().XZ(1.5f);
 	gameGui->levelGui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
@@ -831,10 +831,10 @@ void Quest_Tournament::Clean()
 		p.second->busy = Unit::Busy_No;
 	}
 	pairs.clear();
-	if(skipped_unit)
+	if(skippedCount)
 	{
-		skipped_unit->busy = Unit::Busy_No;
-		skipped_unit = nullptr;
+		skippedCount->busy = Unit::Busy_No;
+		skippedCount = nullptr;
 	}
 	master->busy = Unit::Busy_No;
 	master = nullptr;

@@ -16,7 +16,7 @@ void Quest_RetrievePackage::Start()
 	type = Q_RETRIEVE_PACKAGE;
 	category = QuestCategory::Mayor;
 	startLoc = world->GetCurrentLocation();
-	from_loc = world->GetRandomSettlement(startLoc)->index;
+	fromLoc = world->GetRandomSettlement(startLoc)->index;
 }
 
 //=================================================================================================
@@ -48,16 +48,16 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			OnStart(questMgr->txQuest[265]);
 			questMgr->questTimeouts.push_back(this);
 
-			targetLoc = world->GetRandomSpawnLocation((startLoc->pos + world->GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
+			targetLoc = world->GetRandomSpawnLocation((startLoc->pos + world->GetLocation(fromLoc)->pos) / 2, UnitGroup::Get("bandits"));
 			targetLoc->SetKnown();
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 
 			cstring who = (LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys);
 
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(questMgr->txQuest[8], who, startLoc->name.c_str());
-			parcel.quest_id = id;
+			parcel.questId = id;
 			unitToSpawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unitSpawnLevel = -3;
 			spawnItem = Quest_Dungeon::Item_GiveSpawned;
@@ -76,10 +76,10 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// player failed to retrieve package in time
 		{
 			state = Quest::Failed;
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 
 			OnUpdate(questMgr->txQuest[24]);
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
@@ -92,10 +92,10 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 
-			static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+			static_cast<City*>(startLoc)->questMayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(id);
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 
 			OnUpdate(questMgr->txQuest[25]);
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
@@ -108,9 +108,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 cstring Quest_RetrievePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
-		return LocationHelper::IsCity(world->GetLocation(from_loc)) ? questMgr->txQuest[26] : questMgr->txQuest[27];
+		return LocationHelper::IsCity(world->GetLocation(fromLoc)) ? questMgr->txQuest[26] : questMgr->txQuest[27];
 	else if(str == "locname_od")
-		return world->GetLocation(from_loc)->name.c_str();
+		return world->GetLocation(fromLoc)->name.c_str();
 	else if(str == "locname")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -176,7 +176,7 @@ void Quest_RetrievePackage::Save(GameWriter& f)
 
 	if(prog != Progress::Finished)
 	{
-		f << from_loc;
+		f << fromLoc;
 		f << st;
 	}
 }
@@ -188,7 +188,7 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 
 	if(prog != Progress::Finished)
 	{
-		f >> from_loc;
+		f >> fromLoc;
 		f >> st;
 
 		if(prog >= Progress::Started)
@@ -196,7 +196,7 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str());
-			parcel.quest_id = id;
+			parcel.questId = id;
 
 			itemToGive[0] = &parcel;
 			unitToSpawn = UnitGroup::Get("bandits")->GetLeader(8);

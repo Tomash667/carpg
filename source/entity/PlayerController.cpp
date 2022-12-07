@@ -146,7 +146,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		RecalculateLevel();
 		unit->hp = unit->hpmax = unit->CalculateMaxHp();
 		SetRequiredPoints();
-		if(!questMgr->questTutorial->in_tutorial)
+		if(!questMgr->questTutorial->inTutorial)
 			AddAbility(unit->GetClass()->ability);
 		InitShortcuts();
 
@@ -1421,7 +1421,7 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
-	if(questMgr->questTutorial->in_tutorial)
+	if(questMgr->questTutorial->inTutorial)
 		return CanUseAbilityResult::No;
 
 	const PlayerAbility* ab = GetAbility(ability);
@@ -1834,10 +1834,10 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 			{
 				Usable* use = static_cast<Usable*>(ptr);
 				auto& bu = *use->base;
-				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+				if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 				{
 					float allowed_dif;
-					switch(bu.limit_rot)
+					switch(bu.limitRot)
 					{
 					default:
 					case 0:
@@ -1903,7 +1903,7 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 		u.UseUsable(&use);
 		data.beforePlayer = BP_NONE;
 
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 		{
 			// loot container
 			gameGui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
@@ -1916,7 +1916,7 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 			u.meshInst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
 			u.targetPos = u.pos;
 			u.targetPos2 = use.pos;
-			if(use.base->limit_rot == 4)
+			if(use.base->limitRot == 4)
 				u.targetPos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.useUsable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
@@ -1938,7 +1938,7 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 		c.id = data.beforePlayerPtr.usable->id;
 		c.count = USE_USABLE_START;
 
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 		{
 			action = PlayerAction::LootContainer;
 			actionUsable = data.beforePlayerPtr.usable;
@@ -1997,7 +1997,7 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 		unit->animation = ANI_KNEELS;
 		unit->animationState = AS_CAST_KNEEL;
 		unit->act.cast.ability = ability;
-		unit->timer = ability->cast_time;
+		unit->timer = ability->castTime;
 		if(isLocal)
 		{
 			unit->targetPos = data.abilityPoint;
@@ -2019,8 +2019,8 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 		unit->DoRangedAttack(true, false, speed);
 		unit->act.shoot.ability = ability;
 	}
-	else if(ability->sound_cast)
-		game->PlayAttachedSound(*unit, ability->sound_cast, ability->sound_cast_dist);
+	else if(ability->soundCast)
+		game->PlayAttachedSound(*unit, ability->soundCast, ability->soundCastDist);
 
 	if(ability->type == Ability::Charge)
 	{

@@ -19,8 +19,8 @@ void Quest_Wanted::Start()
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
 	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
-	target_unit = nullptr;
-	in_location = -1;
+	targetUnit = nullptr;
+	inLocation = -1;
 }
 
 //=================================================================================================
@@ -51,14 +51,14 @@ void Quest_Wanted::SetProgress(int prog2)
 			OnStart(questMgr->txQuest[257]);
 			questMgr->questTimeouts.push_back(this);
 
-			NameHelper::GenerateHeroName(clas, crazy, unit_name);
+			NameHelper::GenerateHeroName(clas, crazy, unitName);
 			targetLoc = world->GetRandomFreeSettlement(startLoc);
 			// if there is no free city he will talk about some random city but there won't be there...
 			if(!targetLoc)
 				targetLoc = world->GetRandomSettlement(startLoc);
-			if(!targetLoc->active_quest)
+			if(!targetLoc->activeQuest)
 			{
-				targetLoc->active_quest = this;
+				targetLoc->activeQuest = this;
 				unitToSpawn = crazy ? clas->crazy : clas->hero;
 				unitDontAttack = true;
 				unitEventHandler = this;
@@ -70,24 +70,24 @@ void Quest_Wanted::SetProgress(int prog2)
 			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
 			letter.name = questMgr->txQuest[258];
-			letter.quest_id = id;
-			letter.desc = Format(questMgr->txQuest[259], level * 100, unit_name.c_str());
+			letter.questId = id;
+			letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// add journal entry
 			msgs.push_back(Format(questMgr->txQuest[29], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(questMgr->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(questMgr->txQuest[260], level * 100, unitName.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Timeout:
 		{
 			state = Quest::Failed;
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
 
-			if(targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			if(targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 
-			OnUpdate(Format(questMgr->txQuest[261], unit_name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[261], unitName.c_str()));
 
 			done = false;
 		}
@@ -95,24 +95,24 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Killed:
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
-			OnUpdate(Format(questMgr->txQuest[262], unit_name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[262], unitName.c_str()));
 			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 		}
 		break;
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
 
 			team->AddReward(level * 100, level * 250);
 
-			OnUpdate(Format(questMgr->txQuest[263], unit_name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[263], unitName.c_str()));
 		}
 		break;
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
-			OnUpdate(Format(questMgr->txQuest[266], target_unit->GetName()));
+			OnUpdate(Format(questMgr->txQuest[266], targetUnit->GetName()));
 		}
 		break;
 	}
@@ -124,7 +124,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 	if(str == "reward")
 		return Format("%d", level * 100);
 	else if(str == "name")
-		return unit_name.c_str();
+		return unitName.c_str();
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -147,18 +147,18 @@ bool Quest_Wanted::IsTimedout() const
 //=================================================================================================
 bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 {
-	if(target_unit)
+	if(targetUnit)
 	{
 		if(state == Quest::Failed)
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-		if(!target_unit->hero->teamMember)
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+		if(!targetUnit->hero->teamMember)
 		{
 			// not a team member, remove
-			ForLocation(in_location)->RemoveUnit(target_unit);
+			ForLocation(inLocation)->RemoveUnit(targetUnit);
 		}
 		else
-			target_unit->eventHandler = nullptr;
-		target_unit = nullptr;
+			targetUnit->eventHandler = nullptr;
+		targetUnit = nullptr;
 	}
 
 	OnUpdate(questMgr->txQuest[267]);
@@ -169,7 +169,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 //=================================================================================================
 bool Quest_Wanted::IfHaveQuestItem() const
 {
-	return DialogContext::current->talker == target_unit;
+	return DialogContext::current->talker == targetUnit;
 }
 
 //=================================================================================================
@@ -179,21 +179,21 @@ bool Quest_Wanted::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
+void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit)
 {
-	switch(event_type)
+	switch(eventType)
 	{
 	case UnitEventHandler::SPAWN:
-		unit->hero->name = unit_name;
-		targetLoc->active_quest = nullptr;
-		target_unit = unit;
-		in_location = world->GetCurrentLocationIndex();
+		unit->hero->name = unitName;
+		targetLoc->activeQuest = nullptr;
+		targetUnit = unit;
+		inLocation = world->GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::DIE:
 		if(!unit->hero->teamMember)
 		{
 			SetProgress(Progress::Killed);
-			target_unit = nullptr;
+			targetUnit = nullptr;
 		}
 		break;
 	case UnitEventHandler::RECRUIT:
@@ -204,12 +204,12 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 	case UnitEventHandler::KICK:
 		// kicked from team, can be killed now, don't dissapear
 		unit->temporary = false;
-		in_location = world->GetCurrentLocationIndex();
+		inLocation = world->GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-		target_unit = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+		targetUnit = nullptr;
 		break;
 	}
 }
@@ -222,9 +222,9 @@ void Quest_Wanted::Save(GameWriter& f)
 	f << level;
 	f << crazy;
 	f << clas->id;
-	f << unit_name;
-	f << target_unit;
-	f << in_location;
+	f << unitName;
+	f << targetUnit;
+	f << inLocation;
 }
 
 //=================================================================================================
@@ -242,9 +242,9 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 		f >> old_clas;
 		clas = old::ConvertOldClass(old_clas);
 	}
-	f >> unit_name;
-	f >> target_unit;
-	f >> in_location;
+	f >> unitName;
+	f >> targetUnit;
+	f >> inLocation;
 
 	if(!done)
 	{
@@ -260,8 +260,8 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 		Item::Get("wanted_letter")->CreateCopy(letter);
 		letter.id = "$wanted_letter";
 		letter.name = questMgr->txQuest[258];
-		letter.quest_id = id;
-		letter.desc = Format(questMgr->txQuest[259], level * 100, unit_name.c_str());
+		letter.questId = id;
+		letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());
 	}
 
 	return LoadResult::Ok;

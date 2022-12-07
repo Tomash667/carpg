@@ -196,7 +196,7 @@ void UnitLoader::Cleanup()
 	DeleteElements(FrameInfo::frames);
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
-	DeleteElements(UnitStats::shared_stats);
+	DeleteElements(UnitStats::sharedStats);
 	DeleteElements(UnitData::appearances);
 }
 
@@ -1456,12 +1456,12 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					t.Throw("Missing perk '%s'.", id.c_str());
 				subprofile->perks[index].perk = perk;
 				int value = -1;
-				if(perk->value_type != Perk::None)
+				if(perk->valueType != Perk::None)
 				{
 					t.Next();
-					if(perk->value_type == Perk::Attribute)
+					if(perk->valueType == Perk::Attribute)
 						value = t.MustGetKeywordId(G_ATTRIBUTE);
-					else if(perk->value_type == Perk::Skill)
+					else if(perk->valueType == Perk::Skill)
 					{
 						if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
 							value = (int)SkillId::SPECIAL_WEAPON;
@@ -1947,7 +1947,7 @@ void UnitLoader::AddItem(ItemScript* script)
 				ItemList* lis = ItemList::TryGet(s);
 				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				if(!lis->is_leveled)
+				if(!lis->isLeveled)
 					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
 				script->code.push_back(PS_LEVELED_LIST_MOD);
 				script->code.push_back(mod);
@@ -1962,7 +1962,7 @@ void UnitLoader::AddItem(ItemScript* script)
 				ItemList* lis = ItemList::TryGet(s);
 				if(!lis)
 					t.Throw("Missing item list '%s'.", s.c_str());
-				ParseScript type = (lis->is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				ParseScript type = (lis->isLeveled ? PS_LEVELED_LIST : PS_LIST);
 				script->code.push_back(type);
 				script->code.push_back((int)lis);
 				crc.Update(type);

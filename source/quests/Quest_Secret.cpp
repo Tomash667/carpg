@@ -137,7 +137,7 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 		Location& l = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), DWARF_FORT, 3);
 		l.group = UnitGroup::Get("challange");
 		l.st = 18;
-		l.active_quest = ACTIVE_QUEST_HOLDER;
+		l.activeQuest = ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
 		where = l.index;
 		Vec2& cpos = world->GetCurrentLocation()->pos;

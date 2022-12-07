@@ -32,13 +32,13 @@ struct OutsideLocation : public Location, public LocationPart
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
 
-	bool IsInside(int _x, int _y) const
+	bool IsInside(int x, int y) const
 	{
-		return _x >= 0 && _y >= 0 && _x < size && _y < size;
+		return x >= 0 && y >= 0 && x < size && y < size;
 	}
-	bool IsInside(const Int2& _pt) const
+	bool IsInside(const Int2& pt) const
 	{
-		return IsInside(_pt.x, _pt.y);
+		return IsInside(pt.x, pt.y);
 	}
 	Vec2 GetRandomPos() const
 	{

@@ -96,7 +96,7 @@ void AbilityPanel::Draw()
 	{
 		images.clear();
 		for(Ability* ability : abilities)
-			images.push_back(ability->tex_icon);
+			images.push_back(ability->texIcon);
 		DrawGroup(txAbilities);
 	}
 
@@ -182,7 +182,7 @@ void AbilityPanel::Update(float dt)
 			if(shortcut.first == Shortcut::TYPE_ABILITY)
 			{
 				Ability* ability = reinterpret_cast<Ability*>(shortcut.second);
-				icon = ability->tex_icon;
+				icon = ability->texIcon;
 			}
 			else
 			{
@@ -317,7 +317,7 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& ability)
 {
 	tooltip.anything = true;
-	tooltip.img = ability.tex_icon;
+	tooltip.img = ability.texIcon;
 	tooltip.bigText = ability.name;
 
 	tooltip.text = ability.desc;

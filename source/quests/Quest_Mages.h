@@ -35,7 +35,7 @@ public:
 // After that we can go to enemy mage tower and kill him.
 //-----------------------------------------------------------------------------
 // start_loc = location with guard captain
-// mage_loc = location with drunk mage
+// mageLoc = location with drunk mage
 // target_loc = drunk mage tower, evil mage tower
 class Quest_Mages2 final : public Quest_Dungeon, public UnitEventHandler
 {
@@ -95,7 +95,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override;
 	int GetUnitEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
@@ -104,11 +104,11 @@ public:
 	void OnEncounter(EncounterSpawn& spawn);
 
 	Talked talked;
-	State mages_state;
+	State magesState;
 	Unit* scholar;
-	string evil_mage_name, good_mage_name;
-	HumanData hd_mage;
-	int mage_loc, days;
+	string evilMageName, goodMageName;
+	HumanData hdMage;
+	int mageLoc, days;
 	float timer;
 	bool paid;
 };

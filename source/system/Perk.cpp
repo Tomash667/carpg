@@ -10,7 +10,7 @@
 
 //-----------------------------------------------------------------------------
 vector<Perk*> Perk::perks;
-std::map<int, Perk*> Perk::hash_perks;
+std::map<int, Perk*> Perk::hashPerks;
 
 //=================================================================================================
 ::Perk* old::Convert(Perk perk)
@@ -108,8 +108,8 @@ std::map<int, Perk*> Perk::hash_perks;
 //=================================================================================================
 Perk* Perk::Get(int hash)
 {
-	auto it = hash_perks.find(hash);
-	if(it != hash_perks.end())
+	auto it = hashPerks.find(hash);
+	if(it != hashPerks.end())
 		return it->second;
 	return nullptr;
 }
@@ -162,7 +162,7 @@ bool PerkContext::Have(SkillId s, int value)
 //=================================================================================================
 bool PerkContext::CanMod(AttributeId a)
 {
-	if(check_remove)
+	if(checkRemove)
 		return true;
 	if(cc)
 		return !cc->a[(int)a].mod;
@@ -178,7 +178,7 @@ void PerkContext::AddEffect(Perk* perk, EffectId effect, float power)
 		Effect e;
 		e.effect = effect;
 		e.source = EffectSource::Perk;
-		e.source_id = perk->hash;
+		e.sourceId = perk->hash;
 		e.value = -1;
 		e.power = power;
 		e.time = 0.f;
@@ -261,7 +261,7 @@ void TakenPerk::GetDetails(string& str) const
 	if(pos != string::npos)
 	{
 		cstring text;
-		switch(perk->value_type)
+		switch(perk->valueType)
 		{
 		case Perk::Attribute:
 			text = Attribute::attributes[value].name.c_str();
@@ -284,7 +284,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	if(IsSet(perk->flags, Perk::Start) && !ctx.startup)
 		return false;
 
-	if(ctx.cc && !ctx.check_remove && !ctx.validate)
+	if(ctx.cc && !ctx.checkRemove && !ctx.validate)
 	{
 		// can take only one history perk
 		if(IsSet(perk->flags, Perk::History))
@@ -335,7 +335,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	// check value type
 	if(ctx.validate)
 	{
-		if(perk->value_type == Perk::Attribute)
+		if(perk->valueType == Perk::Attribute)
 		{
 			if(value < 0 || value >= (int)AttributeId::MAX)
 			{
@@ -343,7 +343,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 				return false;
 			}
 		}
-		else if(perk->value_type == Perk::Skill)
+		else if(perk->valueType == Perk::Skill)
 		{
 			if(value < 0 || value >= (int)SkillId::MAX)
 			{
@@ -477,7 +477,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 //=================================================================================================
 cstring TakenPerk::FormatName()
 {
-	switch(perk->value_type)
+	switch(perk->valueType)
 	{
 	case Perk::Attribute:
 		return Format("%s (%s)", perk->name.c_str(), Attribute::attributes[value].name.c_str());

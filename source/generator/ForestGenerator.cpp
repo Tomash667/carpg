@@ -53,20 +53,20 @@ int ForestGenerator::HandleUpdate(int days)
 		return 0;
 
 	// sawmill quest
-	if(questMgr->questSawmill->sawmill_state == Quest_Sawmill::State::InBuild
-		&& questMgr->questSawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+	if(questMgr->questSawmill->sawmillState == Quest_Sawmill::State::InBuild
+		&& questMgr->questSawmill->buildState == Quest_Sawmill::BuildState::LumberjackLeft)
 	{
 		questMgr->questSawmill->GenerateSawmill(true);
 		haveSawmill = true;
-		gameLevel->location->loaded_resources = false;
+		gameLevel->location->loadedResources = false;
 		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
-	else if(questMgr->questSawmill->sawmill_state == Quest_Sawmill::State::Working
-		&& questMgr->questSawmill->build_state != Quest_Sawmill::BuildState::Finished)
+	else if(questMgr->questSawmill->sawmillState == Quest_Sawmill::State::Working
+		&& questMgr->questSawmill->buildState != Quest_Sawmill::BuildState::Finished)
 	{
 		questMgr->questSawmill->GenerateSawmill(false);
 		haveSawmill = true;
-		gameLevel->location->loaded_resources = false;
+		gameLevel->location->loadedResources = false;
 		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
 	else

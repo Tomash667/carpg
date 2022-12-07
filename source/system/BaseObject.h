@@ -60,18 +60,18 @@ struct ObjectGroup : public ContentItem<ObjectGroup>
 				EntryList* list;
 			};
 			uint chance;
-			bool is_list;
+			bool isList;
 
 			~Entry()
 			{
-				if(is_list)
+				if(isList)
 					delete list;
 			}
 		};
 
 		EntryList* parent;
 		vector<Entry> entries;
-		uint total_chance;
+		uint totalChance;
 
 		BaseObject* GetRandom();
 	};
@@ -99,12 +99,12 @@ struct BaseObject : public ContentItem<BaseObject>
 	btCollisionShape* shape;
 	Matrix* matrix;
 	int flags;
-	BaseObject* next_obj;
+	BaseObject* nextObj;
 	VariantObject* variants;
-	float extra_dist; // extra distance from wall
+	float extraDist; // extra distance from wall
 
-	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), next_obj(nullptr),
-		variants(nullptr), extra_dist(0.f)
+	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), nextObj(nullptr),
+		variants(nullptr), extraDist(0.f)
 	{
 	}
 	virtual ~BaseObject();
@@ -118,17 +118,4 @@ struct BaseObject : public ContentItem<BaseObject>
 	{
 		return TryGet(Hash(id), group);
 	}
-
-	/*static SetContainer<BaseObject> objs;
-	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr);
-	static BaseObject* Get(Cstring id, ObjectGroup** group = nullptr)
-	{
-		BaseObject* obj = TryGet(id, group);
-		assert(obj && "Missing BaseObject!");
-		return obj;
-	}
-	static BaseObject* GetS(const string& id)
-	{
-		return Get(id);
-	}*/
 };

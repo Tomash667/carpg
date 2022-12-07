@@ -27,7 +27,7 @@ public:
 		Exit
 	};
 
-	Quest_Tutorial() : in_tutorial(false), finished_tutorial(false) {}
+	Quest_Tutorial() : inTutorial(false), finishedTutorial(false) {}
 	void LoadLanguage();
 	void Start();
 	void Update();
@@ -49,5 +49,5 @@ private:
 	cstring txTut[10], txTutNote, txTutLoc;
 
 public:
-	bool in_tutorial, finished_tutorial;
+	bool inTutorial, finishedTutorial;
 };

@@ -36,7 +36,7 @@ void ForLocation::Setup(Location* l, int level)
 
 	int loc = l->index;
 	bool active = (world->GetCurrentLocationIndex() == loc);
-	assert(l->last_visit != -1);
+	assert(l->lastVisit != -1);
 
 	switch(l->type)
 	{
@@ -45,17 +45,17 @@ void ForLocation::Setup(Location* l, int level)
 			City* city = static_cast<City*>(l);
 			if(level == -1)
 			{
-				ctx->entries.resize(city->inside_buildings.size() + 1);
+				ctx->entries.resize(city->insideBuildings.size() + 1);
 				LocationContext::Entry& e = ctx->entries[0];
 				e.active = active;
 				e.locPart = city;
 				e.level = -2;
 				e.loc = loc;
-				for(int i = 0, len = (int)city->inside_buildings.size(); i < len; ++i)
+				for(int i = 0, len = (int)city->insideBuildings.size(); i < len; ++i)
 				{
 					LocationContext::Entry& e2 = ctx->entries[i + 1];
 					e2.active = active;
-					e2.locPart = city->inside_buildings[i];
+					e2.locPart = city->insideBuildings[i];
 					e2.level = i;
 					e2.loc = loc;
 				}
@@ -70,10 +70,10 @@ void ForLocation::Setup(Location* l, int level)
 			}
 			else
 			{
-				assert(level >= 0 && level < (int)city->inside_buildings.size());
+				assert(level >= 0 && level < (int)city->insideBuildings.size());
 				LocationContext::Entry& e = Add1(ctx->entries);
 				e.active = active;
-				e.locPart = city->inside_buildings[level];
+				e.locPart = city->insideBuildings[level];
 				e.level = level;
 				e.loc = loc;
 			}

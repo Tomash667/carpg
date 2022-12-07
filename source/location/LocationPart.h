@@ -71,13 +71,13 @@ public:
 	Usable* FindUsable(BaseUsable* base);
 	bool RemoveItem(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
-	Object* FindObject(BaseObject* base_obj);
-	Object* FindNearestObject(BaseObject* base_obj, const Vec3& pos);
+	Object* FindObject(BaseObject* baseObj);
+	Object* FindNearestObject(BaseObject* baseObj, const Vec3& pos);
 	Chest* FindChestInRoom(const Room& p);
 	Chest* GetRandomFarChest(const Int2& pt);
 	bool HaveUnit(Unit* unit);
 	Chest* FindChestWithItem(const Item* item, int* index);
-	Chest* FindChestWithQuestItem(int quest_id, int* index);
+	Chest* FindChestWithQuestItem(int questId, int* index);
 	bool RemoveItemFromChest(const Item* item);
 	bool RemoveItemFromUnit(const Item* item);
 	Door* FindDoor(const Int2& pt);

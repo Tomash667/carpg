@@ -35,7 +35,7 @@ struct Class
 		vector<pair<const Item*, int>> items;
 	};
 
-	string id, player_id, hero_id, crazy_id, name, desc, about;
+	string id, playerId, heroId, crazyId, name, desc, about;
 	vector<string> names, nicknames;
 	vector<LevelEntry> level;
 	Texture* icon;
