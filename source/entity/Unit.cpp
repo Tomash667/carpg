@@ -1532,7 +1532,7 @@ Vec3 Unit::GetLootCenter() const
 
 	const Mesh::Point& point = *point2;
 	Matrix matBone = point.mat * meshInst->matBones[point.bone];
-	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(visualPos));
+	matBone = matBone * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visualPos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
 }
@@ -3946,11 +3946,12 @@ uint NAMES::nAniHumanoid = countof(aniHumanoid);
 int NAMES::maxAttacks = countof(aniAttacks);
 
 //=================================================================================================
+// unused?
 Vec3 Unit::GetEyePos() const
 {
 	const Mesh::Point& point = *meshInst->mesh->GetPoint("oczy");
 	Matrix matBone = point.mat * meshInst->matBones[point.bone];
-	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+	matBone = matBone * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
 }
@@ -6767,7 +6768,7 @@ void Unit::CastSpell()
 	if(point)
 	{
 		meshInst->SetupBones();
-		Matrix m = point->mat * meshInst->matBones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+		Matrix m = point->mat * meshInst->matBones[point->bone] * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
 		coord = Vec3::TransformZero(m);
 	}
 	else
@@ -7521,7 +7522,7 @@ void Unit::Update(float dt)
 				Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::pointWeapon);
 				assert(point);
 
-				Matrix m2 = point->mat * meshInst->matBones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+				Matrix m2 = point->mat * meshInst->matBones[point->bone] * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
 
 				bullet->Register();
 				bullet->isArrow = true;

@@ -21,6 +21,7 @@ Wersja 0.19 (???):
 - brak odświeżania czasu zdolności podczas krótkiej podróży
 - czasami generowało schody obok drzwi
 - nie generowanie pułapek pod obiektami
+- naprawione punkty skalowanych jednostek
 
 --------------------------------------------------------------------------------
 Wersja 0.18 (2021-07-02):

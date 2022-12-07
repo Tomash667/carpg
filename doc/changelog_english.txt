@@ -21,6 +21,7 @@ Version 0.19 (???):
 - not refreshing ability cooldowns on short travels
 - sometimes stairs was generated next to doors
 - don't spawn traps under objects
+- fixed scaled unit points
 
 --------------------------------------------------------------------------------
 Version 0.18 (2021-07-02):
