@@ -155,11 +155,11 @@ void Unit::Init(UnitData& base, int lvl)
 	// items
 	weight = 0;
 	CalculateLoad();
-	if(base.group != G_PLAYER && base.item_script)
+	if(base.group != G_PLAYER && base.itemScript)
 	{
-		ItemScript* script = base.item_script;
-		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[stats->subprofile.index]->item_script)
-			script = base.stat_profile->subprofiles[stats->subprofile.index]->item_script;
+		ItemScript* script = base.itemScript;
+		if(base.statProfile && !base.statProfile->subprofiles.empty() && base.statProfile->subprofiles[stats->subprofile.index]->itemScript)
+			script = base.statProfile->subprofiles[stats->subprofile.index]->itemScript;
 		script->Parse(*this);
 		SortItems(items);
 		RecalculateWeight();
@@ -203,7 +203,7 @@ float Unit::CalculateMaxHp() const
 {
 	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
 	if(IsSet(data->flags2, F2_FIXED_STATS))
-		maxhp += data->hp_lvl * (level - data->level.x);
+		maxhp += data->hpLvl * (level - data->level.x);
 	else
 	{
 		float v = 0.8f * Get(AttributeId::END) + 0.2f * Get(AttributeId::STR);
@@ -220,7 +220,7 @@ float Unit::CalculateMaxMp() const
 {
 	float maxmp = (float)data->mp + GetEffectSum(EffectId::Mana);
 	if(IsSet(data->flags2, F2_FIXED_STATS))
-		maxmp += data->mp_lvl * (level - data->level.x);
+		maxmp += data->mpLvl * (level - data->level.x);
 	else
 		maxmp += 4.f * (Get(AttributeId::WIS) - 50.f) + 4.f * Get(SkillId::CONCENTRATION);
 	return maxmp;
@@ -250,7 +250,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else if(IsSet(data->flags2, F2_FIXED_STATS))
-		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
+		return (float)(data->attack + data->attackLvl * (level - data->level.x));
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
 		return Get(SkillId::UNARMED) + (Get(AttributeId::STR) + Get(AttributeId::DEX)) / 2 - 25.f + bonus;
@@ -272,7 +272,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 			attack += weapon->ToBow().dmg;
 		else
 			attack += 0.5f * weapon->ToShield().block;
-		return attack + data->attack_lvl * (level - data->level.x);
+		return attack + data->attackLvl * (level - data->level.x);
 	}
 
 	int str = Get(AttributeId::STR),
@@ -363,7 +363,7 @@ float Unit::CalculateDefense(const Item* armor) const
 		}
 	}
 	else
-		def += data->def_lvl * (level - data->level.x);
+		def += data->defLvl * (level - data->level.x);
 	return def;
 }
 
@@ -416,7 +416,7 @@ bool Unit::CanWear(const Item* item) const
 	if(item->IsWearable())
 	{
 		if(item->type == IT_ARMOR)
-			return item->ToArmor().armorUnitType == data->armor_type;
+			return item->ToArmor().armorUnitType == data->armorType;
 		return true;
 	}
 	return false;
@@ -1018,7 +1018,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 				{
 					if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
-						_to_remove.push_back(index);
+						_toRemove.push_back(index);
 				}
 
 				RemoveEffects();
@@ -1098,11 +1098,11 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 			&& (value == -1 || e.value == value)
 			&& (source == EffectSource::None || e.source == source)
 			&& (sourceId == -1 || e.sourceId == sourceId))
-			_to_remove.push_back(index);
+			_toRemove.push_back(index);
 		++index;
 	}
 
-	uint count = _to_remove.size();
+	uint count = _toRemove.size();
 	RemoveEffects();
 	return count;
 }
@@ -1155,7 +1155,7 @@ void Unit::UpdateEffects(float dt)
 		{
 			if((effect.time -= dt) <= 0.f)
 			{
-				_to_remove.push_back(index);
+				_toRemove.push_back(index);
 				if(Net::IsLocal() && effect.effect == EffectId::Rooted && effect.value == EffectValue_Rooted_Vines)
 				{
 					Effect e;
@@ -1355,7 +1355,7 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 			break;
 		}
 		if(remove)
-			_to_remove.push_back(index);
+			_toRemove.push_back(index);
 	}
 
 	natural_mod *= natural_tmp_mod;
@@ -1519,7 +1519,7 @@ int Unit::GetDmgType() const
 	if(HaveWeapon())
 		return GetWeapon().dmgType;
 	else
-		return data->dmg_type;
+		return data->dmgType;
 }
 
 //=================================================================================================
@@ -2031,7 +2031,7 @@ void Unit::Load(GameReader& f)
 	f >> staminaAction;
 	f >> staminaTimer;
 	f >> level;
-	if(content.require_update && data->group != G_PLAYER)
+	if(content.requireUpdate && data->group != G_PLAYER)
 	{
 		if(data->upgrade)
 		{
@@ -2113,10 +2113,10 @@ void Unit::Load(GameReader& f)
 		eventHandler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
 		game->loadUnitHandler.push_back(this);
 	}
-	if(can_sort && content.require_update)
+	if(can_sort && content.requireUpdate)
 		SortItems(items);
 	f >> weight;
-	if(can_sort && content.require_update)
+	if(can_sort && content.requireUpdate)
 		RecalculateWeight();
 
 	Entity<Unit> guard_target;
@@ -2323,7 +2323,7 @@ void Unit::Load(GameReader& f)
 				e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
 		}
 	}
-	if(content.require_update)
+	if(content.requireUpdate)
 	{
 		RemoveEffects(EffectId::None, EffectSource::Item, -1, -1);
 		for(int i = 0; i < SLOT_MAX; ++i)
@@ -2550,7 +2550,7 @@ void Unit::Load(GameReader& f)
 	}
 
 	// calculate new skills/attributes
-	if(content.require_update)
+	if(content.requireUpdate)
 		CalculateStats();
 
 	// compatibility
@@ -2597,7 +2597,7 @@ void Unit::LoadStock(GameReader& f)
 		}
 	}
 
-	if(can_sort && content.require_update)
+	if(can_sort && content.requireUpdate)
 		SortItems(cnt);
 }
 
@@ -3463,7 +3463,7 @@ void Unit::HealPoison()
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		if(it->effect == EffectId::Poison)
-			_to_remove.push_back(index);
+			_toRemove.push_back(index);
 	}
 
 	RemoveEffects();
@@ -3478,7 +3478,7 @@ void Unit::RemoveEffect(EffectId effect)
 	{
 		if(it->effect == effect)
 		{
-			_to_remove.push_back(index);
+			_toRemove.push_back(index);
 			if(it->IsVisible())
 				visible = true;
 		}
@@ -4231,14 +4231,14 @@ bool Unit::HaveEffect(EffectId e, int value) const
 //=================================================================================================
 void Unit::RemoveEffects(bool send)
 {
-	if(_to_remove.empty())
+	if(_toRemove.empty())
 		return;
 
 	send = (send && player && !player->IsLocal() && Net::IsServer());
 
-	while(!_to_remove.empty())
+	while(!_toRemove.empty())
 	{
-		uint index = _to_remove.back();
+		uint index = _toRemove.back();
 		Effect e = effects[index];
 		if(send)
 		{
@@ -4250,7 +4250,7 @@ void Unit::RemoveEffects(bool send)
 			c.a2 = e.value;
 		}
 
-		_to_remove.pop_back();
+		_toRemove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
@@ -6746,7 +6746,7 @@ float Unit::GetAbilityPower(Ability& ability) const
 	else if(IsSet(ability.flags, Ability::Mage))
 	{
 		if(IsSet(data->flags2, F2_FIXED_STATS))
-			bonus = (float)data->spell_power / 20;
+			bonus = (float)data->spellPower / 20;
 		else
 			bonus = float(Get(AttributeId::INT) - 25 + Get(SkillId::MYSTIC_MAGIC) + CalculateMagicPower() * 10) / 20;
 	}
@@ -7236,27 +7236,27 @@ void Unit::Update(float dt)
 		case ANI_WALK:
 			meshInst->Play(NAMES::aniMove, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+				meshInst->groups[0].speed = GetWalkSpeed() / data->walkSpeed;
 			break;
 		case ANI_WALK_BACK:
 			meshInst->Play(NAMES::aniMove, PLAY_BACK | PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetWalkSpeed() / data->walk_speed;
+				meshInst->groups[0].speed = GetWalkSpeed() / data->walkSpeed;
 			break;
 		case ANI_RUN:
 			meshInst->Play(NAMES::aniRun, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRunSpeed() / data->run_speed;
+				meshInst->groups[0].speed = GetRunSpeed() / data->runSpeed;
 			break;
 		case ANI_LEFT:
 			meshInst->Play(NAMES::aniLeft, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+				meshInst->groups[0].speed = GetRotationSpeed() / data->rotSpeed;
 			break;
 		case ANI_RIGHT:
 			meshInst->Play(NAMES::aniRight, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRotationSpeed() / data->rot_speed;
+				meshInst->groups[0].speed = GetRotationSpeed() / data->rotSpeed;
 			break;
 		case ANI_STAND:
 			meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
@@ -8295,7 +8295,7 @@ void Unit::Update(float dt)
 					act.dash.hit->Free();
 				action = A_NONE;
 				if(Net::IsLocal() || IsLocalPlayer())
-					meshInst->groups[0].speed = GetRunSpeed() / data->run_speed;
+					meshInst->groups[0].speed = GetRunSpeed() / data->runSpeed;
 			}
 		}
 		break;
@@ -8668,7 +8668,7 @@ void Unit::ChangeBase(UnitData* ud, bool updateItems)
 
 	if(updateItems)
 	{
-		ud->item_script->Parse(*this);
+		ud->itemScript->Parse(*this);
 		for(const Item* item : slots)
 		{
 			if(item)
@@ -8722,7 +8722,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 			if(gameLevel->ready)
 			{
 				// preload items
-				if(data->item_script)
+				if(data->itemScript)
 				{
 					for(const Item* item : slots)
 					{
@@ -8979,7 +8979,7 @@ bool Unit::DoAttack()
 	if(data->frames->extra)
 		power = 1.f;
 	else
-		power = data->frames->attack_power[act.attack.index];
+		power = data->frames->attackPower[act.attack.index];
 	DoGenericAttack(*hitted, hitpoint, CalculateAttack() * act.attack.power * power, GetDmgType(), false);
 
 	return true;

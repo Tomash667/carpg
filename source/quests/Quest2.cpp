@@ -208,7 +208,7 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 			return instance;
 	}
 
-	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
+	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
 	asIScriptObject* instance;
 	scriptMgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
 	{

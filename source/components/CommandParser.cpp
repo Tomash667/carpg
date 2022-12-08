@@ -2717,11 +2717,11 @@ void CommandParser::ListStats(Unit* u)
 	if(u->IsPlayer())
 		u->player->RecalculateLevel();
 	Msg("--- %s (%s) level %d ---", u->GetName(), u->data->id.c_str(), u->level);
-	if(u->data->stat_profile && !u->data->stat_profile->subprofiles.empty() && !u->IsPlayer())
+	if(u->data->statProfile && !u->data->statProfile->subprofiles.empty() && !u->IsPlayer())
 	{
 		Msg("Profile %s.%s (weapon:%s armor:%s)",
-			u->data->stat_profile->id.c_str(),
-			u->data->stat_profile->subprofiles[u->stats->subprofile.index]->id.c_str(),
+			u->data->statProfile->id.c_str(),
+			u->data->statProfile->subprofiles[u->stats->subprofile.index]->id.c_str(),
 			Skill::skills[(int)WeaponTypeInfo::info[u->stats->subprofile.weapon].skill].id,
 			Skill::skills[(int)GetArmorTypeSkill((ARMOR_TYPE)u->stats->subprofile.armor)].id);
 	}

@@ -34,36 +34,36 @@ static cstring content_id[] = {
 static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
-Content::Content() : ability_loader(new AbilityLoader), building_loader(new BuildingLoader), class_loader(new ClassLoader), dialog_loader(new DialogLoader),
-item_loader(new ItemLoader), location_loader(new LocationLoader), musicLoader(new MusicListLoader), object_loader(new ObjectLoader),
-perk_loader(new PerkLoader), quest_loader(new QuestLoader), required_loader(new RequiredLoader), unit_loader(new UnitLoader)
+Content::Content() : abilityLoader(new AbilityLoader), buildingLoader(new BuildingLoader), classLoader(new ClassLoader), dialogLoader(new DialogLoader),
+itemLoader(new ItemLoader), locationLoader(new LocationLoader), musicLoader(new MusicListLoader), objectLoader(new ObjectLoader), perkLoader(new PerkLoader),
+questLoader(new QuestLoader), requiredLoader(new RequiredLoader), unitLoader(new UnitLoader)
 {
-	quest_loader->dialog_loader = dialog_loader;
+	questLoader->dialogLoader = dialogLoader;
 }
 
 //=================================================================================================
 Content::~Content()
 {
-	if(building_loader)
+	if(buildingLoader)
 		Cleanup();
 }
 
 //=================================================================================================
 void Content::Cleanup()
 {
-	delete ability_loader;
-	delete building_loader;
-	delete class_loader;
-	delete dialog_loader;
-	delete item_loader;
-	delete location_loader;
+	delete abilityLoader;
+	delete buildingLoader;
+	delete classLoader;
+	delete dialogLoader;
+	delete itemLoader;
+	delete locationLoader;
 	delete musicLoader;
-	delete object_loader;
-	delete perk_loader;
-	delete quest_loader;
-	delete required_loader;
-	delete unit_loader;
-	building_loader = nullptr;
+	delete objectLoader;
+	delete perkLoader;
+	delete questLoader;
+	delete requiredLoader;
+	delete unitLoader;
+	buildingLoader = nullptr;
 }
 
 //=================================================================================================
@@ -73,41 +73,41 @@ void Content::LoadContent(delegate<void(Id)> callback)
 
 	Info("Game: Loading items.");
 	callback(Id::Items);
-	item_loader->DoLoading();
+	itemLoader->DoLoading();
 
 	Info("Game: Loading dialogs.");
 	callback(Id::Dialogs);
-	dialog_loader->DoLoading();
+	dialogLoader->DoLoading();
 
 	Info("Game: Loading objects.");
 	callback(Id::Objects);
-	object_loader->DoLoading();
+	objectLoader->DoLoading();
 
 	Info("Game: Loading locations.");
 	callback(Id::Locations);
-	location_loader->DoLoading();
+	locationLoader->DoLoading();
 
 	Info("Game: Loading abilities.");
 	callback(Id::Abilities);
-	ability_loader->DoLoading();
+	abilityLoader->DoLoading();
 
 	Info("Game: Loading perks.");
 	callback(Id::Perks);
-	perk_loader->DoLoading();
+	perkLoader->DoLoading();
 
 	Info("Game: Loading classes.");
 	callback(Id::Classes);
-	class_loader->DoLoading();
+	classLoader->DoLoading();
 
 	Info("Game: Loading units.");
 	callback(Id::Units);
-	unit_loader->DoLoading();
-	class_loader->ApplyUnits();
-	ability_loader->ApplyUnits();
+	unitLoader->DoLoading();
+	classLoader->ApplyUnits();
+	abilityLoader->ApplyUnits();
 
 	Info("Game: Loading buildings.");
 	callback(Id::Buildings);
-	building_loader->DoLoading();
+	buildingLoader->DoLoading();
 
 	Info("Game: Loading music.");
 	callback(Id::Musics);
@@ -115,11 +115,11 @@ void Content::LoadContent(delegate<void(Id)> callback)
 
 	Info("Game: Loading quests.");
 	callback(Id::Quests);
-	quest_loader->DoLoading();
-	unit_loader->ProcessDialogRequests();
+	questLoader->DoLoading();
+	unitLoader->ProcessDialogRequests();
 
 	callback(Id::Required);
-	required_loader->DoLoading();
+	requiredLoader->DoLoading();
 
 	Cleanup();
 }
@@ -127,7 +127,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 //=================================================================================================
 void Content::LoadVersion()
 {
-	cstring path = Format("%s/system.txt", system_dir.c_str());
+	cstring path = Format("%s/system.txt", systemDir.c_str());
 	Tokenizer t;
 
 	try
@@ -174,31 +174,31 @@ void Content::WriteCrc(BitStreamWriter& f)
 //=================================================================================================
 void Content::ReadCrc(BitStreamReader& f)
 {
-	f >> client_crc;
+	f >> clientCrc;
 }
 
 //=================================================================================================
-bool Content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
+bool Content::GetCrc(Id type, uint& myCrc, cstring& typeCrc)
 {
 	if(type < (Id)0 || type >= Id::Max)
 		return false;
 
-	my_crc = crc[(int)type];
-	type_crc = content_id[(int)type];
+	myCrc = crc[(int)type];
+	typeCrc = content_id[(int)type];
 	return true;
 }
 
 //=================================================================================================
-bool Content::ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str)
+bool Content::ValidateCrc(Id& type, uint& myCrc, uint& playerCrc, cstring& typeStr)
 {
 	for(uint i = 0; i < (uint)Id::Max; ++i)
 	{
-		if(crc[i] != client_crc[i])
+		if(crc[i] != clientCrc[i])
 		{
 			type = (Id)i;
-			my_crc = crc[i];
-			player_crc = client_crc[i];
-			type_str = content_id[i];
+			myCrc = crc[i];
+			playerCrc = clientCrc[i];
+			typeStr = content_id[i];
 			return false;
 		}
 	}

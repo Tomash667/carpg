@@ -76,7 +76,7 @@ struct ObjectGroup : public ContentItem<ObjectGroup>
 		BaseObject* GetRandom();
 	};
 
-	inline static const cstring type_name = "object group";
+	inline static const cstring typeName = "object group";
 
 	EntryList list;
 
@@ -90,7 +90,7 @@ struct ObjectGroup : public ContentItem<ObjectGroup>
 // Base object
 struct BaseObject : public ContentItem<BaseObject>
 {
-	inline static const cstring type_name = "object";
+	inline static const cstring typeName = "object";
 
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;

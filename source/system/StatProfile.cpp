@@ -4,18 +4,18 @@
 
 //-----------------------------------------------------------------------------
 vector<StatProfile*> StatProfile::profiles;
-const float StatProfile::Subprofile::default_priorities[IT_MAX_WEARABLE] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
-const float StatProfile::Subprofile::default_tag_priorities[TAG_MAX] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+const float StatProfile::Subprofile::defaultPriorities[IT_MAX_WEARABLE] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+const float StatProfile::Subprofile::defaultTagPriorities[TAG_MAX] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
 
 //=================================================================================================
-StatProfile::Subprofile::Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0), item_script(nullptr)
+StatProfile::Subprofile::Subprofile() : weaponChance(), weaponTotal(0), armorChance(), armorTotal(0), itemScript(nullptr)
 {
 	for(int i = 0; i < IT_MAX_WEARABLE; ++i)
-		priorities[i] = default_priorities[i];
+		priorities[i] = defaultPriorities[i];
 	for(int i = 0; i < TAG_MAX; ++i)
-		tag_priorities[i] = default_tag_priorities[i];
+		tagPriorities[i] = defaultTagPriorities[i];
 	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
-		tag_skills[i] = SkillId::NONE;
+		tagSkills[i] = SkillId::NONE;
 	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)
 		perks[i].perk = nullptr;
 }
@@ -78,10 +78,10 @@ SubprofileInfo StatProfile::GetRandomSubprofile(SubprofileInfo* prev)
 	s.index = byte(Rand() % subprofiles.size());
 	s.level = 0;
 	Subprofile& sub = *subprofiles[s.index];
-	uint j = 0, k = Rand() % sub.weapon_total;
+	uint j = 0, k = Rand() % sub.weaponTotal;
 	for(int i = 0; i < WT_MAX; ++i)
 	{
-		j += sub.weapon_chance[i];
+		j += sub.weaponChance[i];
 		if(k < j)
 		{
 			s.weapon = i;
@@ -89,10 +89,10 @@ SubprofileInfo StatProfile::GetRandomSubprofile(SubprofileInfo* prev)
 		}
 	}
 	j = 0;
-	k = Rand() % sub.armor_total;
+	k = Rand() % sub.armorTotal;
 	for(int i = 0; i < AT_MAX; ++i)
 	{
-		j += sub.armor_chance[i];
+		j += sub.armorChance[i];
 		if(k < j)
 		{
 			s.armor = i;
@@ -109,7 +109,7 @@ SubprofileInfo StatProfile::GetRandomSubprofile(SubprofileInfo* prev)
 			i = (i + 1) % WT_MAX;
 			if(i == start)
 				break;
-			if(sub.weapon_chance[i] > 0)
+			if(sub.weaponChance[i] > 0)
 			{
 				s.weapon = i;
 				break;
@@ -122,7 +122,7 @@ SubprofileInfo StatProfile::GetRandomSubprofile(SubprofileInfo* prev)
 			i = (i + 1) % AT_MAX;
 			if(i == start)
 				break;
-			if(sub.armor_chance[i] > 0)
+			if(sub.armorChance[i] > 0)
 			{
 				s.armor = i;
 				break;

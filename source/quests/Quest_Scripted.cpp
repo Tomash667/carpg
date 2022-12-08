@@ -37,7 +37,7 @@ void Quest_Scripted::Start()
 {
 	category = scheme->category;
 
-	if(scheme->startup_use_vars)
+	if(scheme->startupUseVars)
 		return;
 
 	Start(nullptr);
@@ -52,13 +52,13 @@ void Quest_Scripted::Start(Vars* vars)
 	instance = CreateInstance(false);
 
 	// call Startup
-	if(!scheme->f_startup)
+	if(!scheme->fStartup)
 		return;
 	BeforeCall();
-	if(scheme->startup_use_vars)
+	if(scheme->startupUseVars)
 	{
 		assert(vars);
-		scriptMgr->RunScript(scheme->f_startup, instance, [vars](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fStartup, instance, [vars](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgAddress(0, vars));
@@ -67,7 +67,7 @@ void Quest_Scripted::Start(Vars* vars)
 	else
 	{
 		assert(!vars);
-		scriptMgr->RunScript(scheme->f_startup, instance);
+		scriptMgr->RunScript(scheme->fStartup, instance);
 	}
 	AfterCall();
 }
@@ -83,13 +83,13 @@ void Quest_Scripted::Save(GameWriter& f)
 	if(!instance)
 		return;
 
-	uint props = scheme->script_type->GetPropertyCount();
+	uint props = scheme->scriptType->GetPropertyCount();
 	f << props;
 	for(uint i = 0; i < props; ++i)
 	{
 		int type_id;
 		cstring name;
-		scheme->script_type->GetProperty(i, &name, &type_id);
+		scheme->scriptType->GetProperty(i, &name, &type_id);
 		Var::Type varType = scriptMgr->GetVarType(type_id);
 		f << Hash(name);
 		void* ptr = instance->GetAddressOfProperty(i);
@@ -211,7 +211,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	{
 		uint props;
 		f >> props;
-		const uint scheme_props = scheme->script_type->GetPropertyCount();
+		const uint scheme_props = scheme->scriptType->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
 			uint name_hash;
@@ -220,7 +220,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 			{
 				int type_id;
 				cstring name;
-				scheme->script_type->GetProperty(j, &name, &type_id);
+				scheme->scriptType->GetProperty(j, &name, &type_id);
 				if(name_hash == Hash(name))
 				{
 					Var::Type varType = scriptMgr->GetVarType(type_id);
@@ -233,14 +233,14 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	}
 	else
 	{
-		const uint props = scheme->script_type->GetPropertyCount();
+		const uint props = scheme->scriptType->GetPropertyCount();
 		if(scheme->id == "main")
 		{
 			for(uint i = 0; i < props; ++i)
 			{
 				int type_id;
 				cstring name;
-				scheme->script_type->GetProperty(i, &name, &type_id);
+				scheme->scriptType->GetProperty(i, &name, &type_id);
 				if(strcmp(name, "village") == 0 || strcmp(name, "counter") == 0)
 				{
 					Var::Type varType = scriptMgr->GetVarType(type_id);
@@ -254,7 +254,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 			for(uint i = 0; i < props; ++i)
 			{
 				int type_id;
-				scheme->script_type->GetProperty(i, nullptr, &type_id);
+				scheme->scriptType->GetProperty(i, nullptr, &type_id);
 				Var::Type varType = scriptMgr->GetVarType(type_id);
 				void* ptr = instance->GetAddressOfProperty(i);
 				LoadVar(f, varType, ptr);
@@ -409,16 +409,16 @@ void Quest_Scripted::SetProgress(int prog2)
 	int prev = prog;
 	prog = prog2;
 	BeforeCall();
-	if(scheme->set_progress_use_prev)
+	if(scheme->setProgressUsePrev)
 	{
-		scriptMgr->RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fProgress, instance, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		scriptMgr->RunScript(scheme->f_progress, instance);
+		scriptMgr->RunScript(scheme->fProgress, instance);
 	AfterCall();
 }
 
@@ -470,10 +470,10 @@ void Quest_Scripted::SetFailed()
 //=================================================================================================
 void Quest_Scripted::FireEvent(ScriptEvent& event)
 {
-	if(!scheme->f_event)
+	if(!scheme->fEvent)
 		return;
 	BeforeCall();
-	scriptMgr->RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fEvent, instance, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
@@ -569,7 +569,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
 	isNew = true;
-	if(!scheme || !scheme->f_upgrade)
+	if(!scheme || !scheme->fUpgrade)
 		throw Format("Missing upgrade quest '%s'.", data.id);
 
 	type = Q_SCRIPTED;
@@ -579,7 +579,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	// call method
 	inUpgrade = true;
 	BeforeCall();
-	scriptMgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fUpgrade, instance, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));

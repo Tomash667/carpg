@@ -44,30 +44,30 @@ public:
 	void CleanupContent();
 	void WriteCrc(BitStreamWriter& f);
 	void ReadCrc(BitStreamReader& f);
-	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
-	bool ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str);
+	bool GetCrc(Id type, uint& myCrc, cstring& typeCrc);
+	bool ValidateCrc(Id& type, uint& myCrc, uint& playerCrc, cstring& typeStr);
 
-	string system_dir;
+	string systemDir;
 	uint errors;
 	uint warnings;
 	uint crc[(int)Id::Max];
-	uint client_crc[(int)Id::Max];
+	uint clientCrc[(int)Id::Max];
 	uint version;
-	bool require_update;
+	bool requireUpdate;
 
 private:
-	AbilityLoader* ability_loader;
-	BuildingLoader* building_loader;
-	ClassLoader* class_loader;
-	DialogLoader* dialog_loader;
-	ItemLoader* item_loader;
-	LocationLoader* location_loader;
+	AbilityLoader* abilityLoader;
+	BuildingLoader* buildingLoader;
+	ClassLoader* classLoader;
+	DialogLoader* dialogLoader;
+	ItemLoader* itemLoader;
+	LocationLoader* locationLoader;
 	MusicListLoader* musicLoader;
-	ObjectLoader* object_loader;
-	PerkLoader* perk_loader;
-	QuestLoader* quest_loader;
-	RequiredLoader* required_loader;
-	UnitLoader* unit_loader;
+	ObjectLoader* objectLoader;
+	PerkLoader* perkLoader;
+	QuestLoader* questLoader;
+	RequiredLoader* requiredLoader;
+	UnitLoader* unitLoader;
 };
 
 extern Content content;

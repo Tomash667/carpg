@@ -433,13 +433,13 @@ void DungeonGenerator::GenerateDungeonItems()
 		--mod;
 
 	UnitGroup* group = GetGroup();
-	mod += group->food_mod;
+	mod += group->foodMod;
 
 	if(mod <= 0)
 		return;
 
 	// get food list and base objects
-	const ItemList& lis = ItemList::Get(group->orc_food ? "orc_food" : "normal_food");
+	const ItemList& lis = ItemList::Get(group->orcFood ? "orc_food" : "normal_food");
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 	const Item* plate = Item::Get("plate");
@@ -492,7 +492,7 @@ UnitGroup* DungeonGenerator::GetGroup()
 	UnitGroup* group = loc->group;
 	if(group->IsChallange())
 	{
-		assert(group->is_list);
+		assert(group->isList);
 		group = group->entries[dungeonLevel % group->entries.size()].group;
 	}
 	return group;

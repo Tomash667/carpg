@@ -14,7 +14,7 @@ protected:
 	virtual ~ContentLoader() {}
 	virtual void DoLoading() = 0;
 	virtual void LoadTexts() {}
-	void Load(cstring filename, int top_group, bool* require_id = nullptr);
+	void Load(cstring filename, int topGroup, bool* requireId = nullptr);
 	virtual void InitTokenizer() = 0;
 	virtual void LoadEntity(int top, const string& id) = 0;
 	virtual void Finalize() = 0;
@@ -31,7 +31,7 @@ protected:
 		LoadError(Format(msg, args...));
 	}
 	cstring FormatLanguagePath(cstring filename);
-	void SetLocalId(const string& id) { local_id = id; }
+	void SetLocalId(const string& id) { localId = id; }
 	bool IsPrefix(cstring prefix);
 	virtual cstring GetEntityName();
 
@@ -39,8 +39,8 @@ protected:
 	Crc crc;
 
 private:
-	bool DoLoad(cstring filename, int top_group, bool* require_id);
+	bool DoLoad(cstring filename, int topGroup, bool* requireId);
 
-	string local_id;
-	int top_group, current_entity;
+	string localId;
+	int topGroup, currentEntity;
 };

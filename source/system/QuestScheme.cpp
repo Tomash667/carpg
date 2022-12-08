@@ -34,11 +34,11 @@ GameDialog* QuestScheme::GetDialog(const string& dialog_id)
 }
 
 //=================================================================================================
-int QuestScheme::GetProgress(const string& progress_id)
+int QuestScheme::GetProgress(const string& progressId)
 {
 	for(int i = 0, size = (int)progress.size(); i < size; ++i)
 	{
-		if(progress[i] == progress_id)
+		if(progress[i] == progressId)
 			return i;
 	}
 	return -1;

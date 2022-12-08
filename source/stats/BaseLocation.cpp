@@ -185,7 +185,7 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 	else
 		result = UnitGroup::random;
 
-	if(result->is_list)
+	if(result->isList)
 		result = result->GetRandomGroup();
 
 	return result;

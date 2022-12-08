@@ -48,7 +48,7 @@ void ItemContainer::Load(GameReader& f)
 		}
 	}
 
-	if(can_sort && !items.empty() && content.require_update)
+	if(can_sort && !items.empty() && content.requireUpdate)
 		SortItems(items);
 }
 

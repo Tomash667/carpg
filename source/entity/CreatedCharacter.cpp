@@ -48,7 +48,7 @@ void CreatedCharacter::Random(Class* clas)
 	// apply tag skills
 	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 	{
-		SkillId sk = subprofile.tag_skills[i];
+		SkillId sk = subprofile.tagSkills[i];
 		if(sk == SkillId::NONE)
 			break;
 		sk = sub.GetSkill(sk);

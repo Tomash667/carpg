@@ -5,11 +5,11 @@
 #include "Version.h"
 
 //-----------------------------------------------------------------------------
-vector<uint> _to_remove;
+vector<uint> _toRemove;
 
 //-----------------------------------------------------------------------------
-cstring dir_name[8];
-cstring dir_name_short[] = {
+cstring dirName[8];
+cstring dirNameShort[] = {
 	"N",
 	"S",
 	"E",
@@ -24,14 +24,14 @@ cstring dir_name_short[] = {
 void SetGameCommonText()
 {
 	Language::Section s = Language::GetSection("Directions");
-	dir_name[DIR_N] = s.Get("dirN");
-	dir_name[DIR_S] = s.Get("dirS");
-	dir_name[DIR_E] = s.Get("dirE");
-	dir_name[DIR_W] = s.Get("dirW");
-	dir_name[DIR_NE] = s.Get("dirNE");
-	dir_name[DIR_NW] = s.Get("dirNW");
-	dir_name[DIR_SE] = s.Get("dirSE");
-	dir_name[DIR_SW] = s.Get("dirSW");
+	dirName[DIR_N] = s.Get("dirN");
+	dirName[DIR_S] = s.Get("dirS");
+	dirName[DIR_E] = s.Get("dirE");
+	dirName[DIR_W] = s.Get("dirW");
+	dirName[DIR_NE] = s.Get("dirNE");
+	dirName[DIR_NW] = s.Get("dirNW");
+	dirName[DIR_SE] = s.Get("dirSE");
+	dirName[DIR_SW] = s.Get("dirSW");
 }
 
 //=================================================================================================

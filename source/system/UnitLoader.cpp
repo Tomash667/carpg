@@ -541,7 +541,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 			if(ItemScript::TryGet(id))
 				t.Throw("Id must be unique.");
 			Ptr<ItemScript> script;
-			script->is_subprofile = false;
+			script->isSubprofile = false;
 			script->id = id;
 			t.Next();
 			ParseItems(script);
@@ -697,14 +697,14 @@ void UnitLoader::ParseUnit(const string& id)
 			if(t.IsSymbol('{'))
 			{
 				Ptr<StatProfile> profile;
-				unit->stat_profile = profile.Get();
+				unit->statProfile = profile.Get();
 				ParseProfile(profile);
 			}
 			else
 			{
 				const string& id = t.MustGetItemKeyword();
-				unit->stat_profile = StatProfile::TryGet(id);
-				if(!unit->stat_profile)
+				unit->statProfile = StatProfile::TryGet(id);
+				if(!unit->statProfile)
 					t.Throw("Missing stat profile '%s'.", id.c_str());
 				crc.Update(id);
 			}
@@ -729,8 +729,8 @@ void UnitLoader::ParseUnit(const string& id)
 				t.Next();
 				t.AssertSymbol('+');
 				t.Next();
-				unit->hp_lvl = t.MustGetInt();
-				crc.Update(unit->hp_lvl);
+				unit->hpLvl = t.MustGetInt();
+				crc.Update(unit->hpLvl);
 			}
 			break;
 		case P_STAMINA:
@@ -745,8 +745,8 @@ void UnitLoader::ParseUnit(const string& id)
 				t.Next();
 				t.AssertSymbol('+');
 				t.Next();
-				unit->attack_lvl = t.MustGetInt();
-				crc.Update(unit->attack_lvl);
+				unit->attackLvl = t.MustGetInt();
+				crc.Update(unit->attackLvl);
 			}
 			break;
 		case P_DEF:
@@ -757,26 +757,26 @@ void UnitLoader::ParseUnit(const string& id)
 				t.Next();
 				t.AssertSymbol('+');
 				t.Next();
-				unit->def_lvl = t.MustGetInt();
-				crc.Update(unit->def_lvl);
+				unit->defLvl = t.MustGetInt();
+				crc.Update(unit->defLvl);
 			}
 			break;
 		case P_ITEMS:
 			if(t.IsSymbol('{'))
 			{
 				Ptr<ItemScript> script;
-				script->is_subprofile = false;
-				unit->item_script = script.Get();
+				script->isSubprofile = false;
+				unit->itemScript = script.Get();
 				ParseItems(script);
 			}
 			else
 			{
-				unit->item_script = nullptr;
+				unit->itemScript = nullptr;
 				if(!t.IsKeywordGroup(G_NULL))
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->item_script = ItemScript::TryGet(id);
-					if(!unit->item_script)
+					unit->itemScript = ItemScript::TryGet(id);
+					if(!unit->itemScript)
 						t.Throw("Missing item script '%s'.", id.c_str());
 					crc.Update(id);
 				}
@@ -852,7 +852,7 @@ void UnitLoader::ParseUnit(const string& id)
 				const string& id = t.MustGetText();
 				if(id.find_first_of('/') != string::npos)
 				{
-					dialog_requests.push_back({ unit->id, id });
+					dialogRequests.push_back({ unit->id, id });
 					crc.Update(id);
 				}
 				else
@@ -878,34 +878,34 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->group);
 			break;
 		case P_DMG_TYPE:
-			t.ParseFlags(G_DMG_TYPE, unit->dmg_type);
-			crc.Update(unit->dmg_type);
+			t.ParseFlags(G_DMG_TYPE, unit->dmgType);
+			crc.Update(unit->dmgType);
 			break;
 		case P_WALK_SPEED:
-			unit->walk_speed = t.MustGetFloat();
-			if(unit->walk_speed < 0.5f)
-				t.Throw("Invalid walk speed %g.", unit->walk_speed);
-			crc.Update(unit->walk_speed);
+			unit->walkSpeed = t.MustGetFloat();
+			if(unit->walkSpeed < 0.5f)
+				t.Throw("Invalid walk speed %g.", unit->walkSpeed);
+			crc.Update(unit->walkSpeed);
 			break;
 		case P_RUN_SPEED:
-			unit->run_speed = t.MustGetFloat();
-			if(unit->run_speed < 0)
-				t.Throw("Invalid run speed %g.", unit->run_speed);
-			crc.Update(unit->run_speed);
+			unit->runSpeed = t.MustGetFloat();
+			if(unit->runSpeed < 0)
+				t.Throw("Invalid run speed %g.", unit->runSpeed);
+			crc.Update(unit->runSpeed);
 			break;
 		case P_ROT_SPEED:
-			unit->rot_speed = t.MustGetFloat();
-			if(unit->rot_speed < 0.5f)
-				t.Throw("Invalid rot speed %g.", unit->rot_speed);
-			crc.Update(unit->rot_speed);
+			unit->rotSpeed = t.MustGetFloat();
+			if(unit->rotSpeed < 0.5f)
+				t.Throw("Invalid rot speed %g.", unit->rotSpeed);
+			crc.Update(unit->rotSpeed);
 			break;
 		case P_BLOOD:
 			unit->blood = (BLOOD)t.MustGetKeywordId(G_BLOOD);
 			crc.Update(unit->blood);
 			break;
 		case P_BLOOD_SIZE:
-			unit->blood_size = t.MustGetFloat();
-			crc.Update(unit->blood_size);
+			unit->bloodSize = t.MustGetFloat();
+			crc.Update(unit->bloodSize);
 			break;
 		case P_SOUNDS:
 			if(t.IsSymbol('{'))
@@ -978,14 +978,14 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->width);
 			break;
 		case P_ATTACK_RANGE:
-			unit->attack_range = t.MustGetFloat();
-			if(unit->attack_range < 0.1f)
-				t.Throw("Invalid attack range %g.", unit->attack_range);
-			crc.Update(unit->attack_range);
+			unit->attackRange = t.MustGetFloat();
+			if(unit->attackRange < 0.1f)
+				t.Throw("Invalid attack range %g.", unit->attackRange);
+			crc.Update(unit->attackRange);
 			break;
 		case P_ARMOR_TYPE:
-			unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
-			crc.Update(unit->armor_type);
+			unit->armorType = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
+			crc.Update(unit->armorType);
 			break;
 		case P_CLASS:
 			{
@@ -1101,8 +1101,8 @@ void UnitLoader::ParseUnit(const string& id)
 			}
 			break;
 		case P_SPELL_POWER:
-			unit->spell_power = t.MustGetInt();
-			crc.Update(unit->spell_power);
+			unit->spellPower = t.MustGetInt();
+			crc.Update(unit->spellPower);
 			break;
 		case P_MP:
 			unit->mp = t.MustGetInt();
@@ -1112,8 +1112,8 @@ void UnitLoader::ParseUnit(const string& id)
 				t.Next();
 				t.AssertSymbol('+');
 				t.Next();
-				unit->mp_lvl = t.MustGetInt();
-				crc.Update(unit->mp_lvl);
+				unit->mpLvl = t.MustGetInt();
+				crc.Update(unit->mpLvl);
 			}
 			break;
 		case P_TINT:
@@ -1326,7 +1326,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 		switch(key)
 		{
 		case SPK_WEAPON:
-			if(subprofile->weapon_total > 0)
+			if(subprofile->weaponTotal > 0)
 				t.Throw("Weapon subprofile already set.");
 			if(t.IsSymbol('{'))
 			{
@@ -1334,24 +1334,24 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				while(!t.IsSymbol('}'))
 				{
 					WEAPON_TYPE type = GetWeaponType();
-					if(subprofile->weapon_chance[type] != 0)
+					if(subprofile->weaponChance[type] != 0)
 						t.Throw("Weapon subprofile chance already set.");
 					t.Next();
 					int chance = t.MustGetInt();
-					subprofile->weapon_chance[type] = chance;
-					subprofile->weapon_total += chance;
+					subprofile->weaponChance[type] = chance;
+					subprofile->weaponTotal += chance;
 					t.Next();
 				}
 			}
 			else
 			{
 				WEAPON_TYPE type = GetWeaponType();
-				subprofile->weapon_chance[type] = 1;
-				subprofile->weapon_total = 1;
+				subprofile->weaponChance[type] = 1;
+				subprofile->weaponTotal = 1;
 			}
 			break;
 		case SPK_ARMOR:
-			if(subprofile->armor_total > 0)
+			if(subprofile->armorTotal > 0)
 				t.Throw("Armor subprofile already set.");
 			if(t.IsSymbol('{'))
 			{
@@ -1359,20 +1359,20 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				while(!t.IsSymbol('}'))
 				{
 					ARMOR_TYPE type = GetArmorType();
-					if(subprofile->armor_chance[type] != 0)
+					if(subprofile->armorChance[type] != 0)
 						t.Throw("Armor subprofile chance already set.");
 					t.Next();
 					int chance = t.MustGetInt();
-					subprofile->armor_chance[type] = chance;
-					subprofile->armor_total += chance;
+					subprofile->armorChance[type] = chance;
+					subprofile->armorTotal += chance;
 					t.Next();
 				}
 			}
 			else
 			{
 				ARMOR_TYPE type = GetArmorType();
-				subprofile->armor_chance[type] = 1;
-				subprofile->armor_total = 1;
+				subprofile->armorChance[type] = 1;
+				subprofile->armorTotal = 1;
 			}
 			break;
 		case SPK_TAG:
@@ -1380,7 +1380,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				int index = 0;
 				for(; index < StatProfile::MAX_TAGS; ++index)
 				{
-					if(subprofile->tag_skills[index] == SkillId::NONE)
+					if(subprofile->tagSkills[index] == SkillId::NONE)
 						break;
 				}
 				if(index == StatProfile::MAX_TAGS)
@@ -1392,7 +1392,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					skill = SkillId::SPECIAL_ARMOR;
 				else
 					skill = (SkillId)t.MustGetKeywordId(G_SKILL);
-				subprofile->tag_skills[index] = skill;
+				subprofile->tagSkills[index] = skill;
 			}
 			break;
 		case SPK_PRIORITY:
@@ -1478,8 +1478,8 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 			{
 				t.AssertSymbol('{');
 				Ptr<ItemScript> script;
-				script->is_subprofile = true;
-				subprofile->item_script = script.Get();
+				script->isSubprofile = true;
+				subprofile->itemScript = script.Get();
 				ParseItems(script);
 			}
 			break;
@@ -1498,7 +1498,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					float value = t.MustGetFloat();
 					if(value < 0.f)
 						t.Throw("Invalid subprofile tag priority %g.", value);
-					subprofile->tag_priorities[tag] = value;
+					subprofile->tagPriorities[tag] = value;
 					t.Next();
 				}
 			}
@@ -1509,9 +1509,9 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 		}
 		t.Next();
 	}
-	if(subprofile->weapon_total == 0)
+	if(subprofile->weaponTotal == 0)
 		t.Throw("Weapon subprofile not set.");
-	if(subprofile->armor_total == 0)
+	if(subprofile->armorTotal == 0)
 		t.Throw("Armor subprofile not set.");
 }
 
@@ -1888,7 +1888,7 @@ void UnitLoader::AddItem(ItemScript* script)
 	{
 		if(t.IsSymbol('$'))
 		{
-			if(!script->is_subprofile)
+			if(!script->isSubprofile)
 				t.Throw("Special item list can only be used in subprofiles.");
 			t.Next();
 			int mod = 0;
@@ -1990,8 +1990,8 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 			{
 				// non_combat
 				t.Next();
-				list->have_non_combat = t.MustGetBool();
-				crc.Update(list->have_non_combat ? 2 : 1);
+				list->haveNonCombat = t.MustGetBool();
+				crc.Update(list->haveNonCombat ? 2 : 1);
 			}
 			else
 			{
@@ -2169,7 +2169,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 
 					frames->t[F_ATTACK1_START + index * 2] = start;
 					frames->t[F_ATTACK1_END + index * 2] = end;
-					frames->attack_power[index] = power;
+					frames->attackPower[index] = power;
 					++index;
 					++frames->attacks;
 					t.Next();
@@ -2317,25 +2317,25 @@ void UnitLoader::ParseGroup(const string& id)
 						t.Throw("Missing group '%s'.", id.c_str());
 					for(UnitGroup::Entry& e : other_group->entries)
 						group->entries.push_back(e);
-					group->max_weight += other_group->max_weight;
+					group->maxWeight += other_group->maxWeight;
 					crc.Update(id);
 				}
 				break;
 			case GK_FOOD_MOD:
-				group->food_mod = t.MustGetInt();
-				if(!InRange(group->food_mod, -2, 0))
-					t.Throw("Invalid food_mod %d.", group->food_mod);
+				group->foodMod = t.MustGetInt();
+				if(!InRange(group->foodMod, -2, 0))
+					t.Throw("Invalid food_mod %d.", group->foodMod);
 				break;
 			case GK_ORC_FOOD:
-				group->orc_food = t.MustGetBool();
+				group->orcFood = t.MustGetBool();
 				break;
 			case GK_HAVE_CAMPS:
-				group->have_camps = t.MustGetBool();
+				group->haveCamps = t.MustGetBool();
 				break;
 			case GK_ENCOUNTER_CHANCE:
-				group->encounter_chance = t.MustGetInt();
-				if(group->encounter_chance <= 0)
-					t.Throw("Invalid encounter_chance %d.", group->encounter_chance);
+				group->encounterChance = t.MustGetInt();
+				if(group->encounterChance <= 0)
+					t.Throw("Invalid encounter_chance %d.", group->encounterChance);
 				break;
 			case GK_SPECIAL:
 				group->special = (UnitGroup::Special)t.MustGetInt();
@@ -2348,7 +2348,7 @@ void UnitLoader::ParseGroup(const string& id)
 			case GK_LIST:
 				if(!group->entries.empty())
 					t.Throw("Group already have entries.");
-				group->is_list = true;
+				group->isList = true;
 				t.AssertSymbol('{');
 				t.Next();
 				while(!t.IsSymbol('}'))
@@ -2366,7 +2366,7 @@ void UnitLoader::ParseGroup(const string& id)
 					if(!gr)
 						t.Throw("Missing unit group '%s'.", id.c_str());
 					group->entries.push_back(UnitGroup::Entry(gr, weight));
-					group->max_weight += weight;
+					group->maxWeight += weight;
 					crc.Update(id);
 					crc.Update(weight);
 					t.Next();
@@ -2374,10 +2374,10 @@ void UnitLoader::ParseGroup(const string& id)
 					{
 						for(UnitGroup::Entry& entry : group->entries)
 						{
-							if(entry.is_leader)
+							if(entry.isLeader)
 								t.Throw("Group list already have entry marked as 'encounter'.");
 						}
-						group->entries.back().is_leader = true;
+						group->entries.back().isLeader = true;
 						crc.Update(true);
 						t.Next();
 					}
@@ -2392,7 +2392,7 @@ void UnitLoader::ParseGroup(const string& id)
 		}
 		else
 		{
-			if(group->is_list)
+			if(group->isList)
 				t.Throw("Can't mix units and group list.");
 
 			const string& id = t.MustGetItemKeyword();
@@ -2402,32 +2402,32 @@ void UnitLoader::ParseGroup(const string& id)
 			crc.Update(id);
 			t.Next();
 
-			bool is_leader = false;
+			bool isLeader = false;
 			if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
 			{
-				is_leader = true;
+				isLeader = true;
 				t.Next();
 			}
 
 			int weight = t.MustGetInt();
 			if(weight < 1)
 				t.Throw("Invalid unit weight %d.", weight);
-			group->entries.push_back(UnitGroup::Entry(ud, weight, is_leader));
-			group->max_weight += weight;
+			group->entries.push_back(UnitGroup::Entry(ud, weight, isLeader));
+			group->maxWeight += weight;
 			crc.Update(weight);
-			crc.Update(is_leader);
+			crc.Update(isLeader);
 		}
 		t.Next();
 	}
 
 	if(group->entries.empty() && !group->special)
 		t.Throw("Empty group.");
-	if(group->is_list && group->encounter_chance > 0)
+	if(group->isList && group->encounterChance > 0)
 	{
 		bool ok = false;
 		for(UnitGroup::Entry& entry : group->entries)
 		{
-			if(entry.is_leader)
+			if(entry.isLeader)
 			{
 				ok = true;
 				break;
@@ -2443,7 +2443,7 @@ void UnitLoader::ParseGroup(const string& id)
 //=================================================================================================
 void UnitLoader::ProcessDialogRequests()
 {
-	for(DialogRequest& request : dialog_requests)
+	for(DialogRequest& request : dialogRequests)
 	{
 		UnitData* unit = UnitData::TryGet(request.unit);
 		if(!unit)

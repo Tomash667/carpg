@@ -126,7 +126,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 				Error("Missing required unit group list '%s'.", group_id.c_str());
 				++content.errors;
 			}
-			else if(!group->is_list)
+			else if(!group->isList)
 			{
 				Error("Required unit group '%s' is not list.", group_id.c_str());
 				++content.errors;
@@ -147,7 +147,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 				Error("Missing required unit group '%s'.", group_id.c_str());
 				++content.errors;
 			}
-			else if(group->is_list)
+			else if(group->isList)
 			{
 				Error("Required unit group '%s' is list.", group_id.c_str());
 				++content.errors;

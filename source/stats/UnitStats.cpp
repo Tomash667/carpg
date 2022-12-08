@@ -77,9 +77,9 @@ void UnitStats::Set(StatProfile& profile)
 		StatProfile::Subprofile& sub = *profile.subprofiles[subprofile.index];
 		for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 		{
-			if(sub.tag_skills[i] == SkillId::NONE)
+			if(sub.tagSkills[i] == SkillId::NONE)
 				break;
-			SkillId sk = subprofile.GetSkill(sub.tag_skills[i]);
+			SkillId sk = subprofile.GetSkill(sub.tagSkills[i]);
 			skill[(int)sk] += Skill::TAG_BONUS;
 		}
 		// calculate skill

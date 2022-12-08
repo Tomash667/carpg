@@ -16,11 +16,11 @@ vector<HumanData*> UnitData::appearances;
 UnitStats* UnitData::GetStats(int level)
 {
 	SubprofileInfo sub;
-	if(!stat_profile)
+	if(!statProfile)
 		sub.value = 0;
 	else
 	{
-		sub = stat_profile->GetRandomSubprofile();
+		sub = statProfile->GetRandomSubprofile();
 		sub.level = level;
 	}
 	return GetStats(sub);
@@ -30,25 +30,25 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 {
 	assert(group != G_PLAYER);
 	typedef std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
-	pair<M::iterator, bool> const& result = UnitStats::sharedStats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
+	pair<M::iterator, bool> const& result = UnitStats::sharedStats.insert(M::value_type(std::make_pair(statProfile, sub), nullptr));
 	if(result.second)
 	{
 		UnitStats*& stats = result.first->second;
 		stats = new UnitStats;
 		stats->fixed = true;
 		stats->subprofile = sub;
-		if(stat_profile)
+		if(statProfile)
 		{
-			stats->Set(*stat_profile);
-			if(!stat_profile->subprofiles.empty())
+			stats->Set(*statProfile);
+			if(!statProfile->subprofiles.empty())
 			{
-				stats->priorities = stat_profile->subprofiles[sub.index]->priorities;
-				stats->tagPriorities = stat_profile->subprofiles[sub.index]->tag_priorities;
+				stats->priorities = statProfile->subprofiles[sub.index]->priorities;
+				stats->tagPriorities = statProfile->subprofiles[sub.index]->tagPriorities;
 			}
 			else
 			{
-				stats->priorities = StatProfile::Subprofile::default_priorities;
-				stats->tagPriorities = StatProfile::Subprofile::default_tag_priorities;
+				stats->priorities = StatProfile::Subprofile::defaultPriorities;
+				stats->tagPriorities = StatProfile::Subprofile::defaultTagPriorities;
 			}
 		}
 		else
@@ -57,7 +57,7 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 				stats->attrib[i] = 0;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 				stats->skill[i] = 0;
-			stats->priorities = StatProfile::Subprofile::default_priorities;
+			stats->priorities = StatProfile::Subprofile::defaultPriorities;
 		}
 		return stats;
 	}
@@ -71,12 +71,12 @@ void UnitData::CopyFrom(UnitData& ud)
 	mesh = ud.mesh;
 	mat = ud.mat;
 	level = ud.level;
-	stat_profile = ud.stat_profile;
+	statProfile = ud.statProfile;
 	hp = ud.hp;
 	stamina = ud.stamina;
 	attack = ud.attack;
 	def = ud.def;
-	dmg_type = ud.dmg_type;
+	dmgType = ud.dmgType;
 	flags = ud.flags;
 	flags2 = ud.flags2;
 	flags3 = ud.flags3 & ~F3_PARENT_DATA;
@@ -86,19 +86,19 @@ void UnitData::CopyFrom(UnitData& ud)
 	dialog = ud.dialog;
 	idleDialog = ud.idleDialog;
 	group = ud.group;
-	walk_speed = ud.walk_speed;
-	run_speed = ud.run_speed;
-	rot_speed = ud.rot_speed;
+	walkSpeed = ud.walkSpeed;
+	runSpeed = ud.runSpeed;
+	rotSpeed = ud.rotSpeed;
 	width = ud.width;
-	attack_range = ud.attack_range;
+	attackRange = ud.attackRange;
 	blood = ud.blood;
-	blood_size = ud.blood_size;
+	bloodSize = ud.bloodSize;
 	sounds = ud.sounds;
 	frames = ud.frames;
 	tex = ud.tex;
 	idles = ud.idles;
-	armor_type = ud.armor_type;
-	item_script = ud.item_script;
+	armorType = ud.armorType;
+	itemScript = ud.itemScript;
 	clas = ud.clas;
 	trader = nullptr; // not copied
 	tint = ud.tint;
@@ -187,7 +187,7 @@ void UnitData::Validate(uint& err)
 			++err;
 			Error("Test: Missing unit '%s' name.", unit->id.c_str());
 		}
-		if(!IsSet(unit->flags2, F2_FIXED_STATS) && !unit->stat_profile)
+		if(!IsSet(unit->flags2, F2_FIXED_STATS) && !unit->statProfile)
 		{
 			++err;
 			Error("Test: Unit '%s' have no fixed stats nor profile.", unit->id.c_str());

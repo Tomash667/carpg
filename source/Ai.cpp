@@ -263,7 +263,7 @@ void Game::UpdateAi(float dt)
 		bool try_phase = false;
 
 		// casting of non combat spells
-		if(u.data->abilities && u.data->abilities->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
+		if(u.data->abilities && u.data->abilities->haveNonCombat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
 			&& u.busy == Unit::Busy_No)
 		{
 			for(int i = 0; i < MAX_ABILITIES; ++i)

@@ -130,7 +130,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 			tp.Apply(ctx);
 
 		// inventory
-		unit->data->item_script->Parse(*unit);
+		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
 		if(HavePerk(Perk::Get("alchemist_apprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);

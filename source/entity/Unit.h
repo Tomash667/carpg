@@ -478,15 +478,15 @@ struct Unit : public EntityType<Unit>
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * GetMobilityMod(false);
+		return data->rotSpeed * GetMobilityMod(false);
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
+		return data->walkSpeed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
+		return data->runSpeed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	bool CanMove() const { return !HaveEffect(EffectId::Rooted); }
 	bool CanRun() const;
@@ -552,7 +552,7 @@ struct Unit : public EntityType<Unit>
 	int FindManaPotion() const;
 	float GetAttackRange() const
 	{
-		return data->attack_range;
+		return data->attackRange;
 	}
 	void ReequipItems();
 private:

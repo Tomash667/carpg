@@ -20,7 +20,7 @@ private:
 	void BuildQuest(QuestScheme* scheme);
 
 	string code, globalCode;
-	DialogLoader* dialog_loader;
+	DialogLoader* dialogLoader;
 	asIScriptEngine* engine;
 	asIScriptModule* module;
 };

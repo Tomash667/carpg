@@ -1986,7 +1986,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool createPhysics)
 	unit->Init(base, level);
 
 	// preload items
-	if(base.group != G_PLAYER && base.item_script && !resMgr->IsLoadScreen())
+	if(base.group != G_PLAYER && base.itemScript && !resMgr->IsLoadScreen())
 	{
 		array<const Item*, SLOT_MAX>& equipped = unit->GetEquippedItems();
 		for(const Item* item : equipped)
@@ -2852,7 +2852,7 @@ void Level::CreateBlood(LocationPart& locPart, const Unit& u, bool fullyCreated)
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
 	b.size = (fullyCreated ? 1.f : 0.f);
-	b.scale = u.data->blood_size;
+	b.scale = u.data->bloodSize;
 
 	if(locPart.haveTerrain)
 	{

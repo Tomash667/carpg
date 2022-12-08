@@ -500,7 +500,7 @@ struct StartItem
 //-----------------------------------------------------------------------------
 struct Recipe : public ContentItem<Recipe>
 {
-	inline static const cstring type_name = "recipe";
+	inline static const cstring typeName = "recipe";
 
 	const Item* result;
 	vector<pair<const Item*, uint>> ingredients;

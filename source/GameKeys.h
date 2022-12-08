@@ -163,24 +163,24 @@ public:
 	{
 		return KeyDoReturn(gk, reinterpret_cast<Input::Func>(f));
 	}
-	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::Func f, Key ignored_key)
+	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::Func f, Key ignoredKey)
 	{
 		GameKey& k = keys[gk];
-		if(k[0] != Key::None && k[0] != ignored_key)
+		if(k[0] != Key::None && k[0] != ignoredKey)
 		{
 			if(KeyAllowed(k[0]) && (input->*f)(k[0]))
 				return k[0];
 		}
-		if(k[1] != Key::None && k[1] != ignored_key)
+		if(k[1] != Key::None && k[1] != ignoredKey)
 		{
 			if(KeyAllowed(k[1]) && (input->*f)(k[1]))
 				return k[1];
 		}
 		return Key::None;
 	}
-	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::FuncC f, Key ignored_key)
+	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::FuncC f, Key ignoredKey)
 	{
-		return KeyDoReturnIgnore(gk, reinterpret_cast<Input::Func>(f), ignored_key);
+		return KeyDoReturnIgnore(gk, reinterpret_cast<Input::Func>(f), ignoredKey);
 	}
 	bool KeyDo(GAME_KEYS gk, Input::Func f)
 	{

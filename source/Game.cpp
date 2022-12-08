@@ -280,7 +280,7 @@ void Game::LoadDatafiles()
 	loadWarnings = 0;
 
 	// content
-	content.system_dir = g_system_dir;
+	content.systemDir = g_system_dir;
 	content.LoadContent([this](Content::Id id)
 	{
 		switch(id)
@@ -2248,8 +2248,8 @@ uint Game::TestGameData(bool major)
 		str.clear();
 
 		// unit inventory
-		if(ud.item_script)
-			ud.item_script->Test(str, errors);
+		if(ud.itemScript)
+			ud.itemScript->Test(str, errors);
 
 		// attacks
 		if(ud.frames)

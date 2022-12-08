@@ -206,7 +206,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			cstring mob_str, armor_type_text;
 
 			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
-			if(unit->data->armor_type == armor.armorUnitType)
+			if(unit->data->armorType == armor.armorUnitType)
 				armor_type_text = skill;
 			else
 				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);

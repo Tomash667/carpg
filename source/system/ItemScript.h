@@ -37,7 +37,7 @@ struct ItemScript
 {
 	string id;
 	vector<int> code;
-	bool is_subprofile;
+	bool isSubprofile;
 
 	void Test(string& errors, uint& count);
 	void CheckItem(const int*& ps, string& errors, uint& count);
@@ -48,7 +48,7 @@ private:
 
 public:
 	static vector<ItemScript*> scripts;
-	static const ItemList* weapon_list[WT_MAX], *armor_list[AT_MAX];
+	static const ItemList* weaponList[WT_MAX], *armorList[AT_MAX];
 	static ItemScript* TryGet(Cstring id);
 	static void Init();
 	static const ItemList& GetSpecial(int special, int sub);

@@ -17,17 +17,17 @@ struct QuestScheme
 	QuestCategory category;
 	vector<GameDialog*> dialogs;
 	vector<string> progress;
-	asITypeInfo* script_type;
-	asIScriptFunction* f_startup, *f_progress, *f_event, *f_upgrade;
+	asITypeInfo* scriptType;
+	asIScriptFunction* fStartup, *fProgress, *fEvent, *fUpgrade;
 	DialogScripts scripts;
 	string properties, code;
 	int flags;
-	bool set_progress_use_prev, startup_use_vars;
+	bool setProgressUsePrev, startupUseVars;
 
 	QuestScheme() : category(QuestCategory::NotSet), flags(0) {}
 	~QuestScheme();
 	GameDialog* GetDialog(const string& id);
-	int GetProgress(const string& progress_id);
+	int GetProgress(const string& progressId);
 
 	static vector<QuestScheme*> schemes;
 	static QuestScheme* TryGet(const string& id);

@@ -175,7 +175,7 @@ void World::SpawnCamps(int days)
 		while(true)
 		{
 			Location* loc = locations[index];
-			if(loc && loc->state != LS_CLEARED && loc->type == L_DUNGEON && loc->group->have_camps)
+			if(loc && loc->state != LS_CLEARED && loc->type == L_DUNGEON && loc->group->haveCamps)
 			{
 				const Vec2 pos = FindPlace(loc->pos, 128.f);
 				CreateCamp(pos, loc->group);
@@ -2322,10 +2322,10 @@ void World::UpdateTravel(float dt)
 				float dist = Vec2::Distance(worldPos, loc.pos);
 				if(dist <= 50.f)
 				{
-					if(loc.state != LS_CLEARED && dist <= 32.f && loc.group && loc.group->encounter_chance != 0)
+					if(loc.state != LS_CLEARED && dist <= 32.f && loc.group && loc.group->encounterChance != 0)
 					{
 						group = loc.group;
-						int chance = loc.group->encounter_chance;
+						int chance = loc.group->encounterChance;
 						if(loc.type == L_CAMP)
 							chance *= 2;
 						encounterChance += chance;
@@ -2474,12 +2474,12 @@ void World::StartEncounter(int enc, UnitGroup* group)
 				// combat encounter
 				encounter.mode = ENCOUNTER_COMBAT;
 				encounter.group = group;
-				text = group->encounter_text.c_str();
-				if(group->is_list)
+				text = group->encounterText.c_str();
+				if(group->isList)
 				{
 					for(UnitGroup::Entry& entry : group->entries)
 					{
-						if(entry.is_leader)
+						if(entry.isLeader)
 						{
 							encounter.group = entry.group;
 							break;

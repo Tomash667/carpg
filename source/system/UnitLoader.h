@@ -36,5 +36,5 @@ class UnitLoader : public ContentLoader
 	void ParseGroup(const string& id);
 	void ProcessDialogRequests();
 
-	vector<DialogRequest> dialog_requests;
+	vector<DialogRequest> dialogRequests;
 };

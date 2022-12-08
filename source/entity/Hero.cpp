@@ -40,8 +40,8 @@ void Hero::Init(Unit& _unit)
 	loner = IsSet(_unit.data->flags, F_LONER) || Rand() % 5 == 0;
 	investment = 0;
 
-	if(!unit->data->real_name.empty())
-		name = unit->data->real_name;
+	if(!unit->data->realName.empty())
+		name = unit->data->realName;
 	else if(!IsSet(unit->data->flags2, F2_SPECIFIC_NAME))
 		NameHelper::GenerateHeroName(*this);
 }

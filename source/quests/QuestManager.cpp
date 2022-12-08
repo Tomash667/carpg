@@ -1544,7 +1544,7 @@ void QuestManager::ProcessQuestRequests()
 		const Item* item = FindQuestItem(qir->name.c_str(), qir->questId);
 		assert(item);
 		*qir->item = item;
-		if(qir->items && content.require_update)
+		if(qir->items && content.requireUpdate)
 		{
 			bool ok = true;
 			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)

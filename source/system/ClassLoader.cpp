@@ -230,18 +230,18 @@ void ClassLoader::ApplyUnits()
 				LoadError("Missing player unit data '%s'.", clas->playerId.c_str());
 			else
 			{
-				if(!clas->player->stat_profile)
+				if(!clas->player->statProfile)
 					LoadError("Player unit is missing profile.");
-				else if(clas->player->stat_profile->subprofiles.empty())
+				else if(clas->player->statProfile->subprofiles.empty())
 					LoadError("Player unit is missing subprofiles.");
 				else
 				{
-					for(StatProfile::Subprofile* sub : clas->player->stat_profile->subprofiles)
+					for(StatProfile::Subprofile* sub : clas->player->statProfile->subprofiles)
 					{
 						if(!sub->perks[StatProfile::MAX_PERKS - 1].perk)
-							LoadError("Subprofile %s.%s: Missing perks.", clas->player->stat_profile->id.c_str(), sub->id.c_str());
-						else if(sub->tag_skills[StatProfile::MAX_TAGS - 1] == SkillId::NONE)
-							LoadError("Subprofile %s.%s: Missing tag skills.", clas->player->stat_profile->id.c_str(), sub->id.c_str());
+							LoadError("Subprofile %s.%s: Missing perks.", clas->player->statProfile->id.c_str(), sub->id.c_str());
+						else if(sub->tagSkills[StatProfile::MAX_TAGS - 1] == SkillId::NONE)
+							LoadError("Subprofile %s.%s: Missing tag skills.", clas->player->statProfile->id.c_str(), sub->id.c_str());
 					}
 				}
 			}

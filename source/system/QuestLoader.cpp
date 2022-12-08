@@ -152,7 +152,7 @@ void QuestLoader::ParseQuest(const string& id)
 			break;
 		case P_DIALOG:
 			{
-				GameDialog* dialog = dialog_loader->LoadSingleDialog(t, quest);
+				GameDialog* dialog = dialogLoader->LoadSingleDialog(t, quest);
 				if(quest->GetDialog(dialog->id))
 				{
 					cstring str = Format("Quest dialog '%s' already exists.", dialog->id.c_str());
@@ -337,7 +337,7 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 		if(t.IsKeyword(QK_DIALOG, 0))
 		{
 			t.Next();
-			dialog_loader->LoadText(t, scheme);
+			dialogLoader->LoadText(t, scheme);
 		}
 		else if(t.IsKeyword(QK_TEXTS, 0))
 		{
@@ -380,7 +380,7 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 							dialog->texts.push_back(GameDialog::Text(str_idx));
 							prev = index;
 						}
-						dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+						dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
 					}
 				}
 				else
@@ -389,7 +389,7 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 					dialog->strs.push_back(t.MustGetString());
 					dialog->texts[index].index = str_idx;
 					dialog->texts[index].exists = true;
-					dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+					dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
 				}
 				t.Next();
 			}
@@ -454,28 +454,28 @@ void QuestLoader::Finalize()
 	for(QuestScheme* scheme : QuestScheme::schemes)
 	{
 		asITypeInfo* type = module->GetTypeInfoByName(Format("quest_%s", scheme->id.c_str()));
-		scheme->script_type = type;
-		scheme->f_startup = type->GetMethodByDecl("void Startup()");
-		if(!scheme->f_startup)
+		scheme->scriptType = type;
+		scheme->fStartup = type->GetMethodByDecl("void Startup()");
+		if(!scheme->fStartup)
 		{
-			scheme->f_startup = type->GetMethodByDecl("void Startup(Vars@)");
-			scheme->startup_use_vars = true;
+			scheme->fStartup = type->GetMethodByDecl("void Startup(Vars@)");
+			scheme->startupUseVars = true;
 		}
 		else
-			scheme->startup_use_vars = false;
-		scheme->f_progress = type->GetMethodByDecl("void SetProgress()");
-		if(!scheme->f_progress)
+			scheme->startupUseVars = false;
+		scheme->fProgress = type->GetMethodByDecl("void SetProgress()");
+		if(!scheme->fProgress)
 		{
-			scheme->f_progress = type->GetMethodByDecl("void SetProgress(int)");
-			scheme->set_progress_use_prev = true;
+			scheme->fProgress = type->GetMethodByDecl("void SetProgress(int)");
+			scheme->setProgressUsePrev = true;
 		}
 		else
-			scheme->set_progress_use_prev = false;
-		scheme->f_event = type->GetMethodByDecl("void OnEvent(Event@)");
-		scheme->f_upgrade = type->GetMethodByDecl("void OnUpgrade(Vars@)");
+			scheme->setProgressUsePrev = false;
+		scheme->fEvent = type->GetMethodByDecl("void OnEvent(Event@)");
+		scheme->fUpgrade = type->GetMethodByDecl("void OnUpgrade(Vars@)");
 		scheme->scripts.Set(type);
 
-		if(!scheme->f_progress)
+		if(!scheme->fProgress)
 		{
 			if(!IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
 			{

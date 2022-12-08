@@ -498,7 +498,7 @@ void Language::ParseObject(Tokenizer& t)
 						ud->name = t.MustGetString();
 						break;
 					case P_REAL_NAME:
-						ud->real_name = t.MustGetString();
+						ud->realName = t.MustGetString();
 						break;
 					}
 					t.Next();
@@ -515,8 +515,8 @@ void Language::ParseObject(Tokenizer& t)
 			{
 				if(ud->name.empty())
 					ud->name = ud->parent->name;
-				if(ud->real_name.empty())
-					ud->real_name = ud->parent->real_name;
+				if(ud->realName.empty())
+					ud->realName = ud->parent->realName;
 			}
 			if(ud->name.empty())
 				Warn("Missing unit '%s' name.", ud->id.c_str());
@@ -555,7 +555,7 @@ void Language::ParseObject(Tokenizer& t)
 					group->name3 = t.MustGetString();
 					break;
 				case P_ENCOUNTER_TEXT:
-					group->encounter_text = t.MustGetString();
+					group->encounterText = t.MustGetString();
 					break;
 				}
 				t.Next();
