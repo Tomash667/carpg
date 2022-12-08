@@ -10,6 +10,7 @@ Wersja 0.19 (???):
 + usunięte niepotrzebne komendy konsoli
 + usprawnienia UI
 - crash po opuszczeniu lokalizacji, zapisaniu na mapie świata i wczytaniu
+- crash po wczytaniu gry w podziemiach gdy jest efekt winorośli
 - popsute opisy umiejętności
 - ai nie zmienia celu w trakcie ataku
 - zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku

@@ -73,9 +73,15 @@ void UnitData::CopyFrom(UnitData& ud)
 	level = ud.level;
 	statProfile = ud.statProfile;
 	hp = ud.hp;
+	hpLvl = ud.hpLvl;
+	mp = ud.mp;
+	mpLvl = ud.mpLvl;
 	stamina = ud.stamina;
 	attack = ud.attack;
+	attackLvl = ud.attackLvl;
 	def = ud.def;
+	defLvl = ud.defLvl;
+	spellPower = ud.spellPower;
 	dmgType = ud.dmgType;
 	flags = ud.flags;
 	flags2 = ud.flags2;

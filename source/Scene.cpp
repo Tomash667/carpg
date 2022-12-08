@@ -527,16 +527,20 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node->SetMesh(gameRes->aStun);
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
-			node->mat = Matrix::RotationY(portalAnim * PI * 2) * Matrix::Translation(node->center);
+			node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(portalAnim * PI * 2) * Matrix::Translation(node->center);
 			drawBatch.Add(node);
 		}
 
 		if(u.HaveEffect(EffectId::Rooted, EffectValue_Rooted_Vines))
 		{
+			const float scale = u.GetUnitRadius() / 0.3f;
 			SceneNode* node = SceneNode::Get();
 			node->SetMesh(gameRes->mVine);
 			node->center = u.pos;
-			node->mat = Matrix::Scale(u.GetUnitRadius() / 0.3f) * Matrix::Translation(node->center);
+			node->radius *= scale;
+			node->mat = Matrix::Scale(scale) * Matrix::Translation(node->center);
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
 			drawBatch.Add(node);
 		}
 	}
@@ -652,16 +656,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(right_hand_item == gameRes->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
 		right_hand_item = u.act.shoot.ability->mesh;
 
-	Matrix mat_scale;
+	Matrix matScale;
 	if(u.humanData)
 	{
 		Vec2 scale = u.humanData->GetScale();
 		scale.x = 1.f / scale.x;
 		scale.y = 1.f / scale.y;
-		mat_scale = Matrix::Scale(scale.x, scale.y, scale.x);
+		matScale = Matrix::Scale(scale.x, scale.y, scale.x);
 	}
 	else
-		mat_scale = Matrix::IdentityMatrix;
+		matScale = Matrix::IdentityMatrix;
 
 	// weapon
 	Mesh* mesh;
@@ -673,7 +677,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(mesh);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -723,7 +727,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(shield);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -761,7 +765,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(right_hand_item);
 		node2->center = node->center;
-		node2->mat = mat_scale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -814,7 +818,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.meshInst->matBones[point->bone];
 		else
 			m1 = point->mat * u.meshInst->matBones[point->bone];
-		node2->mat = mat_scale * m1 * node->mat;
+		node2->mat = matScale * m1 * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{

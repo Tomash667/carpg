@@ -812,6 +812,7 @@ quest camp_near_city
 			@camp = vars["target_loc"];
 			int start_time = vars["start_time"];
 			@group = vars["group"];
+			st = vars["st"];
 
 			if(quest.state != Q_STARTED)
 				return;

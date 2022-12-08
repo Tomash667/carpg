@@ -10,6 +10,7 @@ Version 0.19 (???):
 + removed useless console commands
 + UI improvements
 - crash when leave location, save on worldmap & load
+- crash when loading game in dungeon with vines effect
 - broken skill tooltips
 - ai don't change target while attacking
 - taking equiped item from corpse wrongly updated inventory view
