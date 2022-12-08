@@ -44,20 +44,20 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&sceneMgr->useNormalmap, "useNormalmap", "use normal mapping (useNormalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&sceneMgr->useSpecularmap, "useSpecularmap", "use specular mapping (useSpecularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 
-	cmds.push_back(ConsoleCommand(&game->drawParticleSphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->drawUnitRadius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->drawHitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->drawPhy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->drawCol, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawParticleSphere, "drawParticleSphere", "draw particle extents sphere (drawParticleSphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawUnitRadius, "drawUnitRadius", "draw units radius (drawUnitRadius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawHitbox, "drawHitbox", "draw weapons hitbox (drawHitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawPhy, "drawPhy", "draw physical colliders (drawPhy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawCol, "drawCol", "draw colliders (drawCol 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->gameSpeed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
-	cmds.push_back(ConsoleCommand(&game->nextSeed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->dontWander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->drawFlags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&net->mpInterp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&game->nextSeed, "nextSeed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->dontWander, "dontWander", "citizens don't wander around city (dontWander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->drawFlags, "drawFlags", "set which elements of game draw (drawFlags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&net->mpInterp, "mpInterp", "interpolation interval (mpInterp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mpUseInterp", "set use of interpolation (mpUseInterp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&game->usePostfx, "usePostfx", "use post effects (usePostfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->useGlow, "useGlow", "use glow (useGlow 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->uvMod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
+	cmds.push_back(ConsoleCommand(&game->uvMod, "uvMod", "terrain uv mod (uvMod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(&game->settings.grassRange, "grassRange", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&game->devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
@@ -71,10 +71,10 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-11 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-11 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_REVEAL_MINIMAP, "reveal_minimap", "reveal dungeon minimap", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REVEAL_MINIMAP, "revealMinimap", "reveal dungeon minimap", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skipDays", "skip days [skipDays [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_HEAL_UNIT, "heal_unit", "heal unit in front of player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_HEAL_UNIT, "healUnit", "heal unit in front of player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
@@ -82,21 +82,21 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME | F_CHEAT | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_GODMODE, "godmode", "player can't be killed (godmode 0/1)", F_ANYWHERE | F_CHEAT | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_NOCLIP, "noclip", "turn off player collisions (noclip 0/1)", F_GAME | F_CHEAT | F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_GOTO_MAP, "goto_map", "transport player to world map", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_GOTO_MAP, "gotoMap", "transport player to world map", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_VERSION, "version", "displays game version", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_REVEAL, "reveal", "reveal all locations on world map", F_GAME | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_MAP2CONSOLE, "map2console", "draw dungeon map in console", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_ITEM, "add_item", "add item to player inventory (add_item id [count])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_ITEM, "add_team_item", "add team item to player inventory (add_team_item id [count])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_GOLD, "add_gold", "give gold to player (add_gold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_GOLD, "add_team_gold", "give gold to team (add_team_gold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_SET_STAT, "set_stat", "set player statistics, use ? to get list (set_stat stat value)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_MOD_STAT, "mod_stat", "modify player statistics, use ? to get list (mod_stat stat value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_ITEM, "addItem", "add item to player inventory (addItem id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_ITEM, "addTeamItem", "add team item to player inventory (addTeamItem id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_GOLD, "addGold", "give gold to player (addGold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_GOLD, "addTeamGold", "give gold to team (addTeamGold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_SET_STAT, "setStat", "set player statistics, use ? to get list (setStat stat value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_MOD_STAT, "modStat", "modify player statistics, use ? to get list (modStat stat value)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HELP, "help", "display information about command (help [command])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_SPAWN_UNIT, "spawn_unit", "create unit in front of player (spawn_unit id [level count arena])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SPAWN_UNIT, "spawnUnit", "create unit in front of player (spawnUnit id [level count arena])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_KILL, "kill", "kill unit in front of player", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "player_devmode", "get/set player developer mode in multiplayer (player_devmode nick/all [0/1])", F_MULTIPLAYER | F_WORLD_MAP | F_CHEAT | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "playerDevmode", "get/set player developer mode in multiplayer (playerDevmode nick/all [0/1])", F_MULTIPLAYER | F_WORLD_MAP | F_CHEAT | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_NOAI, "noai", "disable ai (noai 0/1)", F_CHEAT | F_GAME | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
@@ -104,29 +104,29 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "breakAction", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_FALL, "fall", "unit fall on ground for some time ('fall 1' targets self)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reload_shaders", "reload shaders", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reloadShaders", "reload shaders", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tileInfo", "display info about map tile", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_SINGLEPLAYER | F_LOBBY | F_MENU | F_WORLD_MAP | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "force_quest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "forceQuest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refreshCooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "drawPath", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect <valueType> power [source [perk/time]])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk] [valueType])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "display selected unit effects", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add perk to selected unit (add_perk perk)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from selected unit (remove_perk perk)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "display selected unit perks", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "addEffect", "add effect to selected unit (addEffect effect <valueType> power [source [perk/time]])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "removeEffect", "remove effect from selected unit (removeEffect effect/source [perk] [valueType])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "listEffects", "display selected unit effects", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "addPerk", "add perk to selected unit (addPerk perk)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "removePerk", "remove perk from selected unit (removePerk perk)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "listPerks", "display selected unit perks", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SELECT, "select", "select and display currently selected target (select [me/show/target] - use target or show by default)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "display selected unit stats", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "listStats", "display selected unit stats", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "addLearningPoints", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "cleanLevel", "remove all corpses and blood from level (cleanLevel [buildingId])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "removeUnit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "addExp", "add experience to team (addExp value)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_NOCD, "nocd", "player abilities have no cooldown & use no mana/stamina (nocd 0/1)", F_ANYWHERE | F_CHEAT | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_FIND, "find", "find nearest entity (find type id)", F_GAME | F_CHEAT));
 
@@ -361,13 +361,13 @@ void CommandParser::ParseScript()
 	}
 
 	cstring code = t.GetTextRest();
-	Unit* target_unit = game->pc->data.GetTargetUnit();
+	Unit* targetUnit = game->pc->data.GetTargetUnit();
 	if(Net::IsLocal())
 	{
 		string& output = scriptMgr->OpenOutput();
 		ScriptContext& ctx = scriptMgr->GetContext();
 		ctx.pc = game->pc;
-		ctx.target = target_unit;
+		ctx.target = targetUnit;
 		scriptMgr->RunScript(code);
 		if(!output.empty())
 			Msg(output.c_str());
@@ -381,7 +381,7 @@ void CommandParser::ParseScript()
 		c.type = NetChange::RUN_SCRIPT;
 		c.str = StringPool.Get();
 		*c.str = code;
-		c.id = (target_unit ? target_unit->id : -1);
+		c.id = (targetUnit ? targetUnit->id : -1);
 	}
 }
 
@@ -426,11 +426,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_ADD_TEAM_ITEM:
 		if(t.Next())
 		{
-			bool is_team = (cmd.cmd == CMD_ADD_TEAM_ITEM);
-			const string& item_name = t.MustGetItem();
-			const Item* item = Item::TryGet(item_name);
+			bool isTeam = (cmd.cmd == CMD_ADD_TEAM_ITEM);
+			const string& itemName = t.MustGetItem();
+			const Item* item = Item::TryGet(itemName);
 			if(!item)
-				Msg("Can't find item with id '%s'!", item_name.c_str());
+				Msg("Can't find item with id '%s'!", itemName.c_str());
 			else
 			{
 				int count;
@@ -444,14 +444,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					count = 1;
 
 				if(Net::IsLocal())
-					game->pc->unit->AddItem2(item, count, is_team ? count : 0, false);
+					game->pc->unit->AddItem2(item, count, isTeam ? count : 0, false);
 				else
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHEAT_ADD_ITEM;
 					c.baseItem = item;
 					c.count = count;
-					c.id = is_team ? 1 : 0;
+					c.id = isTeam ? 1 : 0;
 				}
 			}
 		}
@@ -462,13 +462,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_ADD_TEAM_GOLD:
 		if(t.Next())
 		{
-			bool is_team = (cmd.cmd == CMD_ADD_TEAM_GOLD);
+			bool isTeam = (cmd.cmd == CMD_ADD_TEAM_GOLD);
 			int count = t.MustGetInt();
-			if(is_team && count <= 0)
+			if(isTeam && count <= 0)
 				Msg("Gold count must by positive!");
 			if(Net::IsLocal())
 			{
-				if(is_team)
+				if(isTeam)
 					team->AddGold(count);
 				else
 					game->pc->unit->gold = max(game->pc->unit->gold + count, 0);
@@ -476,7 +476,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			else
 			{
 				PushGenericCmd(CMD_ADD_GOLD)
-					<< is_team
+					<< isTeam
 					<< count;
 			}
 		}
@@ -1410,10 +1410,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(!t.Next())
 		{
 			Msg("Use 'list effect' to get list of existing effects. Some examples:");
-			Msg("add_effect regeneration 5 - add permanent regeneration 5 hp/sec");
-			Msg("add_effect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
-			Msg("add_effect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
-			Msg("add_effect attribute str 5 item weapon - add +5 strength assigned to weapon");
+			Msg("addEffect regeneration 5 - add permanent regeneration 5 hp/sec");
+			Msg("addEffect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
+			Msg("addEffect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
+			Msg("addEffect attribute str 5 item weapon - add +5 strength assigned to weapon");
 		}
 		else
 		{
@@ -2547,11 +2547,11 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		break;
 	case CMD_ADD_GOLD:
 		{
-			bool is_team;
+			bool isTeam;
 			int count;
-			f >> is_team;
+			f >> isTeam;
 			f >> count;
-			if(is_team)
+			if(isTeam)
 			{
 				if(count <= 0)
 				{

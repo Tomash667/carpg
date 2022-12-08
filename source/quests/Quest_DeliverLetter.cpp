@@ -18,7 +18,7 @@ Quest::LoadResult Quest_DeliverLetter::Load(GameReader& f)
 void Quest_DeliverLetter::GetConversionData(ConversionData& data)
 {
 	data.id = "deliver_letter";
-	data.Add("start_loc", startLoc->index);
-	data.Add("end_loc", endLoc);
-	data.Add("start_time", startTime);
+	data.Add("startLoc", startLoc->index);
+	data.Add("endLoc", endLoc);
+	data.Add("startTime", startTime);
 }

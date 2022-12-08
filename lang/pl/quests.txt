@@ -414,7 +414,7 @@ quest main {
 	dialog cleric_seller {
 		0 "Zaraza"
 		1 "Zaraza? Nic o tym nie wiem..."
-		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.real_name)?"
+		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.realName)?"
 		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d."
 		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go niewidzia³em."
 	}
@@ -448,9 +448,9 @@ quest main {
 		9 "Muszê przejœæ siê po wiosce i znaleŸæ zara¿onych wieœniaków. Mo¿e uda mi siê coœ ustaliæ."
 		10 "Jeden z wieœniaków oszala³ z powodu zarazy i mnie zaatakowa³."
 		11 "W $(shrine_loc.name) na $(World::GetDirName(Level::location, shrine_loc)) st¹d mieszka kleryk specjalizuj¹cy siê w chorobach. Muszê z nim porozmawiaæ."
-		12 "Kleryk którego poszukiwa³em, $(cleric.real_name) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d prowadziæ jakieœ badania."
-		13 "Odnalaz³em $(cleric.real_name) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
-		14 "Przyprowadzi³em $(cleric.real_name) do kapliczki. Potrzebuje czasu, $(Str(quest.timeout)) dni. Po tym czasie powinienem go znaleŸæ w $(village.name)."
+		12 "Kleryk którego poszukiwa³em, $(cleric.realName) wyruszy³ do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d prowadziæ jakieœ badania."
+		13 "Odnalaz³em $(cleric.realName) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrine_loc.name), wtedy mi pomo¿e."
+		14 "Przyprowadzi³em $(cleric.realName) do kapliczki. Potrzebuje czasu, $(Str(quest.timeout)) dni. Po tym czasie powinienem go znaleŸæ w $(village.name)."
 		15 "Kleryk powinien byæ ju¿ w $(village.name)."
 	}
 }
@@ -466,8 +466,8 @@ quest side_cleric {
 	texts {
 		0 "Wielka ksiêga chorób"
 		1 "Rozpoczêto dnia $date$."
-		2 "Kleryk $(cleric.real_name) zleci³ mi zdobycie ksiêgi która znajduje siê na ni¿szym poziomie $(dungeon.name). Jeœli siê rozdzielimy bêdzie na mnie czeka³ w $(city.name)."
-		3 "Znalaz³em ksiêgê. Teraz muszê j¹ zanieœæ do $(cleric.real_name)."
+		2 "Kleryk $(cleric.realName) zleci³ mi zdobycie ksiêgi która znajduje siê na ni¿szym poziomie $(dungeon.name). Jeœli siê rozdzielimy bêdzie na mnie czeka³ w $(city.name)."
+		3 "Znalaz³em ksiêgê. Teraz muszê j¹ zanieœæ do $(cleric.realName)."
 		4 "Dostarczy³em ksiêgê i otrzyma³em nagrodê. Zadanie wykonane!"
 	}
 }

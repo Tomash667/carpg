@@ -144,7 +144,7 @@ grać w 4 osoby. Oczekuj zmian na lepsze!
 	wystarczająco dobrze przez internet. Dzięki głównemu serwerowi można się połączyć pomiędzy
 	dwoma komputerami za routerem. Jeśli jednak się to nie powiedzie trzeba odpowiednio
 	skonfigurować router (ustawienia NAT). Jeśli ruch postaci laguje niech serwer pozmienia opcje w
-	konsoli 'mp_interp'. Domyślnie wynosi 0.05, podwyższaj ją aż uznasz że ruch postaci jest
+	konsoli 'mpInterp'. Domyślnie wynosi 0.05, podwyższaj ją aż uznasz że ruch postaci jest
 	odpowiedni. Nie zapomnij się pochwalić na forum jak poszło! :)
 * Przywódca - Bohater który ustala gdzie iść na mapie świata. Tylko on może zwalniać bohaterów i
 	wydawać im rozkazy. Bohater niezależny nie może zostać przywódcą. Możesz przekazać dowodzenie
@@ -175,7 +175,7 @@ Aby otworzyć konsolę wciśnij ~ [tylda na lewo od 1]. Niektóre komendy są do
 	exit - wychodzi do menu.
 	help - wyświetla informacje o komendzie (help [komenda]).
 	list - wyświetla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
-	player_devmode - włącza/wyłącza tryb developera dla innego gracza w multiplayer (player_devmode nick/all 0/1).
+	playerDevmode - włącza/wyłącza tryb developera dla innego gracza w multiplayer (playerDevmode nick/all 0/1).
 	quit - wychodzi z gry.
 	random - losuje liczbę 1-100 lub wybiera losową postać (random, random [warrior/hunter/rogue]).
 	version - wyświetla wersję gry.

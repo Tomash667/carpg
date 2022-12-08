@@ -2964,8 +2964,8 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						if(event.type == EVENT_PICKUP)
 						{
 							ScriptEvent e(EVENT_PICKUP);
-							e.on_pickup.unit = unit;
-							e.on_pickup.item = groundItem;
+							e.onPickup.unit = unit;
+							e.onPickup.item = groundItem;
 							event.quest->FireEvent(e);
 						}
 					}

@@ -141,7 +141,7 @@ someone so it is proposed to play for 4 people. Expect changes for the better!
 * General information - The multiplayer mode has been tested only on a LAN. Thanks to master server
 	it is now possible to connect two computers behind router. But if it fails you need to manually
 	change router settings (NAT). If the character's movement lags let the server change option in
-	console 'mp_interp'. Default is 0.05, raising it until you find the character movement is
+	console 'mpInterp'. Default is 0.05, raising it until you find the character movement is
 	adequate. Not forget to boast on the forum how it went! :)
 * The leader - Man that determines where to go on a world map. Only he can kick out heroes and give
 	them orders. NPC cannot be an leader. You can pass command to another from team panel (default
@@ -166,89 +166,89 @@ See changelog_eng.txt file.
 7) Console command
 To open console press ~ [to the left from 1]. Some commands are only available in multiplayer on
 	lobby. Devmode must be activated (devmode 1). Available commands:
-	add_effect - add effect to selected unit (add_effect effect <value_type> power [source [perk/time]]).
-	add_exp - add experience to team (add_exp value).
-	add_gold - give gold to player (add_gold count).
-	add_item - add item to player inventory (add_item id [count]).
-	add_learning_points - add learning point to selected unit [count - default 1].
-	add_perk - add perk to selected unit (add_perk perk).
-	add_team_gold - give gold to team (add_team_gold count).
-	add_team_item - add team item to player inventory (add_team_item id [count]).
+	addEffect - add effect to selected unit (addEffect effect <valueType> power [source [perk/time]]).
+	addExp - add experience to team (addExp value).
+	addGold - give gold to player (addGold count).
+	addItem - add item to player inventory (addItem id [count]).
+	addLearningPoints - add learning point to selected unit [count - default 1].
+	addPerk - add perk to selected unit (addPerk perk).
+	addTeamGold - give gold to team (addTeamGold count).
+	addTeamItem - add team item to player inventory (addTeamItem id [count]).
 	arena - spawns enemies on arena (example arena 3 rat vs 2 wolf).
-	break_action - break unit current action ('break 1' targets self).
+	breakAction - break unit current action ('break 1' targets self).
 	citizen - citizens/crazies don't attack player or his team.
-	clean_level - remove all corpses and blood from level (clean_level [building_id]).
+	cleanLevel - remove all corpses and blood from level (cleanLevel [buildingId]).
 	clear - clear text.
 	cmds - show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all]).
 	crash - crash game to death!
 	devmode - developer mode (devmode 0/1).
-	dont_wander - citizens don't wander around city (dont_wander 0/1).
-	draw_col - draw colliders (draw_col 0/1).
-	draw_flags - set which elements of game draw (draw_flags int).
-	draw_hitbox - draw weapons hitbox (draw_hitbox 0/1).
-	draw_particle_sphere - draw particle extents sphere (draw_particle_sphere 0/1).
-	draw_path - draw debug pathfinding, look at target.
-	draw_phy - draw physical colliders (draw_phy 0/1).
-	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
+	dontWander - citizens don't wander around city (dontWander 0/1).
+	drawCol - draw colliders (drawCol 0/1).
+	drawFlags - set which elements of game draw (drawFlags int).
+	drawHitbox - draw weapons hitbox (drawHitbox 0/1).
+	drawParticleSphere - draw particle extents sphere (drawParticleSphere 0/1).
+	drawPath - draw debug pathfinding, look at target.
+	drawPhy - draw physical colliders (drawPhy 0/1).
+	drawUnitRadius - draw units radius (drawUnitRadius 0/1).
 	exit - exit to menu.
 	fall - unit fall on ground for some time ('fall 1' targets self).
 	find - find nearest entity (find type id).
-	force_quest - force next random quest to select (use list quest or none/reset).
+	forceQuest - force next random quest to select (use list quest or none/reset).
 	godmode - player can't be killed (godmode 0/1).
-	goto_map - transport player to world map.
+	gotoMap - transport player to world map.
 	grassRange - grass draw range.
 	heal - heal player.
-	heal_unit - heal unit in front of player.
+	healUnit - heal unit in front of player.
 	help - display information about command (help [command]).
 	hurt - deal 100 damage to unit ('hurt 1' targets self).
 	invisible - ai can't see player (invisible 0/1).
 	kill - kill unit in front of player.
 	killall - kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1]).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
-	list_effects - display selected unit effects.
-	list_perks - display selected unit perks.
-	list_stats - display selected unit stats.
+	listEffects - display selected unit effects.
+	listPerks - display selected unit perks.
+	listStats - display selected unit stats.
 	load - load game (load 1-11 or filename).
 	map2console - draw dungeon map in console.
-	mod_stat - modify player statistics, use ? to get list (mod_stat stat value).
-	mp_interp - interpolation interval (mp_interp 0.f-1.f).
-	mp_use_interp - set use of interpolation (mp_use_interp 0/1).
+	modStat - modify player statistics, use ? to get list (modStat stat value).
+	mpInterp - interpolation interval (mpInterp 0.f-1.f).
+	mpUseInterp - set use of interpolation (mpUseInterp 0/1).
 	multisampling - sets multisampling (multisampling type [quality]).
-	next_seed - random seed used in next map generation.
+	nextSeed - random seed used in next map generation.
 	noai - disable ai (noai 0/1).
 	nocd - player abilities have no cooldown & use no mana/stamina (nocd 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
-	player_devmode - get/set player developer mode in multiplayer (player_devmode nick/all [0/1]).
+	playerDevmode - get/set player developer mode in multiplayer (playerDevmode nick/all [0/1]).
 	qs - pick random character, get ready and start game.
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [name], use ? to get list).
-	refresh_cooldown - refresh action cooldown/charges.
-	reload_shaders - reload shaders.
-	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
-	remove_perk - remove perk from selected unit (remove_perk perk).
-	remove_unit - remove selected unit.
+	refreshCooldown - refresh action cooldown/charges.
+	reloadShaders - reload shaders.
+	removeEffect - remove effect from selected unit (removeEffect effect/source [perk] [valueType]).
+	removePerk - remove perk from selected unit (removePerk perk).
+	removeUnit - remove selected unit.
 	resolution - show or change display resolution (resolution [w h]).
 	reveal - reveal all locations on world map.
-	reveal_minimap - reveal dungeon minimap.
+	revealMinimap - reveal dungeon minimap.
 	save - save game (save 1-11 [text] or filename).
 	scare - enemies escape.
 	screenshot - save screenshot.
 	select - select and display currently selected target (select [me/show/target] - use target or show by default).
-	set_stat - set player statistics, use ? to get list (set_stat stat value).
-	skip_days - skip days [skip_days [count]).
-	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
+	setStat - set player statistics, use ? to get list (setStat stat value).
+	skipDays - skip days [skipDays [count]).
+	spawnUnit - create unit in front of player (spawnUnit id [level count arena]).
 	speed - game speed (speed 0-10).
 	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
-	tile_info - display info about map tile.
+	tileInfo - display info about map tile.
 	useFog - draw fog (useFog 0/1).
 	useGlow - use glow (useGlow 0/1).
 	useLighting - use lighting (useLighting 0/1).
 	useNormalmap - use normal mapping (useNormalmap 0/1).
 	usePostfx - use post effects (usePostfx 0/1).
 	useSpecularmap - use specular mapping (useSpecularmap 0/1).
-	uv_mod - terrain uv mod (uv_mod 1-256).
+	uvMod - terrain uv mod (uvMod 1-256).
 	verify - verify game state integrity.
 	version - displays game version.
 	warp - move player into building (warp building/group [front]).

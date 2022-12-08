@@ -56,36 +56,36 @@ struct ScriptEvent
 		struct OnCleared
 		{
 			Location* location;
-		} on_cleared;
+		} onCleared;
 		struct OnDie
 		{
 			Unit* unit;
-		} on_die;
+		} onDie;
 		struct OnEncounter
 		{
-		} on_encounter;
+		} onEncounter;
 		struct OnEnter
 		{
 			Location* location;
-		} on_enter;
+		} onEnter;
 		struct OnGenerate
 		{
 			Location* location;
-			MapSettings* map_settings;
+			MapSettings* mapSettings;
 			int stage;
-		} on_generate;
+		} onGenerate;
 		struct OnPickup
 		{
 			Unit* unit;
 			GroundItem* item;
-		} on_pickup;
+		} onPickup;
 		struct OnTimeout
 		{
-		} on_timeout;
+		} onTimeout;
 		struct OnUpdate
 		{
 			Unit* unit;
-		} on_update;
+		} onUpdate;
 	};
 	bool cancel;
 

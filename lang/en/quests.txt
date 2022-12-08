@@ -401,7 +401,7 @@ quest main {
 	dialog cleric_seller {
 		0 "Plague"
 		1 "Plague? Nothing that I know of..."
-		2 "You probably wanted to talk to $(cleric.real_name)?"
+		2 "You probably wanted to talk to $(cleric.realName)?"
 		3 "Usually you can find him here but currently he went on research to $(dungeon.name) on $(World::GetDirName(Level::location, dungeon)) from here."
 		4 "I hope he's okay, I haven't seen him for several days."
 	}
@@ -435,9 +435,9 @@ quest main {
 		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
 		10 "One of the villagers went crazy because of the plague and attacked me."
 		11 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here lives a cleric who specializes in diseases. I need to talk with him."
-		12 "The cleric I was looking for, $(cleric.real_name) went to $(dungeon.name) that is $(World::GetDirName(Level::location, dungeon)) from here to do some research."
-		13 "I found $(cleric.real_name) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrine_loc.name), then he will help me."
-		14 "I brought $(cleric.real_name) to the shrine. He needs time, $(Str(quest.timeout)) days. After that, I should find him in $(village.name)."
+		12 "The cleric I was looking for, $(cleric.realName) went to $(dungeon.name) that is $(World::GetDirName(Level::location, dungeon)) from here to do some research."
+		13 "I found $(cleric.realName) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrine_loc.name), then he will help me."
+		14 "I brought $(cleric.realName) to the shrine. He needs time, $(Str(quest.timeout)) days. After that, I should find him in $(village.name)."
 		15 "The cleric should already be in $(village.name)."
 	}
 }
@@ -453,8 +453,8 @@ quest side_cleric {
 	texts {
 		0 "Great Book of Diseases"
 		1 "Started at $date$."
-		2 "Cleric $(cleric.real_name) asked me to obtain a book which is at the lower level of $(dungeon.name). If we split up, he'll be waiting for me in $(city.name)."
-		3 "I found the book. Now I have to take it to $(cleric.real_name)."
+		2 "Cleric $(cleric.realName) asked me to obtain a book which is at the lower level of $(dungeon.name). If we split up, he'll be waiting for me in $(city.name)."
+		3 "I found the book. Now I have to take it to $(cleric.realName)."
 		4 "I delivered the book and received the reward. Quest done!"
 	}
 }

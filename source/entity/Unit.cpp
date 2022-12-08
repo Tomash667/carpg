@@ -5423,7 +5423,7 @@ void Unit::Die(Unit* killer)
 			if(event.type == EVENT_DIE)
 			{
 				ScriptEvent e(EVENT_DIE);
-				e.on_die.unit = this;
+				e.onDie.unit = this;
 				event.quest->FireEvent(e);
 			}
 		}

@@ -6,11 +6,11 @@ Core library
 * void Warn(const string& in msg) - show warning msg in console.
 * void Error(const string& in msg) - show error msg in console.
 * string Str(?& in) - convert value to string.
-* string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
+* string Format(const string& in formatStr, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
 * string Upper1(const string& in) - return string with first letter upper case.
 * int Random(int a, int b) - returns random number in range <a,b>.
 * int Rand() - returns random int number.
-* void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialog_if. Console output don't work after sleep!
+* void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialogIf. Console output don't work after sleep!
 
 ### Core types
 * Int2 - 2d int point x, y.
@@ -36,8 +36,8 @@ Used to store types in units/globals or pass between quests.
 Example:
 
 	Unit@ unit = ...;
-	unit.vars["quest_var"] = 42;
-	int value = unit.vars["quest_var"];
+	unit.vars["questVar"] = 42;
+	int value = unit.vars["questVar"];
 
 Static properties:
 
@@ -165,7 +165,7 @@ Game enums & consts
 * ORDER_ESCAPE_TO - unit runs toward position and ignore enemies.
 * ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies.
 * ORDER_GOTO_INN - unit goes to inn.
-* ORDER_GUARD - unit stays close to another unit and remove dont_attack flag when target is attacked.
+* ORDER_GUARD - unit stays close to another unit and remove dontAttack flag when target is attacked.
 * ORDER_AUTO_TALK - ai will talk with nearest player or leader.
 
 Game system types
@@ -223,7 +223,7 @@ Methods:
 Static methods:
 
 * Item@ Get(const string& in id) - return item with id.
-* Item@ GetRandom(int max_value) - returns random item with `value <= max_value`, can return quest item.
+* Item@ GetRandom(int maxValue) - returns random item with `value <= max_value`, can return quest item.
 
 ### ItemList type
 List of items (swords, light armors).
@@ -291,8 +291,8 @@ Buildings inside city.
 
 Properties:
 
-* Vec3 unit_pos - readonly, unit spawn pos.
-* float unit_rot - readonly, unit spawn rot.
+* Vec3 unitPos - readonly, unit spawn pos.
+* float unitRot - readonly, unit spawn rot.
 
 ### Encounter type
 Special encounter on world map.
@@ -300,7 +300,7 @@ Special encounter on world map.
 Properties:
 
 * Vec2 pos
-* bool dont_attack - spawned units have dont_attack set.
+* bool dontAttack - spawned units have dontAttack set.
 * Quest@ quest
 * Dialog@ dialog
 * int st
@@ -317,8 +317,8 @@ Properties:
 * Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
 * Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE.
 * GroundItem@ item - used for EVENT_PICKUP.
-* MapSettings@ map_settings - used for EVENT_GENERATE.
-* int stage - used for EVENT_GENERATE, stage 0 is before generating (can use map_settings), stage 1 is after.
+* MapSettings@ mapSettings - used for EVENT_GENERATE.
+* int stage - used for EVENT_GENERATE, stage 0 is before generating (can use mapSettings), stage 1 is after.
 * bool cancel - set to true to cancel default handling of this event.
 
 ### GroundItem type
@@ -334,7 +334,7 @@ Hero is unit that can be recruited to team.
 
 Properties:
 
-* bool lost_pvp - true if hero recently lost pvp.
+* bool lostPvp - true if hero recently lost pvp.
 * bool otherTeam - hero is in other team.
 * bool wantJoin - true when join team without persuading.
 * int persuasionCheck - skill level required to persuade to join.
@@ -354,7 +354,7 @@ Properties:
 * int levels - readonly, return count of location parts (for dungeon this is dungeon levels, for city enterable buildings + 1 for outside part)
 * bool reset - when true reset locations (respawn units/loot) when team enters
 * bool visited - readonly
-* Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
+* Quest@ activeQuest - quest assigned to location, prevent other quests from using this location.
 * UnitGroup@ group - unit group that spawns in this location.
 * LocationPart@ locPart - readonly, main part of location (for dungeons this is first level).
 
@@ -386,8 +386,8 @@ Used when generating dungeon.
 
 Properties:
 
-* ENTRY_LOCATION prev_entry_loc
-* ENTRY_LOCATION next_entry_loc
+* ENTRY_LOCATION prevEntryLoc
+* ENTRY_LOCATION nextEntryLoc
 
 ### Object type
 Object inside level - barrel, chair etc.
@@ -448,7 +448,7 @@ Static properties:
 Static methods:
 
 * Quest@ Find(const string& in id) - return quest with id (only works for unique quests).
-* int CalculateReward(int st, const Int2& in st_range, const Int2& in reward) - calculate reward from value range.
+* int CalculateReward(int st, const Int2& in stRange, const Int2& in reward) - calculate reward from value range.
 
 ### Spawn type
 Contains information about unit to spawn (template, level).
@@ -463,7 +463,7 @@ Example:
 	for(uint i=0; i<group.count; ++i)
 	{
 		Unit@ unit = Level::SpawnUnit(mayor.locPart, group.Get(i));
-		unit.dont_attack = true;
+		unit.dontAttack = true;
 	}
 
 Properties:
@@ -487,9 +487,9 @@ Properties:
 * int gold - modifying will show message.
 * Vars@ vars - readonly
 * string name - can only be set for heroes (UnitData have hero flag) at startup.
-* string real_name - readonly, return real name for heroes that don't have known_name.
-* bool dont_attack - enemy ai don't attack.
-* bool known_name - player known name, can't be changed from true to false.
+* string realName - readonly, return real name for heroes that don't have knownName.
+* bool dontAttack - enemy ai don't attack.
+* bool knownName - player known name, can't be changed from true to false.
 * bool temporary - unit is removed when location is repopulated.
 * UNIT_ORDER order - readonly, current unit order.
 * LocationPart@ locPart - location part unit is in.
@@ -504,17 +504,17 @@ Methods:
 * void Add
 * Item(Item@ item, uint count = 1) - add item, will show message.
 * void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
-* uint RemoveItem(const string& in item_id, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
+* uint RemoveItem(const string& in itemId, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 * uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
 * void RemoveQuestItem(Quest@) - remove 1 quest item from unit inventory.
 * void ConsumeItem(Item@) - unit consume item (food or drink) if not busy.
-* void AddDialog(Quest@, const string& in dialog_id, int priority = 0) - add quest dialog to unit.
+* void AddDialog(Quest@, const string& in dialogId, int priority = 0) - add quest dialog to unit.
 * void RemoveDialog(Quest@) - remove quest dialog from unit.
 * void AddEventHandler(Quest@, EVENT) - add event to unit.
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event from unit.
 * void OrderClear() - remove all unit orders.
 * void OrderNext() - end current order and start next one.
-* void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dont_attack).
+* void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dontAttack).
 * UnitOrderBuilder@ OrderWander() - order unit to wander.
 * UnitOrderBuilder@ OrderWait() - order unit to wait.
 * UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
@@ -529,7 +529,7 @@ Methods:
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
-* void ChangeBase(UnitData@ data, bool update_items = false) - change unit base data, currently update items works only for team members.
+* void ChangeBase(UnitData@ data, bool updateItems = false) - change unit base data, currently update items works only for team members.
 * void MoveToLocation(LocationPart@ locPart, const Vec3& in pos) - move unit to location part, works between locations.
 * void MoveOffscreen() - move unit to offscreen location.
 * void Kill() - used to spawn dead units.
@@ -580,7 +580,7 @@ Component used for current level manipulations.
 Static properties:
 
 * Location@ location - readonly
-* int dungeon_level - readonly, starts from 0.
+* int dungeonLevel - readonly, starts from 0.
 
 Static methods:
 
@@ -621,7 +621,7 @@ Used in stock script - items to sell by shopkeepers.
 Static methods:
 
 * void AddItem(Item@, uint count = 1) - add item to stock.
-* void AddRandomItem(ITEM_TYPE type, int price_limit, int flags, int count = 1) - add random items to stock.
+* void AddRandomItem(ITEM_TYPE type, int priceLimit, int flags, int count = 1) - add random items to stock.
 
 ### Team component
 Component used for player team.
@@ -630,7 +630,7 @@ Static properties:
 
 * Unit@ leader - readonly
 * uint size - readonly, active members count.
-* uint max_size - readonly, max active members count (currently 8).
+* uint maxSize - readonly, max active members count (currently 8).
 * bool bandit - if true team will be attacked by citizens.
 
 Static methods:
@@ -645,7 +645,7 @@ Static methods:
 * uint RemoveItem(Item@, uint count = 1) - remove items from team (count 0 = all).
 * void AddMember(Unit@, int type = 0) - add team member, mode: 0-normal, 1-free (no gold), 2-visitor (no gold/exp).
 * void RemoveMember(Unit@) - remove team member.
-* void Warp(const Vec3& in pos, const Vec3& in look_target) - warp team to position rotated towards look target.
+* void Warp(const Vec3& in pos, const Vec3& in lookTarget) - warp team to position rotated towards look target.
 * bool PersuasionCheck(int level) - do persuasion check, return true is succeeded.
 
 ### World component
@@ -667,18 +667,18 @@ Static methods:
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
 * string GetDirName(Location@ loc1, Location@ loc2) - get direction name string from loc1 to loc2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
-* Vec2 FindPlace(const Vec2& in pos, float range, bool allow_exact = false) - find place for location inside range.
-* Vec2 FindPlace(const Vec2& in pos, float min_range, float max_range) - find place for location inside range.
-* bool TryFindPlace(Vec2& pos, float range, bool allow_exact = false) - try to find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float range, bool allowExact = false) - find place for location inside range.
+* Vec2 FindPlace(const Vec2& in pos, float minRange, float maxRange) - find place for location inside range.
+* bool TryFindPlace(Vec2& pos, float range, bool allowExact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
 * Location@ GetRandomCity() - returns random city (not village).
-* Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
+* Location@ GetRandomSettlementWithBuilding(const string& in buildingId) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
 * Location@ GetRandomSpawnLocation(const Vec2& in pos, UnitGroup@ group, float range = 160) - get random location with selected unit group within range, if not found will create camp.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int flags = 0) - get closest location of this type (doesn't return quest locations). Available flags: ```F_ALLOW_ACTIVE``` - allow active quest locations, ```F_EXCLUDED``` - exclude target instead of include in search.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).
-* Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeon_levels = -1) - create new location at position.
+* Location@ CreateLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int dungeonLevels = -1) - create new location at position.
 * Location@ CreateCamp(const Vec2& in pos, UnitGroup@) - create new camp at position.
 * void AbadonLocation(Location@) - remove all units & items from location.
 * Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.

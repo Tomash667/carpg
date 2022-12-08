@@ -3392,7 +3392,7 @@ void Level::CheckIfLocationCleared()
 			if(e.type == EVENT_CLEARED)
 			{
 				ScriptEvent event(EVENT_CLEARED);
-				event.on_cleared.location = location;
+				event.onCleared.location = location;
 				e.quest->FireEvent(event);
 			}
 		}

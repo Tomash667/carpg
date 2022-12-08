@@ -131,7 +131,7 @@ void Game::UpdateAi(float dt)
 			if(event.type == EVENT_UPDATE)
 			{
 				ScriptEvent e(EVENT_UPDATE);
-				e.on_update.unit = &u;
+				e.onUpdate.unit = &u;
 				event.quest->FireEvent(e);
 			}
 		}
