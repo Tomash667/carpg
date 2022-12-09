@@ -6,8 +6,8 @@
 //-----------------------------------------------------------------------------
 struct GameLight : public Light
 {
-	Vec3 start_pos;
-	Vec3 start_color;
+	Vec3 startPos;
+	Vec3 startColor;
 
 	static const int MIN_SIZE = 28;
 

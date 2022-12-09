@@ -12,7 +12,7 @@
 #include <angelscript.h>
 
 //=================================================================================================
-Quest2::Quest2() : scheme(nullptr), timeout_days(-1)
+Quest2::Quest2() : scheme(nullptr), timeoutDays(-1)
 {
 }
 
@@ -32,25 +32,25 @@ void Quest2::RemoveEvent(ScriptEvent& event)
 	switch(event.type)
 	{
 	case EVENT_ENTER:
-		event.on_enter.location->RemoveEventHandler(this, EVENT_ENTER, false);
+		event.onEnter.location->RemoveEventHandler(this, EVENT_ENTER, false);
 		break;
 	case EVENT_PICKUP:
-		event.on_pickup.unit->RemoveEventHandler(this, EVENT_PICKUP, false);
+		event.onPickup.unit->RemoveEventHandler(this, EVENT_PICKUP, false);
 		break;
 	case EVENT_UPDATE:
-		event.on_update.unit->RemoveEventHandler(this, EVENT_UPDATE, false);
+		event.onUpdate.unit->RemoveEventHandler(this, EVENT_UPDATE, false);
 		break;
 	case EVENT_TIMEOUT:
 	case EVENT_ENCOUNTER:
 		break;
 	case EVENT_DIE:
-		event.on_die.unit->RemoveEventHandler(this, EVENT_DIE, false);
+		event.onDie.unit->RemoveEventHandler(this, EVENT_DIE, false);
 		break;
 	case EVENT_CLEARED:
-		event.on_cleared.location->RemoveEventHandler(this, EVENT_CLEARED, false);
+		event.onCleared.location->RemoveEventHandler(this, EVENT_CLEARED, false);
 		break;
 	case EVENT_GENERATE:
-		event.on_generate.location->RemoveEventHandler(this, EVENT_GENERATE, false);
+		event.onGenerate.location->RemoveEventHandler(this, EVENT_GENERATE, false);
 		break;
 	}
 }
@@ -58,7 +58,7 @@ void Quest2::RemoveEvent(ScriptEvent& event)
 //=================================================================================================
 void Quest2::RemoveDialogPtr(Unit* unit)
 {
-	LoopAndRemove(unit_dialogs, [=](Unit* u)
+	LoopAndRemove(unitDialogs, [=](Unit* u)
 	{
 		return unit == u;
 	});
@@ -119,7 +119,7 @@ cstring Quest2::GetText(int index)
 	static string dialog_s_text;
 	dialog_s_text.clear();
 
-	ScriptContext& ctx = script_mgr->GetContext();
+	ScriptContext& ctx = scriptMgr->GetContext();
 	ctx.quest = this;
 
 	for(uint i = 0, len = str.length(); i < len; ++i)
@@ -132,7 +132,7 @@ cstring Quest2::GetText(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				script_mgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -180,7 +180,7 @@ void Quest2::Save(GameWriter& f)
 	Quest::Save(f);
 	if(IsActive())
 	{
-		f << timeout_days;
+		f << timeoutDays;
 		SaveDetails(f);
 	}
 }
@@ -189,10 +189,10 @@ void Quest2::Save(GameWriter& f)
 Quest::LoadResult Quest2::Load(GameReader& f)
 {
 	Quest::Load(f);
-	SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
+	SetScheme(questMgr->FindQuestInfo(type)->scheme);
 	if(IsActive())
 	{
-		f >> timeout_days;
+		f >> timeoutDays;
 		LoadDetails(f);
 	}
 	return LoadResult::Ok;
@@ -203,14 +203,14 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 {
 	if(shared)
 	{
-		asIScriptObject* instance = script_mgr->GetSharedInstance(scheme);
+		asIScriptObject* instance = scriptMgr->GetSharedInstance(scheme);
 		if(instance)
 			return instance;
 	}
 
-	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
+	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
 	asIScriptObject* instance;
-	script_mgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 1)
 		{
@@ -221,17 +221,17 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 	});
 
 	if(shared)
-		script_mgr->RegisterSharedInstance(scheme, instance);
+		scriptMgr->RegisterSharedInstance(scheme, instance);
 	return instance;
 }
 
 //=================================================================================================
 void Quest2::Cleanup()
 {
-	if(timeout_days != -1)
+	if(timeoutDays != -1)
 	{
-		RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
-		timeout_days = -1;
+		RemoveElementTry(questMgr->questTimeouts2, static_cast<Quest*>(this));
+		timeoutDays = -1;
 	}
 
 	for(EventPtr& e : events)
@@ -248,9 +248,9 @@ void Quest2::Cleanup()
 	}
 	events.clear();
 
-	for(Unit* unit : unit_dialogs)
+	for(Unit* unit : unitDialogs)
 		unit->RemoveDialog(this, true);
-	unit_dialogs.clear();
+	unitDialogs.clear();
 
 	world->RemoveEncounter(this);
 }
@@ -263,13 +263,13 @@ void Quest2::SetState(State newState)
 	switch(category)
 	{
 	case QuestCategory::Mayor:
-		static_cast<City*>(startLoc)->quest_mayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->questMayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Captain:
-		static_cast<City*>(startLoc)->quest_captain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
+		static_cast<City*>(startLoc)->questCaptain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
 		break;
 	case QuestCategory::Unique:
-		quest_mgr->EndUniqueQuest();
+		questMgr->EndUniqueQuest();
 		break;
 	}
 	Cleanup();
@@ -279,35 +279,35 @@ void Quest2::SetState(State newState)
 void Quest2::SetTimeout(int days)
 {
 	assert(Any(state, Quest::Hidden, Quest::Started));
-	assert(timeout_days == -1);
+	assert(timeoutDays == -1);
 	assert(days > 0);
-	timeout_days = days;
-	start_time = world->GetWorldtime();
-	quest_mgr->quests_timeout2.push_back(this);
+	timeoutDays = days;
+	startTime = world->GetWorldtime();
+	questMgr->questTimeouts2.push_back(this);
 }
 
 //=================================================================================================
 int Quest2::GetTimeout() const
 {
-	int days = world->GetWorldtime() - start_time;
-	if(days >= timeout_days)
+	int days = world->GetWorldtime() - startTime;
+	if(days >= timeoutDays)
 		return 0;
-	return timeout_days - days;
+	return timeoutDays - days;
 }
 
 //=================================================================================================
 bool Quest2::IsTimedout() const
 {
-	if(timeout_days == -1)
+	if(timeoutDays == -1)
 		return false;
-	return world->GetWorldtime() - start_time >= timeout_days;
+	return world->GetWorldtime() - startTime >= timeoutDays;
 }
 
 //=================================================================================================
 bool Quest2::OnTimeout(TimeoutType ttype)
 {
 	ScriptEvent event(EVENT_TIMEOUT);
-	timeout_days = -1;
+	timeoutDays = -1;
 	FireEvent(event);
 	return true;
 }

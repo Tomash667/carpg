@@ -51,7 +51,7 @@ private:
 
 	struct Node : ObjectPoolProxy<Node>
 	{
-		NodeOp node_op;
+		NodeOp nodeOp;
 		DialogType type;
 		DialogOp op;
 		int value;
@@ -95,10 +95,9 @@ private:
 	bool BuildDialogBlock(Node* node);
 	void PatchJumps();
 
-	GameDialog* current_dialog;
+	GameDialog* currentDialog;
 	vector<std::pair<string, uint>> labels;
 	vector<std::pair<string, uint>> jumps;
-	vector<IfState> if_state;
 	QuestScheme* quest;
 	DialogScripts* scripts;
 	bool loadingTexts;

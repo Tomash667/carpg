@@ -19,9 +19,9 @@ void Usable::Save(GameWriter& f)
 	f << rot;
 	if(base->variants)
 		f << variant;
-	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->useFlags, BaseUsable::CONTAINER))
 		container->Save(f);
-	if(f.isLocal && !IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(f.isLocal && !IsSet(base->useFlags, BaseUsable::CONTAINER))
 		f << user;
 }
 
@@ -41,13 +41,13 @@ void Usable::Load(GameReader& f)
 		f.Skip<int>(); // old netid
 	if(base->variants)
 		f >> variant;
-	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->useFlags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
 		container->Load(f);
 	}
 
-	if(f.isLocal && !IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(f.isLocal && !IsSet(base->useFlags, BaseUsable::CONTAINER))
 		f >> user;
 	else
 		user = nullptr;
@@ -78,7 +78,7 @@ bool Usable::Read(BitStreamReader& f)
 		return false;
 	base = BaseUsable::Get(hash);
 	Register();
-	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->useFlags, BaseUsable::CONTAINER))
 		container = new ItemContainer;
 	return true;
 }

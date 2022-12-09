@@ -25,7 +25,7 @@ void BuffInfo::LoadImages()
 	{
 		BuffInfo& buff = info[i];
 		cstring path = Format("%s.png", buff.id);
-		buff.img = res_mgr->Load<Texture>(path);
+		buff.img = resMgr->Load<Texture>(path);
 	}
 }
 

@@ -20,9 +20,9 @@ enum CityTarget
 struct CityBuilding
 {
 	Building* building;
-	Int2 pt, unit_pt;
+	Int2 pt, unitPt;
 	GameDirection dir;
-	Vec3 walk_pt;
+	Vec3 walkPt;
 
 	CityBuilding() {}
 	explicit CityBuilding(Building* building) : building(building) {}
@@ -54,24 +54,24 @@ struct City : public OutsideLocation
 		// saved as byte in PreparedWorldData
 	};
 
-	int citizens, citizens_world, quest_mayor_time, quest_captain_time,
-		arena_time, // last arena combat worldtime or -1
+	int citizens, citizensWorld, questMayorTime, questCaptainTime,
+		arenaTime, // last arena combat worldtime or -1
 		gates, flags, variant;
-	CityQuestState quest_mayor, quest_captain;
+	CityQuestState questMayor, questCaptain;
 	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
-	vector<InsideBuilding*> inside_buildings;
-	Int2 inside_offset;
-	Vec3 arena_pos;
-	vector<EntryPoint> entry_points;
+	vector<InsideBuilding*> insideBuildings;
+	Int2 insideOffset;
+	Vec3 arenaPos;
+	vector<EntryPoint> entryPoints;
 
-	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
-		inside_offset(1, 0), arena_time(-1), flags(HaveExit), variant(-1)
+	City() : questMayor(CityQuestState::None), questCaptain(CityQuestState::None), questMayorTime(-1), questCaptainTime(-1),
+		insideOffset(1, 0), arenaTime(-1), flags(HaveExit), variant(-1)
 	{
 	}
 	~City();
 
 	// from Location
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
+	void Apply(vector<std::reference_wrapper<LocationPart>>& parts) override;
 	void Save(GameWriter& f) override;
 	void Load(GameReader& f) override;
 	void Write(BitStreamWriter& f) override;

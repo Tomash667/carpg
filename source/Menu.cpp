@@ -52,29 +52,29 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !gui->HaveDialog() && !game_gui->level_gui->HavePanelOpen() && !game_gui->main_menu->visible
-		&& game_state != GS_MAIN_MENU && !dialog_context.dialog_mode;
+	return !gui->HaveDialog() && !gameGui->levelGui->HavePanelOpen() && !gameGui->mainMenu->visible
+		&& gameState != GS_MAIN_MENU && !dialogContext.dialogMode;
 }
 
 //=================================================================================================
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
-	cfg.Add("use_glow", use_glow);
-	cfg.Add("use_normalmap", scene_mgr->use_normalmap);
-	cfg.Add("use_specularmap", scene_mgr->use_specularmap);
-	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
-	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
-	cfg.Add("sound_device", sound_mgr->GetDevice().ToString());
-	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
-	cfg.Add("grass_range", settings.grass_range);
+	cfg.Add("useGlow", useGlow);
+	cfg.Add("useNormalmap", sceneMgr->useNormalmap);
+	cfg.Add("useSpecularmap", sceneMgr->useSpecularmap);
+	cfg.Add("soundVolume", soundMgr->GetSoundVolume());
+	cfg.Add("musicVolume", soundMgr->GetMusicVolume());
+	cfg.Add("soundDevice", soundMgr->GetDevice().ToString());
+	cfg.Add("mouseSensitivity", settings.mouseSensitivity);
+	cfg.Add("grassRange", settings.grassRange);
 	cfg.Add("resolution", engine->GetWindowSize());
-	cfg.Add("skip_tutorial", skip_tutorial);
+	cfg.Add("skipTutorial", skipTutorial);
 	cfg.Add("language", Language::prefix);
 	int ms, msq;
 	render->GetMultisampling(ms, msq);
 	cfg.Add("multisampling", ms);
-	cfg.Add("multisampling_quality", msq);
+	cfg.Add("multisamplingQuality", msq);
 	cfg.Add("vsync", render->IsVsyncEnabled());
 	SaveCfg();
 }
@@ -83,8 +83,8 @@ void Game::SaveOptions()
 void Game::StartNewGame()
 {
 	HumanData hd;
-	hd.Get(*game_gui->create_character->unit->human_data);
-	NewGameCommon(game_gui->create_character->clas, game_gui->create_character->player_name.c_str(), hd, game_gui->create_character->cc, false);
+	hd.Get(*gameGui->createCharacter->unit->humanData);
+	NewGameCommon(gameGui->createCharacter->clas, gameGui->createCharacter->playerName.c_str(), hd, gameGui->createCharacter->cc, false);
 }
 
 //=================================================================================================
@@ -93,7 +93,7 @@ void Game::StartQuickGame()
 	Net::SetMode(Net::Mode::Singleplayer);
 
 	Class* clas = nullptr;
-	const string& class_id = cfg.GetString("quickstart_class");
+	const string& class_id = cfg.GetString("quickstartClass");
 	if(!class_id.empty())
 	{
 		clas = Class::TryGet(class_id);
@@ -101,89 +101,90 @@ void Game::StartQuickGame()
 		{
 			if(!clas->IsPickable())
 			{
-				Warn("Settings [quickstart_class]: Class '%s' is not pickable by players.", class_id.c_str());
+				Warn("Settings [quickstartClass]: Class '%s' is not pickable by players.", class_id.c_str());
 				clas = nullptr;
 			}
 		}
 		else
-			Warn("Settings [quickstart_class]: Invalid class '%s'.", class_id.c_str());
+			Warn("Settings [quickstartClass]: Invalid class '%s'.", class_id.c_str());
 	}
-	string quickstart_name = cfg.GetString("quickstart_name", "Test");
-	if(quickstart_name.empty())
-		quickstart_name = "Test";
+
+	string quickstartName = cfg.GetString("quickstartName", "Test");
+	if(quickstartName.empty())
+		quickstartName = "Test";
 	HumanData hd;
 	CreatedCharacter cc;
-	int hair_index;
+	int hairIndex;
 
-	RandomCharacter(clas, hair_index, hd, cc);
-	NewGameCommon(clas, quickstart_name.c_str(), hd, cc, false);
+	RandomCharacter(clas, hairIndex, hd, cc);
+	NewGameCommon(clas, quickstartName.c_str(), hd, cc, false);
 }
 
 //=================================================================================================
 void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
 	ClearGameVars(true);
-	game_level->entering = true;
-	quest_mgr->quest_tutorial->in_tutorial = tutorial;
-	game_gui->main_menu->visible = false;
+	gameLevel->ready = false;
+	questMgr->questTutorial->inTutorial = tutorial;
+	gameGui->mainMenu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
-	hardcore_mode = hardcore_option;
+	hardcoreMode = hardcoreOption;
 
 	UnitData& ud = *clas->player;
 
-	Unit* u = game_level->CreateUnit(ud, -1, false);
-	u->area = nullptr;
+	Unit* u = gameLevel->CreateUnit(ud, -1, false);
+	u->locPart = nullptr;
 	u->ApplyHumanData(hd);
 	team->members.clear();
-	team->active_members.clear();
+	team->activeMembers.clear();
 	team->members.push_back(u);
-	team->active_members.push_back(u);
+	team->activeMembers.push_back(u);
 	team->leader = u;
 
 	pc = new PlayerController;
 	pc->id = 0;
-	pc->is_local = true;
+	pc->isLocal = true;
 	pc->name = name;
 	pc->Init(*u, &cc);
 
-	pc->dialog_ctx = &dialog_context;
-	pc->dialog_ctx->dialog_mode = false;
-	pc->dialog_ctx->pc = pc;
-	pc->dialog_ctx->is_local = true;
+	pc->dialogCtx = &dialogContext;
+	pc->dialogCtx->dialogMode = false;
+	pc->dialogCtx->pc = pc;
+	pc->dialogCtx->isLocal = true;
 
-	if(quest_mgr->quest_tutorial->finished_tutorial)
+	if(questMgr->questTutorial->finishedTutorial)
 	{
 		u->AddItem(Item::Get("book_adventurer"), 1u, false);
-		quest_mgr->quest_tutorial->finished_tutorial = false;
+		questMgr->questTutorial->finishedTutorial = false;
 	}
 
-	game_level->camera.target = u;
+	gameLevel->camera.target = u;
 	team->CalculatePlayersLevel();
-	game_gui->Setup(pc);
-	game_gui->ability->Refresh();
+	gameGui->Setup(pc);
+	gameGui->ability->Refresh();
 
 	if(!tutorial && cc.HavePerk(Perk::Get("leader")))
 	{
-		Unit* npc = game_level->CreateUnit(*Class::GetRandomHeroData(), -1, false);
-		npc->area = nullptr;
+		Unit* npc = gameLevel->CreateUnit(*Class::GetRandomHeroData(), -1, false);
+		npc->locPart = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
-		npc->hero->know_name = true;
+		npc->hero->knowName = true;
 		team->AddMember(npc, HeroType::Normal);
-		--team->free_recruits;
+		--team->freeRecruits;
 		npc->hero->SetupMelee();
 	}
 
-	fallback_type = FALLBACK::NONE;
-	fallback_t = -0.5f;
-	ChangeTitle();
+	fallbackType = FALLBACK::NONE;
+	fallbackTimer = -0.5f;
+	SetTitle("SINGLE");
 
 	if(!tutorial)
 	{
 		GenerateWorld();
-		quest_mgr->InitQuests();
+		questMgr->InitQuests();
 		world->StartInLocation();
-		game_res->LoadCommonMusic();
+		gameRes->LoadCommonMusic();
 		EnterLocation();
 	}
 }
@@ -191,48 +192,48 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 //=================================================================================================
 void Game::MultiplayerPanelEvent(int id)
 {
-	player_name = Trimmed(game_gui->multiplayer->textbox.GetText());
+	playerName = Trimmed(gameGui->multiplayer->textbox.GetText());
 
 	// check nick
-	if(player_name.empty())
+	if(playerName.empty())
 	{
-		gui->SimpleDialog(game_gui->multiplayer->txNeedEnterNick, game_gui->multiplayer);
+		gui->SimpleDialog(gameGui->multiplayer->txNeedEnterNick, gameGui->multiplayer);
 		return;
 	}
-	if(!net->ValidateNick(player_name.c_str()))
+	if(!net->ValidateNick(playerName.c_str()))
 	{
-		gui->SimpleDialog(game_gui->multiplayer->txEnterValidNick, game_gui->multiplayer);
+		gui->SimpleDialog(gameGui->multiplayer->txEnterValidNick, gameGui->multiplayer);
 		return;
 	}
 
 	// save nick
-	cfg.Add("nick", player_name);
+	cfg.Add("nick", playerName);
 	SaveCfg();
 
 	switch(id)
 	{
 	case MultiplayerPanel::IdJoinLan:
-		game_gui->pick_server->Show();
+		gameGui->pickServer->Show();
 		break;
 	case MultiplayerPanel::IdJoinIp:
 		{
-			GetTextDialogParams params(txEnterIp, server_ip);
+			GetTextDialogParams params(txEnterIp, serverIp);
 			params.event = DialogEvent(this, &Game::OnEnterIp);
 			params.limit = 100;
-			params.parent = game_gui->multiplayer;
+			params.parent = gameGui->multiplayer;
 			GetTextDialog::Show(params);
 		}
 		break;
 	case MultiplayerPanel::IdCreate:
-		game_gui->create_server->Show();
+		gameGui->createServer->Show();
 		break;
 	case MultiplayerPanel::IdLoad:
-		net->mp_load = true;
-		net->mp_quickload = false;
+		net->mpLoad = true;
+		net->mpQuickload = false;
 		Net::changes.clear();
-		if(!net->net_strs.empty())
-			StringPool.Free(net->net_strs);
-		game_gui->saveload->ShowLoadPanel();
+		if(!net->netStrs.empty())
+			StringPool.Free(net->netStrs);
+		gameGui->saveload->ShowLoadPanel();
 		break;
 	}
 }
@@ -242,51 +243,51 @@ void Game::CreateServerEvent(int id)
 {
 	if(id == BUTTON_CANCEL)
 	{
-		if(net->mp_load)
+		if(net->mpLoad)
 		{
 			ClearGame();
-			net->mp_load = false;
+			net->mpLoad = false;
 		}
-		game_gui->create_server->CloseDialog();
+		gameGui->createServer->CloseDialog();
 	}
 	else
 	{
 		// copy settings
-		net->server_name = Trimmed(game_gui->create_server->textbox[0].GetText());
-		net->max_players = atoi(game_gui->create_server->textbox[1].GetText().c_str());
-		net->password = game_gui->create_server->textbox[2].GetText();
-		net->server_lan = game_gui->create_server->checkbox.checked;
+		net->serverName = Trimmed(gameGui->createServer->textbox[0].GetText());
+		net->maxPlayers = atoi(gameGui->createServer->textbox[1].GetText().c_str());
+		net->password = gameGui->createServer->textbox[2].GetText();
+		net->serverLan = gameGui->createServer->checkbox.checked;
 
 		// check settings
 		cstring error_text = nullptr;
 		Control* give_focus = nullptr;
-		if(net->server_name.empty())
+		if(net->serverName.empty())
 		{
-			error_text = game_gui->create_server->txEnterServerName;
-			give_focus = &game_gui->create_server->textbox[0];
+			error_text = gameGui->createServer->txEnterServerName;
+			give_focus = &gameGui->createServer->textbox[0];
 		}
-		else if(!InRange(net->max_players, MIN_PLAYERS, MAX_PLAYERS))
+		else if(!InRange(net->maxPlayers, MIN_PLAYERS, MAX_PLAYERS))
 		{
-			error_text = Format(game_gui->create_server->txInvalidPlayersCount, MAX_PLAYERS);
-			give_focus = &game_gui->create_server->textbox[1];
+			error_text = Format(gameGui->createServer->txInvalidPlayersCount, MAX_PLAYERS);
+			give_focus = &gameGui->createServer->textbox[1];
 		}
 		if(error_text)
 		{
-			gui->SimpleDialog(error_text, game_gui->create_server);
-			game_gui->create_server->cont.give_focus = give_focus;
+			gui->SimpleDialog(error_text, gameGui->createServer);
+			gameGui->createServer->cont.giveFocus = give_focus;
 			return;
 		}
 
 		// save settings
-		cfg.Add("server_name", net->server_name);
-		cfg.Add("server_pswd", net->password);
-		cfg.Add("server_players", net->max_players);
-		cfg.Add("server_lan", net->server_lan);
+		cfg.Add("serverName", net->serverName);
+		cfg.Add("serverPswd", net->password);
+		cfg.Add("serverPlayers", net->maxPlayers);
+		cfg.Add("serverLan", net->serverLan);
 		SaveCfg();
 
 		// close dialog windows
-		game_gui->create_server->CloseDialog();
-		game_gui->multiplayer->CloseDialog();
+		gameGui->createServer->CloseDialog();
+		gameGui->multiplayer->CloseDialog();
 
 		try
 		{
@@ -294,7 +295,7 @@ void Game::CreateServerEvent(int id)
 		}
 		catch(cstring err)
 		{
-			gui->SimpleDialog(err, game_gui->main_menu);
+			gui->SimpleDialog(err, gameGui->mainMenu);
 			return;
 		}
 
@@ -303,7 +304,7 @@ void Game::CreateServerEvent(int id)
 }
 
 //=================================================================================================
-void Game::RandomCharacter(Class*& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
+void Game::RandomCharacter(Class*& clas, int& hairIndex, HumanData& hd, CreatedCharacter& cc)
 {
 	if(!clas)
 		clas = Class::GetRandomPlayer();
@@ -311,8 +312,8 @@ void Game::RandomCharacter(Class*& clas, int& hair_index, HumanData& hd, Created
 	hd.beard = Rand() % MAX_BEARD - 1;
 	hd.hair = Rand() % MAX_HAIR - 1;
 	hd.mustache = Rand() % MAX_MUSTACHE - 1;
-	hair_index = Rand() % n_hair_colors;
-	hd.hair_color = g_hair_colors[hair_index];
+	hairIndex = Rand() % nHairColors;
+	hd.hairColor = gHairColors[hairIndex];
 	hd.height = Random(0.95f, 1.05f);
 	// created character
 	cc.Random(clas);
@@ -324,11 +325,11 @@ void Game::OnEnterIp(int id)
 	if(id == BUTTON_OK)
 	{
 		SystemAddress adr = UNASSIGNED_SYSTEM_ADDRESS;
-		Trim(server_ip);
-		if(adr.FromString(server_ip.c_str(), ':') && adr != UNASSIGNED_SYSTEM_ADDRESS)
+		Trim(serverIp);
+		if(adr.FromString(serverIp.c_str(), ':') && adr != UNASSIGNED_SYSTEM_ADDRESS)
 		{
 			// save ip
-			cfg.Add("server_ip", server_ip.c_str());
+			cfg.Add("serverIp", serverIp.c_str());
 			SaveCfg();
 
 			try
@@ -337,35 +338,35 @@ void Game::OnEnterIp(int id)
 			}
 			catch(cstring error)
 			{
-				gui->SimpleDialog(error, game_gui->multiplayer);
+				gui->SimpleDialog(error, gameGui->multiplayer);
 				return;
 			}
 
 			Info("Pinging %s...", adr.ToString());
-			game_gui->info_box->Show(txConnecting);
-			net_mode = NM_CONNECTING;
-			net_state = NetState::Client_PingIp;
-			net_timer = T_CONNECT_PING;
-			net_tries = I_CONNECT_TRIES;
-			net->ping_adr = adr;
-			if(net->ping_adr.GetPort() == 0)
-				net->ping_adr.SetPortHostOrder(net->port);
-			net->peer->Ping(net->ping_adr.ToString(false), net->ping_adr.GetPort(), false);
+			gameGui->infoBox->Show(txConnecting);
+			netMode = NM_CONNECTING;
+			netState = NetState::Client_PingIp;
+			netTimer = T_CONNECT_PING;
+			netTries = I_CONNECT_TRIES;
+			net->pingAdr = adr;
+			if(net->pingAdr.GetPort() == 0)
+				net->pingAdr.SetPortHostOrder(net->port);
+			net->peer->Ping(net->pingAdr.ToString(false), net->pingAdr.GetPort(), false);
 		}
 		else
-			gui->SimpleDialog(txInvalidIp, game_gui->multiplayer);
+			gui->SimpleDialog(txInvalidIp, gameGui->multiplayer);
 	}
 }
 
 //=================================================================================================
 void Game::EndConnecting(cstring msg, bool wait)
 {
-	game_gui->info_box->CloseDialog();
+	gameGui->infoBox->CloseDialog();
 	if(msg)
-		gui->SimpleDialog(msg, game_gui->pick_server->visible ? (DialogBox*)game_gui->pick_server : (DialogBox*)game_gui->multiplayer);
+		gui->SimpleDialog(msg, gameGui->pickServer->visible ? (DialogBox*)gameGui->pickServer : (DialogBox*)gameGui->multiplayer);
 	if(wait)
 		ForceRedraw();
-	if(!game_gui->pick_server->visible)
+	if(!gameGui->pickServer->visible)
 		net->ClosePeer(wait);
 	else
 		net->peer->CloseConnection(net->server, true);
@@ -374,7 +375,7 @@ void Game::EndConnecting(cstring msg, bool wait)
 //=================================================================================================
 void Game::GenericInfoBoxUpdate(float dt)
 {
-	switch(net_mode)
+	switch(netMode)
 	{
 	case NM_CONNECTING:
 		UpdateClientConnectingIp(dt);
@@ -399,12 +400,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 void Game::UpdateClientConnectingIp(float dt)
 {
-	if(net_state == NetState::Client_PingIp)
+	if(netState == NetState::Client_PingIp)
 	{
-		net_timer -= dt;
-		if(net_timer <= 0.f)
+		netTimer -= dt;
+		if(netTimer <= 0.f)
 		{
-			if(net_tries == 0)
+			if(netTries == 0)
 			{
 				// connection timeout
 				Warn("NM_CONNECTING(0): Connection timeout.");
@@ -414,10 +415,10 @@ void Game::UpdateClientConnectingIp(float dt)
 			else
 			{
 				// ping another time...
-				Info("Pinging %s...", net->ping_adr.ToString());
-				net->peer->Ping(net->ping_adr.ToString(false), net->ping_adr.GetPort(), false);
-				--net_tries;
-				net_timer = T_CONNECT_PING;
+				Info("Pinging %s...", net->pingAdr.ToString());
+				net->peer->Ping(net->pingAdr.ToString(false), net->pingAdr.GetPort(), false);
+				--netTries;
+				netTimer = T_CONNECT_PING;
 			}
 		}
 
@@ -500,36 +501,36 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 
 			// set server status
-			game_gui->server->max_players = max_players;
-			game_gui->server->server_name = server_name_r;
+			gameGui->server->maxPlayers = max_players;
+			gameGui->server->serverName = server_name_r;
 			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
 			if(IsSet(flags, 0xFC))
 				Warn("NM_CONNECTING(0): Unknown server flags.");
 			net->server = packet->systemAddress;
-			enter_pswd.clear();
+			enterPswd.clear();
 
 			if(IsSet(flags, 0x01))
 			{
 				// password is required
-				net_state = NetState::Client_WaitingForPassword;
-				game_gui->info_box->Show(txWaitingForPswd);
-				GetTextDialogParams params(Format(txEnterPswd, server_name_r.c_str()), enter_pswd);
+				netState = NetState::Client_WaitingForPassword;
+				gameGui->infoBox->Show(txWaitingForPswd);
+				GetTextDialogParams params(Format(txEnterPswd, server_name_r.c_str()), enterPswd);
 				params.event = DialogEvent(this, &Game::OnEnterPassword);
 				params.limit = 16;
-				params.parent = game_gui->info_box;
+				params.parent = gameGui->infoBox;
 				GetTextDialog::Show(params);
 				Info("NM_CONNECTING(0): Waiting for password...");
 			}
 			else
 			{
 				// try to connect
-				ConnectionAttemptResult result = net->peer->Connect(net->ping_adr.ToString(false), net->ping_adr.GetPort(), nullptr, 0);
+				ConnectionAttemptResult result = net->peer->Connect(net->pingAdr.ToString(false), net->pingAdr.GetPort(), nullptr, 0);
 				if(result == CONNECTION_ATTEMPT_STARTED)
 				{
 					// connecting...
-					net_timer = T_CONNECT;
-					net_state = NetState::Client_Connecting;
-					game_gui->info_box->Show(Format(txConnectingTo, server_name_r.c_str()));
+					netTimer = T_CONNECT;
+					netState = NetState::Client_Connecting;
+					gameGui->infoBox->Show(Format(txConnectingTo, server_name_r.c_str()));
 					Info("NM_CONNECTING(0): Connecting to server %s...", server_name_r.c_str());
 				}
 				else
@@ -543,7 +544,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			return;
 		}
 	}
-	else if(net_state == NetState::Client_Connecting)
+	else if(netState == NetState::Client_Connecting)
 	{
 		Packet* packet;
 		for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
@@ -570,7 +571,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					f << ID_HELLO;
 					f << VERSION;
 					content.WriteCrc(f);
-					f << player_name;
+					f << playerName;
 					net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
 				}
 				break;
@@ -578,9 +579,9 @@ void Game::UpdateClientConnectingIp(float dt)
 				// server accepted and sent info about players and my id
 				{
 					int count, load_char;
-					reader.ReadCasted<byte>(team->my_id);
-					reader.ReadCasted<byte>(net->active_players);
-					reader.ReadCasted<byte>(team->leader_id);
+					reader.ReadCasted<byte>(team->myId);
+					reader.ReadCasted<byte>(net->activePlayers);
+					reader.ReadCasted<byte>(team->leaderId);
 					reader.ReadCasted<byte>(count);
 					if(!reader)
 					{
@@ -597,10 +598,10 @@ void Game::UpdateClientConnectingIp(float dt)
 					PlayerInfo& info = *pinfo;
 					info.clas = nullptr;
 					info.ready = false;
-					info.name = player_name;
-					info.id = team->my_id;
+					info.name = playerName;
+					info.id = team->myId;
 					info.state = PlayerInfo::IN_LOBBY;
-					info.update_flags = 0;
+					info.updateFlags = 0;
 					info.left = PlayerInfo::LEFT_NO;
 					info.loaded = false;
 
@@ -675,25 +676,25 @@ void Game::UpdateClientConnectingIp(float dt)
 					net->peer->DeallocatePacket(packet);
 
 					// read leader
-					if(!net->TryGetPlayer(team->leader_id))
+					if(!net->TryGetPlayer(team->leaderId))
 					{
-						Error("NM_CONNECTING(2): Broken packet ID_JOIN, no player with leader id %d.", team->leader_id);
+						Error("NM_CONNECTING(2): Broken packet ID_JOIN, no player with leader id %d.", team->leaderId);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
 
 					// go to lobby
-					if(game_gui->pick_server->visible)
-						game_gui->pick_server->CloseDialog();
-					if(game_gui->multiplayer->visible)
-						game_gui->multiplayer->CloseDialog();
-					game_gui->server->Show();
+					if(gameGui->pickServer->visible)
+						gameGui->pickServer->CloseDialog();
+					if(gameGui->multiplayer->visible)
+						gameGui->multiplayer->CloseDialog();
+					gameGui->server->Show();
 					if(load_char != 0)
-						game_gui->server->UseLoadedCharacter(load_char == 2);
+						gameGui->server->UseLoadedCharacter(load_char == 2);
 					if(load_char != 2)
-						game_gui->server->CheckAutopick();
-					game_gui->info_box->CloseDialog();
-					ChangeTitle();
+						gameGui->server->CheckAutopick();
+					gameGui->infoBox->CloseDialog();
+					SetTitle("CLIENT");
 					return;
 				}
 				break;
@@ -805,14 +806,14 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 		}
 
-		net_timer -= dt;
-		if(net_timer <= 0.f)
+		netTimer -= dt;
+		if(netTimer <= 0.f)
 		{
 			Warn("NM_CONNECTING(2): Connection timeout.");
 			EndConnecting(txConnectTimeout);
 		}
 	}
-	else if(net_state == NetState::Client_ConnectingProxy || net_state == NetState::Client_Punchthrough)
+	else if(netState == NetState::Client_ConnectingProxy || netState == NetState::Client_Punchthrough)
 	{
 		Packet* packet;
 		for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
@@ -826,12 +827,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 				{
 					Info("NM_CONNECTING(3): Connected with proxy, starting nat punchthrough.");
-					net_timer = 10.f;
-					net_state = NetState::Client_Punchthrough;
-					PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
+					netTimer = 10.f;
+					netState = NetState::Client_Punchthrough;
+					PickServerPanel::ServerData& info = gameGui->pickServer->servers[gameGui->pickServer->grid.selected];
 					RakNetGUID guid;
 					guid.FromString(info.guid.c_str());
-					net->master_server_adr = packet->systemAddress;
+					net->masterServerAdr = packet->systemAddress;
 					api->StartPunchthrough(&guid);
 				}
 				break;
@@ -847,20 +848,20 @@ void Game::UpdateClientConnectingIp(float dt)
 				{
 					Info("NM_CONNECTING(3): Punchthrough succeeded, connecting to server %s.", packet->systemAddress.ToString());
 					api->EndPunchthrough();
-					net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
-					PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
+					net->peer->CloseConnection(net->masterServerAdr, true, 1, IMMEDIATE_PRIORITY);
+					PickServerPanel::ServerData& info = gameGui->pickServer->servers[gameGui->pickServer->grid.selected];
 					net->server = packet->systemAddress;
-					game_gui->server->server_name = info.name;
-					game_gui->server->max_players = info.max_players;
-					net->active_players = info.active_players;
-					ConnectionAttemptResult result = net->peer->Connect(net->server.ToString(false), net->server.GetPort(), enter_pswd.c_str(), enter_pswd.length());
+					gameGui->server->serverName = info.name;
+					gameGui->server->maxPlayers = info.maxPlayers;
+					net->activePlayers = info.activePlayers;
+					ConnectionAttemptResult result = net->peer->Connect(net->server.ToString(false), net->server.GetPort(), enterPswd.c_str(), enterPswd.length());
 					if(result == CONNECTION_ATTEMPT_STARTED)
 					{
-						net_mode = NM_CONNECTING;
-						net_timer = T_CONNECT;
-						net_tries = 1;
-						net_state = NetState::Client_Connecting;
-						game_gui->info_box->Show(Format(txConnectingTo, info.name.c_str()));
+						netMode = NM_CONNECTING;
+						netTimer = T_CONNECT;
+						netTries = 1;
+						netState = NetState::Client_Connecting;
+						gameGui->infoBox->Show(Format(txConnectingTo, info.name.c_str()));
 						net->peer->DeallocatePacket(packet);
 						return;
 					}
@@ -877,8 +878,8 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 		}
 
-		net_timer -= dt;
-		if(net_timer <= 0.f)
+		netTimer -= dt;
+		if(netTimer <= 0.f)
 		{
 			Warn("NM_CONNECTING(3): Connection to proxy timeout.");
 			api->EndPunchthrough();
@@ -903,7 +904,7 @@ void Game::UpdateClientTransfer(float dt)
 			Info("NM_TRANSFER: Lost connection with server.");
 			net->peer->DeallocatePacket(packet);
 			net->ClosePeer(false, true);
-			game_gui->info_box->CloseDialog();
+			gameGui->infoBox->CloseDialog();
 			ExitToMenu();
 			gui->SimpleDialog(txLostConnection, nullptr);
 			return;
@@ -911,7 +912,7 @@ void Game::UpdateClientTransfer(float dt)
 			Info("NM_TRANSFER: Server close, failed to load game.");
 			net->peer->DeallocatePacket(packet);
 			net->ClosePeer(true, true);
-			game_gui->info_box->CloseDialog();
+			gameGui->infoBox->CloseDialog();
 			ExitToMenu();
 			gui->SimpleDialog(txServerFailedToLoadSave, nullptr);
 			return;
@@ -924,13 +925,13 @@ void Game::UpdateClientTransfer(float dt)
 					switch(packet->data[1])
 					{
 					case 0:
-						game_gui->info_box->Show(txGeneratingWorld);
+						gameGui->infoBox->Show(txGeneratingWorld);
 						break;
 					case 1:
-						game_gui->info_box->Show(txPreparingWorld);
+						gameGui->infoBox->Show(txPreparingWorld);
 						break;
 					case 2:
-						game_gui->info_box->Show(txWaitingForPlayers);
+						gameGui->infoBox->Show(txWaitingForPlayers);
 						break;
 					}
 				}
@@ -939,7 +940,7 @@ void Game::UpdateClientTransfer(float dt)
 			}
 			break;
 		case ID_WORLD_DATA:
-			if(net_state == NetState::Client_BeforeTransfer)
+			if(netState == NetState::Client_BeforeTransfer)
 			{
 				Info("NM_TRANSFER: Received world data.");
 
@@ -947,9 +948,9 @@ void Game::UpdateClientTransfer(float dt)
 				ClearGameVars(true);
 				net->OnNewGameClient();
 
-				fallback_type = FALLBACK::NONE;
-				fallback_t = -0.5f;
-				net_state = NetState::Client_ReceivedWorldData;
+				fallbackType = FALLBACK::NONE;
+				fallbackTimer = -0.5f;
+				netState = NetState::Client_ReceivedWorldData;
 
 				if(net->ReadWorldData(reader))
 				{
@@ -958,7 +959,7 @@ void Game::UpdateClientTransfer(float dt)
 					f << ID_READY;
 					f << (byte)0;
 					net->SendClient(f, HIGH_PRIORITY, RELIABLE);
-					game_gui->info_box->Show(txLoadedWorld);
+					gameGui->infoBox->Show(txLoadedWorld);
 					LoadingStep("");
 					Info("NM_TRANSFER: Loaded world data.");
 				}
@@ -971,17 +972,17 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-				Error("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", netState);
 			break;
 		case ID_PLAYER_START_DATA:
-			if(net_state == NetState::Client_ReceivedWorldData)
+			if(netState == NetState::Client_ReceivedWorldData)
 			{
-				net_state = NetState::Client_ReceivedPlayerStartData;
+				netState = NetState::Client_ReceivedPlayerStartData;
 				LoadingStep("");
 				if(net->ReadPlayerStartData(reader))
 				{
 					// send ready message
-					if(net->mp_load_worldmap)
+					if(net->mpLoadWorldmap)
 						LoadResources("", true);
 					else
 						LoadingStep("");
@@ -989,7 +990,7 @@ void Game::UpdateClientTransfer(float dt)
 					f << ID_READY;
 					f << (byte)1;
 					net->SendClient(f, HIGH_PRIORITY, RELIABLE);
-					game_gui->info_box->Show(txLoadedPlayer);
+					gameGui->infoBox->Show(txLoadedPlayer);
 					Info("NM_TRANSFER: Loaded player start data.");
 				}
 				else
@@ -1001,12 +1002,12 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-				Error("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", netState);
 			break;
 		case ID_CHANGE_LEVEL:
-			if(net_state == NetState::Client_ReceivedPlayerStartData)
+			if(netState == NetState::Client_ReceivedPlayerStartData)
 			{
-				net_state = NetState::Client_ChangingLevel;
+				netState = NetState::Client_ChangingLevel;
 				byte loc, level;
 				bool encounter;
 				reader >> loc;
@@ -1016,14 +1017,14 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					if(world->VerifyLocation(loc))
 					{
-						if(game_state == GS_LOAD)
+						if(gameState == GS_LOAD)
 							LoadingStep("");
 						else
 							LoadingStart(4);
 						world->ChangeLevel(loc, encounter);
-						game_level->dungeon_level = level;
-						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", game_level->location->name.c_str(), game_level->location_index, game_level->dungeon_level);
-						game_gui->info_box->Show(txGeneratingLocation);
+						gameLevel->dungeonLevel = level;
+						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", gameLevel->location->name.c_str(), gameLevel->locationIndex, gameLevel->dungeonLevel);
+						gameGui->infoBox->Show(txGeneratingLocation);
 					}
 					else
 						Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
@@ -1032,13 +1033,13 @@ void Game::UpdateClientTransfer(float dt)
 					Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
 			}
 			else
-				Error("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", netState);
 			break;
 		case ID_LEVEL_DATA:
-			if(net_state == NetState::Client_ChangingLevel)
+			if(netState == NetState::Client_ChangingLevel)
 			{
-				net_state = NetState::Client_ReceivedLevelData;
-				game_gui->info_box->Show(txLoadingLocation);
+				netState = NetState::Client_ReceivedLevelData;
+				gameGui->infoBox->Show(txLoadingLocation);
 				LoadingStep("");
 				if(!net->ReadLevelData(reader))
 				{
@@ -1058,13 +1059,13 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-				Error("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", netState);
 			break;
 		case ID_PLAYER_DATA:
-			if(net_state == NetState::Client_ReceivedLevelData)
+			if(netState == NetState::Client_ReceivedLevelData)
 			{
-				net_state = NetState::Client_ReceivedPlayerData;
-				game_gui->info_box->Show(txLoadingChars);
+				netState = NetState::Client_ReceivedPlayerData;
+				gameGui->infoBox->Show(txLoadingChars);
 				LoadingStep("");
 				if(!net->ReadPlayerData(reader))
 				{
@@ -1077,7 +1078,7 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					Info("NM_TRANSFER: Loaded player data.");
 					LoadResources("", false);
-					net->mp_load = false;
+					net->mpLoad = false;
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)3;
@@ -1085,76 +1086,76 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-				Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", netState);
 			break;
 		case ID_START:
-			if(net->mp_load_worldmap)
+			if(net->mpLoadWorldmap)
 			{
 				// start on worldmap
-				if(net_state == NetState::Client_ReceivedPlayerStartData)
+				if(netState == NetState::Client_ReceivedPlayerStartData)
 				{
-					net->mp_load_worldmap = false;
-					net_state = NetState::Client_StartOnWorldmap;
+					net->mpLoadWorldmap = false;
+					netState = NetState::Client_StartOnWorldmap;
 					Info("NM_TRANSFER: Starting at world map.");
-					clear_color = Color::White;
-					game_state = GS_WORLDMAP;
-					game_gui->load_screen->visible = false;
-					game_gui->main_menu->visible = false;
-					game_gui->level_gui->visible = false;
-					game_gui->world_map->Show();
+					gameState = GS_WORLDMAP;
+					gameLevel->ready = false;
+					gameGui->loadScreen->visible = false;
+					gameGui->mainMenu->visible = false;
+					gameGui->levelGui->visible = false;
+					gameGui->worldMap->Show();
 					world->SetState(World::State::ON_MAP);
-					game_gui->info_box->CloseDialog();
-					net->update_timer = 0.f;
-					team->leader_id = 0;
+					gameGui->infoBox->CloseDialog();
+					net->updateTimer = 0.f;
+					team->leaderId = 0;
 					team->leader = nullptr;
 					SetMusic(MusicType::Travel);
-					ChangeTitle();
-					if(net->mp_quickload)
+					SetTitle("CLIENT");
+					if(net->mpQuickload)
 					{
-						net->mp_quickload = false;
-						game_gui->mp_box->Add(txGameLoaded);
-						game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+						net->mpQuickload = false;
+						gameGui->mpBox->Add(txGameLoaded);
+						gameGui->messages->AddGameMsg3(GMS_GAME_LOADED);
 					}
 					net->peer->DeallocatePacket(packet);
 				}
 				else
 				{
-					Error("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
+					Error("NM_TRANSFER: Received ID_START at worldmap with net state %d.", netState);
 					break;
 				}
 			}
 			else
 			{
 				// start in location
-				if(net_state == NetState::Client_ReceivedPlayerData)
+				if(netState == NetState::Client_ReceivedPlayerData)
 				{
-					net_state = NetState::Client_Start;
+					netState = NetState::Client_Start;
 					Info("NM_TRANSFER: Level started.");
-					clear_color = clear_color_next;
-					game_state = GS_LEVEL;
-					game_gui->load_screen->visible = false;
-					game_gui->main_menu->visible = false;
-					game_gui->level_gui->visible = true;
-					game_gui->world_map->Hide();
-					game_gui->info_box->CloseDialog();
-					net->update_timer = 0.f;
-					fallback_type = FALLBACK::NONE;
-					fallback_t = -0.5f;
-					game_level->camera.Reset();
-					pc->data.rot_buf = 0.f;
-					ChangeTitle();
-					if(net->mp_quickload)
+					gameState = GS_LEVEL;
+					gameLevel->ready = true;
+					gameGui->loadScreen->visible = false;
+					gameGui->mainMenu->visible = false;
+					gameGui->levelGui->visible = true;
+					gameGui->worldMap->Hide();
+					gameGui->infoBox->CloseDialog();
+					net->updateTimer = 0.f;
+					fallbackType = FALLBACK::NONE;
+					fallbackTimer = -0.5f;
+					gameLevel->camera.Reset();
+					pc->data.rotBuf = 0.f;
+					SetTitle("CLIENT");
+					if(net->mpQuickload)
 					{
-						net->mp_quickload = false;
-						game_gui->mp_box->Add(txGameLoaded);
-						game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+						net->mpQuickload = false;
+						gameGui->mpBox->Add(txGameLoaded);
+						gameGui->messages->AddGameMsg3(GMS_GAME_LOADED);
 					}
 					net->peer->DeallocatePacket(packet);
-					game_gui->Setup(pc);
+					gameGui->Setup(pc);
 					OnEnterLevelOrLocation();
 				}
 				else
-					Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
+					Error("NM_TRANSFER: Received ID_START with net state %d.", netState);
 			}
 			return;
 		default:
@@ -1178,28 +1179,28 @@ void Game::UpdateClientQuiting(float dt)
 			Info("NM_QUITTING: Server accepted disconnection.");
 			net->peer->DeallocatePacket(packet);
 			net->ClosePeer();
-			if(game_gui->server->visible)
-				game_gui->server->CloseDialog();
-			if(net_callback)
-				net_callback();
-			game_gui->info_box->CloseDialog();
+			if(gameGui->server->visible)
+				gameGui->server->CloseDialog();
+			if(netCallback)
+				netCallback();
+			gameGui->infoBox->CloseDialog();
 			return;
 		}
 		else
 			Info("NM_QUITTING: Ignored packet %u.", msg_id);
 	}
 
-	net_timer -= dt;
-	if(net_timer <= 0.f)
+	netTimer -= dt;
+	if(netTimer <= 0.f)
 	{
 		Warn("NM_QUITTING: Disconnected without accepting.");
 		net->peer->DeallocatePacket(packet);
 		net->ClosePeer();
-		if(game_gui->server->visible)
-			game_gui->server->CloseDialog();
-		if(net_callback)
-			net_callback();
-		game_gui->info_box->CloseDialog();
+		if(gameGui->server->visible)
+			gameGui->server->CloseDialog();
+		if(netCallback)
+			netCallback();
+		gameGui->infoBox->CloseDialog();
 	}
 }
 
@@ -1232,14 +1233,14 @@ void Game::UpdateServerTransfer(float dt)
 		case ID_CONNECTION_LOST:
 			{
 				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
-				--net->active_players;
-				net->players_left = true;
+				--net->activePlayers;
+				net->playersLeft = true;
 				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			break;
 		case ID_READY:
 			{
-				if(net_state != NetState::Server_WaitForPlayersToLoadWorld)
+				if(netState != NetState::Server_WaitForPlayersToLoadWorld)
 				{
 					Warn("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str());
 					break;
@@ -1275,14 +1276,14 @@ void Game::UpdateServerTransfer(float dt)
 		}
 	}
 
-	if(net_state == NetState::Server_Starting)
+	if(netState == NetState::Server_Starting)
 	{
-		if(!net->mp_load)
+		if(!net->mpLoad)
 		{
-			game_gui->info_box->Show(txGeneratingWorld);
+			gameGui->infoBox->Show(txGeneratingWorld);
 
 			// send info about generating world
-			if(net->active_players > 1)
+			if(net->activePlayers > 1)
 			{
 				byte b[] = { ID_STATE, 0 };
 				net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -1290,30 +1291,29 @@ void Game::UpdateServerTransfer(float dt)
 
 			// do it
 			ClearGameVars(true);
-			team->free_recruits = 3 - net->active_players;
-			if(team->free_recruits < 0)
-				team->free_recruits = 0;
-			fallback_type = FALLBACK::NONE;
-			fallback_t = -0.5f;
-			game_gui->main_menu->visible = false;
-			game_gui->load_screen->visible = true;
-			clear_color = Color::Black;
-			net->prepare_world = true;
+			team->freeRecruits = 3 - net->activePlayers;
+			if(team->freeRecruits < 0)
+				team->freeRecruits = 0;
+			fallbackType = FALLBACK::NONE;
+			fallbackTimer = -0.5f;
+			gameGui->mainMenu->visible = false;
+			gameGui->loadScreen->visible = true;
+			net->prepareWorld = true;
 			GenerateWorld();
-			quest_mgr->InitQuests();
+			questMgr->InitQuests();
 			world->StartInLocation();
-			net->prepare_world = false;
-			game_res->LoadCommonMusic();
+			net->prepareWorld = false;
+			gameRes->LoadCommonMusic();
 		}
 
-		net_state = NetState::Server_Initialized;
+		netState = NetState::Server_Initialized;
 	}
-	else if(net_state == NetState::Server_Initialized)
+	else if(netState == NetState::Server_Initialized)
 	{
 		// prepare world data if there is any players
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 		{
-			game_gui->info_box->Show(txSendingWorld);
+			gameGui->infoBox->Show(txSendingWorld);
 
 			// send info about preparing world data
 			byte b[] = { ID_STATE, 1 };
@@ -1324,29 +1324,29 @@ void Game::UpdateServerTransfer(float dt)
 			net->WriteWorldData(f);
 			net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
-			net_state = NetState::Server_WaitForPlayersToLoadWorld;
-			net_timer = mp_timeout;
+			netState = NetState::Server_WaitForPlayersToLoadWorld;
+			netTimer = mpTimeout;
 			for(PlayerInfo& info : net->players)
 			{
-				if(info.id != team->my_id)
+				if(info.id != team->myId)
 					info.ready = false;
 				else
 					info.ready = true;
 			}
-			game_gui->info_box->Show(txWaitingForPlayers);
+			gameGui->infoBox->Show(txWaitingForPlayers);
 		}
 		else
-			net_state = NetState::Server_EnterLocation;
+			netState = NetState::Server_EnterLocation;
 
 		vector<Unit*> prev_team;
 
 		// create team
-		if(net->mp_load)
+		if(net->mpLoad)
 			prev_team = team->members.ptrs;
 		team->members.clear();
-		team->active_members.clear();
-		game_level->entering = true;
-		const bool in_level = game_level->is_open;
+		team->activeMembers.clear();
+		gameLevel->ready = false;
+		const bool in_level = gameLevel->isOpen;
 		int leader_perk = 0;
 		for(PlayerInfo& info : net->players)
 		{
@@ -1356,10 +1356,10 @@ void Game::UpdateServerTransfer(float dt)
 			Unit* u;
 			if(!info.loaded)
 			{
-				u = game_level->CreateUnit(*info.clas->player, -1, in_level);
-				u->area = nullptr;
+				u = gameLevel->CreateUnit(*info.clas->player, -1, in_level);
+				u->locPart = nullptr;
 				u->ApplyHumanData(info.hd);
-				u->mesh_inst->need_update = true;
+				u->meshInst->needUpdate = true;
 				info.u = u;
 
 				u->player = new PlayerController;
@@ -1370,7 +1370,7 @@ void Game::UpdateServerTransfer(float dt)
 				if(info.cc.HavePerk(Perk::Get("leader")))
 					++leader_perk;
 
-				if(net->mp_load)
+				if(net->mpLoad)
 					PreloadUnit(u);
 			}
 			else
@@ -1383,26 +1383,26 @@ void Game::UpdateServerTransfer(float dt)
 			}
 
 			team->members.push_back(u);
-			team->active_members.push_back(u);
+			team->activeMembers.push_back(u);
 
 			info.pc = u->player;
-			u->player->player_info = &info;
-			if(info.id == team->my_id)
+			u->player->playerInfo = &info;
+			if(info.id == team->myId)
 			{
 				pc = u->player;
-				u->player->dialog_ctx = &dialog_context;
-				u->player->dialog_ctx->is_local = true;
-				u->player->is_local = true;
-				game_gui->ability->Refresh();
-				game_level->camera.target = u;
+				u->player->dialogCtx = &dialogContext;
+				u->player->dialogCtx->isLocal = true;
+				u->player->isLocal = true;
+				gameGui->ability->Refresh();
+				gameLevel->camera.target = u;
 			}
 			else
 			{
-				u->player->dialog_ctx = new DialogContext;
-				u->player->dialog_ctx->is_local = false;
+				u->player->dialogCtx = new DialogContext;
+				u->player->dialogCtx->isLocal = false;
 			}
-			u->player->dialog_ctx->dialog_mode = false;
-			u->player->dialog_ctx->pc = u->player;
+			u->player->dialogCtx->dialogMode = false;
+			u->player->dialogCtx->pc = u->player;
 			u->interp = EntityInterpolator::Pool.Get();
 			u->interp->Reset(u->pos, u->rot);
 		}
@@ -1419,10 +1419,10 @@ void Game::UpdateServerTransfer(float dt)
 				team->members.push_back(unit);
 			else
 			{
-				if(team->active_members.size() < team->GetMaxSize())
+				if(team->activeMembers.size() < team->GetMaxSize())
 				{
 					team->members.push_back(unit);
-					team->active_members.push_back(unit);
+					team->activeMembers.push_back(unit);
 				}
 				else
 				{
@@ -1431,15 +1431,15 @@ void Game::UpdateServerTransfer(float dt)
 					c.type = NetChange::HERO_LEAVE;
 					c.unit = unit;
 
-					game_gui->mp_box->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));
-					if(game_level->city_ctx)
+					gameGui->mpBox->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));
+					if(gameLevel->cityCtx)
 						unit->OrderWander();
 					else
 						unit->OrderLeave();
-					unit->hero->team_member = false;
+					unit->hero->teamMember = false;
 					unit->hero->credit = 0;
-					unit->ai->city_wander = false;
-					unit->ai->loc_timer = Random(5.f, 10.f);
+					unit->ai->cityWander = false;
+					unit->ai->locTimer = Random(5.f, 10.f);
 					unit->MakeItemsTeam(true);
 					unit->temporary = true;
 
@@ -1448,42 +1448,41 @@ void Game::UpdateServerTransfer(float dt)
 			}
 		}
 
-		if(!net->mp_load && leader_perk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
+		if(!net->mpLoad && leader_perk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
 		{
 			UnitData& ud = *Class::GetRandomHeroData();
 			int level = ud.level.x + 2 * (leader_perk - 1);
-			Unit* npc = game_level->CreateUnit(ud, level, false);
-			npc->area = nullptr;
+			Unit* npc = gameLevel->CreateUnit(ud, level, false);
+			npc->locPart = nullptr;
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
-			npc->hero->know_name = true;
+			npc->hero->knowName = true;
 			team->AddMember(npc, HeroType::Normal);
 			npc->hero->SetupMelee();
 		}
-		game_level->entering = false;
 
 		// recalculate credit if someone left
 		if(anyone_left)
 			team->CheckCredit(false, true);
 
 		// set leader
-		PlayerInfo* leader_info = net->TryGetPlayer(team->leader_id);
+		PlayerInfo* leader_info = net->TryGetPlayer(team->leaderId);
 		if(leader_info)
 			team->leader = leader_info->u;
 		else
 		{
-			team->leader_id = 0;
+			team->leaderId = 0;
 			team->leader = net->GetMe().u;
 		}
 
 		// send info
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 		{
 			byte b[] = { ID_STATE, 2 };
 			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		}
 	}
-	else if(net_state == NetState::Server_WaitForPlayersToLoadWorld)
+	else if(netState == NetState::Server_WaitForPlayersToLoadWorld)
 	{
 		// wait for all players
 		bool ok = true;
@@ -1497,8 +1496,8 @@ void Game::UpdateServerTransfer(float dt)
 				break;
 			}
 		}
-		net_timer -= dt;
-		if(!ok && net_timer <= 0.f)
+		netTimer -= dt;
+		if(!ok && netTimer <= 0.f)
 		{
 			bool anyone_removed = false;
 			for(PlayerInfo& info : net->players)
@@ -1508,8 +1507,8 @@ void Game::UpdateServerTransfer(float dt)
 				if(!info.ready)
 				{
 					Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", info.name.c_str());
-					--net->active_players;
-					net->players_left = true;
+					--net->activePlayers;
+					net->playersLeft = true;
 					info.left = PlayerInfo::LEFT_TIMEOUT;
 					anyone_removed = true;
 				}
@@ -1518,9 +1517,9 @@ void Game::UpdateServerTransfer(float dt)
 			if(anyone_removed)
 			{
 				team->CheckCredit(false, true);
-				if(team->leader_id == -1)
+				if(team->leaderId == -1)
 				{
-					team->leader_id = 0;
+					team->leaderId = 0;
 					team->leader = net->GetMe().u;
 				}
 			}
@@ -1528,18 +1527,18 @@ void Game::UpdateServerTransfer(float dt)
 		if(ok)
 		{
 			Info("NM_TRANSFER_SERVER: All players ready.");
-			net_state = NetState::Server_EnterLocation;
+			netState = NetState::Server_EnterLocation;
 		}
 	}
-	else if(net_state == NetState::Server_EnterLocation)
+	else if(netState == NetState::Server_EnterLocation)
 	{
 		// enter location
-		game_gui->info_box->Show(txLoadingLevel);
-		if(!net->mp_load)
+		gameGui->infoBox->Show(txLoadingLevel);
+		if(!net->mpLoad)
 			EnterLocation();
 		else
 		{
-			if(!game_level->is_open)
+			if(!gameLevel->isOpen)
 			{
 				// saved on worldmap
 				byte b = ID_START;
@@ -1547,52 +1546,51 @@ void Game::UpdateServerTransfer(float dt)
 
 				net->DeleteOldPlayers();
 
-				clear_color = clear_color_next;
-				game_state = GS_WORLDMAP;
-				game_gui->load_screen->visible = false;
-				game_gui->world_map->Show();
-				game_gui->level_gui->visible = false;
-				game_gui->main_menu->visible = false;
-				net->mp_load = false;
-				clear_color = Color::White;
+				gameState = GS_WORLDMAP;
+				gameLevel->ready = false;
+				gameGui->loadScreen->visible = false;
+				gameGui->worldMap->Show();
+				gameGui->levelGui->visible = false;
+				gameGui->mainMenu->visible = false;
+				net->mpLoad = false;
 				world->SetState(World::State::ON_MAP);
-				net->update_timer = 0.f;
+				net->updateTimer = 0.f;
 				SetMusic(MusicType::Travel);
 				net->ProcessLeftPlayers();
-				if(net->mp_quickload)
+				if(net->mpQuickload)
 				{
-					net->mp_quickload = false;
-					game_gui->mp_box->Add(txGameLoaded);
-					game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+					net->mpQuickload = false;
+					gameGui->mpBox->Add(txGameLoaded);
+					gameGui->messages->AddGameMsg3(GMS_GAME_LOADED);
 				}
-				game_gui->info_box->CloseDialog();
+				gameGui->infoBox->CloseDialog();
 			}
 			else
 			{
-				if(!net->mp_quickload)
+				if(!net->mpQuickload)
 					LoadingStart(1);
 
 				BitStreamWriter f;
 				f << ID_CHANGE_LEVEL;
 				f << (byte)world->GetCurrentLocationIndex();
-				f << (byte)game_level->dungeon_level;
+				f << (byte)gameLevel->dungeonLevel;
 				f << (world->GetState() == World::State::INSIDE_ENCOUNTER);
 				int ack = net->SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 				for(PlayerInfo& info : net->players)
 				{
-					if(info.id == team->my_id)
+					if(info.id == team->myId)
 						info.state = PlayerInfo::IN_GAME;
 					else
 					{
 						info.state = PlayerInfo::WAITING_FOR_RESPONSE;
 						info.ack = ack;
-						info.timer = mp_timeout;
+						info.timer = mpTimeout;
 					}
 				}
 
 				// find player that was in save and is playing now (first check leader)
 				Unit* center_unit = nullptr;
-				if(team->leader->player->player_info->loaded)
+				if(team->leader->player->playerInfo->loaded)
 					center_unit = team->leader;
 				else
 				{
@@ -1612,11 +1610,11 @@ void Game::UpdateServerTransfer(float dt)
 				{
 					// get positon of unit or building entrance
 					Vec3 pos;
-					if(center_unit->area->area_type == LevelArea::Type::Building)
+					if(center_unit->locPart->partType == LocationPart::Type::Building)
 					{
-						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->area);
-						Vec2 p = inside->enter_region.Midpoint();
-						pos = Vec3(p.x, inside->enter_y, p.y);
+						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->locPart);
+						Vec2 p = inside->enterRegion.Midpoint();
+						pos = Vec3(p.x, inside->enterY, p.y);
 					}
 					else
 						pos = center_unit->pos;
@@ -1626,9 +1624,9 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, 4.f, false, 20);
+							gameLevel->localPart->units.push_back(info.u);
+							info.u->locPart = gameLevel->localPart;
+							gameLevel->WarpNearLocation(*gameLevel->localPart, *info.u, pos, 4.f, false, 20);
 							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1641,18 +1639,18 @@ void Game::UpdateServerTransfer(float dt)
 					float rot;
 					Portal* portal;
 
-					if(game_level->city_ctx)
-						game_level->city_ctx->GetEntry(pos, rot);
-					else if(game_level->enter_from >= ENTER_FROM_PORTAL && (portal = game_level->location->GetPortal(game_level->enter_from)) != nullptr)
+					if(gameLevel->cityCtx)
+						gameLevel->cityCtx->GetEntry(pos, rot);
+					else if(gameLevel->enterFrom >= ENTER_FROM_PORTAL && (portal = gameLevel->location->GetPortal(gameLevel->enterFrom)) != nullptr)
 					{
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 						rot = Clip(portal->rot + PI);
 					}
-					else if(game_level->location->type == L_DUNGEON)
+					else if(gameLevel->location->type == L_DUNGEON)
 					{
-						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+						InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						if(game_level->enter_from == ENTER_FROM_NEXT_LEVEL)
+						if(gameLevel->enterFrom == ENTER_FROM_NEXT_LEVEL)
 						{
 							pos = PtToPos(lvl.GetNextEntryFrontTile());
 							rot = DirToRot(lvl.nextEntryDir);
@@ -1671,9 +1669,9 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(!info.loaded)
 						{
-							game_level->local_area->units.push_back(info.u);
-							info.u->area = game_level->local_area;
-							game_level->WarpNearLocation(*game_level->local_area, *info.u, pos, game_level->location->outside ? 4.f : 2.f, false, 20);
+							gameLevel->localPart->units.push_back(info.u);
+							info.u->locPart = gameLevel->localPart;
+							gameLevel->WarpNearLocation(*gameLevel->localPart, *info.u, pos, gameLevel->location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1681,18 +1679,18 @@ void Game::UpdateServerTransfer(float dt)
 				}
 
 				net->DeleteOldPlayers();
-				if(!net->mp_quickload)
+				if(!net->mpQuickload)
 					LoadResources("", false, false);
 
-				net_mode = NM_SERVER_SEND;
-				net_state = NetState::Server_Send;
-				if(net->active_players > 1)
+				netMode = NM_SERVER_SEND;
+				netState = NetState::Server_Send;
+				if(net->activePlayers > 1)
 				{
-					prepared_stream.Reset();
-					BitStreamWriter f(prepared_stream);
+					preparedStream.Reset();
+					BitStreamWriter f(preparedStream);
 					net->WriteLevelData(f, false);
-					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", prepared_stream.GetNumberOfBytesUsed());
-					game_gui->info_box->Show(txWaitingForPlayers);
+					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", preparedStream.GetNumberOfBytesUsed());
+					gameGui->infoBox->Show(txWaitingForPlayers);
 				}
 			}
 		}
@@ -1727,8 +1725,8 @@ void Game::UpdateServerSend(float dt)
 		case ID_CONNECTION_LOST:
 			{
 				Info("NM_SERVER_SEND: Player %s left game.", info.name.c_str());
-				--net->active_players;
-				net->players_left = true;
+				--net->activePlayers;
+				net->playersLeft = true;
 				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			return;
@@ -1743,8 +1741,8 @@ void Game::UpdateServerSend(float dt)
 				else
 				{
 					// send level data
-					net->peer->Send(&prepared_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
-					info.timer = mp_timeout;
+					net->peer->Send(&preparedStream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+					info.timer = mpTimeout;
 					info.state = PlayerInfo::WAITING_FOR_DATA;
 					Info("NM_SERVER_SEND: Send level data to %s.", info.name.c_str());
 				}
@@ -1793,8 +1791,8 @@ void Game::UpdateServerSend(float dt)
 				// timeout, remove player
 				Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", info.name.c_str());
 				net->peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
-				--net->active_players;
-				net->players_left = true;
+				--net->activePlayers;
+				net->playersLeft = true;
 				info.left = PlayerInfo::LEFT_TIMEOUT;
 			}
 			else
@@ -1803,33 +1801,33 @@ void Game::UpdateServerSend(float dt)
 	}
 	if(ok)
 	{
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 		{
 			byte b = ID_START;
 			net->peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		}
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : gameLevel->ForEachPart())
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 				unit->changed = false;
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
-		clear_color = clear_color_next;
-		game_state = GS_LEVEL;
-		game_gui->info_box->CloseDialog();
-		game_gui->load_screen->visible = false;
-		game_gui->main_menu->visible = false;
-		game_gui->level_gui->visible = true;
-		game_gui->world_map->Hide();
-		net->mp_load = false;
+		gameState = GS_LEVEL;
+		gameLevel->ready = true;
+		gameGui->infoBox->CloseDialog();
+		gameGui->loadScreen->visible = false;
+		gameGui->mainMenu->visible = false;
+		gameGui->levelGui->visible = true;
+		gameGui->worldMap->Hide();
+		net->mpLoad = false;
 		SetMusic();
-		game_gui->Setup(pc);
+		gameGui->Setup(pc);
 		net->ProcessLeftPlayers();
-		if(net->mp_quickload)
+		if(net->mpQuickload)
 		{
-			net->mp_quickload = false;
-			game_gui->mp_box->Add(txGameLoaded);
-			game_gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+			net->mpQuickload = false;
+			gameGui->mpBox->Add(txGameLoaded);
+			gameGui->messages->AddGameMsg3(GMS_GAME_LOADED);
 		}
 	}
 }
@@ -1854,17 +1852,18 @@ void Game::UpdateServerQuiting(float dt)
 					Info("NM_QUITTING_SERVER: Player %s left lobby.", info.name.c_str());
 				else
 					Info("NM_QUITTING_SERVER: %s left lobby.", packet->systemAddress.ToString());
-				--net->active_players;
-				if(net->active_players == 0)
+				--net->activePlayers;
+				if(net->activePlayers == 0)
 				{
 					net->peer->DeallocatePacket(packet);
 					Info("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
 					net->ClosePeer();
-					game_gui->info_box->CloseDialog();
-					if(game_gui->server->visible)
-						game_gui->server->CloseDialog();
-					if(net_callback)
-						net_callback();
+					game->SetTitle(nullptr);
+					gameGui->infoBox->CloseDialog();
+					if(gameGui->server->visible)
+						gameGui->server->CloseDialog();
+					if(netCallback)
+						netCallback();
 					return;
 				}
 			}
@@ -1876,16 +1875,17 @@ void Game::UpdateServerQuiting(float dt)
 		}
 	}
 
-	net_timer -= dt;
-	if(net_timer <= 0.f)
+	netTimer -= dt;
+	if(netTimer <= 0.f)
 	{
 		Warn("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
-		net->ClosePeer(net->master_server_state >= MasterServerState::Connecting);
-		game_gui->info_box->CloseDialog();
-		if(game_gui->server->visible)
-			game_gui->server->CloseDialog();
-		if(net_callback)
-			net_callback();
+		net->ClosePeer(net->masterServerState >= MasterServerState::Connecting);
+		game->SetTitle(nullptr);
+		gameGui->infoBox->CloseDialog();
+		if(gameGui->server->visible)
+			gameGui->server->CloseDialog();
+		if(netCallback)
+			netCallback();
 	}
 }
 
@@ -1898,14 +1898,14 @@ void Game::OnEnterPassword(int id)
 	}
 
 	Info("Password entered.");
-	if(net_state == NetState::Client_WaitingForPasswordProxy)
+	if(netState == NetState::Client_WaitingForPasswordProxy)
 	{
 		ConnectionAttemptResult result = net->peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0);
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
-			net_state = NetState::Client_ConnectingProxy;
-			net_timer = T_CONNECT;
-			game_gui->info_box->Show(txConnectingProxy);
+			netState = NetState::Client_ConnectingProxy;
+			netTimer = T_CONNECT;
+			gameGui->infoBox->Show(txConnectingProxy);
 			Info("NM_CONNECTING(1): Connecting to proxy server...");
 		}
 		else
@@ -1916,13 +1916,13 @@ void Game::OnEnterPassword(int id)
 	}
 	else
 	{
-		ConnectionAttemptResult result = net->peer->Connect(net->ping_adr.ToString(false), net->ping_adr.GetPort(), enter_pswd.c_str(), enter_pswd.length());
+		ConnectionAttemptResult result = net->peer->Connect(net->pingAdr.ToString(false), net->pingAdr.GetPort(), enterPswd.c_str(), enterPswd.length());
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
-			net_state = NetState::Client_Connecting;
-			net_timer = T_CONNECT;
-			game_gui->info_box->Show(Format(txConnectingTo, game_gui->server->server_name.c_str()));
-			Info("NM_CONNECTING(1): Connecting to server %s...", game_gui->server->server_name.c_str());
+			netState = NetState::Client_Connecting;
+			netTimer = T_CONNECT;
+			gameGui->infoBox->Show(Format(txConnectingTo, gameGui->server->serverName.c_str()));
+			Info("NM_CONNECTING(1): Connecting to server %s...", gameGui->server->serverName.c_str());
 		}
 		else
 		{
@@ -1940,7 +1940,7 @@ void Game::ForceRedraw()
 void Game::QuickJoinIp()
 {
 	SystemAddress adr = UNASSIGNED_SYSTEM_ADDRESS;
-	if(adr.FromString(server_ip.c_str()) && adr != UNASSIGNED_SYSTEM_ADDRESS)
+	if(adr.FromString(serverIp.c_str()) && adr != UNASSIGNED_SYSTEM_ADDRESS)
 	{
 		try
 		{
@@ -1952,17 +1952,17 @@ void Game::QuickJoinIp()
 			return;
 		}
 
-		Info("Pinging %s...", server_ip.c_str());
+		Info("Pinging %s...", serverIp.c_str());
 		Net::SetMode(Net::Mode::Client);
-		game_gui->info_box->Show(txConnecting);
-		net_mode = NM_CONNECTING;
-		net_state = NetState::Client_PingIp;
-		net_timer = T_CONNECT_PING;
-		net_tries = I_CONNECT_TRIES;
+		gameGui->infoBox->Show(txConnecting);
+		netMode = NM_CONNECTING;
+		netState = NetState::Client_PingIp;
+		netTimer = T_CONNECT_PING;
+		netTries = I_CONNECT_TRIES;
 		if(IsDebug())
-			net_tries *= 2;
-		net->ping_adr = adr;
-		net->peer->Ping(net->ping_adr.ToString(false), net->ping_adr.GetPort(), false);
+			netTries *= 2;
+		net->pingAdr = adr;
+		net->peer->Ping(net->pingAdr.ToString(false), net->pingAdr.GetPort(), false);
 	}
 	else
 		Warn("Can't quick connect to server, invalid ip.");
@@ -1979,24 +1979,25 @@ void Game::Quit()
 
 void Game::DoQuit()
 {
-	prev_game_state = game_state;
-	game_state = GS_QUIT;
+	prevGameState = gameState;
+	gameState = GS_QUIT;
+	gameLevel->ready = false;
 }
 
 void Game::CloseConnection(VoidF f)
 {
-	if(game_gui->info_box->visible)
+	if(gameGui->infoBox->visible)
 	{
-		switch(net_mode)
+		switch(netMode)
 		{
 		case NM_QUITTING:
 		case NM_QUITTING_SERVER:
-			if(!net_callback)
-				net_callback = f;
+			if(!netCallback)
+				netCallback = f;
 			break;
 		case NM_CONNECTING:
 		case NM_TRANSFER:
-			game_gui->info_box->Show(txDisconnecting);
+			gameGui->infoBox->Show(txDisconnecting);
 			ForceRedraw();
 			net->ClosePeer(true, true);
 			f();
@@ -2009,30 +2010,30 @@ void Game::CloseConnection(VoidF f)
 			net->peer->SetMaximumIncomingConnections(0);
 			net->peer->SetOfflinePingResponse(nullptr, 0);
 
-			if(net->active_players > 1)
+			if(net->activePlayers > 1)
 			{
 				// disconnect players
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				net_mode = Game::NM_QUITTING_SERVER;
-				--net->active_players;
-				net_timer = T_WAIT_FOR_DISCONNECT;
-				game_gui->info_box->Show(txDisconnecting);
-				net_callback = f;
+				netMode = Game::NM_QUITTING_SERVER;
+				--net->activePlayers;
+				netTimer = T_WAIT_FOR_DISCONNECT;
+				gameGui->infoBox->Show(txDisconnecting);
+				netCallback = f;
 			}
 			else
 			{
 				// no players, close instantly
-				game_gui->info_box->CloseDialog();
+				gameGui->infoBox->CloseDialog();
 				net->ClosePeer(false, true);
 				f();
 			}
 			break;
 		}
 	}
-	else if(game_gui->server->visible)
-		game_gui->server->ExitLobby(f);
+	else if(gameGui->server->visible)
+		gameGui->server->ExitLobby(f);
 	else
 	{
 		if(Net::IsServer())
@@ -2043,17 +2044,17 @@ void Game::CloseConnection(VoidF f)
 			net->peer->SetMaximumIncomingConnections(0);
 			net->peer->SetOfflinePingResponse(nullptr, 0);
 
-			if(net->active_players > 1)
+			if(net->activePlayers > 1)
 			{
 				// disconnect players
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				net_mode = Game::NM_QUITTING_SERVER;
-				--net->active_players;
-				net_timer = T_WAIT_FOR_DISCONNECT;
-				game_gui->info_box->Show(txDisconnecting);
-				net_callback = f;
+				netMode = Game::NM_QUITTING_SERVER;
+				--net->activePlayers;
+				netTimer = T_WAIT_FOR_DISCONNECT;
+				gameGui->infoBox->Show(txDisconnecting);
+				netCallback = f;
 			}
 			else
 			{
@@ -2065,7 +2066,7 @@ void Game::CloseConnection(VoidF f)
 		}
 		else
 		{
-			game_gui->info_box->Show(txDisconnecting);
+			gameGui->infoBox->Show(txDisconnecting);
 			ForceRedraw();
 			net->ClosePeer(true, true);
 			f();
@@ -2081,18 +2082,18 @@ void Game::OnCreateCharacter(int id)
 	if(Net::IsOnline())
 	{
 		PlayerInfo& info = net->GetMe();
-		game_gui->server->bts[1].state = Button::NONE;
-		game_gui->server->bts[0].text = game_gui->server->txChangeChar;
+		gameGui->server->bts[1].state = Button::NONE;
+		gameGui->server->bts[0].text = gameGui->server->txChangeChar;
 		// set data
 		Class* old_class = info.clas;
-		info.clas = game_gui->create_character->clas;
-		info.hd.Get(*game_gui->create_character->unit->human_data);
-		info.cc = game_gui->create_character->cc;
+		info.clas = gameGui->createCharacter->clas;
+		info.hd.Get(*gameGui->createCharacter->unit->humanData);
+		info.cc = gameGui->createCharacter->cc;
 		// send info to other active players about changing my class
 		if(Net::IsServer())
 		{
-			if(info.clas != old_class && net->active_players > 1)
-				game_gui->server->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
+			if(info.clas != old_class && net->activePlayers > 1)
+				gameGui->server->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		}
 		else
 		{
@@ -2106,17 +2107,17 @@ void Game::OnCreateCharacter(int id)
 	}
 	else
 	{
-		if(!skip_tutorial)
+		if(!skipTutorial)
 		{
 			DialogInfo info;
 			info.event = DialogEvent(this, &Game::OnPlayTutorial);
-			info.have_tick = true;
+			info.haveTick = true;
 			info.name = "tutorial_dialog";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = txTutPlay;
-			info.tick_text = txTutTick;
+			info.tickText = txTutTick;
 			info.type = DIALOG_YESNO;
 
 			gui->ShowDialog(info);
@@ -2129,15 +2130,15 @@ void Game::OnCreateCharacter(int id)
 void Game::OnPlayTutorial(int id)
 {
 	if(id == BUTTON_CHECKED)
-		skip_tutorial = true;
+		skipTutorial = true;
 	else if(id == BUTTON_UNCHECKED)
-		skip_tutorial = false;
+		skipTutorial = false;
 	else
 	{
 		gui->GetDialog("tutorial_dialog")->visible = false;
 		SaveOptions();
 		if(id == BUTTON_YES)
-			quest_mgr->quest_tutorial->Start();
+			questMgr->questTutorial->Start();
 		else
 			StartNewGame();
 	}
@@ -2145,22 +2146,22 @@ void Game::OnPlayTutorial(int id)
 
 void Game::OnPickServer(int id)
 {
-	enter_pswd.clear();
+	enterPswd.clear();
 
-	if(!game_gui->pick_server->IsLAN())
+	if(!gameGui->pickServer->IsLAN())
 	{
 		// connect to proxy server for nat punchthrough
-		PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
+		PickServerPanel::ServerData& info = gameGui->pickServer->servers[gameGui->pickServer->grid.selected];
 		if(IsSet(info.flags, SERVER_PASSWORD))
 		{
-			net_mode = NM_CONNECTING;
-			net_state = NetState::Client_WaitingForPasswordProxy;
-			net_tries = 1;
-			game_gui->info_box->Show(txWaitingForPswd);
-			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->server_name.c_str()), enter_pswd);
+			netMode = NM_CONNECTING;
+			netState = NetState::Client_WaitingForPasswordProxy;
+			netTries = 1;
+			gameGui->infoBox->Show(txWaitingForPswd);
+			GetTextDialogParams params(Format(txEnterPswd, gameGui->server->serverName.c_str()), enterPswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
 			params.limit = 16;
-			params.parent = game_gui->info_box;
+			params.parent = gameGui->infoBox;
 			GetTextDialog::Show(params);
 			Info("OnPickServer: Waiting for password...");
 		}
@@ -2169,10 +2170,10 @@ void Game::OnPickServer(int id)
 			ConnectionAttemptResult result = net->peer->Connect(api->GetApiUrl(), api->GetProxyPort(), nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
-				net_mode = NM_CONNECTING;
-				net_state = NetState::Client_ConnectingProxy;
-				net_timer = T_CONNECT;
-				game_gui->info_box->Show(txConnectingProxy);
+				netMode = NM_CONNECTING;
+				netState = NetState::Client_ConnectingProxy;
+				netTimer = T_CONNECT;
+				gameGui->infoBox->Show(txConnectingProxy);
 				Info("OnPickServer: Connecting to proxy server...");
 			}
 			else
@@ -2184,23 +2185,23 @@ void Game::OnPickServer(int id)
 	}
 	else
 	{
-		PickServerPanel::ServerData& info = game_gui->pick_server->servers[game_gui->pick_server->grid.selected];
+		PickServerPanel::ServerData& info = gameGui->pickServer->servers[gameGui->pickServer->grid.selected];
 		net->server = info.adr;
-		game_gui->server->server_name = info.name;
-		game_gui->server->max_players = info.max_players;
-		net->active_players = info.active_players;
+		gameGui->server->serverName = info.name;
+		gameGui->server->maxPlayers = info.maxPlayers;
+		net->activePlayers = info.activePlayers;
 		if(IsSet(info.flags, SERVER_PASSWORD))
 		{
 			// enter password
-			net_mode = NM_CONNECTING;
-			net_state = NetState::Client_WaitingForPassword;
-			net_tries = 1;
-			net->ping_adr = info.adr;
-			game_gui->info_box->Show(txWaitingForPswd);
-			GetTextDialogParams params(Format(txEnterPswd, game_gui->server->server_name.c_str()), enter_pswd);
+			netMode = NM_CONNECTING;
+			netState = NetState::Client_WaitingForPassword;
+			netTries = 1;
+			net->pingAdr = info.adr;
+			gameGui->infoBox->Show(txWaitingForPswd);
+			GetTextDialogParams params(Format(txEnterPswd, gameGui->server->serverName.c_str()), enterPswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
 			params.limit = 16;
-			params.parent = game_gui->info_box;
+			params.parent = gameGui->infoBox;
 			GetTextDialog::Show(params);
 			Info("OnPickServer: Waiting for password...");
 		}
@@ -2211,11 +2212,11 @@ void Game::OnPickServer(int id)
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
 				// connecting in progress
-				net_mode = NM_CONNECTING;
-				net_timer = T_CONNECT;
-				net_tries = 1;
-				net_state = NetState::Client_Connecting;
-				game_gui->info_box->Show(Format(txConnectingTo, info.name.c_str()));
+				netMode = NM_CONNECTING;
+				netTimer = T_CONNECT;
+				netTries = 1;
+				netState = NetState::Client_Connecting;
+				gameGui->infoBox->Show(Format(txConnectingTo, info.name.c_str()));
 				Info("OnPickServer: Connecting to server %s...", info.name.c_str());
 			}
 			else
@@ -2235,23 +2236,23 @@ void Game::ClearAndExitToMenu(cstring msg)
 	ClearGame();
 	net->ClosePeer(false, true);
 	ExitToMenu();
-	gui->SimpleDialog(msg, game_gui->main_menu);
+	gui->SimpleDialog(msg, gameGui->mainMenu);
 }
 
 void Game::OnLoadProgress(float progress, cstring str)
 {
-	game_gui->load_screen->SetProgressOptional(progress, str);
+	gameGui->loadScreen->SetProgressOptional(progress, str);
 	if(progress >= 0.5f)
 		utility::IncrementDelayLock();
-	if(Net::IsClient() && loading_resources)
+	if(Net::IsClient() && loadingResources)
 	{
-		loading_dt += loading_t.Tick();
-		if(loading_dt >= 2.5f)
+		loadingDt += loadingTimer.Tick();
+		if(loadingDt >= 2.5f)
 		{
 			BitStreamWriter f;
 			f << ID_PROGRESS;
 			net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
-			loading_dt = 0;
+			loadingDt = 0;
 		}
 	}
 }

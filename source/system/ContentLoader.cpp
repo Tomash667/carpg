@@ -4,22 +4,22 @@
 #include "Language.h"
 
 //=================================================================================================
-void ContentLoader::Load(cstring filename, int top_group, bool* require_id)
+void ContentLoader::Load(cstring filename, int topGroup, bool* requireId)
 {
 	InitTokenizer();
-	if(DoLoad(filename, top_group, require_id))
+	if(DoLoad(filename, topGroup, requireId))
 	{
-		local_id.clear();
+		localId.clear();
 		LoadTexts();
 		Finalize();
 	}
 }
 
 //=================================================================================================
-bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
+bool ContentLoader::DoLoad(cstring filename, int topGroup, bool* requireId)
 {
-	LocalString path = Format("%s/%s", content.system_dir.c_str(), filename);
-	this->top_group = top_group;
+	LocalString path = Format("%s/%s", content.systemDir.c_str(), filename);
+	this->topGroup = topGroup;
 
 	if(!t.FromFile((const string&)path))
 	{
@@ -30,20 +30,20 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 
 	try
 	{
-		content.errors += t.ParseTop<int>(top_group, [&](int top)
+		content.errors += t.ParseTop<int>(topGroup, [&](int top)
 		{
-			current_entity = top;
-			if(require_id && !require_id[top])
+			currentEntity = top;
+			if(requireId && !requireId[top])
 			{
-				local_id.clear();
+				localId.clear();
 				try
 				{
-					LoadEntity(top, local_id);
+					LoadEntity(top, localId);
 					return true;
 				}
 				catch(Tokenizer::Exception& e)
 				{
-					Error("Failed to parse %s: %s", t.FindKeyword(top, top_group)->name, e.ToString());
+					Error("Failed to parse %s: %s", t.FindKeyword(top, topGroup)->name, e.ToString());
 					return false;
 				}
 			}
@@ -54,16 +54,16 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 					Error(t.Expecting("id"));
 					return false;
 				}
-				local_id = t.GetText();
+				localId = t.GetText();
 
 				try
 				{
-					LoadEntity(top, local_id);
+					LoadEntity(top, localId);
 					return true;
 				}
 				catch(Tokenizer::Exception& e)
 				{
-					Error("Failed to parse %s '%s': %s", t.FindKeyword(top, top_group)->name, local_id.c_str(), e.ToString());
+					Error("Failed to parse %s '%s': %s", t.FindKeyword(top, topGroup)->name, localId.c_str(), e.ToString());
 					return false;
 				}
 			}
@@ -103,10 +103,10 @@ cstring ContentLoader::FormatLanguagePath(cstring filename)
 //=================================================================================================
 bool ContentLoader::IsPrefix(cstring prefix)
 {
-	if(local_id == prefix)
+	if(localId == prefix)
 	{
 		t.Next();
-		local_id = t.MustGetText();
+		localId = t.MustGetText();
 		return true;
 	}
 	return false;
@@ -115,9 +115,9 @@ bool ContentLoader::IsPrefix(cstring prefix)
 //=================================================================================================
 cstring ContentLoader::GetEntityName()
 {
-	cstring typeName = t.FindKeyword(current_entity, top_group)->name;
-	if(local_id.empty())
+	cstring typeName = t.FindKeyword(currentEntity, topGroup)->name;
+	if(localId.empty())
 		return typeName;
 	else
-		return Format("%s '%s'", typeName, local_id.c_str());
+		return Format("%s '%s'", typeName, localId.c_str());
 }

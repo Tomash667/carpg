@@ -24,10 +24,10 @@ private:
 	int FillCave(bool* m, bool* m2, int start);
 	int Finish(bool* m, bool* m2);
 	int TryGenerate();
-	void GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext);
-	void CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairs_dir);
+	void GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairsDir, vector<Int2>& holes, Rect* ext);
+	void CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairsDir);
 	void CreateHoles(Tile* tiles, vector<Int2>& holes);
-	void GenerateCaveItems(int days_since = 10);
+	void GenerateCaveItems(int daysSince = 10);
 
 	bool* m1, *m2;
 	vector<int> v;

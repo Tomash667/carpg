@@ -39,13 +39,13 @@ struct CollisionObject
 		struct
 		{
 			CollisionCheck check;
-			CollisionCheckRect check_rect;
+			CollisionCheckRect checkRect;
 			int extra;
 		};
 	};
 	void* owner; // pointer to Object/Chest/Usable
 	Type type;
-	bool cam_collider;
+	bool camCollider;
 
 	static inline void* const TMP = (void*)0xFFFFFFFF;
 };

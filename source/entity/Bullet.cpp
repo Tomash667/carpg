@@ -8,7 +8,8 @@
 #include "Game.h"
 #include "GameResources.h"
 #include "Level.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Object.h"
 #include "PhysicCallbacks.h"
@@ -24,7 +25,7 @@
 EntityType<Bullet>::Impl EntityType<Bullet>::impl;
 
 //=================================================================================================
-bool Bullet::Update(float dt, LevelArea& area)
+bool Bullet::Update(float dt, LocationPart& locPart)
 {
 	// update position
 	Vec3 prev_pos = pos;
@@ -53,7 +54,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 	// do contact test
 	btCollisionShape* shape;
 	if(isArrow)
-		shape = game_level->shape_arrow;
+		shape = gameLevel->shapeArrow;
 	else
 		shape = ability->shape;
 	assert(shape->isConvex());
@@ -65,7 +66,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 	tr_to.setRotation(tr_from.getRotation());
 
 	BulletCallback callback(owner ? owner->cobj : nullptr);
-	phy_world->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
 	if(!callback.hasHit())
 		return false;
 
@@ -80,14 +81,14 @@ bool Bullet::Update(float dt, LevelArea& area)
 	if(pe)
 		pe->destroy = true;
 
-	OnHit(area, hitted, hitpoint, callback);
+	OnHit(locPart, hitted, hitpoint, callback);
 
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(net->changes);
 		c.type = NetChange::REMOVE_BULLET;
 		c.id = id;
-		c.e_id = (hitted != nullptr ? 1 : 0);
+		c.extraId = (hitted != nullptr ? 1 : 0);
 	}
 
 	delete this;
@@ -95,7 +96,7 @@ bool Bullet::Update(float dt, LevelArea& area)
 }
 
 //=================================================================================================
-void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback)
+void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback)
 {
 	if(hitted)
 	{
@@ -118,7 +119,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 
 			// hit enemy unit
 			if(owner && owner->IsAlive() && hitted->IsAI())
-				hitted->ai->HitReaction(start_pos);
+				hitted->ai->HitReaction(startPos);
 
 			// special effects
 			bool preventTooManySounds = false;
@@ -129,21 +130,21 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				Effect e;
 				e.effect = EffectId::Rooted;
 				e.source = EffectSource::Temporary;
-				e.source_id = -1;
+				e.sourceId = -1;
 				e.value = EffectValue_Rooted_Vines;
 				e.power = 0.f;
 				e.time = ability->time;
 				hitted->AddEffect(e);
 
-				if(ability->sound_hit)
+				if(ability->soundHit)
 				{
 					preventTooManySounds = true;
-					sound_mgr->PlaySound3d(ability->sound_hit, hitpoint, ability->sound_hit_dist);
+					soundMgr->PlaySound3d(ability->soundHit, hitpoint, ability->soundHitDist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SPELL_SOUND;
-						c.e_id = 1;
+						c.extraId = 1;
 						c.ability = ability;
 						c.pos = hitpoint;
 					}
@@ -198,13 +199,13 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 						if(hitted->action != A_POSITION)
 							hitted->action = A_PAIN;
 						else
-							hitted->animation_state = AS_POSITION_HURT;
+							hitted->animationState = AS_POSITION_HURT;
 
-						if(hitted->mesh_inst->mesh->head.n_groups == 2)
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+						if(hitted->meshInst->mesh->head.n_groups == 2)
+							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
-							hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							hitted->animation = ANI_PLAY;
 						}
 					}
@@ -263,7 +264,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			hitted->GiveDmg(dmg, owner, &hitpoint);
 
 			// apply poison
-			if(poison_attack > 0.f)
+			if(poisonAttack > 0.f)
 			{
 				float poison_res = hitted->GetPoisonResistance();
 				if(poison_res > 0.f)
@@ -271,9 +272,9 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
-					e.power = poison_attack / 5 * poison_res;
+					e.power = poisonAttack / 5 * poison_res;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}
@@ -285,7 +286,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			if(owner && owner->IsFriend(*hitted, true))
 			{
 				// frendly fire
-				area.SpellHitEffect(*this, hitpoint, hitted);
+				locPart.SpellHitEffect(*this, hitpoint, hitted);
 
 				// hit sound
 				MATERIAL_TYPE material;
@@ -298,11 +299,11 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			}
 
 			if(hitted->IsAI() && owner && owner->IsAlive())
-				hitted->ai->HitReaction(start_pos);
+				hitted->ai->HitReaction(startPos);
 
 			float dmg = attack;
 			if(owner)
-				dmg += owner->level * ability->dmg_bonus;
+				dmg += owner->level * ability->dmgBonus;
 			float angle_dif = AngleDiff(rot.y, hitted->rot);
 			float base_dmg = dmg;
 
@@ -322,7 +323,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 				if(dmg < 0)
 				{
 					// blocked by shield
-					area.SpellHitEffect(*this, hitpoint, hitted);
+					locPart.SpellHitEffect(*this, hitpoint, hitted);
 					return;
 				}
 			}
@@ -338,7 +339,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
-					e.source_id = -1;
+					e.sourceId = -1;
 					e.value = -1;
 					e.power = dmg / 5 * poison_res;
 					e.time = 5.f;
@@ -347,7 +348,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 			}
 
 			// apply spell effect
-			area.SpellHitEffect(*this, hitpoint, hitted);
+			locPart.SpellHitEffect(*this, hitpoint, hitted);
 		}
 	}
 	else
@@ -355,37 +356,37 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		// hit object
 		if(!ability)
 		{
-			sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+			soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = game_res->tSpark;
-			pe->emission_interval = 0.01f;
+			pe->tex = gameRes->tSpark;
+			pe->emissionInterval = 0.01f;
 			pe->life = 5.f;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawn_min = 10;
-			pe->spawn_max = 15;
-			pe->max_particles = 15;
+			pe->spawnMin = 10;
+			pe->spawnMax = 15;
+			pe->maxParticles = 15;
 			pe->pos = hitpoint;
-			pe->speed_min = Vec3(-1, 0, -1);
-			pe->speed_max = Vec3(1, 1, 1);
-			pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-			pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+			pe->speedMin = Vec3(-1, 0, -1);
+			pe->speedMax = Vec3(1, 1, 1);
+			pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+			pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 			pe->size = 0.3f;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 0;
 			pe->Init();
-			area.tmp->pes.push_back(pe);
+			locPart.lvlPart->pes.push_back(pe);
 
 			if(owner && owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
 			{
 				Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 				if(obj && obj->base && obj->base->id == "bow_target")
 				{
-					if(quest_mgr->quest_tutorial->in_tutorial)
-						quest_mgr->quest_tutorial->HandleBulletCollision();
+					if(questMgr->questTutorial->inTutorial)
+						questMgr->questTutorial->HandleBulletCollision();
 					owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
 				}
 			}
@@ -393,7 +394,7 @@ void Bullet::OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCa
 		else if(Net::IsLocal())
 		{
 			// hit object with spell
-			area.SpellHitEffect(*this, hitpoint, nullptr);
+			locPart.SpellHitEffect(*this, hitpoint, nullptr);
 		}
 	}
 }
@@ -411,9 +412,9 @@ void Bullet::Save(GameWriter& f) const
 	f << speed;
 	f << timer;
 	f << attack;
-	f << tex_size;
+	f << texSize;
 	f << yspeed;
-	f << poison_attack;
+	f << poisonAttack;
 	f << (owner ? owner->id : -1);
 	f << (ability ? ability->hash : 0);
 	if(tex)
@@ -424,7 +425,7 @@ void Bullet::Save(GameWriter& f) const
 	f << (pe ? pe->id : -1);
 	f << backstab;
 	f << level;
-	f << start_pos;
+	f << startPos;
 	f << isArrow;
 }
 
@@ -438,15 +439,15 @@ void Bullet::Load(GameReader& f)
 	f >> rot;
 	const string& mesh_id = f.ReadString1();
 	if(!mesh_id.empty())
-		mesh = res_mgr->Load<Mesh>(mesh_id);
+		mesh = resMgr->Load<Mesh>(mesh_id);
 	else
 		mesh = nullptr;
 	f >> speed;
 	f >> timer;
 	f >> attack;
-	f >> tex_size;
+	f >> texSize;
 	f >> yspeed;
-	f >> poison_attack;
+	f >> poisonAttack;
 	owner = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION >= V_0_13)
 	{
@@ -474,7 +475,7 @@ void Bullet::Load(GameReader& f)
 	}
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
-		tex = res_mgr->Load<Texture>(tex_name);
+		tex = resMgr->Load<Texture>(tex_name);
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
@@ -496,7 +497,7 @@ void Bullet::Load(GameReader& f)
 		f >> backstabValue;
 		backstab = 0.25f * (backstabValue + 1);
 	}
-	f >> start_pos;
+	f >> startPos;
 	if(LOAD_VERSION >= V_0_18)
 		f >> isArrow;
 	else
@@ -518,7 +519,7 @@ void Bullet::Write(BitStreamWriter& f) const
 }
 
 //=================================================================================================
-bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
+bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 {
 	f >> id;
 	f >> pos;
@@ -546,10 +547,10 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 
 	if(isArrow)
 	{
-		mesh = (ability && ability->mesh ? ability->mesh : game_res->aArrow);
+		mesh = (ability && ability->mesh ? ability->mesh : gameRes->aArrow);
 		pe = nullptr;
 		tex = nullptr;
-		tex_size = 0.f;
+		texSize = 0.f;
 
 		TrailParticleEmitter* tpe = new TrailParticleEmitter;
 		tpe->fade = 0.3f;
@@ -565,7 +566,7 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 			tpe->color2 = Vec4(1, 1, 1, 0);
 		}
 		tpe->Init(50);
-		tmp_area.tpes.push_back(tpe);
+		lvlPart.tpes.push_back(tpe);
 		trail = tpe;
 	}
 	else
@@ -579,39 +580,39 @@ bool Bullet::Read(BitStreamReader& f, TmpLevelArea& tmp_area)
 
 		mesh = ability->mesh;
 		tex = ability->tex;
-		tex_size = ability->size;
+		texSize = ability->size;
 		trail = nullptr;
 		pe = nullptr;
 
-		if(ability->tex_particle)
+		if(ability->texParticle)
 		{
 			pe = new ParticleEmitter;
-			pe->tex = ability->tex_particle;
-			pe->emission_interval = 0.1f;
+			pe->tex = ability->texParticle;
+			pe->emissionInterval = 0.1f;
 			pe->life = -1;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = -1;
-			pe->spawn_min = 3;
-			pe->spawn_max = 4;
-			pe->max_particles = 50;
+			pe->spawnMin = 3;
+			pe->spawnMax = 4;
+			pe->maxParticles = 50;
 			pe->pos = pos;
-			pe->speed_min = Vec3(-1, -1, -1);
-			pe->speed_max = Vec3(1, 1, 1);
-			pe->pos_min = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->pos_max = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->size_particle;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->speedMin = Vec3(-1, -1, -1);
+			pe->speedMax = Vec3(1, 1, 1);
+			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+			pe->posMax = Vec3(ability->size, ability->size, ability->size);
+			pe->size = ability->sizeParticle;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 1.f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
-			tmp_area.pes.push_back(pe);
+			lvlPart.pes.push_back(pe);
 		}
 	}
 
 	if(unitId != -1)
 	{
-		owner = game_level->FindUnit(unitId);
+		owner = gameLevel->FindUnit(unitId);
 		if(!owner)
 		{
 			Error("Missing bullet owner %d.", unitId);

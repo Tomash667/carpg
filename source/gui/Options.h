@@ -30,7 +30,7 @@ public:
 
 	explicit Options(const DialogInfo& info);
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
@@ -45,9 +45,9 @@ private:
 
 	CheckBox check[5];
 	ListBox res, multisampling, language, soundDevice;
-	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
+	cstring txTitle, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
 		txGrassRange, txSoundDevice, txDefaultDevice;
-	string language_id;
+	string languageId;
 	Scrollbar scroll[4];
-	int sound_volume, music_volume, mouse_sensitivity, grass_range;
+	int soundVolume, musicVolume, mouseSensitivity, grassRange;
 };

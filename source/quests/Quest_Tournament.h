@@ -37,19 +37,19 @@ public:
 
 private:
 	UnitData& GetRandomHeroData();
-	void StartTournament(Unit* arena_master);
+	void StartTournament(Unit* arenaMaster);
 	bool ShouldJoin(Unit& u);
 	void VerifyUnit(Unit* unit);
 	void StartRound();
 	void Talk(cstring text);
 
 	State state;
-	int year, city_year, city, state2, state3, round;
+	int year, cityYear, city, state2, state3, round;
 	vector<SmartPtr<Unit>> units;
 	float timer;
 	InsideBuilding* arena;
 	Unit* master;
-	SmartPtr<Unit> skipped_unit, other_fighter, winner;
+	SmartPtr<Unit> skippedCount, otherFighter, winner;
 	vector<pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;
 	bool generated;
 	cstring txTour[24], txAiJoinTour[4];

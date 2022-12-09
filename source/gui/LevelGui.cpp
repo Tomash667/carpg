@@ -70,7 +70,7 @@ enum Bar
 static ObjectPool<SpeechBubble> SpeechBubblePool;
 
 //=================================================================================================
-LevelGui::LevelGui() : debug_info_size(0, 0), use_cursor(false), boss(nullptr)
+LevelGui::LevelGui() : debugInfoSize(0, 0), useCursor(false), boss(nullptr)
 {
 	scrollbar.parent = this;
 	visible = false;
@@ -81,7 +81,7 @@ LevelGui::LevelGui() : debug_info_size(0, 0), use_cursor(false), boss(nullptr)
 //=================================================================================================
 LevelGui::~LevelGui()
 {
-	SpeechBubblePool.Free(speech_bbs);
+	SpeechBubblePool.Free(speechBubbles);
 }
 
 //=================================================================================================
@@ -113,51 +113,51 @@ void LevelGui::LoadLanguage()
 //=================================================================================================
 void LevelGui::LoadData()
 {
-	tCrosshair = res_mgr->Load<Texture>("crosshair.png");
-	tCrosshair2 = res_mgr->Load<Texture>("crosshair2.png");
-	tBubble = res_mgr->Load<Texture>("bubble.png");
-	tDamageLayer = res_mgr->Load<Texture>("damage_layer.png");
-	tBar = res_mgr->Load<Texture>("bar.png");
-	tHpBar = res_mgr->Load<Texture>("hp_bar.png");
-	tPoisonedHpBar = res_mgr->Load<Texture>("poisoned_hp_bar.png");
-	tStaminaBar = res_mgr->Load<Texture>("stamina_bar.png");
-	tManaBar = res_mgr->Load<Texture>("mana_bar.png");
-	tShortcut = res_mgr->Load<Texture>("shortcut.png");
-	tShortcutHover = res_mgr->Load<Texture>("shortcut_hover.png");
-	tShortcutDown = res_mgr->Load<Texture>("shortcut_down.png");
-	tSideButton[(int)SideButtonId::Menu] = res_mgr->Load<Texture>("bt_menu.png");
-	tSideButton[(int)SideButtonId::Team] = res_mgr->Load<Texture>("bt_team.png");
-	tSideButton[(int)SideButtonId::Minimap] = res_mgr->Load<Texture>("bt_minimap.png");
-	tSideButton[(int)SideButtonId::Journal] = res_mgr->Load<Texture>("bt_journal.png");
-	tSideButton[(int)SideButtonId::Inventory] = res_mgr->Load<Texture>("bt_inventory.png");
-	tSideButton[(int)SideButtonId::Ability] = res_mgr->Load<Texture>("bt_action.png");
-	tSideButton[(int)SideButtonId::Stats] = res_mgr->Load<Texture>("bt_stats.png");
-	tSideButton[(int)SideButtonId::Talk] = res_mgr->Load<Texture>("bt_talk.png");
-	tMinihp = res_mgr->Load<Texture>("minihp.png");
-	tMinistamina = res_mgr->Load<Texture>("ministamina.png");
-	tMinimp = res_mgr->Load<Texture>("minimp.png");
-	tActionCooldown = res_mgr->Load<Texture>("action_cooldown.png");
-	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
-	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
-	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
-	tEmerytura = res_mgr->Load<Texture>("emerytura.jpg");
-	tEquipped = res_mgr->Load<Texture>("equipped.png");
-	tDialog = res_mgr->Load<Texture>("dialog.png");
-	tShortcutAction = res_mgr->Load<Texture>("shortcut_action.png");
-	tRip = res_mgr->Load<Texture>("rip.jpg");
-	tBlack = res_mgr->Load<Texture>("czern.bmp");
+	tCrosshair = resMgr->Load<Texture>("crosshair.png");
+	tCrosshair2 = resMgr->Load<Texture>("crosshair2.png");
+	tBubble = resMgr->Load<Texture>("bubble.png");
+	tDamageLayer = resMgr->Load<Texture>("damage_layer.png");
+	tBar = resMgr->Load<Texture>("bar.png");
+	tHpBar = resMgr->Load<Texture>("hp_bar.png");
+	tPoisonedHpBar = resMgr->Load<Texture>("poisoned_hp_bar.png");
+	tStaminaBar = resMgr->Load<Texture>("stamina_bar.png");
+	tManaBar = resMgr->Load<Texture>("mana_bar.png");
+	tShortcut = resMgr->Load<Texture>("shortcut.png");
+	tShortcutHover = resMgr->Load<Texture>("shortcut_hover.png");
+	tShortcutDown = resMgr->Load<Texture>("shortcut_down.png");
+	tSideButton[(int)SideButtonId::Menu] = resMgr->Load<Texture>("bt_menu.png");
+	tSideButton[(int)SideButtonId::Team] = resMgr->Load<Texture>("bt_team.png");
+	tSideButton[(int)SideButtonId::Minimap] = resMgr->Load<Texture>("bt_minimap.png");
+	tSideButton[(int)SideButtonId::Journal] = resMgr->Load<Texture>("bt_journal.png");
+	tSideButton[(int)SideButtonId::Inventory] = resMgr->Load<Texture>("bt_inventory.png");
+	tSideButton[(int)SideButtonId::Ability] = resMgr->Load<Texture>("bt_action.png");
+	tSideButton[(int)SideButtonId::Stats] = resMgr->Load<Texture>("bt_stats.png");
+	tSideButton[(int)SideButtonId::Talk] = resMgr->Load<Texture>("bt_talk.png");
+	tMinihp = resMgr->Load<Texture>("minihp.png");
+	tMinistamina = resMgr->Load<Texture>("ministamina.png");
+	tMinimp = resMgr->Load<Texture>("minimp.png");
+	tActionCooldown = resMgr->Load<Texture>("action_cooldown.png");
+	tMelee = resMgr->Load<Texture>("sword-brandish.png");
+	tRanged = resMgr->Load<Texture>("bow-arrow.png");
+	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
+	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
+	tEmerytura = resMgr->Load<Texture>("emerytura.jpg");
+	tEquipped = resMgr->Load<Texture>("equipped.png");
+	tDialog = resMgr->Load<Texture>("dialog.png");
+	tShortcutAction = resMgr->Load<Texture>("shortcut_action.png");
+	tRip = resMgr->Load<Texture>("rip.jpg");
+	tBlack = resMgr->Load<Texture>("czern.bmp");
 
 	BuffInfo::LoadImages();
 }
 
 //=================================================================================================
-void LevelGui::Draw(ControlDrawData*)
+void LevelGui::Draw()
 {
 	if(game->cutscene)
 	{
-		int fallback_alpha = DrawFallback();
-		DrawCutscene(fallback_alpha);
+		int fallbackAlpha = DrawFallback();
+		DrawCutscene(fallbackAlpha);
 	}
 	else
 	{
@@ -167,26 +167,26 @@ void LevelGui::Draw(ControlDrawData*)
 
 		DrawBack();
 
-		game_gui->messages->Draw();
+		gameGui->messages->Draw();
 	}
 }
 
 //=================================================================================================
 int LevelGui::DrawFallback()
 {
-	if(game->fallback_type == FALLBACK::NO)
+	if(game->fallbackType == FALLBACK::NO)
 		return 0;
 
 	int alpha;
-	if(game->fallback_t < 0.f)
+	if(game->fallbackTimer < 0.f)
 	{
-		if(game->fallback_type == FALLBACK::NONE)
+		if(game->fallbackType == FALLBACK::NONE)
 			alpha = 255;
 		else
-			alpha = int((1.f + game->fallback_t) * 255);
+			alpha = int((1.f + game->fallbackTimer) * 255);
 	}
 	else
-		alpha = int((1.f - game->fallback_t) * 255);
+		alpha = int((1.f - game->fallbackTimer) * 255);
 
 	gui->DrawSpriteFull(tBlack, Color::Alpha(alpha));
 
@@ -204,7 +204,7 @@ void LevelGui::DrawFront()
 	}
 
 	// end of game screen
-	if(game->end_of_game)
+	if(game->endOfGame)
 	{
 		DrawEndOfGameScreen();
 		return;
@@ -216,8 +216,8 @@ void LevelGui::DrawFront()
 	if(pc.ShouldUseRaytest())
 	{
 		const Vec2 center(16, 16);
-		const Vec2 scale((1.f - pc.data.range_ratio) + 0.5f);
-		const Vec2 pos(0.5f * gui->wnd_size.x - 16.f, 0.5f * gui->wnd_size.y - 16.f);
+		const Vec2 scale((1.f - pc.data.rangeRatio) + 0.5f);
+		const Vec2 pos(0.5f * gui->wndSize.x - 16.f, 0.5f * gui->wndSize.y - 16.f);
 		const Matrix mat = Matrix::Transform2D(&center, 0, &scale, nullptr, 0, &pos);
 		gui->DrawSprite2(pc.IsAbilityPrepared() ? tCrosshair2 : tCrosshair, mat);
 	}
@@ -227,16 +227,16 @@ void LevelGui::DrawFront()
 		gui->DrawSpriteFull(tDamageLayer, Color::Alpha((int)Clamp<float>(pc.dmgc / pc.unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
-	if(debug_info && !game->devmode)
-		debug_info = false;
-	if(debug_info)
+	if(debugInfo && !game->devmode)
+		debugInfo = false;
+	if(debugInfo)
 	{
 		sorted_units.clear();
-		for(Unit* unit : pc.unit->area->units)
+		for(Unit* unit : pc.unit->locPart->units)
 		{
 			if(!unit->IsAlive())
 				continue;
-			float dist = Vec3::DistanceSquared(game_level->camera.from, unit->pos);
+			float dist = Vec3::DistanceSquared(gameLevel->camera.from, unit->pos);
 			sorted_units.push_back({ unit, dist, 255, nullptr });
 		}
 
@@ -245,7 +245,7 @@ void LevelGui::DrawFront()
 		for(auto& it : sorted_units)
 		{
 			Unit& u = *it.unit;
-			Vec3 text_pos = u.visual_pos;
+			Vec3 text_pos = u.visualPos;
 			text_pos.y += u.GetUnitHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
@@ -258,8 +258,8 @@ void LevelGui::DrawFront()
 					AIController& ai = *u.ai;
 					UnitOrder order = u.GetOrder();
 					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level, u.usable ? 1 : 0,
-						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.st.idle.action]) : "",
-						ai.timer, ai.loc_timer, order_str[order]);
+						u.animation, u.action, strAiState[ai.state], ai.state == AIController::Idle ? Format("(%s)", strAiIdle[ai.st.idle.action]) : "",
+						ai.timer, ai.locTimer, order_str[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
 						str += Format(" %.2f", u.order->timer);
 					switch(order)
@@ -276,12 +276,12 @@ void LevelGui::DrawFront()
 							str += Format(" %s(%d)", unit->data->id.c_str(), unit->id);
 						break;
 					case ORDER_AUTO_TALK:
-						str += u.order->auto_talk == AutoTalkMode::Leader ? " leader" : " normal";
-						if(u.order->auto_talk_dialog)
+						str += u.order->autoTalk == AutoTalkMode::Leader ? " leader" : " normal";
+						if(u.order->autoTalkDialog)
 						{
-							str += Format(",%s", u.order->auto_talk_dialog->id.c_str());
-							if(u.order->auto_talk_quest)
-								str += Format(",%d", u.order->auto_talk_quest->id);
+							str += Format(",%s", u.order->autoTalkDialog->id.c_str());
+							if(u.order->autoTalkQuest)
+								str += Format(",%d", u.order->autoTalkQuest->id);
 						}
 						break;
 					}
@@ -299,7 +299,7 @@ void LevelGui::DrawFront()
 	{
 		// near enemies/allies
 		sorted_units.clear();
-		for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+		for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 		{
 			int alpha;
 
@@ -326,8 +326,8 @@ void LevelGui::DrawFront()
 
 			if(alpha)
 			{
-				float dist = Vec3::DistanceSquared(game_level->camera.from, it->unit->pos);
-				sorted_units.push_back({ it->unit, dist, alpha, &it->last_pos });
+				float dist = Vec3::DistanceSquared(gameLevel->camera.from, it->unit->pos);
+				sorted_units.push_back({ it->unit, dist, alpha, &it->lastPos });
 			}
 		}
 
@@ -336,19 +336,19 @@ void LevelGui::DrawFront()
 		for(auto& it : sorted_units)
 		{
 			if(it.unit != boss)
-				DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
+				DrawUnitInfo(it.unit->GetName(), *it.unit, *it.lastPos, it.alpha);
 		}
 	}
 
 	// text above selected object/units
-	switch(game->pc->data.before_player)
+	switch(game->pc->data.beforePlayer)
 	{
 	case BP_UNIT:
-		if(!debug_info)
+		if(!debugInfo)
 		{
-			Unit* u = game->pc->data.before_player_ptr.unit;
+			Unit* u = game->pc->data.beforePlayerPtr.unit;
 			bool dont_draw = false;
-			for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+			for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 			{
 				if(it->unit == u)
 				{
@@ -363,26 +363,26 @@ void LevelGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			Vec3 text_pos = game->pc->data.before_player_ptr.chest->pos;
+			Vec3 text_pos = game->pc->data.beforePlayerPtr.chest->pos;
 			text_pos.y += 0.75f;
 			DrawObjectInfo(txChest, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			Vec3 text_pos = game->pc->data.before_player_ptr.door->pos;
+			Vec3 text_pos = game->pc->data.beforePlayerPtr.door->pos;
 			text_pos.y += 1.75f;
-			DrawObjectInfo(game->pc->data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
+			DrawObjectInfo(game->pc->data.beforePlayerPtr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
 		}
 		break;
 	case BP_ITEM:
 		{
-			GroundItem& item = *game->pc->data.before_player_ptr.item;
+			GroundItem& item = *game->pc->data.beforePlayerPtr.item;
 			Mesh* mesh;
 			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
 			else
-				mesh = game_res->aBag;
+				mesh = gameRes->aBag;
 			Vec3 text_pos = item.pos;
 			text_pos.y += mesh->head.bbox.v2.y;
 			cstring text;
@@ -395,7 +395,7 @@ void LevelGui::DrawFront()
 		break;
 	case BP_USABLE:
 		{
-			Usable& u = *game->pc->data.before_player_ptr.usable;
+			Usable& u = *game->pc->data.beforePlayerPtr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			DrawObjectInfo(u.base->name.c_str(), text_pos);
@@ -407,20 +407,21 @@ void LevelGui::DrawFront()
 	DrawSpeechBubbles();
 
 	// dialog box
-	if(game->dialog_context.dialog_mode)
+	if(game->dialogContext.dialogMode)
 	{
-		Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-		Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32);
+		const int border = 4;
+		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		gui->DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
-		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
-		if(Any(game->dialog_context.mode, DialogContext::WAIT_CHOICES, DialogContext::WAIT_MP_RESPONSE))
+		Rect r = Rect::Create(offset, dsize, border);
+		if(Any(game->dialogContext.mode, DialogContext::WAIT_CHOICES, DialogContext::WAIT_MP_RESPONSE))
 		{
 			int off = int(scrollbar.offset);
 
 			// selection
-			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialog_context.choice_selected * GameGui::font->height - off + 6),
-				Int2(dsize.x - 16, GameGui::font->height));
+			Rect r_img = Rect::Create(Int2(offset.x + border, offset.y + border + game->dialogContext.choiceSelected * GameGui::font->height - off),
+				Int2(dsize.x - border * 2, GameGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
 				if(r_img.Top() < r.Top())
@@ -432,30 +433,29 @@ void LevelGui::DrawFront()
 
 			// text
 			LocalString s;
-			for(uint i = 0; i < game->dialog_context.choices.size(); ++i)
+			for(uint i = 0; i < game->dialogContext.choices.size(); ++i)
 			{
-				s += game->dialog_context.choices[i].msg;
+				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = r;
-			r2 -= Int2(0, off);
+			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
-		else if(game->dialog_context.dialog_text)
-			gui->DrawText(GameGui::font, game->dialog_context.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		else if(game->dialogContext.dialogText)
+			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 
 	// health bar
-	const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+	const Vec2 wndScale(float(gui->wndSize.x) / 800);
 	const bool mp_bar = game->pc->unit->IsUsingMp();
 	Rect part = { 0, 0, 0, 16 };
 	int bar_offset = (mp_bar ? 3 : 2);
 	{
 		const float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(hpp * 256);
 		if(part.Right() > 0)
@@ -467,7 +467,7 @@ void LevelGui::DrawFront()
 	// stamina bar
 	{
 		const float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(stamina_p * 256);
 		if(part.Right() > 0)
@@ -480,7 +480,7 @@ void LevelGui::DrawFront()
 	if(mp_bar)
 	{
 		const float mpp = pc.unit->GetMpp();
-		const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(mpp * 256);
 		if(part.Right() > 0)
@@ -489,18 +489,18 @@ void LevelGui::DrawFront()
 	}
 
 	// buffs
-	for(BuffImage& img : buff_images)
+	for(BuffImage& img : buffImages)
 	{
-		const Vec2 scale(buff_scale);
+		const Vec2 scale(buffScale);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &img.pos);
 		gui->DrawSprite2(img.tex, mat, nullptr, nullptr, Color::White);
 	}
 
 	// shortcuts
-	const int img_size = 76 * gui->wnd_size.x / 1920;
+	const int img_size = 76 * gui->wndSize.x / 1920;
 	const int offset = img_size + 2;
 	const Vec2 scale(float(img_size) / 64);
-	Int2 spos(256.f * wndScale.x, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wndScale.x, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		const Shortcut& shortcut = pc.shortcuts[i];
@@ -569,8 +569,8 @@ void LevelGui::DrawFront()
 		mat = Matrix::Transform2D(nullptr, 0.f, &scale2, nullptr, 0.f, &pos);
 		if(icon)
 		{
-			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
-				drag_and_drop_icon = icon;
+			if(dragAndDrop == 2 && dragAndDropType == -1 && dragAndDropIndex == i)
+				dragAndDropIcon = icon;
 
 			if(enabled)
 			{
@@ -578,7 +578,7 @@ void LevelGui::DrawFront()
 					gui->DrawSprite2(tEquipped, mat);
 				gui->DrawSprite2(icon, mat);
 				if(count > 0)
-					gui->DrawText(GameGui::font_small, Format("%d", count), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+					gui->DrawText(GameGui::fontSmall, Format("%d", count), DTF_RIGHT | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 			}
 			else
 			{
@@ -606,22 +606,22 @@ void LevelGui::DrawFront()
 			else
 				charge = 0.f;
 
-			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
-				drag_and_drop_icon = ability->tex_icon;
+			if(dragAndDrop == 2 && dragAndDropType == -1 && dragAndDropIndex == i)
+				dragAndDropIcon = ability->texIcon;
 
 			if(pc.CanUseAbilityPreview(ability))
 			{
 				if(charge == 0.f)
-					gui->DrawSprite2(ability->tex_icon, mat);
+					gui->DrawSprite2(ability->texIcon, mat);
 				else
 				{
 					gui->UseGrayscale(true);
-					gui->DrawSprite2(ability->tex_icon, mat);
+					gui->DrawSprite2(ability->texIcon, mat);
 					gui->UseGrayscale(false);
 					if(charge < 1.f)
 					{
 						Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-						gui->DrawSprite2(ability->tex_icon, mat, &part);
+						gui->DrawSprite2(ability->texIcon, mat, &part);
 					}
 					gui->DrawSprite2(tActionCooldown, mat);
 				}
@@ -629,16 +629,16 @@ void LevelGui::DrawFront()
 			else
 			{
 				gui->UseGrayscale(true);
-				gui->DrawSprite2(ability->tex_icon, mat);
+				gui->DrawSprite2(ability->texIcon, mat);
 				gui->UseGrayscale(false);
 			}
 
 			// charges
 			if(ab && ability->charges > 1)
-				gui->DrawText(GameGui::font_small, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+				gui->DrawText(GameGui::fontSmall, Format("%d/%d", ab->charges, ability->charges), DTF_RIGHT | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 			// readied ability
-			if(game->pc->data.ability_ready == ability)
+			if(game->pc->data.abilityReady == ability)
 			{
 				pos = Vec2(spos);
 				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
@@ -648,7 +648,7 @@ void LevelGui::DrawFront()
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
 		if(gk[0] != Key::None)
-			gui->DrawText(GameGui::font_small, game_gui->controls->GetKeyText(gk[0]), DTF_SINGLELINE, Color::White, r);
+			gui->DrawText(GameGui::fontSmall, gameGui->controls->GetKeyText(gk[0]), DTF_SINGLELINE | DTF_OUTLINE, Color::White, r);
 
 		spos.x += offset;
 	}
@@ -658,17 +658,17 @@ void LevelGui::DrawFront()
 	{
 		int max = (int)SideButtonId::Max;
 		int total = offset * max;
-		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		spos.y = gui->wndSize.y - (gui->wndSize.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
 			Texture* t;
-			if(sidebar_state[i] == 0)
+			if(sidebarState[i] == 0)
 				t = tShortcut;
-			else if(sidebar_state[i] == 1)
+			else if(sidebarState[i] == 1)
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			const Vec2 pos(float(gui->wnd_size.x) - sidebar * offset, float(spos.y - i * offset));
+			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			gui->DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
@@ -677,10 +677,10 @@ void LevelGui::DrawFront()
 
 	if(boss)
 	{
-		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wnd_size.x, 40));
+		gui->DrawText(GameGui::font, boss->GetName(), DTF_OUTLINE | DTF_CENTER, Color(1.f, 0.f, 0.f, bossAlpha), Rect(0, 5, gui->wndSize.x, 40));
 		const float hpp = Clamp(boss->GetHpp(), 0.f, 1.f);
 		const Rect part = { 0, 0, int(hpp * 256), 16 };
-		const Vec2 pos((float(gui->wnd_size.x) - wndScale.x * 256) / 2, 25);
+		const Vec2 pos((float(gui->wndSize.x) - wndScale.x * 256) / 2, 25);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		if(part.Right() > 0)
 			gui->DrawSprite2(tHpBar, mat, &part, nullptr, Color::Alpha(bossAlpha));
@@ -693,33 +693,33 @@ void LevelGui::DrawFront()
 //=================================================================================================
 void LevelGui::DrawBack()
 {
-	if(drag_and_drop == 2 && drag_and_drop_icon)
+	if(dragAndDrop == 2 && dragAndDropIcon)
 	{
-		const int img_size = 76 * gui->wnd_size.x / 1920;
-		const Vec2 scale(float(img_size) / drag_and_drop_icon->GetSize().x);
-		const Vec2 pos(gui->cursor_pos + Int2(16, 16));
+		const int img_size = 76 * gui->wndSize.x / 1920;
+		const Vec2 scale(float(img_size) / dragAndDropIcon->GetSize().x);
+		const Vec2 pos(gui->cursorPos + Int2(16, 16));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
-		gui->DrawSprite2(drag_and_drop_icon, mat);
+		gui->DrawSprite2(dragAndDropIcon, mat);
 	}
 
 	// debug info
-	if(debug_info2)
+	if(debugInfo2)
 	{
 		cstring text;
 		if(game->devmode)
 		{
 			Unit& u = *game->pc->unit;
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(engine->GetFps()));
+				FLT100(u.rot), dirNameShort[AngleToDir(Clip(u.rot))], FLT10(engine->GetFps()));
 		}
 		else
 			text = Format("Fps: %g", FLT10(engine->GetFps()));
 		Int2 s = GameGui::font->CalculateSize(text);
-		if(Int2::Distance(s, debug_info_size) < 32)
-			debug_info_size = Int2::Max(s, debug_info_size);
+		if(Int2::Distance(s, debugInfoSize) < 32)
+			debugInfoSize = Int2::Max(s, debugInfoSize);
 		else
-			debug_info_size = s;
-		gui->DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), Color::Alpha(128));
+			debugInfoSize = s;
+		gui->DrawItem(tDialog, Int2(0, 0), debugInfoSize + Int2(24, 24), Color::Alpha(128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
 		gui->DrawText(GameGui::font, text, 0, Color::Black, r);
 	}
@@ -731,13 +731,13 @@ void LevelGui::DrawBack()
 //=================================================================================================
 void LevelGui::DrawDeathScreen()
 {
-	if(game->death_screen <= 0)
+	if(game->deathScreen <= 0)
 		return;
 
 	// black screen
 	int color;
-	if(game->death_screen == 1)
-		color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
+	if(game->deathScreen == 1)
+		color = (int(game->deathFade * 255) << 24) | 0x00FFFFFF;
 	else
 		color = Color::White;
 
@@ -745,10 +745,10 @@ void LevelGui::DrawDeathScreen()
 		gui->DrawSpriteFull(tBlack, color);
 
 	// image & text
-	if(game->death_screen > 1)
+	if(game->deathScreen > 1)
 	{
-		if(game->death_screen == 2)
-			color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
+		if(game->deathScreen == 2)
+			color = (int(game->deathFade * 255) << 24) | 0x00FFFFFF;
 		else
 			color = Color::White;
 
@@ -757,8 +757,8 @@ void LevelGui::DrawDeathScreen()
 			Int2 img_size = tRip->GetSize();
 			gui->DrawSprite(tRip, Center(img_size), color);
 
-			cstring text = Format(game->death_solo ? txDeathAlone : txDeath, game->pc->kills, game_stats->total_kills - game->pc->kills);
-			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+			cstring text = Format(game->deathSolo ? txDeathAlone : txDeath, game->pc->kills, gameStats->totalKills - game->pc->kills);
+			Rect rect = { 0, 0, gui->wndSize.x, gui->wndSize.y - 32 };
 			gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
@@ -769,8 +769,8 @@ void LevelGui::DrawEndOfGameScreen()
 {
 	// background
 	int color;
-	if(game->death_fade < 1.f)
-		color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
+	if(game->deathFade < 1.f)
+		color = (int(game->deathFade * 255) << 24) | 0x00FFFFFF;
 	else
 		color = Color::White;
 	gui->DrawSpriteFull(tBlack, color);
@@ -780,8 +780,8 @@ void LevelGui::DrawEndOfGameScreen()
 	gui->DrawSprite(tEmerytura, sprite_pos, color);
 
 	// text
-	cstring text = Format(txGameTimeout, game->pc->kills, game_stats->total_kills - game->pc->kills);
-	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y - 32 };
+	cstring text = Format(txGameTimeout, game->pc->kills, gameStats->totalKills - game->pc->kills);
+	Rect rect = { 0, 0, gui->wndSize.x, gui->wndSize.y - 32 };
 	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
@@ -789,19 +789,19 @@ void LevelGui::DrawEndOfGameScreen()
 void LevelGui::DrawSpeechBubbles()
 {
 	// get list to sort
-	LevelArea& area = *game->pc->unit->area;
-	sorted_speech_bbs.clear();
-	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
+	LocationPart& locPart = *game->pc->unit->locPart;
+	sortedSpeechBubbles.clear();
+	for(vector<SpeechBubble*>::iterator it = speechBubbles.begin(), end = speechBubbles.end(); it != end; ++it)
 	{
 		SpeechBubble& sb = **it;
 
 		Vec3 pos;
 		if(sb.unit)
-			pos = sb.last_pos = sb.unit->GetHeadPoint();
+			pos = sb.lastPos = sb.unit->GetHeadPoint();
 		else
-			pos = sb.last_pos;
+			pos = sb.lastPos;
 
-		if(Vec3::Distance(game->pc->unit->visual_pos, pos) > ALERT_RANGE || !game_level->CanSee(area, game->pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game->pc->unit->visualPos, pos) > ALERT_RANGE || !gameLevel->CanSee(locPart, game->pc->unit->pos, sb.lastPos))
 		{
 			sb.visible = false;
 			continue;
@@ -813,8 +813,8 @@ void LevelGui::DrawSpeechBubbles()
 			sb.visible = true;
 			if(sb.time > 0.25f)
 			{
-				float cam_dist = Vec3::Distance(game_level->camera.from, pos);
-				sorted_speech_bbs.push_back({ &sb, cam_dist, pt });
+				float cam_dist = Vec3::Distance(gameLevel->camera.from, pos);
+				sortedSpeechBubbles.push_back({ &sb, cam_dist, pt });
 			}
 		}
 		else
@@ -822,13 +822,13 @@ void LevelGui::DrawSpeechBubbles()
 	}
 
 	// sort
-	std::sort(sorted_speech_bbs.begin(), sorted_speech_bbs.end(), [](const SortedSpeechBubble& a, const SortedSpeechBubble& b)
+	std::sort(sortedSpeechBubbles.begin(), sortedSpeechBubbles.end(), [](const SortedSpeechBubble& a, const SortedSpeechBubble& b)
 	{
 		return a.dist > b.dist;
 	});
 
 	// draw
-	for(auto& it : sorted_speech_bbs)
+	for(auto& it : sortedSpeechBubbles)
 	{
 		auto& sb = *it.bubble;
 		int a1, a2;
@@ -845,16 +845,16 @@ void LevelGui::DrawSpeechBubbles()
 		}
 		if(it.pt.x < sb.size.x / 2)
 			it.pt.x = sb.size.x / 2;
-		else if(it.pt.x > gui->wnd_size.x - sb.size.x / 2)
-			it.pt.x = gui->wnd_size.x - sb.size.x / 2;
+		else if(it.pt.x > gui->wndSize.x - sb.size.x / 2)
+			it.pt.x = gui->wndSize.x - sb.size.x / 2;
 		if(it.pt.y < sb.size.y / 2)
 			it.pt.y = sb.size.y / 2;
-		else if(it.pt.y > gui->wnd_size.y - sb.size.y / 2)
-			it.pt.y = gui->wnd_size.y - sb.size.y / 2;
+		else if(it.pt.y > gui->wndSize.y - sb.size.y / 2)
+			it.pt.y = gui->wndSize.y - sb.size.y / 2;
 
 		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
 		gui->DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-		gui->DrawText(GameGui::font_small, sb.text, DTF_CENTER | DTF_VCENTER, a2, rect);
+		gui->DrawText(GameGui::fontSmall, sb.text, DTF_CENTER | DTF_VCENTER, a2, rect);
 	}
 }
 
@@ -948,13 +948,16 @@ void LevelGui::Update(float dt)
 	TooltipGroup group = TooltipGroup::Invalid;
 	int id = -1;
 
-	if(game->devmode)
+	if(input->Down(Key::Control))
 	{
-		if(input->PressedRelease(Key::F3))
-			debug_info = !debug_info;
+		if(game->devmode)
+		{
+			if(input->PressedRelease(Key::F2))
+				debugInfo = !debugInfo;
+		}
+		if(input->PressedRelease(Key::F1))
+			debugInfo2 = !debugInfo2;
 	}
-	if(input->PressedRelease(Key::F2))
-		debug_info2 = !debug_info2;
 
 	Container::Update(dt);
 
@@ -964,27 +967,27 @@ void LevelGui::Update(float dt)
 	UpdatePlayerView(dt);
 	UpdateSpeechBubbles(dt);
 
-	game_gui->messages->Update(dt);
+	gameGui->messages->Update(dt);
 
-	if(!gui->HaveDialog() && !game->dialog_context.dialog_mode && input->Down(Key::Alt))
-		use_cursor = true;
+	if(!gui->HaveDialog() && !game->dialogContext.dialogMode && input->Down(Key::Alt))
+		useCursor = true;
 	else
-		use_cursor = false;
+		useCursor = false;
 
 	const bool have_manabar = false;
-	float hp_scale = float(gui->wnd_size.x) / 800;
+	float hp_scale = float(gui->wndSize.x) / 800;
 	bool mp_bar = game->pc->unit->IsUsingMp();
 	int bar_offset = (mp_bar ? 3 : 2);
 
 	// buffs
 	int buffs = game->pc->unit->GetBuffs();
 
-	buff_scale = gui->wnd_size.x / 1024.f;
-	float off = buff_scale * 33;
-	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
-	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
+	buffScale = gui->wndSize.x / 1024.f;
+	float off = buffScale * 33;
+	float buf_posy = float(gui->wndSize.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
+	Int2 buff_size(int(buffScale * 32), int(buffScale * 32));
 
-	buff_images.clear();
+	buffImages.clear();
 
 	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
@@ -992,31 +995,31 @@ void LevelGui::Update(float dt)
 		if(IsSet(buffs, buff_bit))
 		{
 			auto& info = BuffInfo::info[i];
-			buff_images.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));
+			buffImages.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));
 			buf_posy -= off;
 		}
 	}
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
-	sidebar_state[(int)SideButtonId::Inventory] = (game_gui->inventory->inv_mine->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Journal] = (game_gui->journal->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Stats] = (game_gui->stats->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Team] = (game_gui->team->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Minimap] = (game_gui->minimap->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Ability] = (game_gui->ability->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Talk] = 0;
-	sidebar_state[(int)SideButtonId::Menu] = 0;
+	sidebarState[(int)SideButtonId::Inventory] = (gameGui->inventory->invMine->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Journal] = (gameGui->journal->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Stats] = (gameGui->stats->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Team] = (gameGui->team->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Minimap] = (gameGui->minimap->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Ability] = (gameGui->ability->visible ? 2 : 0);
+	sidebarState[(int)SideButtonId::Talk] = 0;
+	sidebarState[(int)SideButtonId::Menu] = 0;
 
-	bool anything = use_cursor;
-	if(game_gui->inventory->gp_trade->visible || game_gui->book->visible || game_gui->craft->visible)
+	bool anything = useCursor;
+	if(gameGui->inventory->gpTrade->visible || gameGui->book->visible || gameGui->craft->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
 	{
 		for(int i = 0; i < (int)SideButtonId::Max; ++i)
 		{
-			if(sidebar_state[i] == 2)
+			if(sidebarState[i] == 2)
 			{
 				anything = true;
 				if(i != (int)SideButtonId::Minimap)
@@ -1029,12 +1032,12 @@ void LevelGui::Update(float dt)
 	// check cursor over item to show tooltip
 	if(show_tooltips)
 	{
-		const Vec2 wndScale(float(gui->wnd_size.x) / 800);
+		const Vec2 wndScale(float(gui->wndSize.x) / 800);
 
 		// for buffs
-		for(BuffImage& img : buff_images)
+		for(BuffImage& img : buffImages)
 		{
-			if(PointInRect(gui->cursor_pos, Int2(img.pos), buff_size))
+			if(Rect::IsInside(gui->cursorPos, Int2(img.pos), buff_size))
 			{
 				group = TooltipGroup::Buff;
 				id = img.id;
@@ -1044,10 +1047,10 @@ void LevelGui::Update(float dt)
 
 		// for health bar
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_HP;
@@ -1057,10 +1060,10 @@ void LevelGui::Update(float dt)
 
 		// for stamina bar
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_STAMINA;
@@ -1071,10 +1074,10 @@ void LevelGui::Update(float dt)
 		// for mana bar
 		if(mp_bar)
 		{
-			const Vec2 pos(0.f, float(gui->wnd_size.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
-			if(r.IsInside(gui->cursor_pos))
+			if(r.IsInside(gui->cursorPos))
 			{
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_MANA;
@@ -1083,36 +1086,36 @@ void LevelGui::Update(float dt)
 
 		// shortcuts
 		int shortcut_index = GetShortcutIndex();
-		if(drag_and_drop == 1)
+		if(dragAndDrop == 1)
 		{
-			if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
-				drag_and_drop = 2;
+			if(Int2::Distance(gui->cursorPos, dragAndDropPos) > 3)
+				dragAndDrop = 2;
 			if(input->Released(Key::LeftButton))
 			{
-				drag_and_drop = 0;
-				game->pc->shortcuts[drag_and_drop_index].trigger = true;
+				dragAndDrop = 0;
+				game->pc->shortcuts[dragAndDropIndex].trigger = true;
 			}
 		}
-		else if(drag_and_drop == 2)
+		else if(dragAndDrop == 2)
 		{
 			if(input->Released(Key::LeftButton))
 			{
-				drag_and_drop = 0;
+				dragAndDrop = 0;
 				if(shortcut_index != -1)
 				{
-					if(drag_and_drop_type == -1)
+					if(dragAndDropType == -1)
 					{
 						// drag & drop between game gui shortcuts
-						if(shortcut_index != drag_and_drop_index)
+						if(shortcut_index != dragAndDropIndex)
 						{
-							game->pc->SetShortcut(shortcut_index, game->pc->shortcuts[drag_and_drop_index].type, game->pc->shortcuts[drag_and_drop_index].value);
-							game->pc->SetShortcut(drag_and_drop_index, Shortcut::TYPE_NONE);
+							game->pc->SetShortcut(shortcut_index, game->pc->shortcuts[dragAndDropIndex].type, game->pc->shortcuts[dragAndDropIndex].value);
+							game->pc->SetShortcut(dragAndDropIndex, Shortcut::TYPE_NONE);
 						}
 					}
 					else
 					{
 						// drag & drop from actions/inventory
-						game->pc->SetShortcut(shortcut_index, (Shortcut::Type)drag_and_drop_type, drag_and_drop_index);
+						game->pc->SetShortcut(shortcut_index, (Shortcut::Type)dragAndDropType, dragAndDropIndex);
 					}
 				}
 			}
@@ -1125,29 +1128,29 @@ void LevelGui::Update(float dt)
 			{
 				if(input->Pressed(Key::LeftButton))
 				{
-					drag_and_drop = 1;
-					drag_and_drop_pos = gui->cursor_pos;
-					drag_and_drop_type = -1;
-					drag_and_drop_index = shortcut_index;
-					drag_and_drop_icon = nullptr;
+					dragAndDrop = 1;
+					dragAndDropPos = gui->cursorPos;
+					dragAndDropType = -1;
+					dragAndDropIndex = shortcut_index;
+					dragAndDropIcon = nullptr;
 				}
 				else if(input->PressedRelease(Key::RightButton))
 				{
 					Shortcut& shortcut = game->pc->shortcuts[shortcut_index];
-					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.ability_ready)
-						PlayerController::data.ability_ready = nullptr;
+					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.abilityReady)
+						PlayerController::data.abilityReady = nullptr;
 					else
 					{
 						game->pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
 						group = TooltipGroup::Invalid;
 					}
-					drag_and_drop = 0;
+					dragAndDrop = 0;
 				}
 			}
 		}
 	}
 	else
-		drag_and_drop = 0;
+		dragAndDrop = 0;
 
 	if(anything)
 		sidebar += dt * 5;
@@ -1157,34 +1160,34 @@ void LevelGui::Update(float dt)
 
 	if(sidebar > 0.f && !gui->HaveDialog() && show_tooltips)
 	{
-		int img_size = 76 * gui->wnd_size.x / 1920;
+		int img_size = 76 * gui->wndSize.x / 1920;
 		int offset = img_size + 2;
 		int total = offset * max;
-		int sposy = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
+		int sposy = gui->wndSize.y - (gui->wndSize.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
-			if(PointInRect(gui->cursor_pos, Int2(int(float(gui->wnd_size.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
+			if(Rect::IsInside(gui->cursorPos, Int2(int(float(gui->wndSize.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
 			{
 				group = TooltipGroup::Sidebar;
 				id = i;
 
-				if(sidebar_state[i] == 0)
-					sidebar_state[i] = 1;
+				if(sidebarState[i] == 0)
+					sidebarState[i] = 1;
 				if(input->PressedRelease(Key::LeftButton))
 				{
 					switch((SideButtonId)i)
 					{
 					case SideButtonId::Menu:
-						game_gui->ShowMenu();
-						use_cursor = false;
+						gameGui->ShowMenu();
+						useCursor = false;
 						break;
 					case SideButtonId::Team:
 						ShowPanel(OpenPanel::Team);
 						break;
 					case SideButtonId::Minimap:
 						ShowPanel(OpenPanel::Minimap);
-						if(game_gui->minimap->visible)
-							use_cursor = true;
+						if(gameGui->minimap->visible)
+							useCursor = true;
 						break;
 					case SideButtonId::Journal:
 						ShowPanel(OpenPanel::Journal);
@@ -1199,7 +1202,7 @@ void LevelGui::Update(float dt)
 						ShowPanel(OpenPanel::Stats);
 						break;
 					case SideButtonId::Talk:
-						game_gui->mp_box->visible = !game_gui->mp_box->visible;
+						gameGui->mpBox->visible = !gameGui->mpBox->visible;
 						break;
 					}
 				}
@@ -1222,7 +1225,7 @@ void LevelGui::Update(float dt)
 			bossAlpha = Min(bossAlpha + 3.f * dt, 1.f);
 	}
 
-	if(drag_and_drop != 2)
+	if(dragAndDrop != 2)
 		tooltip.UpdateTooltip(dt, (int)group, id);
 	else
 		tooltip.anything = false;
@@ -1231,14 +1234,14 @@ void LevelGui::Update(float dt)
 //=================================================================================================
 int LevelGui::GetShortcutIndex()
 {
-	float wndScale = float(gui->wnd_size.x) / 800;
-	int img_size = 76 * gui->wnd_size.x / 1920;
+	float wndScale = float(gui->wndSize.x) / 800;
+	int img_size = 76 * gui->wndSize.x / 1920;
 	int offset = img_size + 2;
-	Int2 spos(256.f * wndScale, gui->wnd_size.y - offset);
+	Int2 spos(256.f * wndScale, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
 		Rect r = Rect::Create(spos, Int2(img_size, img_size));
-		if(r.IsInside(gui->cursor_pos))
+		if(r.IsInside(gui->cursorPos))
 			return i;
 		spos.x += offset;
 	}
@@ -1250,9 +1253,9 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 {
 	bool removes = false;
 
-	dt *= game->game_speed;
+	dt *= game->gameSpeed;
 
-	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
+	for(vector<SpeechBubble*>::iterator it = speechBubbles.begin(), end = speechBubbles.end(); it != end; ++it)
 	{
 		SpeechBubble& sb = **it;
 		sb.length -= dt;
@@ -1273,13 +1276,13 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 					sb.unit->talking = false;
 					sb.unit->bubble = nullptr;
 					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
-					if(!sb.unit->mesh_inst)
+					if(!sb.unit->meshInst)
 					{
-						game->ReportError(9, Format("Speech bubble for unit without mesh_inst (unit %s, text \"%.100s\").",
+						game->ReportError(9, Format("Speech bubble for unit without meshInst (unit %s, text \"%.100s\").",
 							sb.unit->GetRealName(), sb.text.c_str()));
 					}
 					else
-						sb.unit->mesh_inst->need_update = true;
+						sb.unit->meshInst->needUpdate = true;
 				}
 				SpeechBubblePool.Free(*it);
 				*it = nullptr;
@@ -1289,13 +1292,13 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 	}
 
 	if(removes)
-		RemoveNullElements(speech_bbs);
+		RemoveNullElements(speechBubbles);
 }
 
 //=================================================================================================
 bool LevelGui::NeedCursor() const
 {
-	if(game->dialog_context.dialog_mode || use_cursor)
+	if(game->dialogContext.dialogMode || useCursor)
 		return true;
 	return Container::NeedCursor();
 }
@@ -1305,12 +1308,12 @@ void LevelGui::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-		Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32);
+		Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+		Int2 offset((gui->wndSize.x - dsize.x) / 2, 32);
 		scrollbar.size = Int2(12, 104);
-		scrollbar.global_pos = scrollbar.pos = Int2(dsize.x + offset.x - 16, offset.y);
-		dialog_pos = offset;
-		dialog_size = dsize;
+		scrollbar.globalPos = scrollbar.pos = Int2(dsize.x + offset.x - 12, offset.y);
+		dialogPos = offset;
+		dialogSize = dsize;
 		tooltip.Clear();
 	}
 }
@@ -1324,11 +1327,11 @@ void LevelGui::AddSpeechBubble(Unit* unit, cstring text)
 	if(!unit->bubble)
 	{
 		unit->bubble = SpeechBubblePool.Get();
-		speech_bbs.push_back(unit->bubble);
+		speechBubbles.push_back(unit->bubble);
 	}
 
 	// calculate size
-	Int2 s = GameGui::font_small->CalculateSize(text);
+	Int2 s = GameGui::fontSmall->CalculateSize(text);
 	int total = s.x;
 	int lines = 1 + total / 400;
 
@@ -1339,10 +1342,10 @@ void LevelGui::AddSpeechBubble(Unit* unit, cstring text)
 	unit->bubble->time = 0.f;
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
-	unit->bubble->last_pos = unit->GetHeadPoint();
+	unit->bubble->lastPos = unit->GetHeadPoint();
 
 	unit->talking = true;
-	unit->talk_timer = 0.f;
+	unit->talkTimer = 0.f;
 }
 
 //=================================================================================================
@@ -1352,9 +1355,9 @@ void LevelGui::AddSpeechBubble(const Vec3& pos, cstring text)
 
 	// try to reuse previous bubble
 	SpeechBubble* sb = nullptr;
-	for(SpeechBubble* bubble : speech_bbs)
+	for(SpeechBubble* bubble : speechBubbles)
 	{
-		if(!bubble->unit && Vec3::DistanceSquared(pos, bubble->last_pos) < 0.1f)
+		if(!bubble->unit && Vec3::DistanceSquared(pos, bubble->lastPos) < 0.1f)
 		{
 			sb = bubble;
 			break;
@@ -1363,10 +1366,10 @@ void LevelGui::AddSpeechBubble(const Vec3& pos, cstring text)
 	if(!sb)
 	{
 		sb = SpeechBubblePool.Get();
-		speech_bbs.push_back(sb);
+		speechBubbles.push_back(sb);
 	}
 
-	Int2 size = GameGui::font_small->CalculateSize(text);
+	Int2 size = GameGui::fontSmall->CalculateSize(text);
 	int total = size.x;
 	int lines = 1 + total / 400;
 
@@ -1376,62 +1379,62 @@ void LevelGui::AddSpeechBubble(const Vec3& pos, cstring text)
 	sb->time = 0.f;
 	sb->length = 1.5f + float(strlen(text)) / 20;
 	sb->visible = true;
-	sb->last_pos = pos;
+	sb->lastPos = pos;
 }
 
 //=================================================================================================
 void LevelGui::Reset()
 {
-	debug_info = false;
-	debug_info2 = false;
-	SpeechBubblePool.Free(speech_bbs);
+	debugInfo = false;
+	debugInfo2 = false;
+	SpeechBubblePool.Free(speechBubbles);
 	Event(GuiEvent_Show);
-	use_cursor = false;
+	useCursor = false;
 	sidebar = 0.f;
-	unit_views.clear();
+	unitViews.clear();
 	boss = nullptr;
 }
 
 //=================================================================================================
 bool LevelGui::UpdateChoice()
 {
-	DialogContext& ctx = game->dialog_context;
-	const Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
-	const Int2 offset((gui->wnd_size.x - dsize.x) / 2, 32 + 6);
+	DialogContext& ctx = game->dialogContext;
+	const Int2 dsize(gui->wndSize.x - 256 - 8, 104);
+	const Int2 offset((gui->wndSize.x - dsize.x) / 2, 32 + 6);
 	const int choices = ctx.choices.size();
 
 	// element pod kursorem
 	int cursor_choice = -1;
-	if(gui->cursor_pos.x >= offset.x && gui->cursor_pos.x < offset.x + dsize.x - 16 && gui->cursor_pos.y >= offset.y && gui->cursor_pos.y < offset.y + dsize.y - 12)
+	if(gui->cursorPos.x >= offset.x && gui->cursorPos.x < offset.x + dsize.x - 16 && gui->cursorPos.y >= offset.y && gui->cursorPos.y < offset.y + dsize.y - 12)
 	{
-		int w = (gui->cursor_pos.y - offset.y + int(scrollbar.offset)) / GameGui::font->height;
+		int w = (gui->cursorPos.y - offset.y + int(scrollbar.offset)) / GameGui::font->height;
 		if(w < choices)
 			cursor_choice = w;
 	}
 
 	// zmiana zaznaczonego elementu myszk¹
-	if(gui->cursor_pos != dialog_cursor_pos)
+	if(gui->cursorPos != dialogCursorPos)
 	{
-		dialog_cursor_pos = gui->cursor_pos;
+		dialogCursorPos = gui->cursorPos;
 		if(cursor_choice != -1)
-			ctx.choice_selected = cursor_choice;
+			ctx.choiceSelected = cursor_choice;
 	}
 
 	// strza³ka w górê/dó³
 	bool moved = false;
-	if(ctx.choice_selected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
+	if(ctx.choiceSelected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
 	{
-		--ctx.choice_selected;
+		--ctx.choiceSelected;
 		moved = true;
 	}
-	if(ctx.choice_selected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
+	if(ctx.choiceSelected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
 	{
-		++ctx.choice_selected;
+		++ctx.choiceSelected;
 		moved = true;
 	}
 	if(moved && choices > 5)
 	{
-		scrollbar.offset = float(GameGui::font->height * (ctx.choice_selected - 2));
+		scrollbar.offset = float(GameGui::font->height * (ctx.choiceSelected - 2));
 		if(scrollbar.offset < 0.f)
 			scrollbar.offset = 0.f;
 		else if(scrollbar.offset + scrollbar.part > scrollbar.total)
@@ -1445,7 +1448,7 @@ bool LevelGui::UpdateChoice()
 		{
 			if(input->PressedRelease(Key::N1 + i))
 			{
-				ctx.choice_selected = i;
+				ctx.choiceSelected = i;
 				return true;
 			}
 		}
@@ -1453,7 +1456,7 @@ bool LevelGui::UpdateChoice()
 		{
 			if(input->PressedRelease(Key::N0))
 			{
-				ctx.choice_selected = 9;
+				ctx.choiceSelected = 9;
 				return true;
 			}
 		}
@@ -1462,25 +1465,25 @@ bool LevelGui::UpdateChoice()
 	// wybieranie enterem/esc/spacj¹
 	if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
 		return true;
-	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
+	else if(ctx.dialogEsc != -1 && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
 	{
-		ctx.choice_selected = ctx.dialog_esc;
+		ctx.choiceSelected = ctx.dialogEsc;
 		return true;
 	}
 
 	// wybieranie klikniêciem
 	if(GKey.AllowMouse() && cursor_choice != -1 && input->PressedRelease(Key::LeftButton))
 	{
-		if(ctx.is_local)
-			game->pc->data.wasted_key = Key::LeftButton;
-		ctx.choice_selected = cursor_choice;
+		if(ctx.isLocal)
+			game->pc->data.wastedKey = Key::LeftButton;
+		ctx.choiceSelected = cursor_choice;
 		return true;
 	}
 
 	// aktualizacja paska przewijania
-	scrollbar.mouse_focus = focus;
-	if(input->Focus() && PointInRect(gui->cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
-		dialog_cursor_pos = Int2(-1, -1);
+	scrollbar.mouseFocus = focus;
+	if(input->Focus() && Rect::IsInside(gui->cursorPos, dialogPos, dialogSize) && scrollbar.ApplyMouseWheel())
+		dialogCursorPos = Int2(-1, -1);
 	scrollbar.Update(0.f);
 
 	return false;
@@ -1489,7 +1492,7 @@ bool LevelGui::UpdateChoice()
 //=================================================================================================
 void LevelGui::UpdateScrollbar(int choices)
 {
-	scrollbar.part = 104 - 12;
+	scrollbar.part = 104 - 8; // border * 2
 	scrollbar.offset = 0.f;
 	scrollbar.total = choices * GameGui::font->height;
 	scrollbar.LostFocus();
@@ -1508,8 +1511,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 
 	tooltip.anything = true;
 	tooltip.img = nullptr;
-	tooltip.big_text.clear();
-	tooltip.small_text.clear();
+	tooltip.bigText.clear();
+	tooltip.smallText.clear();
 
 	switch(group)
 	{
@@ -1526,7 +1529,7 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			switch((SideButtonId)id)
 			{
 			case SideButtonId::Menu:
-				tooltip.text = Format("%s (%s)", txMenu, game_gui->controls->GetKeyText(Key::Escape));
+				tooltip.text = Format("%s (%s)", txMenu, gameGui->controls->GetKeyText(Key::Escape));
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
@@ -1578,8 +1581,8 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			case BAR_STAMINA:
 				{
 					int stamina = (int)u->stamina;
-					int stamina_max = (int)u->stamina_max;
-					tooltip.text = Format("%s: %d/%d", txStamina, stamina, stamina_max);
+					int staminaMax = (int)u->staminaMax;
+					tooltip.text = Format("%s: %d/%d", txStamina, stamina, staminaMax);
 				}
 				break;
 			}
@@ -1618,10 +1621,10 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			}
 			else if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
-				game_gui->ability->GetAbilityTooltip(tooltip, *shortcut.ability);
-				tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
-				tooltip.text = tooltip.big_text;
-				tooltip.big_text.clear();
+				gameGui->ability->GetAbilityTooltip(tooltip, *shortcut.ability);
+				tooltip.smallText = Format("%s\n%s", tooltip.text.c_str(), tooltip.smallText.c_str());
+				tooltip.text = tooltip.bigText;
+				tooltip.bigText.clear();
 				tooltip.img = nullptr;
 			}
 
@@ -1629,17 +1632,17 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 			if(shortcut.type == Shortcut::TYPE_ABILITY)
 			{
 				if(gk[0] != Key::None)
-					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->GetKeyText(gk[0]));
+					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), gameGui->controls->GetKeyText(gk[0]));
 			}
 			else
 			{
 				if(gk[0] != Key::None)
-					title = Format("%s (%s)", title, game_gui->controls->GetKeyText(gk[0]));
+					title = Format("%s (%s)", title, gameGui->controls->GetKeyText(gk[0]));
 				tooltip.text = title;
 				if(desc)
-					tooltip.small_text = desc;
+					tooltip.smallText = desc;
 				else
-					tooltip.small_text.clear();
+					tooltip.smallText.clear();
 			}
 		}
 		break;
@@ -1649,75 +1652,75 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 //=================================================================================================
 bool LevelGui::HavePanelOpen() const
 {
-	return game_gui->stats->visible
-		|| game_gui->inventory->inv_mine->visible
-		|| game_gui->inventory->gp_trade->visible
-		|| game_gui->team->visible
-		|| game_gui->journal->visible
-		|| game_gui->minimap->visible
-		|| game_gui->ability->visible
-		|| game_gui->craft->visible;
+	return gameGui->stats->visible
+		|| gameGui->inventory->invMine->visible
+		|| gameGui->inventory->gpTrade->visible
+		|| gameGui->team->visible
+		|| gameGui->journal->visible
+		|| gameGui->minimap->visible
+		|| gameGui->ability->visible
+		|| gameGui->craft->visible;
 }
 
 //=================================================================================================
-void LevelGui::ClosePanels(bool close_mp_box)
+void LevelGui::ClosePanels(bool closeMpBox)
 {
-	if(game_gui->stats->visible)
-		game_gui->stats->Hide();
-	if(game_gui->inventory->inv_mine->visible)
-		game_gui->inventory->inv_mine->Hide();
-	if(game_gui->team->visible)
-		game_gui->team->Hide();
-	if(game_gui->journal->visible)
-		game_gui->journal->Hide();
-	if(game_gui->minimap->visible)
-		game_gui->minimap->Hide();
-	if(game_gui->inventory->gp_trade->visible)
-		game_gui->inventory->gp_trade->Hide();
-	if(close_mp_box && game_gui->mp_box->visible)
-		game_gui->mp_box->visible = false;
-	if(game_gui->ability->visible)
-		game_gui->ability->Hide();
-	if(game_gui->book->visible)
-		game_gui->book->Hide();
-	if(game_gui->craft->visible)
-		game_gui->craft->Hide();
+	if(gameGui->stats->visible)
+		gameGui->stats->Hide();
+	if(gameGui->inventory->invMine->visible)
+		gameGui->inventory->invMine->Hide();
+	if(gameGui->team->visible)
+		gameGui->team->Hide();
+	if(gameGui->journal->visible)
+		gameGui->journal->Hide();
+	if(gameGui->minimap->visible)
+		gameGui->minimap->Hide();
+	if(gameGui->inventory->gpTrade->visible)
+		gameGui->inventory->gpTrade->Hide();
+	if(closeMpBox && gameGui->mpBox->visible)
+		gameGui->mpBox->visible = false;
+	if(gameGui->ability->visible)
+		gameGui->ability->Hide();
+	if(gameGui->book->visible)
+		gameGui->book->Hide();
+	if(gameGui->craft->visible)
+		gameGui->craft->Hide();
 }
 
 //=================================================================================================
 void LevelGui::GetGamePanels(vector<GamePanel*>& panels)
 {
-	panels.push_back(game_gui->inventory->inv_mine);
-	panels.push_back(game_gui->stats);
-	panels.push_back(game_gui->team);
-	panels.push_back(game_gui->journal);
-	panels.push_back(game_gui->minimap);
-	panels.push_back(game_gui->inventory->inv_trade_mine);
-	panels.push_back(game_gui->inventory->inv_trade_other);
-	panels.push_back(game_gui->mp_box);
-	panels.push_back(game_gui->ability);
+	panels.push_back(gameGui->inventory->invMine);
+	panels.push_back(gameGui->stats);
+	panels.push_back(gameGui->team);
+	panels.push_back(gameGui->journal);
+	panels.push_back(gameGui->minimap);
+	panels.push_back(gameGui->inventory->invTradeMine);
+	panels.push_back(gameGui->inventory->invTradeOther);
+	panels.push_back(gameGui->mpBox);
+	panels.push_back(gameGui->ability);
 }
 
 //=================================================================================================
 OpenPanel LevelGui::GetOpenPanel()
 {
-	if(game_gui->stats->visible)
+	if(gameGui->stats->visible)
 		return OpenPanel::Stats;
-	else if(game_gui->inventory->inv_mine->visible)
+	else if(gameGui->inventory->invMine->visible)
 		return OpenPanel::Inventory;
-	else if(game_gui->team->visible)
+	else if(gameGui->team->visible)
 		return OpenPanel::Team;
-	else if(game_gui->journal->visible)
+	else if(gameGui->journal->visible)
 		return OpenPanel::Journal;
-	else if(game_gui->minimap->visible)
+	else if(gameGui->minimap->visible)
 		return OpenPanel::Minimap;
-	else if(game_gui->inventory->gp_trade->visible)
+	else if(gameGui->inventory->gpTrade->visible)
 		return OpenPanel::Trade;
-	else if(game_gui->ability->visible)
+	else if(gameGui->ability->visible)
 		return OpenPanel::Ability;
-	else if(game_gui->book->visible)
+	else if(gameGui->book->visible)
 		return OpenPanel::Book;
-	else if(game_gui->craft->visible)
+	else if(gameGui->craft->visible)
 		return OpenPanel::Craft;
 	else
 		return OpenPanel::None;
@@ -1735,32 +1738,32 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::None:
 		break;
 	case OpenPanel::Stats:
-		game_gui->stats->Hide();
+		gameGui->stats->Hide();
 		break;
 	case OpenPanel::Inventory:
-		game_gui->inventory->inv_mine->Hide();
+		gameGui->inventory->invMine->Hide();
 		break;
 	case OpenPanel::Team:
-		game_gui->team->Hide();
+		gameGui->team->Hide();
 		break;
 	case OpenPanel::Journal:
-		game_gui->journal->Hide();
+		gameGui->journal->Hide();
 		break;
 	case OpenPanel::Minimap:
-		game_gui->minimap->Hide();
+		gameGui->minimap->Hide();
 		break;
 	case OpenPanel::Trade:
 		game->OnCloseInventory();
-		game_gui->inventory->gp_trade->Hide();
+		gameGui->inventory->gpTrade->Hide();
 		break;
 	case OpenPanel::Ability:
-		game_gui->ability->Hide();
+		gameGui->ability->Hide();
 		break;
 	case OpenPanel::Book:
-		game_gui->book->Hide();
+		gameGui->book->Hide();
 		break;
 	case OpenPanel::Craft:
-		game_gui->craft->Hide();
+		gameGui->craft->Hide();
 		break;
 	}
 
@@ -1770,55 +1773,55 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		switch(to_open)
 		{
 		case OpenPanel::Stats:
-			game_gui->stats->Show();
+			gameGui->stats->Show();
 			break;
 		case OpenPanel::Inventory:
-			game_gui->inventory->inv_mine->Show();
+			gameGui->inventory->invMine->Show();
 			break;
 		case OpenPanel::Team:
-			game_gui->team->Show();
+			gameGui->team->Show();
 			break;
 		case OpenPanel::Journal:
-			game_gui->journal->Show();
+			gameGui->journal->Show();
 			break;
 		case OpenPanel::Minimap:
-			game_gui->minimap->Show();
+			gameGui->minimap->Show();
 			break;
 		case OpenPanel::Ability:
-			game_gui->ability->Show();
+			gameGui->ability->Show();
 			break;
 		}
 	}
 	else
-		use_cursor = false;
+		useCursor = false;
 }
 
 //=================================================================================================
 void LevelGui::PositionPanels()
 {
-	float scale = float(gui->wnd_size.x) / 1024;
+	float scale = float(gui->wndSize.x) / 1024;
 	Int2 pos = Int2(int(scale * 48), int(scale * 32));
-	Int2 size = Int2(gui->wnd_size.x - pos.x * 2, gui->wnd_size.y - pos.x * 2);
+	Int2 size = Int2(gui->wndSize.x - pos.x * 2, gui->wndSize.y - pos.x * 2);
 
-	game_gui->stats->global_pos = game_gui->stats->pos = pos;
-	game_gui->stats->size = size;
-	game_gui->team->global_pos = game_gui->team->pos = pos;
-	game_gui->team->size = size;
-	game_gui->inventory->inv_mine->global_pos = game_gui->inventory->inv_mine->pos = pos;
-	game_gui->inventory->inv_mine->size = size;
-	game_gui->inventory->inv_trade_other->global_pos = game_gui->inventory->inv_trade_other->pos = pos;
-	game_gui->inventory->inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
-	game_gui->inventory->inv_trade_mine->global_pos = game_gui->inventory->inv_trade_mine->pos
-		= Int2(pos.x, game_gui->inventory->inv_trade_other->pos.y + game_gui->inventory->inv_trade_other->size.y + 16);
-	game_gui->inventory->inv_trade_mine->size = game_gui->inventory->inv_trade_other->size;
-	game_gui->minimap->size = Int2(size.y, size.y);
-	game_gui->minimap->global_pos = game_gui->minimap->pos = Int2((gui->wnd_size.x - game_gui->minimap->size.x) / 2, (gui->wnd_size.y - game_gui->minimap->size.y) / 2);
-	game_gui->journal->size = game_gui->minimap->size;
-	game_gui->journal->global_pos = game_gui->journal->pos = game_gui->minimap->pos;
-	game_gui->mp_box->size = Int2((gui->wnd_size.x - 32) / 2, (gui->wnd_size.y - 64) / 4);
-	game_gui->mp_box->global_pos = game_gui->mp_box->pos = Int2(gui->wnd_size.x - pos.x - game_gui->mp_box->size.x, gui->wnd_size.y - pos.x - game_gui->mp_box->size.y);
-	game_gui->ability->global_pos = game_gui->ability->pos = pos;
-	game_gui->ability->size = size;
+	gameGui->stats->globalPos = gameGui->stats->pos = pos;
+	gameGui->stats->size = size;
+	gameGui->team->globalPos = gameGui->team->pos = pos;
+	gameGui->team->size = size;
+	gameGui->inventory->invMine->globalPos = gameGui->inventory->invMine->pos = pos;
+	gameGui->inventory->invMine->size = size;
+	gameGui->inventory->invTradeOther->globalPos = gameGui->inventory->invTradeOther->pos = pos;
+	gameGui->inventory->invTradeOther->size = Int2(size.x, (size.y - 32) / 2);
+	gameGui->inventory->invTradeMine->globalPos = gameGui->inventory->invTradeMine->pos
+		= Int2(pos.x, gameGui->inventory->invTradeOther->pos.y + gameGui->inventory->invTradeOther->size.y + 16);
+	gameGui->inventory->invTradeMine->size = gameGui->inventory->invTradeOther->size;
+	gameGui->minimap->size = Int2(size.y, size.y);
+	gameGui->minimap->globalPos = gameGui->minimap->pos = Int2((gui->wndSize.x - gameGui->minimap->size.x) / 2, (gui->wndSize.y - gameGui->minimap->size.y) / 2);
+	gameGui->journal->size = gameGui->minimap->size;
+	gameGui->journal->globalPos = gameGui->journal->pos = gameGui->minimap->pos;
+	gameGui->mpBox->size = Int2((gui->wndSize.x - 32) / 2, (gui->wndSize.y - 64) / 4);
+	gameGui->mpBox->globalPos = gameGui->mpBox->pos = Int2(gui->wndSize.x - pos.x - gameGui->mpBox->size.x, gui->wndSize.y - pos.x - gameGui->mpBox->size.y);
+	gameGui->ability->globalPos = gameGui->ability->pos = pos;
+	gameGui->ability->size = size;
 
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);
@@ -1832,8 +1835,8 @@ void LevelGui::PositionPanels()
 //=================================================================================================
 void LevelGui::Save(GameWriter& f) const
 {
-	f << speech_bbs.size();
-	for(const SpeechBubble* p_sb : speech_bbs)
+	f << speechBubbles.size();
+	for(const SpeechBubble* p_sb : speechBubbles)
 	{
 		const SpeechBubble& sb = *p_sb;
 		f.WriteString2(sb.text);
@@ -1842,15 +1845,15 @@ void LevelGui::Save(GameWriter& f) const
 		f << sb.time;
 		f << sb.length;
 		f << sb.visible;
-		f << sb.last_pos;
+		f << sb.lastPos;
 	}
 }
 
 //=================================================================================================
 void LevelGui::Load(GameReader& f)
 {
-	speech_bbs.resize(f.Read<uint>());
-	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
+	speechBubbles.resize(f.Read<uint>());
+	for(vector<SpeechBubble*>::iterator it = speechBubbles.begin(), end = speechBubbles.end(); it != end; ++it)
 	{
 		*it = SpeechBubblePool.Get();
 		SpeechBubble& sb = **it;
@@ -1862,7 +1865,7 @@ void LevelGui::Load(GameReader& f)
 		f >> sb.time;
 		f >> sb.length;
 		f >> sb.visible;
-		f >> sb.last_pos;
+		f >> sb.lastPos;
 	}
 }
 
@@ -1878,18 +1881,18 @@ void LevelGui::SortUnits()
 //=================================================================================================
 void LevelGui::UpdatePlayerView(float dt)
 {
-	LevelArea& area = *game->pc->unit->area;
+	LocationPart& locPart = *game->pc->unit->locPart;
 	Unit& u = *game->pc->unit;
 
 	// mark previous views as invalid
-	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+	for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 		it->valid = false;
 
 	// check units inside player view
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(&u == &u2 || u2.to_remove)
+		if(&u == &u2 || u2.toRemove)
 			continue;
 
 		bool mark = false;
@@ -1904,16 +1907,16 @@ void LevelGui::UpdatePlayerView(float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
-			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game_level->CanSee(u, u2))
+			float dist = Vec3::Distance(u.visualPos, u2.visualPos);
+			if(dist < ALERT_RANGE && gameLevel->camera.frustum.SphereToFrustum(u2.visualPos, u2.GetSphereRadius()) && gameLevel->CanSee(u, u2))
 				AddUnitView(&u2);
 		}
 	}
 
 	// extra units
-	if(game->pc->data.ability_ready && game->pc->data.ability_ok)
+	if(game->pc->data.abilityReady && game->pc->data.abilityOk)
 	{
-		if(Unit* target = game->pc->data.ability_target; target && target != &u)
+		if(Unit* target = game->pc->data.abilityTarget; target && target != &u)
 			AddUnitView(target);
 	}
 	if(u.action == A_CAST)
@@ -1927,7 +1930,7 @@ void LevelGui::UpdatePlayerView(float dt)
 	// 0.1 -> 0.2 alpha 0->255
 	// -0.2 -> -0.1 widoczne
 	// -0.1 -> 0.0 alpha 255->0
-	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end;)
+	for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end;)
 	{
 		bool removed = false;
 
@@ -1949,14 +1952,14 @@ void LevelGui::UpdatePlayerView(float dt)
 					// usuñ
 					if(it + 1 == end)
 					{
-						unit_views.pop_back();
+						unitViews.pop_back();
 						break;
 					}
 					else
 					{
 						std::iter_swap(it, end - 1);
-						unit_views.pop_back();
-						end = unit_views.end();
+						unitViews.pop_back();
+						end = unitViews.end();
 						removed = true;
 					}
 				}
@@ -1973,14 +1976,14 @@ void LevelGui::UpdatePlayerView(float dt)
 					// usuñ
 					if(it + 1 == end)
 					{
-						unit_views.pop_back();
+						unitViews.pop_back();
 						break;
 					}
 					else
 					{
 						std::iter_swap(it, end - 1);
-						unit_views.pop_back();
-						end = unit_views.end();
+						unitViews.pop_back();
+						end = unitViews.end();
 						removed = true;
 					}
 				}
@@ -1995,31 +1998,31 @@ void LevelGui::UpdatePlayerView(float dt)
 //=================================================================================================
 void LevelGui::AddUnitView(Unit* unit)
 {
-	for(UnitView& view : unit_views)
+	for(UnitView& view : unitViews)
 	{
 		if(view.unit == unit)
 		{
 			view.valid = true;
-			view.last_pos = unit->GetUnitTextPos();
+			view.lastPos = unit->GetUnitTextPos();
 			return;
 		}
 	}
 
-	UnitView& uv = Add1(unit_views);
+	UnitView& uv = Add1(unitViews);
 	uv.valid = true;
 	uv.unit = unit;
 	uv.time = 0.f;
-	uv.last_pos = unit->GetUnitTextPos();
+	uv.lastPos = unit->GetUnitTextPos();
 }
 
 //=================================================================================================
 void LevelGui::RemoveUnitView(Unit* unit)
 {
-	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+	for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 	{
 		if(it->unit == unit)
 		{
-			unit_views.erase(it);
+			unitViews.erase(it);
 			break;
 		}
 	}
@@ -2028,42 +2031,42 @@ void LevelGui::RemoveUnitView(Unit* unit)
 //=================================================================================================
 void LevelGui::StartDragAndDrop(int type, int value, Texture* icon)
 {
-	drag_and_drop = 2;
-	drag_and_drop_type = type;
-	drag_and_drop_index = value;
-	drag_and_drop_icon = icon;
+	dragAndDrop = 2;
+	dragAndDropType = type;
+	dragAndDropIndex = value;
+	dragAndDropIcon = icon;
 }
 
 //=================================================================================================
 void LevelGui::ResetCutscene()
 {
-	cutscene_image = nullptr;
-	cutscene_next_images.clear();
-	cutscene_image_timer = 0;
-	cutscene_image_state = CS_NONE;
-	cutscene_text.clear();
-	cutscene_next_texts.clear();
-	cutscene_text_timer = 0;
-	cutscene_text_state = CS_NONE;
+	cutsceneImage = nullptr;
+	cutsceneNextImages.clear();
+	cutsceneImageTimer = 0;
+	cutsceneImageState = CS_NONE;
+	cutsceneText.clear();
+	cutsceneNextTexts.clear();
+	cutsceneTextTimer = 0;
+	cutsceneTextState = CS_NONE;
 }
 
 //=================================================================================================
 void LevelGui::SetCutsceneImage(Texture* tex, float time)
 {
-	cutscene_next_images.push_back(std::make_pair(tex, time));
+	cutsceneNextImages.push_back(std::make_pair(tex, time));
 }
 
 //=================================================================================================
 void LevelGui::SetCutsceneText(const string& text, float time)
 {
-	cutscene_next_texts.push_back(std::make_pair(text, time));
+	cutsceneNextTexts.push_back(std::make_pair(text, time));
 }
 
 //=================================================================================================
 void LevelGui::UpdateCutscene(float dt)
 {
 	// is everything shown?
-	if(cutscene_image_state == CS_NONE && cutscene_next_images.empty() && cutscene_text_state == CS_NONE && cutscene_next_texts.empty())
+	if(cutsceneImageState == CS_NONE && cutsceneNextImages.empty() && cutsceneTextState == CS_NONE && cutsceneNextTexts.empty())
 	{
 		game->CutsceneEnded(false);
 		return;
@@ -2077,122 +2080,122 @@ void LevelGui::UpdateCutscene(float dt)
 	}
 
 	// update image
-	switch(cutscene_image_state)
+	switch(cutsceneImageState)
 	{
 	case CS_NONE:
-		if(!cutscene_next_images.empty())
+		if(!cutsceneNextImages.empty())
 		{
-			cutscene_image = cutscene_next_images.front().first;
-			cutscene_image_timer = 0.f;
-			cutscene_image_state = CS_FADE_IN;
+			cutsceneImage = cutsceneNextImages.front().first;
+			cutsceneImageTimer = 0.f;
+			cutsceneImageState = CS_FADE_IN;
 		}
 		break;
 	case CS_FADE_IN:
-		cutscene_image_timer += dt * 2;
-		if(cutscene_image_timer >= 1.f)
+		cutsceneImageTimer += dt * 2;
+		if(cutsceneImageTimer >= 1.f)
 		{
-			cutscene_image_timer = cutscene_next_images.front().second;
-			cutscene_image_state = CS_WAIT;
-			cutscene_next_images.erase(cutscene_next_images.begin());
+			cutsceneImageTimer = cutsceneNextImages.front().second;
+			cutsceneImageState = CS_WAIT;
+			cutsceneNextImages.erase(cutsceneNextImages.begin());
 		}
 		break;
 	case CS_WAIT:
-		cutscene_image_timer -= dt;
-		if(cutscene_image_timer <= 0)
+		cutsceneImageTimer -= dt;
+		if(cutsceneImageTimer <= 0)
 		{
-			cutscene_image_timer = 1.f;
-			cutscene_image_state = CS_FADE_OUT;
+			cutsceneImageTimer = 1.f;
+			cutsceneImageState = CS_FADE_OUT;
 		}
 		break;
 	case CS_FADE_OUT:
-		cutscene_image_timer -= dt * 2;
-		if(cutscene_image_timer <= 0)
+		cutsceneImageTimer -= dt * 2;
+		if(cutsceneImageTimer <= 0)
 		{
-			cutscene_image = nullptr;
-			cutscene_image_state = CS_NONE;
+			cutsceneImage = nullptr;
+			cutsceneImageState = CS_NONE;
 		}
 		break;
 	}
 
 	// update text
-	switch(cutscene_text_state)
+	switch(cutsceneTextState)
 	{
 	case CS_NONE:
-		if(!cutscene_next_texts.empty())
+		if(!cutsceneNextTexts.empty())
 		{
-			cutscene_text = cutscene_next_texts.front().first;
-			cutscene_text_timer = 0.f;
-			cutscene_text_state = CS_FADE_IN;
+			cutsceneText = cutsceneNextTexts.front().first;
+			cutsceneTextTimer = 0.f;
+			cutsceneTextState = CS_FADE_IN;
 		}
 		break;
 	case CS_FADE_IN:
-		cutscene_text_timer += dt * 2;
-		if(cutscene_text_timer >= 1.f)
+		cutsceneTextTimer += dt * 2;
+		if(cutsceneTextTimer >= 1.f)
 		{
-			cutscene_text_timer = cutscene_next_texts.front().second;
-			cutscene_text_state = CS_WAIT;
-			cutscene_next_texts.erase(cutscene_next_texts.begin());
+			cutsceneTextTimer = cutsceneNextTexts.front().second;
+			cutsceneTextState = CS_WAIT;
+			cutsceneNextTexts.erase(cutsceneNextTexts.begin());
 		}
 		break;
 	case CS_WAIT:
-		cutscene_text_timer -= dt;
-		if(cutscene_text_timer <= 0)
+		cutsceneTextTimer -= dt;
+		if(cutsceneTextTimer <= 0)
 		{
-			cutscene_text_timer = 1.f;
-			cutscene_text_state = CS_FADE_OUT;
+			cutsceneTextTimer = 1.f;
+			cutsceneTextState = CS_FADE_OUT;
 		}
 		break;
 	case CS_FADE_OUT:
-		cutscene_text_timer -= dt * 2;
-		if(cutscene_text_timer <= 0)
+		cutsceneTextTimer -= dt * 2;
+		if(cutsceneTextTimer <= 0)
 		{
-			cutscene_text.clear();
-			cutscene_text_state = CS_NONE;
+			cutsceneText.clear();
+			cutsceneTextState = CS_NONE;
 		}
 		break;
 	}
 }
 
 //=================================================================================================
-void LevelGui::DrawCutscene(int fallback_alpha)
+void LevelGui::DrawCutscene(int fallbackAlpha)
 {
 	if(team->IsLeader())
 	{
 		const Rect r = { 4,4,200,200 };
-		gui->DrawText(game_gui->font, txSkipCutscene, DTF_LEFT | DTF_TOP | DTF_OUTLINE, Color::Alpha(fallback_alpha), r);
+		gui->DrawText(gameGui->font, txSkipCutscene, DTF_LEFT | DTF_TOP | DTF_OUTLINE, Color::Alpha(fallbackAlpha), r);
 	}
 
-	if(cutscene_image)
+	if(cutsceneImage)
 	{
-		const int alpha = GetAlpha(cutscene_image_state, cutscene_image_timer, fallback_alpha);
-		Int2 img_size = cutscene_image->GetSize();
-		const int max_size = gui->wnd_size.y - 128;
+		const int alpha = GetAlpha(cutsceneImageState, cutsceneImageTimer, fallbackAlpha);
+		Int2 img_size = cutsceneImage->GetSize();
+		const int max_size = gui->wndSize.y - 128;
 		const Vec2 scale(float(max_size) / img_size.y);
 		img_size *= scale.x;
-		const Vec2 pos((gui->wnd_size - img_size) / 2);
+		const Vec2 pos((gui->wndSize - img_size) / 2);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0, &scale, nullptr, 0.f, &pos);
-		gui->DrawSprite2(cutscene_image, mat, nullptr, nullptr, Color::Alpha(alpha));
+		gui->DrawSprite2(cutsceneImage, mat, nullptr, nullptr, Color::Alpha(alpha));
 	}
 
-	if(!cutscene_text.empty())
+	if(!cutsceneText.empty())
 	{
-		const int alpha = GetAlpha(cutscene_text_state, cutscene_text_timer, fallback_alpha);
-		const Rect r = { 0, gui->wnd_size.y - 64,gui->wnd_size.x, gui->wnd_size.y };
-		gui->DrawText(game_gui->font, cutscene_text, DTF_OUTLINE | DTF_CENTER | DTF_VCENTER, Color::Alpha(alpha), r);
+		const int alpha = GetAlpha(cutsceneTextState, cutsceneTextTimer, fallbackAlpha);
+		const Rect r = { 0, gui->wndSize.y - 64,gui->wndSize.x, gui->wndSize.y };
+		gui->DrawText(gameGui->font, cutsceneText, DTF_OUTLINE | DTF_CENTER | DTF_VCENTER, Color::Alpha(alpha), r);
 	}
 }
 
 //=================================================================================================
-int LevelGui::GetAlpha(CutsceneState cs, float timer, int fallback_alpha)
+int LevelGui::GetAlpha(CutsceneState cs, float timer, int fallbackAlpha)
 {
 	switch(cs)
 	{
 	case CS_NONE:
 		return 0;
 	case CS_WAIT:
-		return fallback_alpha;
+		return fallbackAlpha;
 	default:
-		return int(timer * 255) * fallback_alpha / 255;
+		return int(timer * 255) * fallbackAlpha / 255;
 	}
 }
 

@@ -19,23 +19,24 @@ void AIController::Init(Unit* unit)
 	this->unit = unit;
 	unit->ai = this;
 	state = Idle;
-	next_attack = 0.f;
+	nextAttack = 0.f;
 	ignore = 0.f;
 	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
-	have_potion = HavePotion::Check;
-	have_mp_potion = HavePotion::Check;
+	havePotion = HavePotion::Check;
+	haveMpPotion = HavePotion::Check;
 	potion = -1;
-	in_combat = false;
+	inCombat = false;
 	st.idle.action = Idle_None;
-	start_pos = unit->pos;
-	start_rot = unit->rot;
-	loc_timer = 0.f;
+	startPos = unit->pos;
+	startRot = unit->rot;
+	locTimer = 0.f;
 	timer = 0.f;
-	change_ai_mode = false;
-	pf_state = PFS_NOT_USING;
+	scanTimer = Random(0.f, 0.2f);
+	changeAiMode = false;
+	pfState = PFS_NOT_USING;
 }
 
 //=================================================================================================
@@ -43,34 +44,34 @@ void AIController::Save(GameWriter& f)
 {
 	f << unit->id;
 	f << target;
-	f << alert_target;
+	f << alertTarget;
 	f << state;
-	f << target_last_pos;
-	f << alert_target_pos;
-	f << start_pos;
-	f << in_combat;
-	f << pf_state;
-	if(pf_state != PFS_NOT_USING)
+	f << targetLastPos;
+	f << alertTargetPos;
+	f << startPos;
+	f << inCombat;
+	f << pfState;
+	if(pfState != PFS_NOT_USING)
 	{
-		f << pf_timer;
-		if(pf_state == PFS_WALKING || pf_state == PFS_LOCAL_TRY_WALK)
+		f << pfTimer;
+		if(pfState == PFS_WALKING || pfState == PFS_LOCAL_TRY_WALK)
 		{
-			f.WriteVector2(pf_path);
-			f << pf_target_tile;
-			if(pf_state == PFS_LOCAL_TRY_WALK)
-				f << pf_local_try;
+			f.WriteVector2(pfPath);
+			f << pfTargetTile;
+			if(pfState == PFS_LOCAL_TRY_WALK)
+				f << pfLocalTry;
 		}
-		if(pf_state == PFS_WALKING || pf_state == PFS_WALKING_LOCAL)
+		if(pfState == PFS_WALKING || pfState == PFS_WALKING_LOCAL)
 		{
-			f.WriteVector1(pf_local_path);
-			f << pf_local_target_tile;
+			f.WriteVector1(pfLocalPath);
+			f << pfLocalTargetTile;
 		}
 	}
-	f << next_attack;
+	f << nextAttack;
 	f << timer;
 	f << ignore;
 	f << morale;
-	f << start_rot;
+	f << startRot;
 	if(unit->data->abilities)
 		f << cooldown;
 	switch(state)
@@ -114,7 +115,7 @@ void AIController::Save(GameWriter& f)
 			break;
 		case Idle_MoveRegion:
 		case Idle_RunRegion:
-			f << st.idle.region.area->area_id;
+			f << st.idle.region.locPart->partId;
 			f << st.idle.region.pos;
 			f << st.idle.region.exit;
 			break;
@@ -127,11 +128,12 @@ void AIController::Save(GameWriter& f)
 		f << (st.search.room ? st.search.room->index : -1);
 		break;
 	}
-	f << have_potion;
-	f << have_mp_potion;
+	f << havePotion;
+	f << haveMpPotion;
 	f << potion;
-	f << city_wander;
-	f << loc_timer;
+	f << cityWander;
+	f << locTimer;
+	f << scanTimer;
 }
 
 //=================================================================================================
@@ -140,36 +142,36 @@ void AIController::Load(GameReader& f)
 	f >> unit;
 	unit->ai = this;
 	f >> target;
-	f >> alert_target;
+	f >> alertTarget;
 	f >> state;
-	f >> target_last_pos;
-	f >> alert_target_pos;
-	f >> start_pos;
-	f >> in_combat;
-	f >> pf_state;
-	if(pf_state != PFS_NOT_USING)
+	f >> targetLastPos;
+	f >> alertTargetPos;
+	f >> startPos;
+	f >> inCombat;
+	f >> pfState;
+	if(pfState != PFS_NOT_USING)
 	{
-		f >> pf_timer;
-		if(pf_state == PFS_WALKING || pf_state == PFS_LOCAL_TRY_WALK)
+		f >> pfTimer;
+		if(pfState == PFS_WALKING || pfState == PFS_LOCAL_TRY_WALK)
 		{
-			f.ReadVector2(pf_path);
-			f >> pf_target_tile;
-			if(pf_state == PFS_LOCAL_TRY_WALK)
-				f >> pf_local_try;
+			f.ReadVector2(pfPath);
+			f >> pfTargetTile;
+			if(pfState == PFS_LOCAL_TRY_WALK)
+				f >> pfLocalTry;
 		}
-		if(pf_state == PFS_WALKING || pf_state == PFS_WALKING_LOCAL)
+		if(pfState == PFS_WALKING || pfState == PFS_WALKING_LOCAL)
 		{
-			f.ReadVector1(pf_local_path);
-			f >> pf_local_target_tile;
+			f.ReadVector1(pfLocalPath);
+			f >> pfLocalTargetTile;
 		}
 	}
-	f >> next_attack;
+	f >> nextAttack;
 	f >> timer;
 	f >> ignore;
 	f >> morale;
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<float>(); // old last_scan
-	f >> start_rot;
+	f >> startRot;
 	if(unit->data->abilities)
 		f >> cooldown;
 	switch(state)
@@ -179,7 +181,7 @@ void AIController::Load(GameReader& f)
 			st.cast.ability = Ability::Get(f.Read<int>());
 		else
 		{
-			st.cast.ability = unit->data->abilities->ability[unit->ai_mode];
+			st.cast.ability = unit->data->abilities->ability[unit->aiMode];
 			if(LOAD_VERSION < V_0_12)
 				f.Skip<int>(); // old cast_target
 		}
@@ -188,7 +190,7 @@ void AIController::Load(GameReader& f)
 		{
 			int room_id = f.Read<int>();
 			if(room_id != -1)
-				st.escape.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
 			else
 				st.escape.room = nullptr;
 		}
@@ -200,15 +202,15 @@ void AIController::Load(GameReader& f)
 	case SearchEnemy:
 		{
 			int room_id = f.Read<int>();
-			st.search.room = reinterpret_cast<InsideLocation*>(game_level->location)->GetLevelData().rooms[room_id];
+			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
 		}
 		break;
 	}
-	f >> have_potion;
+	f >> havePotion;
 	if(LOAD_VERSION >= V_0_12)
-		f >> have_mp_potion;
+		f >> haveMpPotion;
 	else
-		have_mp_potion = HavePotion::Check;
+		haveMpPotion = HavePotion::Check;
 	f >> potion;
 	if(LOAD_VERSION < V_0_13)
 	{
@@ -220,8 +222,8 @@ void AIController::Load(GameReader& f)
 			LoadIdleAction(f, idle, false);
 		}
 	}
-	f >> city_wander;
-	f >> loc_timer;
+	f >> cityWander;
+	f >> locTimer;
 	if(LOAD_VERSION < V_0_13)
 		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
@@ -231,7 +233,11 @@ void AIController::Load(GameReader& f)
 		if(goto_inn)
 			unit->OrderGoToInn();
 	}
-	change_ai_mode = false;
+	if(LOAD_VERSION >= V_0_19)
+		f >> scanTimer;
+	else
+		scanTimer = Random(0.f, 0.2f);
+	changeAiMode = false;
 }
 
 //=================================================================================================
@@ -267,32 +273,32 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 		f >> idle.obj.pos;
 		f >> idle.obj.rot;
 		if(apply)
-			game->ai_bow_targets.push_back(this);
+			game->aiBowTargets.push_back(this);
 		break;
 	case Idle_MoveRegion:
 	case Idle_RunRegion:
 		{
-			int area_id;
-			f >> area_id;
+			int partId;
+			f >> partId;
 			f >> idle.region.pos;
 			if(LOAD_VERSION >= V_0_11)
 			{
 				f >> idle.region.exit;
-				idle.region.area = game_level->GetAreaById(area_id);
+				idle.region.locPart = gameLevel->GetLocationPartById(partId);
 			}
 			else
 			{
-				if(area_id == LevelArea::OLD_EXIT_ID)
+				if(partId == LocationPart::OLD_EXIT_ID)
 				{
 					idle.region.exit = true;
-					idle.region.area = game_level->GetAreaById(LevelArea::OUTSIDE_ID);
+					idle.region.locPart = gameLevel->GetLocationPartById(LocationPart::OUTSIDE_ID);
 				}
 				else
 				{
 					idle.region.exit = false;
-					idle.region.area = game_level->GetAreaById(area_id);
-					if(!idle.region.area)
-						idle.region.area = game_level->local_area;
+					idle.region.locPart = gameLevel->GetLocationPartById(partId);
+					if(!idle.region.locPart)
+						idle.region.locPart = gameLevel->localPart;
 				}
 			}
 		}
@@ -304,26 +310,26 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 }
 
 //=================================================================================================
-bool AIController::CheckPotion(bool in_combat)
+bool AIController::CheckPotion(bool inCombat)
 {
 	if(unit->action != A_NONE)
 		return false;
 
-	if(have_potion != HavePotion::No && !IsSet(unit->data->flags, F_UNDEAD))
+	if(havePotion != HavePotion::No && !IsSet(unit->data->flags, F_UNDEAD))
 	{
 		float hpp = unit->GetHpp();
-		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
+		if(hpp < 0.5f || (hpp < 0.75f && !inCombat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
 		{
 			int index = unit->FindHealingPotion();
 			if(index == -1)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 					unit->Talk(RandomString(game->txAiNoHpPot));
-				have_potion = HavePotion::No;
+				havePotion = HavePotion::No;
 				return false;
 			}
 
-			if(unit->ConsumeItem(index) != 3 && this->in_combat)
+			if(unit->ConsumeItem(index) != 3 && this->inCombat)
 				state = Dodge;
 			timer = Random(1.f, 1.5f);
 
@@ -331,26 +337,26 @@ bool AIController::CheckPotion(bool in_combat)
 		}
 	}
 
-	if(have_mp_potion != HavePotion::No)
+	if(haveMpPotion != HavePotion::No)
 	{
 		Class* clas = unit->GetClass();
 		if(!clas || !IsSet(clas->flags, Class::F_MP_BAR))
-			have_mp_potion = HavePotion::No;
+			haveMpPotion = HavePotion::No;
 		else
 		{
 			float mpp = unit->GetMpp();
-			if(mpp < 0.33f || (mpp < 0.66f && !in_combat) || (mpp < 0.80f && unit->busy == Unit::Busy_Tournament))
+			if(mpp < 0.33f || (mpp < 0.66f && !inCombat) || (mpp < 0.80f && unit->busy == Unit::Busy_Tournament))
 			{
 				int index = unit->FindManaPotion();
 				if(index == -1)
 				{
 					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 						unit->Talk(RandomString(game->txAiNoMpPot));
-					have_mp_potion = HavePotion::No;
+					haveMpPotion = HavePotion::No;
 					return false;
 				}
 
-				if(unit->ConsumeItem(index) != 3 && this->in_combat)
+				if(unit->ConsumeItem(index) != 3 && this->inCombat)
 					state = Dodge;
 				timer = Random(1.f, 1.5f);
 
@@ -368,24 +374,25 @@ void AIController::Reset()
 	if(state != AIController::Idle)
 	{
 		state = Idle;
-		change_ai_mode = true;
+		changeAiMode = true;
 	}
 	target = nullptr;
-	alert_target = nullptr;
-	pf_path.clear();
-	pf_local_path.clear();
-	in_combat = false;
-	next_attack = 0.f;
-	timer = Random(1.f, 3.f);;
+	alertTarget = nullptr;
+	pfPath.clear();
+	pfLocalPath.clear();
+	inCombat = false;
+	nextAttack = 0.f;
+	timer = Random(1.f, 3.f);
+	scanTimer = Random(0.f, 0.2f);
 	ignore = 0.f;
 	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
-	have_potion = HavePotion::Check;
-	have_mp_potion = HavePotion::Check;
+	havePotion = HavePotion::Check;
+	haveMpPotion = HavePotion::Check;
 	st.idle.action = Idle_None;
-	pf_state = PFS_NOT_USING;
+	pfState = PFS_NOT_USING;
 }
 
 //=================================================================================================
@@ -407,20 +414,20 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(game_level->city_ctx && loc_timer <= 0.f && !game->dont_wander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(gameLevel->cityCtx && locTimer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
 	{
 		if(unit->busy != Unit::Busy_No)
 			return false;
 		if(unit->IsHero())
 		{
-			if(unit->hero->team_member && unit->GetOrder() != ORDER_WANDER)
+			if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
 				return false;
-			else if(quest_mgr->quest_tournament->IsGenerated())
+			else if(questMgr->questTournament->IsGenerated())
 				return false;
 			else
 				return true;
 		}
-		else if(unit->area->area_type == LevelArea::Type::Outside)
+		else if(unit->locPart->partType == LocationPart::Type::Outside)
 			return true;
 		else
 			return false;
@@ -430,15 +437,15 @@ bool AIController::CanWander() const
 }
 
 //=================================================================================================
-Vec3 AIController::PredictTargetPos(const Unit& target, float bullet_speed) const
+Vec3 AIController::PredictTargetPos(const Unit& target, float bulletSpeed) const
 {
-	if(bullet_speed == 0.f)
+	if(bulletSpeed == 0.f)
 		return target.GetCenter();
 
-	Vec3 vel = target.pos - target.prev_pos;
+	Vec3 vel = target.pos - target.prevPos;
 	vel *= 60;
 
-	float a = bullet_speed * bullet_speed - vel.Dot2d();
+	float a = bulletSpeed * bulletSpeed - vel.Dot2d();
 	float b = -2 * vel.Dot2d(target.pos - unit->pos);
 	float c = -(target.pos - unit->pos).Dot2d();
 
@@ -469,16 +476,16 @@ void AIController::Shout()
 
 	// alarm near allies
 	Unit* target_unit = target;
-	for(Unit* u : unit->area->units)
+	for(Unit* u : unit->locPart->units)
 	{
-		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
-			|| u->ai->alert_target || u->dont_attack)
+		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
+			|| u->ai->alertTarget || u->dontAttack)
 			continue;
 
-		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
+		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
-			u->ai->alert_target = target_unit;
-			u->ai->alert_target_pos = target_last_pos;
+			u->ai->alertTarget = target_unit;
+			u->ai->alertTargetPos = targetLastPos;
 		}
 	}
 }
@@ -486,16 +493,16 @@ void AIController::Shout()
 //=================================================================================================
 void AIController::HitReaction(const Vec3& pos)
 {
-	if(unit->dont_attack || !Any(state, Idle, SearchEnemy))
+	if(unit->dontAttack || !Any(state, Idle, SearchEnemy))
 		return;
 
 	target = nullptr;
-	target_last_pos = pos;
+	targetLastPos = pos;
 	if(state == Idle)
-		change_ai_mode = true;
+		changeAiMode = true;
 	state = SeenEnemy;
 	timer = Random(10.f, 15.f);
-	city_wander = false;
+	cityWander = false;
 	if(!unit->data->sounds->Have(SOUND_SEE_ENEMY))
 		return;
 
@@ -510,16 +517,16 @@ void AIController::HitReaction(const Vec3& pos)
 	}
 
 	// alarm near allies
-	for(Unit* u : unit->area->units)
+	for(Unit* u : unit->locPart->units)
 	{
-		if(u->to_remove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dont_attack)
+		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->dontAttack)
 			continue;
 
 		if((u->ai->state == Idle || u->ai->state == SearchEnemy)
-			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && game_level->CanSee(*unit, *u))
+			&& Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
 			AIController* ai2 = u->ai;
-			ai2->target_last_pos = pos;
+			ai2->targetLastPos = pos;
 			ai2->state = SeenEnemy;
 			ai2->timer = Random(5.f, 10.f);
 		}
@@ -530,7 +537,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->mesh_inst->mesh->head.n_groups == 1 || unit->weapon_state == WeaponState::Taken) && next_attack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.n_groups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -538,22 +545,22 @@ void AIController::DoAttack(Unit* target, bool running)
 	unit->action = A_ATTACK;
 	unit->act.attack.index = unit->GetRandomAttack();
 
-	bool do_power_attack;
+	bool doPowerAttack;
 	if(!IsSet(unit->data->flags, F_NO_POWER_ATTACK))
 	{
 		if(target && target->action == A_BLOCK)
-			do_power_attack = (Rand() % 2 == 0);
+			doPowerAttack = (Rand() % 2 == 0);
 		else
-			do_power_attack = (Rand() % 5 == 0);
+			doPowerAttack = (Rand() % 5 == 0);
 	}
 	else
-		do_power_attack = false;
+		doPowerAttack = false;
 
 	if(running)
 	{
 		unit->act.attack.power = 1.5f;
 		unit->act.attack.run = true;
-		do_power_attack = false;
+		doPowerAttack = false;
 	}
 	else
 	{
@@ -561,30 +568,30 @@ void AIController::DoAttack(Unit* target, bool running)
 		unit->act.attack.run = false;
 	}
 
-	float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
+	float staminaCost = (running || doPowerAttack) ? 1.5f : 1.f;
 	if(unit->HaveWeapon())
 	{
 		const Weapon& weapon = unit->GetWeapon();
-		stamina_cost *= weapon.GetInfo().stamina * unit->GetStaminaMod(weapon);
+		staminaCost *= weapon.GetInfo().stamina * unit->GetStaminaMod(weapon);
 	}
 	else
-		stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
-	unit->RemoveStamina(stamina_cost);
+		staminaCost *= Unit::STAMINA_UNARMED_ATTACK;
+	unit->RemoveStamina(staminaCost);
 
-	float speed = (do_power_attack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
+	float speed = (doPowerAttack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
 
-	if(unit->mesh_inst->mesh->head.n_groups > 1)
+	if(unit->meshInst->mesh->head.n_groups > 1)
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-		unit->mesh_inst->groups[1].speed = speed;
+		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+		unit->meshInst->groups[1].speed = speed;
 	}
 	else
 	{
-		unit->mesh_inst->Play(NAMES::ani_attacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
-		unit->mesh_inst->groups[0].speed = speed;
+		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
+		unit->meshInst->groups[0].speed = speed;
 		unit->animation = ANI_PLAY;
 	}
-	unit->animation_state = (do_power_attack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
+	unit->animationState = (doPowerAttack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
 	unit->act.attack.hitted = !target;
 
 	if(Net::IsOnline())
@@ -592,7 +599,7 @@ void AIController::DoAttack(Unit* target, bool running)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::ATTACK;
 		c.unit = unit;
-		c.id = (do_power_attack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
+		c.id = (doPowerAttack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 		c.f[1] = speed;
 	}
 }

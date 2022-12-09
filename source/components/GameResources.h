@@ -16,14 +16,14 @@ public:
 	void LoadLanguage();
 	void LoadData();
 	Texture* CreatePlaceholderTexture(const Int2& size);
-	void GenerateItemIconTask(TaskData& task_data);
+	void GenerateItemIconTask(TaskData& taskData);
 	void GenerateItemIcon(Item& item);
 	void DrawItemIcon(const Item& item, RenderTarget* target, float rot);
 	void PreloadItem(const Item* item);
-	Sound* GetMaterialSound(MATERIAL_TYPE attack_mat, MATERIAL_TYPE hit_mat);
+	Sound* GetMaterialSound(MATERIAL_TYPE attackMat, MATERIAL_TYPE hitMat);
 	Sound* GetItemSound(const Item* item);
 	Mesh* GetEntryMesh(EntryType type);
-	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
+	void LoadMusic(MusicType type, bool newLoadScreen = true, bool instant = false);
 	void LoadCommonMusic();
 	void LoadTrap(BaseTrap* trap);
 
@@ -49,9 +49,9 @@ private:
 	Scene* scene;
 	SceneNode* node;
 	Camera* camera;
-	ItemTextureMap item_texture_map;
-	vector<Texture*> over_item_textures;
-	RenderTarget* rt_item;
-	Texture* missing_item_texture;
+	ItemTextureMap itemTextureMap;
+	vector<Texture*> overrideItemTextures;
+	RenderTarget* rtItem;
+	Texture* missingItemTexture;
 	cstring txLoadGuiTextures, txLoadTerrainTextures, txLoadParticles, txLoadModels, txLoadSounds, txLoadMusic;
 };

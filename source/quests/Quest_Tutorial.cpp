@@ -33,12 +33,12 @@ void Quest_Tutorial::Start()
 	game->LoadingStart(1);
 
 	HumanData hd;
-	hd.Get(*game_gui->create_character->unit->human_data);
-	game->NewGameCommon(game_gui->create_character->clas, game_gui->create_character->player_name.c_str(), hd, game_gui->create_character->cc, true);
-	in_tutorial = true;
+	hd.Get(*gameGui->createCharacter->unit->humanData);
+	game->NewGameCommon(gameGui->createCharacter->clas, gameGui->createCharacter->playerName.c_str(), hd, gameGui->createCharacter->cc, true);
+	inTutorial = true;
 	state = 0;
 	texts.clear();
-	quest_mgr->quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
+	questMgr->questContest->state = Quest_Contest::CONTEST_NOT_DONE;
 	game->pc->data.autowalk = false;
 	game->pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
@@ -46,7 +46,7 @@ void Quest_Tutorial::Start()
 	game->pc->unit->ClearInventory();
 	game->pc->unit->EquipItem(Item::Get("al_clothes"));
 	game->pc->unit->gold = 10;
-	game_gui->journal->GetNotes().push_back(txTutNote);
+	gameGui->journal->GetNotes().push_back(txTutNote);
 
 	// start location
 	SingleInsideLocation* loc = new SingleInsideLocation;
@@ -56,21 +56,21 @@ void Quest_Tutorial::Start()
 	loc->image = LI_DUNGEON;
 	loc->group = UnitGroup::empty;
 	world->StartInLocation(loc);
-	game_level->dungeon_level = 0;
+	gameLevel->dungeonLevel = 0;
 
-	game->loc_gen_factory->Get(game_level->location)->OnEnter();
+	game->locGenFactory->Get(gameLevel->location)->OnEnter();
 
 	// go!
 	game->LoadResources("", false);
-	game_level->event_handler = nullptr;
+	gameLevel->eventHandler = nullptr;
 	game->SetMusic();
-	game_gui->load_screen->visible = false;
-	game_gui->main_menu->visible = false;
-	game_gui->level_gui->visible = true;
-	game_gui->world_map->Hide();
-	game->clear_color = game->clear_color_next;
-	game_level->camera.Reset();
-	game->game_state = GS_LEVEL;
+	gameGui->loadScreen->visible = false;
+	gameGui->mainMenu->visible = false;
+	gameGui->levelGui->visible = true;
+	gameGui->worldMap->Hide();
+	gameLevel->camera.Reset();
+	game->gameState = GS_LEVEL;
+	gameLevel->ready = true;
 }
 
 /*
@@ -106,7 +106,7 @@ void Quest_Tutorial::Update()
 		DialogInfo info;
 		info.event = nullptr;
 		info.name = "tut";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = nullptr;
 		info.pause = true;
 		info.text = text.text;
@@ -173,7 +173,7 @@ void Quest_Tutorial::Update()
 void Quest_Tutorial::Finish(int)
 {
 	gui->GetDialog("tut_end")->visible = false;
-	finished_tutorial = true;
+	finishedTutorial = true;
 	game->ClearGame();
 	game->StartNewGame();
 }
@@ -215,7 +215,7 @@ void Quest_Tutorial::OnEvent(Event event)
 			DialogInfo info;
 			info.event = DialogEvent(this, &Quest_Tutorial::Finish);
 			info.name = "tut_end";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = true;
 			info.text = txTut[9];
@@ -248,7 +248,7 @@ void Quest_Tutorial::HandleEvent(int activate, int unlock)
 
 	if(unlock != -1)
 	{
-		for(Door* door : game_level->local_area->doors)
+		for(Door* door : gameLevel->localPart->doors)
 		{
 			if(door->locked == LOCK_TUTORIAL + unlock)
 			{
@@ -308,7 +308,7 @@ void Quest_Tutorial::HandleBulletCollision()
 			break;
 		}
 	}
-	for(vector<Door*>::iterator it = game_level->local_area->doors.begin(), end = game_level->local_area->doors.end(); it != end; ++it)
+	for(vector<Door*>::iterator it = gameLevel->localPart->doors.begin(), end = gameLevel->localPart->doors.end(); it != end; ++it)
 	{
 		if((*it)->locked == LOCK_TUTORIAL + unlock)
 		{

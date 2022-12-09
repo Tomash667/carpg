@@ -16,7 +16,7 @@ struct Quest2 : public Quest
 	virtual void FireEvent(ScriptEvent& event) {}
 	cstring FormatString(const string& str) override;
 	void RemoveEvent(ScriptEvent& event);
-	void AddDialogPtr(Unit* unit) { unit_dialogs.push_back(unit); }
+	void AddDialogPtr(Unit* unit) { unitDialogs.push_back(unit); }
 	void RemoveDialogPtr(Unit* unit);
 	GameDialog* GetDialog(Cstring name);
 	GameDialog* GetDialog(int type2) override;
@@ -38,6 +38,6 @@ protected:
 
 	QuestScheme* scheme;
 	vector<EventPtr> events;
-	vector<Unit*> unit_dialogs;
-	int timeout_days;
+	vector<Unit*> unitDialogs;
+	int timeoutDays;
 };

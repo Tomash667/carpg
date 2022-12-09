@@ -11,7 +11,7 @@ struct Explo
 
 	static const int MIN_SIZE = 21;
 
-	bool Update(float dt, LevelArea& area);
+	bool Update(float dt, LocationPart& locPart);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

@@ -8,9 +8,9 @@ struct Bullet : public EntityType<Bullet>
 {
 	Unit* owner;
 	Ability* ability;
-	Vec3 pos, rot, start_pos;
+	Vec3 pos, rot, startPos;
 	Mesh* mesh;
-	float speed, timer, attack, tex_size, yspeed, poison_attack, backstab;
+	float speed, timer, attack, texSize, yspeed, poisonAttack, backstab;
 	int level;
 	TexturePtr tex;
 	TrailParticleEmitter* trail;
@@ -19,12 +19,12 @@ struct Bullet : public EntityType<Bullet>
 
 	static const int MIN_SIZE = 41;
 
-	bool Update(float dt, LevelArea& area);
+	bool Update(float dt, LocationPart& locPart);
 	void Save(GameWriter& f) const;
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;
-	bool Read(BitStreamReader& f, TmpLevelArea& tmp_area);
+	bool Read(BitStreamReader& f, LevelPart& lvl);
 
 private:
-	void OnHit(LevelArea& area, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback);
+	void OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, BulletCallback& callback);
 };

@@ -1,14 +1,14 @@
 #include "Pch.h"
 #include "LocationHelper.h"
 
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "MultiInsideLocation.h"
 #include "Quest.h"
 #include "ScriptException.h"
 #include "SingleInsideLocation.h"
 
 //=================================================================================================
-LevelArea* LocationHelper::GetArea(Location* loc)
+LocationPart* LocationHelper::GetLocationPart(Location* loc)
 {
 	assert(loc);
 	if(loc->outside)
@@ -21,18 +21,18 @@ LevelArea* LocationHelper::GetArea(Location* loc)
 }
 
 //=================================================================================================
-LevelArea* LocationHelper::GetArea(Location* loc, int index)
+LocationPart* LocationHelper::GetLocationPart(Location* loc, int index)
 {
 	assert(loc && index >= -1);
 	if(index == -1)
-		return GetArea(loc);
+		return GetLocationPart(loc);
 	if(loc->outside)
 	{
 		if(loc->type == L_CITY)
 		{
 			City* city = static_cast<City*>(loc);
-			if(index >= 0 && index < (int)city->inside_buildings.size())
-				return city->inside_buildings[index];
+			if(index >= 0 && index < (int)city->insideBuildings.size())
+				return city->insideBuildings[index];
 		}
 	}
 	else
@@ -44,19 +44,21 @@ LevelArea* LocationHelper::GetArea(Location* loc, int index)
 			if(index >= 0 && index < (int)multi->levels.size())
 				return multi->levels[index];
 		}
+		else if(index == 0)
+			return static_cast<SingleInsideLocation*>(loc);
 	}
 	throw ScriptException("Invalid area index %d.", index);
 }
 
 //=================================================================================================
-LevelArea* LocationHelper::GetBuildingArea(Location* loc, const string& name)
+LocationPart* LocationHelper::GetBuildingLocationPart(Location* loc, const string& name)
 {
 	assert(loc);
 
 	if(loc->type == L_CITY)
 	{
 		City* city = static_cast<City*>(loc);
-		for(InsideBuilding* building : city->inside_buildings)
+		for(InsideBuilding* building : city->insideBuildings)
 		{
 			if(building->building->group->id == name)
 				return building;
@@ -96,6 +98,6 @@ Unit* LocationHelper::FindQuestUnit(Location* loc, Quest* quest)
 	const int questId = quest->id;
 	return ForLocation(loc)->FindUnit([=](Unit* unit)
 	{
-		return unit->quest_id == questId;
+		return unit->questId == questId;
 	});
 }

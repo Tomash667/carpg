@@ -93,7 +93,7 @@ void Chest::Load(GameReader& f)
 	else
 	{
 		handler = reinterpret_cast<ChestEventHandler*>(handler_id);
-		game->load_chest_handler.push_back(this);
+		game->loadChestHandler.push_back(this);
 	}
 }
 
@@ -104,7 +104,7 @@ void Chest::Write(BitStreamWriter& f)
 	f << base->hash;
 	f << pos;
 	f << rot;
-	if(net->mp_load)
+	if(net->mpLoad)
 		MeshInstance::SaveOptional(f, meshInst);
 }
 
@@ -115,7 +115,7 @@ bool Chest::Read(BitStreamReader& f)
 	base = BaseObject::Get(f.Read<int>());
 	f >> pos;
 	f >> rot;
-	if(net->mp_load)
+	if(net->mpLoad)
 		MeshInstance::LoadOptional(f, meshInst);
 	if(!f)
 		return false;
@@ -124,22 +124,22 @@ bool Chest::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
+bool Chest::AddItem(const Item* item, uint count, uint teamCount, bool notify)
 {
-	bool stacked = ItemContainer::AddItem(item, count, team_count);
+	bool stacked = ItemContainer::AddItem(item, count, teamCount);
 
 	if(user && user->IsPlayer())
 	{
-		if(user->player->is_local)
-			game_gui->inventory->BuildTmpInventory(1);
+		if(user->player->isLocal)
+			gameGui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
-			NetChangePlayer& c = Add1(user->player->player_info->changes);
+			NetChangePlayer& c = Add1(user->player->playerInfo->changes);
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.item = item;
 			c.id = id;
 			c.count = count;
-			c.a = team_count;
+			c.a = teamCount;
 		}
 	}
 
@@ -155,7 +155,7 @@ void Chest::OpenClose(Unit* unit)
 		assert(!user);
 		user = unit;
 		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END);
-		sound_mgr->PlaySound3d(game_res->sChestOpen, GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
 		if(Net::IsServer())
@@ -172,7 +172,7 @@ void Chest::OpenClose(Unit* unit)
 		assert(user);
 		user = nullptr;
 		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK);
-		sound_mgr->PlaySound3d(game_res->sChestClose, GetCenter(), SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);

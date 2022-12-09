@@ -95,15 +95,15 @@ struct NetChange
 		EXIT_BUILDING, // player wants to exit building []
 		WARP, // warp unit or notify server about warping SERVER[int(id)-unit, auto: char-in building, Vec3-pos, float-rot] / CLIENT[]
 		ADD_NOTE, // player added note to journal [string1-text (automaticaly set)]
-		REGISTER_ITEM, // register new item [auto: string1(base_item.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.quest_id)-item quest]
+		REGISTER_ITEM, // register new item [auto: string1(baseItem.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.quest_id)-item quest]
 		ADD_QUEST, // added quest [int(id)-index, auto: string1-quest.name, string2-quest.msgs[0], string2-quest.msgs[1])
 		UPDATE_QUEST, // update quest [int(id)-index, auto: byte-quest.state, vector1<string2>-msgs (byte(count)-msgs count)]
-		RENAME_ITEM, // item rename [auto: int(base_item.quest_id), string1(base_item.id), string1(base_item.name)]
+		RENAME_ITEM, // item rename [auto: int(baseItem.quest_id), string1(baseItem.id), string1(baseItem.name)]
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(count)-PlayerInfo.LeftReason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
 		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
-		CHEAT_SPAWN_UNIT, // player used cheat 'spawn_unit' [string1(base_unit)-unit, byte(count)-count, char(id)-level, char(i)-in_arena]
-		CHEAT_ADD_ITEM, // player used cheat 'add_item' or 'add_team_item' [string1(base_item)-item id, byte(count)-count, bool(id)-is team]
+		CHEAT_SPAWN_UNIT, // player used cheat 'spawn_unit' [string1(baseUnit)-unit, byte(count)-count, char(id)-level, char(i)-in_arena]
+		CHEAT_ADD_ITEM, // player used cheat 'add_item' or 'add_team_item' [string1(baseItem)-item id, byte(count)-count, bool(id)-is team]
 		CHEAT_SET_STAT, // player used cheat set_stat [byte(id)-stat id, bool(count)-is skill, char(i)-value]
 		CHEAT_MOD_STAT, // player used cheat mod_stat [byte(id)-stat id, bool(count)-is skill, char(i)-value]
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
@@ -129,7 +129,7 @@ struct NetChange
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door, bool(count)-is closing]
 		CREATE_EXPLOSION, // create explosion effect [int(ability->hash), Vec3(pos)]
-		CREATE_TRAP, // create trap [int(e_id)-trap id, byte(id)-trap type, Vec3(pos)]
+		CREATE_TRAP, // create trap [int(extraId)-trap id, byte(id)-trap type, Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap]
 		EVIL_SOUND, // play evil sound []
@@ -145,10 +145,10 @@ struct NetChange
 		CHEAT_WARP_TO_ENTRY, // player used cheat to warp to entry (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit cast spell SERVER[int(id)-unit, int(ability->hash)] / CLIENT[Vec3(pos)-target pos]
 		CREATE_SPELL_BALL, // create ball - spell effect [int-abilityHash, int-id, int-ownerId, Vec3-pos, float-rotY, float-yspeed]
-		SPELL_SOUND, // play spell sound [int(e_id)-type (0-cast, 1-hit), int(ability->hash), Vec3(pos)]
+		SPELL_SOUND, // play spell sound [int(extraId)-type (0-cast, 1-hit), int(ability->hash), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(id)-unit that sucks blood]
-		CREATE_ELECTRO, // create electro effect [int(e_id)-electro), Vec3(pos), Vec3(f)-pos2]
-		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro, Vec3(pos)]
+		CREATE_ELECTRO, // create electro effect [int(extraId)-electro), Vec3(pos), Vec3(f)-pos2]
+		UPDATE_ELECTRO, // update electro effect [int(extraId)-electro, Vec3(pos)]
 		ELECTRO_HIT, // electro hit effect [Vec3(pos)]
 		PARTICLE_EFFECT, // create particle effect [int(ability->hash), Vec3(pos), Vec2(extra_fs)-bounds]
 		REVEAL_MINIMAP, // revealing minimap [auto:vector<size:word, byte-x, byte-y>]
@@ -195,7 +195,7 @@ struct NetChange
 		CUTSCENE_TEXT, // queue cutscene text to show [string1(str)-text, float(f[0])-time]
 		CUTSCENE_SKIP, // skip current cutscene []
 		CRAFT, // craft item [int(recipe->hash), uint(count)]
-		REMOVE_BULLET, // remove bullet [int(id)-bullet id, bool(e_id)-if hit unit]
+		REMOVE_BULLET, // remove bullet [int(id)-bullet id, bool(extraId)-if hit unit]
 		BOSS_START, // start boss fight [int(id)-unit]
 		BOSS_END, // end boss fight []
 		ADD_INVESTMENT, // add investment [auto:int-questId, int-gold, string1-name]
@@ -209,9 +209,9 @@ struct NetChange
 	{
 		Unit* unit;
 		GroundItem* item;
-		const Item* base_item;
-		UnitData* base_unit;
-		int e_id;
+		const Item* baseItem;
+		UnitData* baseUnit;
+		int extraId;
 		uint size;
 		CMD cmd;
 		Usable* usable;
@@ -232,20 +232,13 @@ struct NetChange
 		float f[3];
 		POD::Vec3 vec3;
 		const Item* item2;
-		struct
-		{
-			Ability* ability;
-			float rot_y;
-			float speed_y;
-		};
+		Ability* ability;
 	};
 	Vec3 pos;
 	union
 	{
-		float extra_f;
-		float extra_fs[4];
-		int extra_id;
-		int extra_data[4];
+		float extraFloat;
+		float extraFloats[4];
 	};
 
 	template<typename T>

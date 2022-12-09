@@ -28,6 +28,8 @@ enum GAME_KEYS
 	GK_JOURNAL, // J
 	GK_MINIMAP, // Tab
 	GK_TALK_BOX, // '"
+	GK_ACCEPT_NOTIFICATION, // F1
+	GK_DECLINE_NOTIFICATION, // F3
 	GK_QUICKSAVE, // F5
 	GK_QUICKLOAD, // F9
 	GK_TAKE_ALL, // F
@@ -55,12 +57,17 @@ enum GAME_KEYS
 struct GameKey
 {
 	cstring id, text;
-	Key key[2];
+	KeyPair key;
 
 	void Set(Key k1 = Key::None, Key k2 = Key::None)
 	{
 		key[0] = k1;
 		key[1] = k2;
+	}
+
+	Key GetFirstKey() const
+	{
+		return key[0] != Key::None ? key[0] : key[1];
 	}
 
 	Key& operator [] (int n)
@@ -131,11 +138,11 @@ public:
 		return keys[n];
 	}
 
-	bool AllowKeyboard() const { return IsSet(allow_input, ALLOW_KEYBOARD); }
-	bool AllowMouse() const { return IsSet(allow_input, ALLOW_MOUSE); }
+	bool AllowKeyboard() const { return IsSet(allowInput, ALLOW_KEYBOARD); }
+	bool AllowMouse() const { return IsSet(allowInput, ALLOW_MOUSE); }
 	bool KeyAllowed(Key k)
 	{
-		return IsSet(allow_input, KeyAllowState((byte)k));
+		return IsSet(allowInput, KeyAllowState((byte)k));
 	}
 	Key KeyDoReturn(GAME_KEYS gk, Input::Func f)
 	{
@@ -156,24 +163,24 @@ public:
 	{
 		return KeyDoReturn(gk, reinterpret_cast<Input::Func>(f));
 	}
-	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::Func f, Key ignored_key)
+	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::Func f, Key ignoredKey)
 	{
 		GameKey& k = keys[gk];
-		if(k[0] != Key::None && k[0] != ignored_key)
+		if(k[0] != Key::None && k[0] != ignoredKey)
 		{
 			if(KeyAllowed(k[0]) && (input->*f)(k[0]))
 				return k[0];
 		}
-		if(k[1] != Key::None && k[1] != ignored_key)
+		if(k[1] != Key::None && k[1] != ignoredKey)
 		{
 			if(KeyAllowed(k[1]) && (input->*f)(k[1]))
 				return k[1];
 		}
 		return Key::None;
 	}
-	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::FuncC f, Key ignored_key)
+	Key KeyDoReturnIgnore(GAME_KEYS gk, Input::FuncC f, Key ignoredKey)
 	{
-		return KeyDoReturnIgnore(gk, reinterpret_cast<Input::Func>(f), ignored_key);
+		return KeyDoReturnIgnore(gk, reinterpret_cast<Input::Func>(f), ignoredKey);
 	}
 	bool KeyDo(GAME_KEYS gk, Input::Func f)
 	{
@@ -243,7 +250,7 @@ public:
 		return IsDebug() && input->Focus() && input->Down(k);
 	}
 
-	AllowInput allow_input;
+	AllowInput allowInput;
 
 private:
 	GameKey keys[GK_MAX];

@@ -17,9 +17,9 @@ enum SAVE_VERSION
 	V_0_6_2 = 10, // 0.6.2
 	V_0_7 = 11, // 0.7
 	V_0_7_1 = 12, // 0.7.1
-
-	MIN_SUPPORT_LOAD_VERSION = 13,
 	V_0_8 = 13, // 0.8
+
+	MIN_SUPPORT_LOAD_VERSION = 14,
 	V_0_9 = 14, // 0.9
 	V_0_10 = 15, // 0.10
 	V_0_11 = 16, // 0.11/0.11.1
@@ -31,10 +31,11 @@ enum SAVE_VERSION
 	V_0_16 = 22, // 0.16
 	V_0_17 = 23, // 0.17/0.17.1/0.17.2
 	V_0_18 = 24, // 0.18
-	V_NEXT = 25,
+	V_0_19 = 25, // 0.19
+	V_NEXT = 26,
 
 	// save version used by saves
-	V_CURRENT = V_0_18,
+	V_CURRENT = V_0_19,
 
 	// use this versions in development on different branches
 	V_MAIN = V_NEXT, // main bugfix branch
@@ -44,12 +45,12 @@ enum SAVE_VERSION
 //-----------------------------------------------------------------------------
 struct SaveException
 {
-	SaveException(cstring localized_msg, cstring msg, bool missing_file = false) : localized_msg(localized_msg), msg(msg), missing_file(missing_file)
+	SaveException(cstring localizedMsg, cstring msg, bool missingFile = false) : localizedMsg(localizedMsg), msg(msg), missingFile(missingFile)
 	{
 	}
 
-	cstring localized_msg, msg;
-	bool missing_file;
+	cstring localizedMsg, msg;
+	bool missingFile;
 };
 
 //-----------------------------------------------------------------------------

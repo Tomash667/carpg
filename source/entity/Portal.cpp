@@ -6,9 +6,9 @@ void Portal::Save(GameWriter& f)
 {
 	f << pos;
 	f << rot;
-	f << at_level;
+	f << atLevel;
 	f << index;
-	f << target_loc;
+	f << targetLoc;
 }
 
 //=================================================================================================
@@ -16,7 +16,7 @@ void Portal::Load(GameReader& f)
 {
 	f >> pos;
 	f >> rot;
-	f >> at_level;
+	f >> atLevel;
 	f >> index;
-	f >> target_loc;
+	f >> targetLoc;
 }

@@ -56,11 +56,11 @@ public:
 	int GetLocationEventHandlerQuestId() override { return id; }
 	void Update(float dt);
 
-	State bandits_state;
+	State banditsState;
 	float timer;
 	Unit* agent;
 
 private:
-	int enc, other_loc, camp_loc;
-	bool get_letter;
+	int enc, otherLoc, campLoc;
+	bool getLetter;
 };

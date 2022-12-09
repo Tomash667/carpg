@@ -29,7 +29,7 @@ enum Stats
 };
 
 //=================================================================================================
-StatsPanel::StatsPanel() : last_update(0.f)
+StatsPanel::StatsPanel() : lastUpdate(0.f)
 {
 	visible = false;
 	tooltip.Init(TooltipController::Callback(this, &StatsPanel::GetTooltip));
@@ -59,7 +59,7 @@ void StatsPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void StatsPanel::Draw(ControlDrawData*)
+void StatsPanel::Draw()
 {
 	GamePanel::Draw();
 
@@ -69,7 +69,7 @@ void StatsPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();
@@ -89,10 +89,10 @@ void StatsPanel::Event(GuiEvent e)
 		int sizex = (size.x - 48) / 3;
 		int sizey = size.y - 64;
 
-		flowAttribs.UpdateSize(global_pos + Int2(16, 48), Int2(sizex, 200), visible);
-		flowStats.UpdateSize(global_pos + Int2(16, 200 + 48 + 8), Int2(sizex, sizey - 200 - 8), visible);
-		flowSkills.UpdateSize(global_pos + Int2(16 + sizex + 8, 48), Int2(sizex, sizey), visible);
-		flowFeats.UpdateSize(global_pos + Int2(16 + (sizex + 8) * 2, 48), Int2(sizex, sizey), visible);
+		flowAttribs.UpdateSize(globalPos + Int2(16, 48), Int2(sizex, 200), visible);
+		flowStats.UpdateSize(globalPos + Int2(16, 200 + 48 + 8), Int2(sizex, sizey - 200 - 8), visible);
+		flowSkills.UpdateSize(globalPos + Int2(16 + sizex + 8, 48), Int2(sizex, sizey), visible);
+		flowFeats.UpdateSize(globalPos + Int2(16 + (sizex + 8) * 2, 48), Int2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
 	{
@@ -106,25 +106,25 @@ void StatsPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	last_update -= dt;
-	if(last_update <= 0.f)
+	lastUpdate -= dt;
+	if(lastUpdate <= 0.f)
 		SetText();
 
 	int group = -1, id = -1;
 
-	flowAttribs.mouse_focus = focus;
+	flowAttribs.mouseFocus = focus;
 	flowAttribs.Update(dt);
 	flowAttribs.GetSelected(group, id);
 
-	flowStats.mouse_focus = focus;
+	flowStats.mouseFocus = focus;
 	flowStats.Update(dt);
 	flowStats.GetSelected(group, id);
 
-	flowSkills.mouse_focus = focus;
+	flowSkills.mouseFocus = focus;
 	flowSkills.Update(dt);
 	flowSkills.GetSelected(group, id);
 
-	flowFeats.mouse_focus = focus;
+	flowFeats.mouseFocus = focus;
 	flowFeats.Update(dt);
 	flowFeats.GetSelected(group, id);
 
@@ -159,22 +159,22 @@ void StatsPanel::SetText()
 	if(IsSet(clas->flags, Class::F_MP_BAR))
 	{
 		flowStats.Add()->Set(Format(txTraitsStartMp, hp, int(pc->unit->hpmax), int(pc->unit->mp), int(pc->unit->mpmax),
-			int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+			int(pc->unit->stamina), int(pc->unit->staminaMax)), G_INVALID, -1);
 	}
 	else
-		flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+		flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->staminaMax)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
 	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
 	cstring blockDesc = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "-");
-	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learning_points,
-		float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), pc->learningPoints,
+		float(pc->unit->weight) / 10, float(pc->unit->weightMax) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
-	if(game->hardcore_mode)
+	if(game->hardcoreMode)
 		flowStats.Add()->Set(Format("$cr%s$c-", txHardcoreMode), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txDate, world->GetDate()), G_INVALID, -1);
-	flowStats.Add()->Set(Format(txStatsText, game_stats->hour, game_stats->minute, game_stats->second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
-		pc->arena_fights), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txStatsText, gameStats->hour, gameStats->minute, gameStats->second, pc->kills, pc->knocks, pc->dmgDone, pc->dmgTaken,
+		pc->arenaFights), G_INVALID, -1);
 	flowStats.Reposition();
 
 	// skills
@@ -204,7 +204,7 @@ void StatsPanel::SetText()
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
 		Perk* perk = pc->perks[i].perk;
-		if(perk->value_type != Perk::None)
+		if(perk->valueType != Perk::None)
 		{
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();
@@ -222,7 +222,7 @@ void StatsPanel::SetText()
 	flowFeats.Reposition();
 	StringPool.Free(strs.Get());
 
-	last_update = 0.5f;
+	lastUpdate = 0.5f;
 }
 
 //=================================================================================================
@@ -237,7 +237,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		{
 			Attribute& ai = Attribute::attributes[id];
 			AttributeId a = (AttributeId)id;
-			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
+			tooltip.bigText = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			if(game->devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->attrib[id];
@@ -246,7 +246,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 			}
 			else
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
-			tooltip.small_text.clear();
+			tooltip.smallText.clear();
 		}
 		break;
 	case G_STATS:
@@ -255,26 +255,26 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		case STATS_CLASS:
 			{
 				Class* clas = pc->unit->GetClass();
-				tooltip.big_text = clas->name;
+				tooltip.bigText = clas->name;
 				tooltip.text = clas->desc;
 				if(game->devmode)
 				{
 					if(Net::IsLocal())
-						tooltip.small_text = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->exp_level, pc->exp, pc->exp_need);
+						tooltip.smallText = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->expLevel, pc->exp, pc->expNeed);
 					else
-						tooltip.small_text = Format("Level: %d", pc->unit->level);
+						tooltip.smallText = Format("Level: %d", pc->unit->level);
 				}
 				else
-					tooltip.small_text.clear();
+					tooltip.smallText.clear();
 			}
 			break;
 		case STATS_ATTACK:
 			{
 				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
 				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
-				tooltip.big_text.clear();
+				tooltip.bigText.clear();
 				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
-				tooltip.small_text.clear();
+				tooltip.smallText.clear();
 			}
 			break;
 		default:
@@ -287,7 +287,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 		{
 			Skill& si = Skill::skills[id];
 			SkillId s = (SkillId)id;
-			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
+			tooltip.bigText = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
 			if(game->devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->skill[id];
@@ -297,18 +297,18 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 			else
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			if(si.attrib2 != AttributeId::NONE)
-				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
+				tooltip.smallText = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
 			else
-				tooltip.small_text = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
+				tooltip.smallText = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
 		}
 		break;
 	case G_PERK:
 		{
 			TakenPerk& tp = pc->perks[id];
 			tooltip.img = nullptr;
-			tooltip.big_text = tp.perk->name;
+			tooltip.bigText = tp.perk->name;
 			tooltip.text = tp.perk->desc;
-			tp.GetDetails(tooltip.small_text);
+			tp.GetDetails(tooltip.smallText);
 		}
 		break;
 	case G_INVALID:

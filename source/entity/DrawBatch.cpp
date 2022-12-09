@@ -4,23 +4,25 @@
 #include <DebugNode.h>
 #include <ParticleSystem.h>
 
-ObjectPool<Light> DrawBatch::light_pool;
+ObjectPool<Light> DrawBatch::lightPool;
 
 //=================================================================================================
 void DrawBatch::Clear()
 {
+	RemoveElements(nodes, [](SceneNode* node) { return node->persistent; });
+	RemoveElements(alphaNodes, [](SceneNode* node) { return node->persistent; });
 	SceneNode::Free(nodes);
-	SceneNode::Free(alpha_nodes);
-	node_groups.clear();
-	DebugNode::Free(debug_nodes);
-	glow_nodes.clear();
-	terrain_parts.clear();
+	SceneNode::Free(alphaNodes);
+	nodeGroups.clear();
+	DebugNode::Free(debugNodes);
+	glowNodes.clear();
+	terrainParts.clear();
 	bloods.clear();
 	billboards.clear();
 	pes.clear();
 	areas.clear();
 	Area2::Free(areas2);
-	dungeon_parts.clear();
-	dungeon_part_groups.clear();
-	light_pool.Free(tmp_lights);
+	dungeonParts.clear();
+	dungeonPartGroups.clear();
+	lightPool.Free(tmpLights);
 }

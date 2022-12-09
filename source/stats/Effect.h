@@ -61,7 +61,7 @@ struct Effect
 {
 	EffectId effect;
 	EffectSource source;
-	int source_id, value;
+	int sourceId, value;
 	float time, power;
 
 	bool IsVisible() const
@@ -82,9 +82,9 @@ struct EffectInfo
 
 	EffectId effect;
 	cstring id, desc;
-	ValueType value_type;
+	ValueType valueType;
 
-	EffectInfo(EffectId effect, cstring id, cstring desc, ValueType value_type = None) : effect(effect), id(id), desc(desc), value_type(value_type) {}
+	EffectInfo(EffectId effect, cstring id, cstring desc, ValueType valueType = None) : effect(effect), id(id), desc(desc), valueType(valueType) {}
 
 	static EffectInfo effects[(uint)EffectId::Max];
 	static EffectId TryGet(const string& id);

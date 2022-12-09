@@ -1000,7 +1000,7 @@ dialog hero
 		{
 			choice 1
 			{
-				if script "target.hero.lost_pvp"
+				if script "target.hero.lostPvp"
 				{
 					talk 2
 					restart
@@ -1138,10 +1138,10 @@ dialog hero
 	}
 	else
 	{
-		if script "!target.known_name"
+		if script "!target.knownName"
 		{
 			do_once
-			script "target.known_name = true;"
+			script "target.knownName = true;"
 			talk 28
 		}
 		if once
@@ -1157,7 +1157,7 @@ dialog hero
 		}
 		choice 32
 		{
-			if script "Team::size >= Team::max_size"
+			if script "Team::size >= Team::maxSize"
 			{
 				talk 33
 				restart
@@ -1293,7 +1293,7 @@ dialog hero_buy_item
 //==============================================================================
 dialog hero_pvp
 {
-	if script "target.hero.lost_pvp"
+	if script "target.hero.lostPvp"
 		talk 0
 	else
 		talk 1
@@ -1311,7 +1311,7 @@ dialog crazy
 		{
 			choice 1
 			{
-				if script "target.hero.lost_pvp"
+				if script "target.hero.lostPvp"
 				{
 					talk 2
 					restart
@@ -1455,10 +1455,10 @@ dialog crazy
 	}
 	else
 	{
-		if script "!target.known_name"
+		if script "!target.knownName"
 		{
 			do_once
-			script "target.known_name = true;"
+			script "target.knownName = true;"
 			talk 29
 		}
 		if once
@@ -1474,7 +1474,7 @@ dialog crazy
 		}
 		choice 33
 		{
-			if script "Team::size >= Team::max_size"
+			if script "Team::size >= Team::maxSize"
 			{
 				if rand 3
 				{
@@ -1640,7 +1640,7 @@ dialog crazy_buy_item
 //==============================================================================
 dialog crazy_pvp
 {
-	if script "target.hero.lost_pvp"
+	if script "target.hero.lostPvp"
 		talk 0
 	else
 		talk 1
@@ -1903,21 +1903,13 @@ dialog traveler
 	}
 	if special "have_completed_quest"
 		end
-	if have_quest_item "$$lost_item"
-	{
-		choice 3
-		{
-			do_quest_item "$$lost_item"
-			end
-		}
-	}
 	if choices 0
 	{
 		check_quest_timeout 2
-		talk 4
+		talk 2
 		end
 	}
-	escape choice 5
+	escape choice 3
 		end
 	show_choices
 }
@@ -2257,7 +2249,7 @@ dialog q_bandits_master
 {
 	if quest_progress 0
 	{
-		script "target.known_name = true;"
+		script "target.knownName = true;"
 		talk 0
 		talk 1
 		talk 2
@@ -2671,7 +2663,7 @@ dialog q_evil_cleric
 		set_quest_progress 3
 		talk 16
 		talk 17
-		script "target.known_name = true;"
+		script "target.knownName = true;"
 		talk 18
 		end
 	}
@@ -2810,7 +2802,7 @@ dialog q_goblins_nobleman
 	if quest_progress 0
 	{
 		talk 0
-		script "target.known_name = true;"
+		script "target.knownName = true;"
 		talk 1
 		talk 2
 		talk 3
@@ -3013,41 +3005,6 @@ dialog q_goblins_boss
 	talk 2
 	script "target.OrderAttack()"
 	end
-}
-
-//==============================================================================
-dialog q_lost_artifact_start
-{
-	talk 0
-	talk 1
-	choice 2
-	{
-		set_quest_progress 1
-		talk 3
-		talk 4
-		end
-	}
-	escape choice 5
-		end
-	show_choices
-}
-
-//==============================================================================
-dialog q_lost_artifact_end
-{
-	set_quest_progress 2
-	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_lost_artifact_timeout
-{
-	set_quest_progress 3
-	talk 0
-	talk 1
-	talk 2
-	end2
 }
 
 //==============================================================================
@@ -3298,9 +3255,9 @@ dialog q_mages2_mage
 	}
 	if once
 	{
-		if script "!target.known_name"
+		if script "!target.knownName"
 		{
-			script "target.known_name = true;"
+			script "target.knownName = true;"
 			talk 34
 			do_once
 		}
@@ -3399,10 +3356,10 @@ dialog q_mine_investor
 {
 	if quest_progress 0
 	{
-		if script "!target.known_name"
+		if script "!target.knownName"
 		{
 			do_once
-			script "target.known_name = true;"
+			script "target.knownName = true;"
 			talk 0
 			talk 1
 		}
@@ -4059,7 +4016,7 @@ dialog q_sawmill_talk
 {
 	if quest_progress 0
 	{
-		script "target.known_name = true;"
+		script "target.knownName = true;"
 		talk 0
 		talk 1
 		talk 2
@@ -4242,7 +4199,7 @@ dialog tomir
 {
 	talk 0
 	talk 1
-	script "target.known_name = true;"
+	script "target.knownName = true;"
 	if script "pc.name == \"Tomir\""
 		talk 2
 	if script "Team::size >= 4"

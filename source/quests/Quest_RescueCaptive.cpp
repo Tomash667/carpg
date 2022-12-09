@@ -7,7 +7,7 @@
 #include "ItemHelper.h"
 #include "Journal.h"
 #include "Level.h"
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 #include "QuestManager.h"
 #include "Team.h"
 #include "World.h"
@@ -62,32 +62,32 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest
 		{
-			OnStart(quest_mgr->txQuest[28]);
-			quest_mgr->quests_timeout.push_back(this);
+			OnStart(questMgr->txQuest[28]);
+			questMgr->questTimeouts.push_back(this);
 
 			targetLoc = world->GetRandomSpawnLocation(startLoc->pos, group);
 			targetLoc->SetKnown();
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			st = targetLoc->st;
-			unit_to_spawn = UnitData::Get("captive");
-			unit_dont_attack = true;
-			at_level = targetLoc->GetRandomLevel();
-			unit_event_handler = this;
-			send_spawn_event = true;
+			unitToSpawn = UnitData::Get("captive");
+			unitDontAttack = true;
+			atLevel = targetLoc->GetRandomLevel();
+			unitEventHandler = this;
+			sendSpawnEvent = true;
 			captive = nullptr;
 
-			msgs.push_back(Format(quest_mgr->txQuest[29], startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[29], startLoc->name.c_str(), world->GetDate()));
 
 			if(targetLoc->type == L_CAMP)
-				msgs.push_back(Format(quest_mgr->txQuest[33], startLoc->name.c_str(), group->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
+				msgs.push_back(Format(questMgr->txQuest[33], startLoc->name.c_str(), group->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 			else
-				msgs.push_back(Format(quest_mgr->txQuest[34], startLoc->name.c_str(), group->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
+				msgs.push_back(Format(questMgr->txQuest[34], startLoc->name.c_str(), group->name.c_str(), targetLoc->name.c_str(), GetLocationDirName(startLoc->pos, targetLoc->pos)));
 		}
 		break;
 	case Progress::FoundCaptive:
 		// found captive
 		{
-			OnUpdate(quest_mgr->txQuest[35]);
+			OnUpdate(questMgr->txQuest[35]);
 			team->AddExp(2000);
 		}
 		break;
@@ -96,11 +96,11 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
-			OnUpdate(quest_mgr->txQuest[36]);
+			OnUpdate(questMgr->txQuest[36]);
 		}
 		break;
 	case Progress::Timeout:
@@ -108,15 +108,15 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
-			OnUpdate(quest_mgr->txQuest[37]);
+			OnUpdate(questMgr->txQuest[37]);
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 		}
@@ -128,15 +128,15 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			int reward = GetReward();
 			team->AddReward(reward, reward * 3);
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 			team->RemoveMember(captive);
 
-			game_level->RemoveUnit(captive);
-			captive->event_handler = nullptr;
-			OnUpdate(Format(quest_mgr->txQuest[38], GetStartLocationName()));
+			gameLevel->RemoveUnit(captive);
+			captive->eventHandler = nullptr;
+			OnUpdate(Format(questMgr->txQuest[38], GetStartLocationName()));
 
 			captive = nullptr;
 		}
@@ -146,11 +146,11 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
-			OnUpdate(quest_mgr->txQuest[39]);
+			OnUpdate(questMgr->txQuest[39]);
 		}
 		break;
 	case Progress::ReportDeath:
@@ -159,16 +159,16 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 
-			OnUpdate(quest_mgr->txQuest[40]);
+			OnUpdate(questMgr->txQuest[40]);
 		}
 		break;
 	case Progress::ReportEscape:
@@ -179,30 +179,30 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			team->AddReward(reward / 4, reward * 3 / 2);
 			if(captive)
 			{
-				captive->event_handler = nullptr;
+				captive->eventHandler = nullptr;
 				captive = nullptr;
 			}
 
-			static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
-			if(targetLoc && targetLoc->active_quest == this)
-				targetLoc->active_quest = nullptr;
+			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
+			if(targetLoc && targetLoc->activeQuest == this)
+				targetLoc->activeQuest = nullptr;
 
-			OnUpdate(Format(quest_mgr->txQuest[41], GetStartLocationName()));
-			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
+			OnUpdate(Format(questMgr->txQuest[41], GetStartLocationName()));
+			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
 		}
 		break;
 	case Progress::CaptiveLeftInCity:
 		// captive was left in city
 		{
-			if(captive->hero->team_member)
+			if(captive->hero->teamMember)
 				team->RemoveMember(captive);
-			captive->dont_attack = false;
+			captive->dontAttack = false;
 			captive->OrderGoToInn();
 			captive->temporary = true;
-			captive->event_handler = nullptr;
+			captive->eventHandler = nullptr;
 			captive = nullptr;
 
-			OnUpdate(Format(quest_mgr->txQuest[42], game_level->city_ctx->name.c_str()));
+			OnUpdate(Format(questMgr->txQuest[42], gameLevel->cityCtx->name.c_str()));
 		}
 		break;
 	}
@@ -212,9 +212,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 cstring Quest_RescueCaptive::FormatString(const string& str)
 {
 	if(str == "Goddamn_bandits")
-		return Format("%s %s", quest_mgr->txQuest[group->gender ? 44 : 43], group->name.c_str());
+		return Format("%s %s", questMgr->txQuest[group->gender ? 44 : 43], group->name.c_str());
 	else if(str == "Those_bandits")
-		return Format("%s %s", quest_mgr->txQuest[group->gender ? 46 : 45], group->name.c_str());
+		return Format("%s %s", questMgr->txQuest[group->gender ? 46 : 45], group->name.c_str());
 	else if(str == "locname")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -235,7 +235,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return world->GetWorldtime() - start_time >= 30;
+	return world->GetWorldtime() - startTime >= 30;
 }
 
 //=================================================================================================
@@ -245,23 +245,23 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 	{
 		if(captive)
 		{
-			captive->event_handler = nullptr;
-			ForLocation(targetLoc, at_level)->RemoveUnit(captive);
+			captive->eventHandler = nullptr;
+			ForLocation(targetLoc, atLevel)->RemoveUnit(captive);
 			captive = nullptr;
 		}
 
-		OnUpdate(quest_mgr->txQuest[267]);
+		OnUpdate(questMgr->txQuest[267]);
 	}
 
 	return true;
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
+void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit)
 {
 	assert(unit);
 
-	switch(event_type)
+	switch(eventType)
 	{
 	case UnitEventHandler::DIE:
 		SetProgress(Progress::CaptiveDie);
@@ -323,12 +323,12 @@ Quest::LoadResult Quest_RescueCaptive::Load(GameReader& f)
 	f >> captive;
 	f >> st;
 
-	unit_event_handler = this;
+	unitEventHandler = this;
 
 	if(!done)
 	{
-		unit_to_spawn = UnitData::Get("captive");
-		unit_dont_attack = true;
+		unitToSpawn = UnitData::Get("captive");
+		unitDontAttack = true;
 	}
 
 	return LoadResult::Ok;

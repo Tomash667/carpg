@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "LevelArea.h"
+#include "LocationPart.h"
 
 #include "Ability.h"
 #include "AITeam.h"
@@ -11,6 +11,8 @@
 #include "GameCommon.h"
 #include "GameResources.h"
 #include "GroundItem.h"
+#include "Level.h"
+#include "LevelPart.h"
 #include "Net.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
@@ -19,22 +21,40 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
+#include <SceneNode.h>
 #include <SoundManager.h>
+#include <Terrain.h>
 
 //=================================================================================================
-LevelArea::~LevelArea()
+LocationPart::~LocationPart()
 {
 	DeleteElements(units);
 	DeleteElements(objects);
 	DeleteElements(usables);
 	DeleteElements(doors);
 	DeleteElements(chests);
-	DeleteElements(items);
+	DeleteElements(groundItems);
 	DeleteElements(traps);
 }
 
 //=================================================================================================
-void LevelArea::Update(float dt)
+void LocationPart::BuildScene()
+{
+	assert(lvlPart);
+
+	Scene* scene = lvlPart->scene;
+
+	// ground items
+	for(GroundItem* groundItem : groundItems)
+	{
+		groundItem->CreateSceneNode();
+		scene->Add(groundItem->node);
+	}
+}
+
+//=================================================================================================
+void LocationPart::Update(float dt)
 {
 	// update units
 	// new units can be added inside this loop - so no iterators!
@@ -42,15 +62,15 @@ void LevelArea::Update(float dt)
 		units[i]->Update(dt);
 
 	// update flickering lights
-	tmp->lights_dt += dt;
-	if(tmp->lights_dt >= 1.f / 20)
+	lvlPart->lightsDt += dt;
+	if(lvlPart->lightsDt >= 1.f / 20)
 	{
 		for(GameLight& light : lights)
 		{
-			light.pos = light.start_pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
-			light.color = Vec4((light.start_color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
+			light.pos = light.startPos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+			light.color = Vec4((light.startColor + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped(), 1);
 		}
-		tmp->lights_dt = 0;
+		lvlPart->lightsDt = 0;
 	}
 
 	// update chests
@@ -62,12 +82,12 @@ void LevelArea::Update(float dt)
 		door->Update(dt, *this);
 
 	LoopAndRemove(traps, [&](Trap* trap) { return trap->Update(dt, *this); });
-	LoopAndRemove(tmp->bullets, [&](Bullet* bullet) { return bullet->Update(dt, *this); });
-	LoopAndRemove(tmp->electros, [dt](Electro* electro) { return electro->Update(dt); });
-	LoopAndRemove(tmp->explos, [&](Explo* explo) { return explo->Update(dt, *this); });
-	LoopAndRemove(tmp->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
-	LoopAndRemove(tmp->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
-	LoopAndRemove(tmp->drains, [dt](Drain& drain) { return drain.Update(dt); });
+	LoopAndRemove(lvlPart->bullets, [&](Bullet* bullet) { return bullet->Update(dt, *this); });
+	LoopAndRemove(lvlPart->electros, [dt](Electro* electro) { return electro->Update(dt); });
+	LoopAndRemove(lvlPart->explos, [&](Explo* explo) { return explo->Update(dt, *this); });
+	LoopAndRemove(lvlPart->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
+	LoopAndRemove(lvlPart->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
+	LoopAndRemove(lvlPart->drains, [dt](Drain& drain) { return drain.Update(dt); });
 
 	// update blood spatters
 	for(Blood& blood : bloods)
@@ -86,7 +106,7 @@ void LevelArea::Update(float dt)
 }
 
 //=================================================================================================
-void LevelArea::Save(GameWriter& f)
+void LocationPart::Save(GameWriter& f)
 {
 	f << units.size();
 	for(Unit* unit : units)
@@ -108,9 +128,9 @@ void LevelArea::Save(GameWriter& f)
 	for(Chest* chest : chests)
 		chest->Save(f);
 
-	f << items.size();
-	for(GroundItem* item : items)
-		item->Save(f);
+	f << groundItems.size();
+	for(GroundItem* groundItem : groundItems)
+		groundItem->Save(f);
 
 	f << traps.size();
 	for(Trap* trap : traps)
@@ -124,19 +144,15 @@ void LevelArea::Save(GameWriter& f)
 	for(GameLight& light : lights)
 		light.Save(f);
 
-	if(tmp)
-		tmp->Save(f);
+	if(lvlPart)
+		lvlPart->Save(f);
 }
 
 //=================================================================================================
-void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
+void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
 {
-	if(f.isLocal && !tmp)
-	{
-		tmp = TmpLevelArea::Get();
-		tmp->area = this;
-		tmp->lights_dt = 1.f;
-	}
+	if(f.isLocal && !lvlPart)
+		lvlPart = new LevelPart(this);
 
 	switch(compatibility)
 	{
@@ -147,7 +163,7 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			{
 				unit = new Unit;
 				unit->Load(f);
-				unit->area = this;
+				unit->locPart = this;
 			}
 
 			objects.resize(f.Read<uint>());
@@ -178,11 +194,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 				chest->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			traps.resize(f.Read<uint>());
@@ -208,7 +224,7 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			{
 				unit = new Unit;
 				unit->Load(f);
-				unit->area = this;
+				unit->locPart = this;
 			}
 
 			doors.resize(f.Read<uint>());
@@ -225,11 +241,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 				object->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -255,7 +271,7 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			{
 				unit = new Unit;
 				unit->Load(f);
-				unit->area = this;
+				unit->locPart = this;
 			}
 
 			chests.resize(f.Read<uint>());
@@ -279,11 +295,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 				door->Load(f);
 			}
 
-			items.resize(f.Read<int>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<int>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -319,7 +335,7 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 			{
 				unit = new Unit;
 				unit->Load(f);
-				unit->area = this;
+				unit->locPart = this;
 			}
 
 			objects.resize(f.Read<uint>());
@@ -336,11 +352,11 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 				chest->Load(f);
 			}
 
-			items.resize(f.Read<uint>());
-			for(GroundItem*& item : items)
+			groundItems.resize(f.Read<uint>());
+			for(GroundItem*& groundItem : groundItems)
 			{
-				item = new GroundItem;
-				item->Load(f);
+				groundItem = new GroundItem;
+				groundItem->Load(f);
 			}
 
 			usables.resize(f.Read<uint>());
@@ -357,12 +373,12 @@ void LevelArea::Load(GameReader& f, old::LoadCompatibility compatibility)
 		break;
 	}
 
-	if(tmp && Any(compatibility, old::LoadCompatibility::None, old::LoadCompatibility::InsideBuilding))
-		tmp->Load(f);
+	if(lvlPart && Any(compatibility, old::LoadCompatibility::None, old::LoadCompatibility::InsideBuilding))
+		lvlPart->Load(f);
 }
 
 //=================================================================================================
-void LevelArea::Write(BitStreamWriter& f)
+void LocationPart::Write(BitStreamWriter& f)
 {
 	// units
 	f.Write(units.size());
@@ -385,9 +401,9 @@ void LevelArea::Write(BitStreamWriter& f)
 	for(Chest* chest : chests)
 		chest->Write(f);
 	// ground items
-	f.Write(items.size());
-	for(GroundItem* item : items)
-		item->Write(f);
+	f.Write(groundItems.size());
+	for(GroundItem* groundItem : groundItems)
+		groundItem->Write(f);
 	// traps
 	f.Write(traps.size());
 	for(Trap* trap : traps)
@@ -403,21 +419,17 @@ void LevelArea::Write(BitStreamWriter& f)
 }
 
 //=================================================================================================
-bool LevelArea::Read(BitStreamReader& f)
+bool LocationPart::Read(BitStreamReader& f)
 {
-	if(!tmp)
-	{
-		tmp = TmpLevelArea::Get();
-		tmp->area = this;
-		tmp->lights_dt = 1.f;
-	}
+	if(!lvlPart)
+		lvlPart = new LevelPart(this);
 
 	// units
 	uint count;
 	f >> count;
 	if(!f.Ensure(Unit::MIN_SIZE * count))
 	{
-		Error("Read area: Invalid unit count.");
+		Error("Read location part: Invalid unit count.");
 		return false;
 	}
 	units.resize(count);
@@ -426,17 +438,17 @@ bool LevelArea::Read(BitStreamReader& f)
 		unit = new Unit;
 		if(!unit->Read(f))
 		{
-			Error("Read area: Broken unit.");
+			Error("Read location part: Broken unit.");
 			return false;
 		}
-		unit->area = this;
+		unit->locPart = this;
 	}
 
 	// objects
 	f >> count;
 	if(!f.Ensure(count * Object::MIN_SIZE))
 	{
-		Error("Read area: Invalid object count.");
+		Error("Read location part: Invalid object count.");
 		return false;
 	}
 	objects.resize(count);
@@ -445,7 +457,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		object = new Object;
 		if(!object->Read(f))
 		{
-			Error("Read area: Broken object.");
+			Error("Read location part: Broken object.");
 			return false;
 		}
 	}
@@ -454,7 +466,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(Usable::MIN_SIZE * count))
 	{
-		Error("Read area: Invalid usable object count.");
+		Error("Read location part: Invalid usable object count.");
 		return false;
 	}
 	usables.resize(count);
@@ -463,7 +475,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		usable = new Usable;
 		if(!usable->Read(f))
 		{
-			Error("Read area: Broken usable objects.");
+			Error("Read location part: Broken usable objects.");
 			return false;
 		}
 	}
@@ -472,7 +484,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Door::MIN_SIZE))
 	{
-		Error("Read area: Invalid door count.");
+		Error("Read location part: Invalid door count.");
 		return false;
 	}
 	doors.resize(count);
@@ -481,7 +493,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		door = new Door;
 		if(!door->Read(f))
 		{
-			Error("Read area: Broken door.");
+			Error("Read location part: Broken door.");
 			return false;
 		}
 	}
@@ -490,7 +502,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Chest::MIN_SIZE))
 	{
-		Error("Read area: Invalid chest count.");
+		Error("Read location part: Invalid chest count.");
 		return false;
 	}
 	chests.resize(count);
@@ -499,7 +511,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		chest = new Chest;
 		if(!chest->Read(f))
 		{
-			Error("Read area: Broken chest.");
+			Error("Read location part: Broken chest.");
 			return false;
 		}
 	}
@@ -508,16 +520,16 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * GroundItem::MIN_SIZE))
 	{
-		Error("Read area: Invalid ground item count.");
+		Error("Read location part: Invalid ground item count.");
 		return false;
 	}
-	items.resize(count);
-	for(GroundItem*& item : items)
+	groundItems.resize(count);
+	for(GroundItem*& groundItem : groundItems)
 	{
-		item = new GroundItem;
-		if(!item->Read(f))
+		groundItem = new GroundItem;
+		if(!groundItem->Read(f))
 		{
-			Error("Read area: Broken ground item.");
+			Error("Read location part: Broken ground item.");
 			return false;
 		}
 	}
@@ -526,7 +538,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Trap::MIN_SIZE))
 	{
-		Error("Read area: Invalid trap count.");
+		Error("Read location part: Invalid trap count.");
 		return false;
 	}
 	traps.resize(count);
@@ -535,7 +547,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		trap = new Trap;
 		if(!trap->Read(f))
 		{
-			Error("Read area: Broken trap.");
+			Error("Read location part: Broken trap.");
 			return false;
 		}
 	}
@@ -544,7 +556,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * Blood::MIN_SIZE))
 	{
-		Error("Read area: Invalid blood count.");
+		Error("Read location part: Invalid blood count.");
 		return false;
 	}
 	bloods.resize(count);
@@ -552,7 +564,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		blood.Read(f);
 	if(!f)
 	{
-		Error("Read area: Broken blood.");
+		Error("Read location part: Broken blood.");
 		return false;
 	}
 
@@ -560,7 +572,7 @@ bool LevelArea::Read(BitStreamReader& f)
 	f >> count;
 	if(!f.Ensure(count * GameLight::MIN_SIZE))
 	{
-		Error("Read area: Invalid light count.");
+		Error("Read location part: Invalid light count.");
 		return false;
 	}
 	lights.resize(count);
@@ -568,7 +580,7 @@ bool LevelArea::Read(BitStreamReader& f)
 		light.Read(f);
 	if(!f)
 	{
-		Error("Read area: Broken light.");
+		Error("Read location part: Broken light.");
 		return false;
 	}
 
@@ -576,12 +588,12 @@ bool LevelArea::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-void LevelArea::Clear()
+void LocationPart::Clear()
 {
 	bloods.clear();
 	DeleteElements(objects);
 	DeleteElements(chests);
-	DeleteElements(items);
+	DeleteElements(groundItems);
 	for(Unit* unit : units)
 	{
 		if(unit->IsAlive() && unit->IsHero() && unit->hero->otherTeam)
@@ -592,21 +604,7 @@ void LevelArea::Clear()
 }
 
 //=================================================================================================
-cstring LevelArea::GetName()
-{
-	switch(area_type)
-	{
-	case Type::Inside:
-		return "Inside";
-	case Type::Outside:
-		return "Outside";
-	default:
-		return Format("Building%d", area_id);
-	}
-}
-
-//=================================================================================================
-Unit* LevelArea::FindUnit(UnitData* ud)
+Unit* LocationPart::FindUnit(UnitData* ud)
 {
 	assert(ud);
 
@@ -620,7 +618,7 @@ Unit* LevelArea::FindUnit(UnitData* ud)
 }
 
 //=================================================================================================
-Usable* LevelArea::FindUsable(BaseUsable* base)
+Usable* LocationPart::FindUsable(BaseUsable* base)
 {
 	assert(base);
 
@@ -634,7 +632,7 @@ Usable* LevelArea::FindUsable(BaseUsable* base)
 }
 
 //=================================================================================================
-bool LevelArea::RemoveItem(const Item* item)
+bool LocationPart::RemoveItem(const Item* item)
 {
 	assert(item);
 
@@ -661,7 +659,7 @@ bool LevelArea::RemoveItem(const Item* item)
 }
 
 //=================================================================================================
-bool LevelArea::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
+bool LocationPart::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 {
 	assert(item);
 
@@ -685,18 +683,39 @@ bool LevelArea::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 }
 
 //=================================================================================================
-bool LevelArea::RemoveGroundItem(const Item* item)
+void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
+{
+	assert(groundItem);
+
+	if(gameLevel->ready && lvlPart)
+	{
+		gameRes->PreloadItem(groundItem->item);
+		groundItem->CreateSceneNode();
+		lvlPart->scene->Add(groundItem->node);
+
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPAWN_ITEM;
+			c.item = groundItem;
+		}
+	}
+
+	if(adjustY && partType == LocationPart::Type::Outside)
+		gameLevel->terrain->SetY(groundItem->pos);
+	groundItems.push_back(groundItem);
+}
+
+//=================================================================================================
+bool LocationPart::RemoveGroundItem(const Item* item)
 {
 	assert(item);
 
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	for(GroundItem* groundItem : groundItems)
 	{
-		if((*it)->item == item)
+		if(groundItem->item == item)
 		{
-			delete *it;
-			if(it + 1 != end)
-				std::iter_swap(it, end - 1);
-			items.pop_back();
+			RemoveGroundItem(groundItem);
 			return true;
 		}
 	}
@@ -705,13 +724,53 @@ bool LevelArea::RemoveGroundItem(const Item* item)
 }
 
 //=================================================================================================
-Object* LevelArea::FindObject(BaseObject* base_obj)
+void LocationPart::RemoveGroundItem(int questId)
 {
-	assert(base_obj);
+	assert(questId != -1);
+
+	for(GroundItem* groundItem : groundItems)
+	{
+		if(groundItem->item->questId == questId)
+		{
+			RemoveGroundItem(groundItem);
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void LocationPart::RemoveGroundItem(GroundItem* groundItem)
+{
+	assert(groundItem);
+
+	if(gameLevel->ready && lvlPart)
+	{
+		lvlPart->scene->Remove(groundItem->node);
+		groundItem->node->Free();
+
+		if(PlayerController::data.beforePlayer == BP_ITEM && PlayerController::data.beforePlayerPtr.item == groundItem)
+			PlayerController::data.beforePlayer = BP_NONE;
+
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_ITEM;
+			c.id = groundItem->id;
+		}
+	}
+
+	RemoveElement(groundItems, groundItem);
+	delete groundItem;
+}
+
+//=================================================================================================
+Object* LocationPart::FindObject(BaseObject* baseObj)
+{
+	assert(baseObj);
 
 	for(Object* obj : objects)
 	{
-		if(obj->base == base_obj)
+		if(obj->base == baseObj)
 			return obj;
 	}
 
@@ -719,14 +778,14 @@ Object* LevelArea::FindObject(BaseObject* base_obj)
 }
 
 //=================================================================================================
-Object* LevelArea::FindNearestObject(BaseObject* base_obj, const Vec3& pos)
+Object* LocationPart::FindNearestObject(BaseObject* baseObj, const Vec3& pos)
 {
 	Object* found_obj = nullptr;
 	float best_dist = 9999.f;
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
-		if(obj.base == base_obj)
+		if(obj.base == baseObj)
 		{
 			float dist = Vec3::Distance(pos, obj.pos);
 			if(dist < best_dist)
@@ -740,7 +799,7 @@ Object* LevelArea::FindNearestObject(BaseObject* base_obj, const Vec3& pos)
 }
 
 //=================================================================================================
-Chest* LevelArea::FindChestInRoom(const Room& p)
+Chest* LocationPart::FindChestInRoom(const Room& p)
 {
 	for(Chest* chest : chests)
 	{
@@ -752,7 +811,7 @@ Chest* LevelArea::FindChestInRoom(const Room& p)
 }
 
 //=================================================================================================
-Chest* LevelArea::GetRandomFarChest(const Int2& pt)
+Chest* LocationPart::GetRandomFarChest(const Int2& pt)
 {
 	vector<pair<Chest*, float>> far_chests;
 	float close_dist = -1.f;
@@ -803,7 +862,7 @@ Chest* LevelArea::GetRandomFarChest(const Int2& pt)
 }
 
 //=================================================================================================
-bool LevelArea::HaveUnit(Unit* unit)
+bool LocationPart::HaveUnit(Unit* unit)
 {
 	assert(unit);
 
@@ -817,7 +876,7 @@ bool LevelArea::HaveUnit(Unit* unit)
 }
 
 //=================================================================================================
-Chest* LevelArea::FindChestWithItem(const Item* item, int* index)
+Chest* LocationPart::FindChestWithItem(const Item* item, int* index)
 {
 	assert(item);
 
@@ -836,11 +895,11 @@ Chest* LevelArea::FindChestWithItem(const Item* item, int* index)
 }
 
 //=================================================================================================
-Chest* LevelArea::FindChestWithQuestItem(int quest_id, int* index)
+Chest* LocationPart::FindChestWithQuestItem(int questId, int* index)
 {
 	for(Chest* chest : chests)
 	{
-		int idx = chest->FindQuestItem(quest_id);
+		int idx = chest->FindQuestItem(questId);
 		if(idx != -1)
 		{
 			if(index)
@@ -853,7 +912,7 @@ Chest* LevelArea::FindChestWithQuestItem(int quest_id, int* index)
 }
 
 //=================================================================================================
-bool LevelArea::RemoveItemFromChest(const Item* item)
+bool LocationPart::RemoveItemFromChest(const Item* item)
 {
 	int index;
 	Chest* chest = FindChestWithItem(item, &index);
@@ -867,7 +926,7 @@ bool LevelArea::RemoveItemFromChest(const Item* item)
 
 //=================================================================================================
 // Check only alive units, ignore team
-bool LevelArea::RemoveItemFromUnit(const Item* item)
+bool LocationPart::RemoveItemFromUnit(const Item* item)
 {
 	for(Unit* unit : units)
 	{
@@ -885,7 +944,7 @@ bool LevelArea::RemoveItemFromUnit(const Item* item)
 }
 
 //=================================================================================================
-Door* LevelArea::FindDoor(const Int2& pt)
+Door* LocationPart::FindDoor(const Int2& pt)
 {
 	for(Door* door : doors)
 	{
@@ -897,19 +956,19 @@ Door* LevelArea::FindDoor(const Int2& pt)
 }
 
 //=================================================================================================
-void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
+void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 {
 	Ability& ability = *bullet.ability;
 
 	// sound
-	if(ability.sound_hit)
+	if(ability.soundHit)
 	{
-		sound_mgr->PlaySound3d(ability.sound_hit, pos, ability.sound_hit_dist);
+		soundMgr->PlaySound3d(ability.soundHit, pos, ability.soundHitDist);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
-			c.e_id = 1;
+			c.extraId = 1;
 			c.ability = &ability;
 			c.pos = pos;
 		}
@@ -923,7 +982,7 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 			Explo* explo = CreateExplo(&ability, pos);
 			explo->dmg = (float)ability.dmg;
 			if(bullet.owner)
-				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmg_bonus);
+				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmgBonus);
 			explo->owner = bullet.owner;
 			if(hitted)
 				explo->hitted.push_back(hitted);
@@ -932,55 +991,55 @@ void LevelArea::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	else
 	{
 		// particles
-		if(ability.tex_particle && ability.type == Ability::Ball)
+		if(ability.texParticle && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = ability.tex_particle;
-			pe->emission_interval = 0.01f;
+			pe->tex = ability.texParticle;
+			pe->emissionInterval = 0.01f;
 			pe->life = 0.f;
-			pe->particle_life = 0.5f;
+			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawn_min = 8;
-			pe->spawn_max = 12;
-			pe->max_particles = 12;
+			pe->spawnMin = 8;
+			pe->spawnMax = 12;
+			pe->maxParticles = 12;
 			pe->pos = pos;
-			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-			pe->pos_min = Vec3(-ability.size, -ability.size, -ability.size);
-			pe->pos_max = Vec3(ability.size, ability.size, ability.size);
+			pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+			pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
+			pe->posMax = Vec3(ability.size, ability.size, ability.size);
 			pe->size = ability.size / 2;
-			pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->alpha = 1.f;
-			pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->mode = 1;
 			pe->Init();
-			tmp->pes.push_back(pe);
+			lvlPart->pes.push_back(pe);
 		}
 	}
 }
 
 //=================================================================================================
-bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
+bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 {
 	// attack with weapon or unarmed
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.mesh_inst->mesh->head.n_groups > 1)
+	if(unit.meshInst->mesh->head.n_groups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
+		point = unit.meshInst->mesh->GetPoint(NAMES::pointWeapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
+		hitbox = unit.meshInst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
+			hitbox = unit.meshInst->mesh->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -994,21 +1053,21 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 // There are two allowed inputs:
 // - bone is "bron"(weapon) attachment point, hitbox is from weapon
 // - bone is nullptr, hitbox is from unit attack
-bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
+bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
 {
 	assert(hitted && hitbox.IsBox());
 
-	unit.mesh_inst->SetupBones();
+	unit.meshInst->SetupBones();
 
 	// calculate hitbox matrix
 	Matrix m1 = Matrix::Scale(unit.data->scale) * Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitScale * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * unit.meshInst->matBones[bone->bone] * m1);
 	}
 	else
-		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
+		m1 = hitbox.mat * unit.meshInst->matBones[hitbox.bone] * m1;
 
 	// a - weapon hitbox, b - unit hitbox
 	Oob a, b;
@@ -1056,33 +1115,33 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = game_res->tSpark;
-				pe->emission_interval = 0.01f;
+				pe->tex = gameRes->tSpark;
+				pe->emissionInterval = 0.01f;
 				pe->life = 5.f;
-				pe->particle_life = 0.5f;
+				pe->particleLife = 0.5f;
 				pe->emissions = 1;
-				pe->spawn_min = 10;
-				pe->spawn_max = 15;
-				pe->max_particles = 15;
+				pe->spawnMin = 10;
+				pe->spawnMax = 15;
+				pe->maxParticles = 15;
 				pe->pos = hitpoint;
-				pe->speed_min = Vec3(-1, 0, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+				pe->speedMin = Vec3(-1, 0, -1);
+				pe->speedMax = Vec3(1, 1, 1);
+				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
 				pe->size = 0.3f;
-				pe->op_size = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
-				pe->op_alpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
-				tmp->pes.push_back(pe);
+				lvlPart->pes.push_back(pe);
 
-				sound_mgr->PlaySound3d(game_res->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
-					if(quest_mgr->quest_tutorial->in_tutorial)
-						quest_mgr->quest_tutorial->HandleMeleeAttackCollision();
+					if(questMgr->questTutorial->inTutorial)
+						questMgr->questTutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 
@@ -1095,7 +1154,7 @@ bool LevelArea::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh
 }
 
 //=================================================================================================
-Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
+Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 {
 	assert(ability);
 
@@ -1103,8 +1162,8 @@ Explo* LevelArea::CreateExplo(Ability* ability, const Vec3& pos)
 	explo->ability = ability;
 	explo->pos = pos;
 	explo->size = 0;
-	explo->sizemax = ability->explode_range;
-	tmp->explos.push_back(explo);
+	explo->sizemax = ability->explodeRange;
+	lvlPart->explos.push_back(explo);
 
 	if(Net::IsServer())
 	{

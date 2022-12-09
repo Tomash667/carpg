@@ -24,24 +24,24 @@ namespace old
 //=================================================================================================
 void Hero::Init(Unit& _unit)
 {
-	know_name = false;
-	team_member = false;
+	knowName = false;
+	teamMember = false;
 	unit = &_unit;
 	credit = 0;
-	on_credit = false;
-	lost_pvp = false;
+	onCredit = false;
+	lostPvp = false;
 	expe = 0;
 	type = HeroType::Normal;
 	melee = false;
 	phase = false;
-	phase_timer = 0.f;
-	split_gold = 0.f;
+	phaseTimer = 0.f;
+	splitGold = 0.f;
 	otherTeam = nullptr;
 	loner = IsSet(_unit.data->flags, F_LONER) || Rand() % 5 == 0;
 	investment = 0;
 
-	if(!unit->data->real_name.empty())
-		name = unit->data->real_name;
+	if(!unit->data->realName.empty())
+		name = unit->data->realName;
 	else if(!IsSet(unit->data->flags2, F2_SPECIFIC_NAME))
 		NameHelper::GenerateHeroName(*this);
 }
@@ -50,16 +50,16 @@ void Hero::Init(Unit& _unit)
 void Hero::Save(GameWriter& f)
 {
 	f << name;
-	f << know_name;
-	f << team_member;
+	f << knowName;
+	f << teamMember;
 	f << credit;
 	f << expe;
 	f << melee;
 	f << phase;
-	f << phase_timer;
+	f << phaseTimer;
 	f << type;
-	f << lost_pvp;
-	f << split_gold;
+	f << lostPvp;
+	f << splitGold;
 	f << (otherTeam ? otherTeam->id : -1);
 	f << loner;
 	f << investment;
@@ -69,13 +69,13 @@ void Hero::Save(GameWriter& f)
 void Hero::Load(GameReader& f)
 {
 	f >> name;
-	f >> know_name;
-	f >> team_member;
+	f >> knowName;
+	f >> teamMember;
 	if(LOAD_VERSION < V_0_10)
 	{
 		old::Mode mode;
 		f >> mode;
-		if(team_member || mode == old::Leave)
+		if(teamMember || mode == old::Leave)
 		{
 			UnitOrderEntry* order = UnitOrderEntry::Get();
 			switch(mode)
@@ -104,7 +104,7 @@ void Hero::Load(GameReader& f)
 	f >> expe;
 	f >> melee;
 	f >> phase;
-	f >> phase_timer;
+	f >> phaseTimer;
 	if(LOAD_VERSION >= V_0_12)
 		f >> type;
 	else
@@ -113,8 +113,8 @@ void Hero::Load(GameReader& f)
 		f >> free;
 		type = free ? HeroType::Visitor : HeroType::Normal;
 	}
-	f >> lost_pvp;
-	f >> split_gold;
+	f >> lostPvp;
+	f >> splitGold;
 	if(LOAD_VERSION >= V_0_17)
 	{
 		int teamId;
@@ -156,7 +156,7 @@ void Hero::PassTime(int days, bool travel)
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(game_level->city_ctx && !travel)
+		if(gameLevel->cityCtx && !travel)
 			heal *= 2;
 		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
@@ -200,7 +200,7 @@ void Hero::AddExp(int exp)
 //=================================================================================================
 float Hero::GetExpMod() const
 {
-	int dif = unit->level - team->players_level;
+	int dif = unit->level - team->playersLevel;
 	if(IsSet(unit->data->flags2, F2_FAST_LEARNER))
 		--dif;
 	switch(dif)

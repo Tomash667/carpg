@@ -55,18 +55,18 @@ void GameMessages::LoadLanguage()
 //=================================================================================================
 void GameMessages::LoadData()
 {
-	snd_scribble = res_mgr->Load<Sound>("scribble.mp3");
+	sndScribble = resMgr->Load<Sound>("scribble.mp3");
 }
 
 //=================================================================================================
 void GameMessages::Reset()
 {
 	msgs.clear();
-	msgs_h = 0;
+	msgsHeight = 0;
 }
 
 //=================================================================================================
-void GameMessages::Draw(ControlDrawData*)
+void GameMessages::Draw()
 {
 	for(list<GameMsg>::iterator it = msgs.begin(), end = msgs.end(); it != end; ++it)
 	{
@@ -75,21 +75,21 @@ void GameMessages::Draw(ControlDrawData*)
 			a = 255 + int(it->fade * 2550);
 		else if(it->fade > 0 && it->time < 0.f)
 			a = 255 - int(it->fade * 2550);
-		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, gui->wnd_size.x, int(it->pos.y) + it->size.y / 2 };
+		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, gui->wndSize.x, int(it->pos.y) + it->size.y / 2 };
 		gui->DrawText(GameGui::font, it->msg, DTF_CENTER | DTF_OUTLINE, Color::Alpha(a), rect);
 	}
 
 	if(game->paused)
 	{
-		Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-		gui->DrawText(GameGui::font_big, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
+		gui->DrawText(GameGui::fontBig, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 }
 
 //=================================================================================================
 void GameMessages::Update(float dt)
 {
-	int h = 0, total_h = msgs_h;
+	int h = 0, total_h = msgsHeight;
 
 	for(list<GameMsg>::iterator it = msgs.begin(), end = msgs.end(); it != end; ++it)
 	{
@@ -108,7 +108,7 @@ void GameMessages::Update(float dt)
 			m.fade -= dt;
 			if(m.fade < -0.1f)
 			{
-				msgs_h -= m.size.y;
+				msgsHeight -= m.size.y;
 				it = msgs.erase(it);
 				end = msgs.end();
 				if(it == end)
@@ -118,7 +118,7 @@ void GameMessages::Update(float dt)
 			}
 		}
 
-		float target_h = float(gui->wnd_size.y) / 2 - float(total_h) / 2 + h;
+		float target_h = float(gui->wndSize.y) / 2 - float(total_h) / 2 + h;
 		m.pos.y += (target_h - m.pos.y) * dt * 2;
 	}
 }
@@ -138,7 +138,7 @@ void GameMessages::Save(GameWriter& f) const
 		f << msg.subtype;
 		f << msg.value;
 	}
-	f << msgs_h;
+	f << msgsHeight;
 }
 
 //=================================================================================================
@@ -156,7 +156,7 @@ void GameMessages::Load(GameReader& f)
 		f >> msg.subtype;
 		f >> msg.value;
 	}
-	f >> msgs_h;
+	f >> msgsHeight;
 }
 
 //=================================================================================================
@@ -170,21 +170,21 @@ void GameMessages::AddMessage(cstring text, float time, int type, int subtype, i
 	m.subtype = subtype;
 	m.time = time;
 	m.fade = -0.1f;
-	m.size = GameGui::font->CalculateSize(text, gui->wnd_size.x - 64);
+	m.size = GameGui::font->CalculateSize(text, gui->wndSize.x - 64);
 	m.size.y += 6;
 	m.value = value;
 
 	if(msgs.size() == 1u)
-		m.pos = Vec2(float(gui->wnd_size.x) / 2, float(gui->wnd_size.y) / 2);
+		m.pos = Vec2(float(gui->wndSize.x) / 2, float(gui->wndSize.y) / 2);
 	else
 	{
 		list<GameMsg>::reverse_iterator it = msgs.rbegin();
 		++it;
 		GameMsg& prev = *it;
-		m.pos = Vec2(float(gui->wnd_size.x) / 2, prev.pos.y + prev.size.y);
+		m.pos = Vec2(float(gui->wndSize.x) / 2, prev.pos.y + prev.size.y);
 	}
 
-	msgs_h += m.size.y;
+	msgsHeight += m.size.y;
 }
 
 //=================================================================================================
@@ -231,12 +231,12 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ADDED_RUMOR:
 		repeat = true;
 		text = txGmsRumor;
-		sound_mgr->PlaySound2d(snd_scribble);
+		soundMgr->PlaySound2d(sndScribble);
 		break;
 	case GMS_JOURNAL_UPDATED:
 		repeat = true;
 		text = txGmsJournalUpdated;
-		sound_mgr->PlaySound2d(snd_scribble);
+		soundMgr->PlaySound2d(sndScribble);
 		break;
 	case GMS_USED:
 		text = txGmsUsed;
@@ -352,11 +352,11 @@ void GameMessages::AddGameMsg3(GMS id)
 void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 {
 	assert(player);
-	if(player->is_local)
+	if(player->isLocal)
 		AddGameMsg3(id);
 	else
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
+		NetChangePlayer& c = Add1(player->playerInfo->changes);
 		c.type = NetChangePlayer::GAME_MESSAGE;
 		c.id = id;
 	}
@@ -366,7 +366,7 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int subtype, int value)
 {
 	assert(player);
-	if(player->is_local)
+	if(player->isLocal)
 	{
 		GameMsg* existing = nullptr;
 		for(GameMsg& msg : msgs)
@@ -412,7 +412,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 			GameMsg& msg = *existing;
 			msg.msg = text;
 			msg.time = time;
-			msg.size = GameGui::font->CalculateSize(text, gui->wnd_size.x - 64);
+			msg.size = GameGui::font->CalculateSize(text, gui->wndSize.x - 64);
 			msg.size.y += 6;
 			msg.value = value;
 		}
@@ -421,7 +421,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
+		NetChangePlayer& c = Add1(player->playerInfo->changes);
 		c.type = NetChangePlayer::GAME_MESSAGE_FORMATTED;
 		c.id = id;
 		c.count = value;

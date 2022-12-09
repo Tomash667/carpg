@@ -63,29 +63,29 @@ PlayerAction InventoryModeToActionRequired(InventoryMode imode)
 //=================================================================================================
 PlayerController::~PlayerController()
 {
-	if(dialog_ctx && !dialog_ctx->is_local)
-		delete dialog_ctx;
+	if(dialogCtx && !dialogCtx->isLocal)
+		delete dialogCtx;
 }
 
 //=================================================================================================
 void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 {
 	// to prevent sending MP message set temporary as fake unit
-	_unit.fake_unit = true;
+	_unit.fakeUnit = true;
 
 	unit = &_unit;
 	unit->player = this;
-	move_tick = 0.f;
-	last_weapon = W_NONE;
-	next_action = NA_NONE;
-	last_dmg_poison = last_dmg = dmgc = poison_dmgc = 0.f;
-	idle_timer = Random(1.f, 2.f);
+	moveTick = 0.f;
+	lastWeapon = W_NONE;
+	nextAction = NA_NONE;
+	lastDmgPoison = lastDmg = dmgc = poisonDmgc = 0.f;
+	idleTimer = Random(1.f, 2.f);
 	credit = 0;
-	on_credit = false;
+	onCredit = false;
 	action = PlayerAction::None;
-	free_days = 0;
-	recalculate_level = false;
-	split_gold = 0.f;
+	freeDays = 0;
+	recalculateLevel = false;
+	splitGold = 0.f;
 
 	if(cc)
 	{
@@ -93,16 +93,16 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		nocd = false;
 		noclip = false;
 		invisible = false;
-		always_run = true;
+		alwaysRun = true;
 		kills = 0;
-		dmg_done = 0;
-		dmg_taken = 0;
+		dmgDone = 0;
+		dmgTaken = 0;
 		knocks = 0;
-		arena_fights = 0;
-		learning_points = 0;
+		arenaFights = 0;
+		learningPoints = 0;
 		exp = 0;
-		exp_level = 0;
-		exp_need = GetExpNeed();
+		expLevel = 0;
+		expNeed = GetExpNeed();
 
 		// stats
 		unit->stats->Set(unit->data->GetStatProfile());
@@ -112,25 +112,25 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 				unit->stats->skill[i] += Skill::TAG_BONUS;
 			skill[i].points = 0;
 			skill[i].train = 0;
-			skill[i].train_part = 0;
+			skill[i].trainPart = 0;
 			skill[i].apt = unit->stats->skill[i] / 5;
 		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			attrib[i].points = 0;
 			attrib[i].train = 0;
-			attrib[i].train_part = 0;
+			attrib[i].trainPart = 0;
 			attrib[i].apt = (unit->stats->attrib[i] - 50) / 5;
 		}
 
 		// apply perks
 		PerkContext ctx(this, true);
-		perks = cc->taken_perks;
+		perks = cc->takenPerks;
 		for(TakenPerk& tp : perks)
 			tp.Apply(ctx);
 
 		// inventory
-		unit->data->item_script->Parse(*unit);
+		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
 		if(HavePerk(Perk::Get("alchemist_apprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);
@@ -146,7 +146,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		RecalculateLevel();
 		unit->hp = unit->hpmax = unit->CalculateMaxHp();
 		SetRequiredPoints();
-		if(!quest_mgr->quest_tutorial->in_tutorial)
+		if(!questMgr->questTutorial->inTutorial)
 			AddAbility(unit->GetClass()->ability);
 		InitShortcuts();
 
@@ -163,7 +163,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		}
 	}
 
-	_unit.fake_unit = false;
+	_unit.fakeUnit = false;
 }
 
 //=================================================================================================
@@ -193,9 +193,9 @@ void PlayerController::Train(SkillId skill, float points)
 	assert(Net::IsLocal());
 	int s = (int)skill;
 	StatData& stat = this->skill[s];
-	points += stat.train_part;
+	points += stat.trainPart;
 	int int_points = (int)points;
-	stat.train_part = points - int_points;
+	stat.trainPart = points - int_points;
 	stat.points += int_points;
 
 	int gained = 0,
@@ -219,12 +219,12 @@ void PlayerController::Train(SkillId skill, float points)
 
 	if(gained)
 	{
-		recalculate_level = true;
+		recalculateLevel = true;
 		unit->Set(skill, value);
-		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
-		if(!is_local)
+		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
+		if(!isLocal)
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
 			c2.a = s;
@@ -239,9 +239,9 @@ void PlayerController::Train(AttributeId attrib, float points)
 	assert(Net::IsLocal());
 	int a = (int)attrib;
 	StatData& stat = this->attrib[a];
-	points += stat.train_part;
+	points += stat.trainPart;
 	int int_points = (int)points;
-	stat.train_part = points - int_points;
+	stat.trainPart = points - int_points;
 	stat.points += int_points;
 
 	int gained = 0,
@@ -265,12 +265,12 @@ void PlayerController::Train(AttributeId attrib, float points)
 
 	if(gained)
 	{
-		recalculate_level = true;
+		recalculateLevel = true;
 		unit->Set(attrib, value);
-		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
-		if(!is_local)
+		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
+		if(!isLocal)
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
 			c2.a = a;
@@ -282,11 +282,11 @@ void PlayerController::Train(AttributeId attrib, float points)
 //=================================================================================================
 void PlayerController::TrainMove(float dist)
 {
-	move_tick += dist;
-	if(move_tick >= 100.f)
+	moveTick += dist;
+	if(moveTick >= 100.f)
 	{
-		float r = floor(move_tick / 100);
-		move_tick -= r * 100;
+		float r = floor(moveTick / 100);
+		moveTick -= r * 100;
 		Train(TrainWhat::Move, r, 0);
 	}
 }
@@ -338,19 +338,19 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 			c.unit = unit;
 		}
 
-		if(!is_local)
+		if(!isLocal)
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ON_REST;
 			c.count = days;
 		}
 	}
 
 	// reset last damage
-	last_dmg = 0;
-	last_dmg_poison = 0;
+	lastDmg = 0;
+	lastDmgPoison = 0;
 	dmgc = 0;
-	poison_dmgc = 0;
+	poisonDmgc = 0;
 
 	// reset abilities cooldown
 	RefreshCooldown();
@@ -359,73 +359,73 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 //=================================================================================================
 void PlayerController::Save(GameWriter& f)
 {
-	if(recalculate_level)
+	if(recalculateLevel)
 	{
 		RecalculateLevel();
-		recalculate_level = false;
+		recalculateLevel = false;
 	}
 
 	f << name;
-	f << move_tick;
-	f << last_dmg;
-	f << last_dmg_poison;
+	f << moveTick;
+	f << lastDmg;
+	f << lastDmgPoison;
 	f << dmgc;
-	f << poison_dmgc;
-	f << idle_timer;
+	f << poisonDmgc;
+	f << idleTimer;
 	for(StatData& stat : attrib)
 	{
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
-		f << stat.train_part;
+		f << stat.trainPart;
 	}
 	for(StatData& stat : skill)
 	{
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
-		f << stat.train_part;
+		f << stat.trainPart;
 	}
-	f << action_key;
-	NextAction saved_next_action = next_action;
-	if(Any(saved_next_action, NA_SELL, NA_PUT, NA_GIVE))
-		saved_next_action = NA_NONE; // inventory is closed, don't save this next action
-	f << saved_next_action;
-	switch(saved_next_action)
+	f << actionKey;
+	NextAction savedNextAction = nextAction;
+	if(Any(savedNextAction, NA_SELL, NA_PUT, NA_GIVE))
+		savedNextAction = NA_NONE; // inventory is closed, don't save this next action
+	f << savedNextAction;
+	switch(savedNextAction)
 	{
 	case NA_NONE:
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		f << next_action_data.slot;
+		f << nextActionData.slot;
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
 	case NA_EQUIP_DRAW:
-		f << next_action_data.index;
-		f << next_action_data.item->id;
+		f << nextActionData.index;
+		f << nextActionData.item->id;
 		break;
 	case NA_USE:
-		f << next_action_data.usable->id;
+		f << nextActionData.usable->id;
 		break;
 	default:
 		assert(0);
 		break;
 	}
-	f << last_weapon;
+	f << lastWeapon;
 	f << credit;
 	f << godmode;
 	f << nocd;
 	f << noclip;
 	f << invisible;
 	f << id;
-	f << free_days;
+	f << freeDays;
 	f << kills;
 	f << knocks;
-	f << dmg_done;
-	f << dmg_taken;
-	f << arena_fights;
-	f << learning_points;
+	f << dmgDone;
+	f << dmgTaken;
+	f << arenaFights;
+	f << learningPoints;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
@@ -445,11 +445,11 @@ void PlayerController::Save(GameWriter& f)
 	{
 		f << mr.recipe->hash;
 	}
-	f << split_gold;
-	f << always_run;
+	f << splitGold;
+	f << alwaysRun;
 	f << exp;
-	f << exp_level;
-	f << last_ring;
+	f << expLevel;
+	f << lastRing;
 	for(Shortcut& shortcut : shortcuts)
 	{
 		f << shortcut.type;
@@ -472,18 +472,18 @@ void PlayerController::Save(GameWriter& f)
 void PlayerController::Load(GameReader& f)
 {
 	f >> name;
-	f >> move_tick;
-	f >> last_dmg;
-	f >> last_dmg_poison;
+	f >> moveTick;
+	f >> lastDmg;
+	f >> lastDmgPoison;
 	f >> dmgc;
-	f >> poison_dmgc;
-	f >> idle_timer;
+	f >> poisonDmgc;
+	f >> idleTimer;
 	for(StatData& stat : attrib)
 	{
 		f >> stat.points;
 		f >> stat.train;
 		f >> stat.apt;
-		f >> stat.train_part;
+		f >> stat.trainPart;
 		if(LOAD_VERSION < V_0_14)
 			f.Skip<bool>(); // old blocked
 	}
@@ -492,37 +492,37 @@ void PlayerController::Load(GameReader& f)
 		f >> stat.points;
 		f >> stat.train;
 		f >> stat.apt;
-		f >> stat.train_part;
+		f >> stat.trainPart;
 	}
 	SetRequiredPoints();
-	f >> action_key;
-	f >> next_action;
-	switch(next_action)
+	f >> actionKey;
+	f >> nextAction;
+	switch(nextAction)
 	{
 	case NA_NONE:
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		f >> next_action_data.slot;
+		f >> nextActionData.slot;
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
 	case NA_EQUIP_DRAW:
-		f >> next_action_data.index;
-		next_action_data.item = Item::Get(f.ReadString1());
+		f >> nextActionData.index;
+		nextActionData.item = Item::Get(f.ReadString1());
 		break;
 	case NA_USE:
-		Usable::AddRequest(&next_action_data.usable, f.Read<int>());
+		Usable::AddRequest(&nextActionData.usable, f.Read<int>());
 		break;
 	case NA_SELL:
 	case NA_PUT:
 	case NA_GIVE:
 	default:
 		assert(0);
-		next_action = NA_NONE;
+		nextAction = NA_NONE;
 		break;
 	}
-	f >> last_weapon;
+	f >> lastWeapon;
 	f >> credit;
 	f >> godmode;
 	if(LOAD_VERSION >= V_0_18)
@@ -535,15 +535,15 @@ void PlayerController::Load(GameReader& f)
 	else
 		invisible = false;
 	f >> id;
-	f >> free_days;
+	f >> freeDays;
 	f >> kills;
 	f >> knocks;
-	f >> dmg_done;
-	f >> dmg_taken;
-	f >> arena_fights;
+	f >> dmgDone;
+	f >> dmgTaken;
+	f >> arenaFights;
 
 	// perk points
-	f >> learning_points;
+	f >> learningPoints;
 
 	// perks
 	byte count;
@@ -618,15 +618,15 @@ void PlayerController::Load(GameReader& f)
 		}
 	}
 
-	f >> split_gold;
-	f >> always_run;
+	f >> splitGold;
+	f >> alwaysRun;
 	f >> exp;
-	f >> exp_level;
-	exp_need = GetExpNeed();
+	f >> expLevel;
+	expNeed = GetExpNeed();
 	if(LOAD_VERSION >= V_0_10)
-		f >> last_ring;
+		f >> lastRing;
 	else
-		last_ring = false;
+		lastRing = false;
 	if(LOAD_VERSION >= V_0_10)
 	{
 		for(Shortcut& shortcut : shortcuts)
@@ -752,11 +752,11 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(Net::IsLocal() && !game_level->entering)
+		if(Net::IsLocal() && gameLevel->ready)
 		{
 			team->CalculatePlayersLevel();
-			if(player_info && !IsLocal())
-				player_info->update_flags |= PlayerInfo::UF_LEVEL;
+			if(playerInfo && !IsLocal())
+				playerInfo->updateFlags |= PlayerInfo::UF_LEVEL;
 		}
 	}
 }
@@ -1024,11 +1024,11 @@ void PlayerController::TrainMod(SkillId s, float points)
 }
 
 //=================================================================================================
-void PlayerController::Train(bool is_skill, int id, TrainMode mode)
+void PlayerController::Train(bool isSkill, int id, TrainMode mode)
 {
 	StatData* stat;
 	int value;
-	if(is_skill)
+	if(isSkill)
 	{
 		stat = &skill[id];
 		if(unit->stats->skill[id] == Skill::MAX)
@@ -1062,7 +1062,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 		value += count;
 		stat->points /= 2;
 
-		if(is_skill)
+		if(isSkill)
 		{
 			stat->next = GetRequiredSkillPoints(value);
 			unit->Set((SkillId)id, value);
@@ -1073,13 +1073,13 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 			unit->Set((AttributeId)id, value);
 		}
 
-		game_gui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
+		gameGui->messages->AddFormattedMessage(this, isSkill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
 
 		if(!IsLocal())
 		{
-			NetChangePlayer& c2 = Add1(player_info->changes);
+			NetChangePlayer& c2 = Add1(playerInfo->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c2.id = int(isSkill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
 			c2.a = id;
 			c2.count = value;
 		}
@@ -1094,7 +1094,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 		else
 			m = 0.125f;
 		float pts = m * stat->next;
-		if(is_skill)
+		if(isSkill)
 			TrainMod2((SkillId)id, pts);
 		else
 			TrainMod((AttributeId)id, pts);
@@ -1108,7 +1108,7 @@ void PlayerController::WriteStart(BitStreamWriter& f) const
 	f << nocd;
 	f << noclip;
 	f << godmode;
-	f << always_run;
+	f << alwaysRun;
 	for(const Shortcut& shortcut : shortcuts)
 	{
 		f << shortcut.type;
@@ -1132,11 +1132,11 @@ void PlayerController::WriteStart(BitStreamWriter& f) const
 void PlayerController::Write(BitStreamWriter& f) const
 {
 	f << kills;
-	f << dmg_done;
-	f << dmg_taken;
+	f << dmgDone;
+	f << dmgTaken;
 	f << knocks;
-	f << arena_fights;
-	f << learning_points;
+	f << arenaFights;
+	f << learningPoints;
 
 	// perks
 	f.WriteCasted<byte>(perks.size());
@@ -1162,14 +1162,14 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << mr.recipe->hash;
 
 	// next action
-	f.WriteCasted<byte>(next_action);
-	switch(next_action)
+	f.WriteCasted<byte>(nextAction);
+	switch(nextAction)
 	{
 	case NA_NONE:
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		f.WriteCasted<byte>(next_action_data.slot);
+		f.WriteCasted<byte>(nextActionData.slot);
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
@@ -1177,14 +1177,14 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << GetNextActionItemIndex();
 		break;
 	case NA_USE:
-		f << next_action_data.usable->id;
+		f << nextActionData.usable->id;
 		break;
 	default:
 		assert(0);
 		break;
 	}
 
-	f << last_ring;
+	f << lastRing;
 }
 
 //=================================================================================================
@@ -1194,7 +1194,7 @@ void PlayerController::ReadStart(BitStreamReader& f)
 	f >> nocd;
 	f >> noclip;
 	f >> godmode;
-	f >> always_run;
+	f >> alwaysRun;
 	for(Shortcut& shortcut : shortcuts)
 	{
 		f >> shortcut.type;
@@ -1220,11 +1220,11 @@ bool PlayerController::Read(BitStreamReader& f)
 {
 	byte count;
 	f >> kills;
-	f >> dmg_done;
-	f >> dmg_taken;
+	f >> dmgDone;
+	f >> dmgTaken;
 	f >> knocks;
-	f >> arena_fights;
-	f >> learning_points;
+	f >> arenaFights;
+	f >> learningPoints;
 
 	// perks
 	f >> count;
@@ -1249,7 +1249,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		f >> ab.recharge;
 		f.ReadCasted<byte>(ab.charges);
 	}
-	game_gui->ability->Refresh();
+	gameGui->ability->Refresh();
 
 	// recipes
 	uint i_count;
@@ -1261,16 +1261,16 @@ bool PlayerController::Read(BitStreamReader& f)
 		mr.recipe = Recipe::Get(f.Read<int>());
 
 	// next action
-	f.ReadCasted<byte>(next_action);
+	f.ReadCasted<byte>(nextAction);
 	if(!f)
 		return false;
-	switch(next_action)
+	switch(nextAction)
 	{
 	case NA_NONE:
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		f.ReadCasted<byte>(next_action_data.slot);
+		f.ReadCasted<byte>(nextActionData.slot);
 		if(!f)
 			return false;
 		break;
@@ -1278,13 +1278,13 @@ bool PlayerController::Read(BitStreamReader& f)
 	case NA_CONSUME:
 	case NA_EQUIP_DRAW:
 		{
-			f >> next_action_data.index;
+			f >> nextActionData.index;
 			if(!f)
 				return false;
-			if(next_action_data.index == -1)
-				next_action = NA_NONE;
+			if(nextActionData.index == -1)
+				nextAction = NA_NONE;
 			else
-				next_action_data.item = unit->items[next_action_data.index].item;
+				nextActionData.item = unit->items[nextActionData.index].item;
 		}
 		break;
 	case NA_USE:
@@ -1292,7 +1292,7 @@ bool PlayerController::Read(BitStreamReader& f)
 			int index = f.Read<int>();
 			if(!f)
 				return false;
-			next_action_data.usable = game_level->FindUsable(index);
+			nextActionData.usable = gameLevel->FindUsable(index);
 		}
 		break;
 	default:
@@ -1300,7 +1300,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		break;
 	}
 
-	f >> last_ring;
+	f >> lastRing;
 	return true;
 }
 
@@ -1334,16 +1334,16 @@ bool PlayerController::AddAbility(Ability* ability)
 	ab.charges = ability->charges;
 	abilities.push_back(ab);
 
-	if(!unit->fake_unit)
+	if(!unit->fakeUnit)
 	{
 		if(!IsLocal())
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ADD_ABILITY;
 			c.ability = ability;
 		}
 		else
-			game_gui->ability->Refresh();
+			gameGui->ability->Refresh();
 	}
 
 	return true;
@@ -1357,13 +1357,13 @@ bool PlayerController::RemoveAbility(Ability* ability)
 		if(it->ability == ability)
 		{
 			abilities.erase(it);
-			if(!unit->fake_unit)
+			if(!unit->fakeUnit)
 			{
 				if(IsLocal())
 				{
-					game_gui->ability->Refresh();
-					if(data.ability_ready == ability)
-						data.ability_ready = nullptr;
+					gameGui->ability->Refresh();
+					if(data.abilityReady == ability)
+						data.abilityReady = nullptr;
 					int index = 0;
 					for(Shortcut& shortcut : shortcuts)
 					{
@@ -1382,7 +1382,7 @@ bool PlayerController::RemoveAbility(Ability* ability)
 				}
 				else
 				{
-					NetChangePlayer& c = Add1(player_info->changes);
+					NetChangePlayer& c = Add1(playerInfo->changes);
 					c.type = NetChangePlayer::REMOVE_ABILITY;
 					c.ability = ability;
 				}
@@ -1421,7 +1421,7 @@ const PlayerAbility* PlayerController::GetAbility(Ability* ability) const
 PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* ability, bool prepare) const
 {
 	assert(ability);
-	if(quest_mgr->quest_tutorial->in_tutorial)
+	if(questMgr->questTutorial->inTutorial)
 		return CanUseAbilityResult::No;
 
 	const PlayerAbility* ab = GetAbility(ability);
@@ -1435,7 +1435,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 	{
 		if(!unit->HaveWeapon() || !IsSet(unit->GetWeapon().flags, ITEM_MAGE))
 			return CanUseAbilityResult::NeedWand;
-		if((unit->weapon_taken != W_ONE_HANDED || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
+		if((unit->weaponTaken != W_ONE_HANDED || unit->weaponState != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeWand;
 	}
 
@@ -1443,7 +1443,7 @@ PlayerController::CanUseAbilityResult PlayerController::CanUseAbility(Ability* a
 	{
 		if(!unit->HaveBow())
 			return CanUseAbilityResult::NeedBow;
-		if((unit->weapon_taken != W_BOW || unit->weapon_state != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
+		if((unit->weaponTaken != W_BOW || unit->weaponState != WeaponState::Taken) && Any(unit->action, A_NONE, A_TAKE_WEAPON))
 			return CanUseAbilityResult::TakeBow;
 	}
 
@@ -1490,7 +1490,7 @@ bool PlayerController::CanUseAbilityPreview(Ability* ability) const
 //=================================================================================================
 bool PlayerController::CanUseAbilityCheck() const
 {
-	CanUseAbilityResult result = CanUseAbility(data.ability_ready, true);
+	CanUseAbilityResult result = CanUseAbility(data.abilityReady, true);
 	int check; // 1 ok, 0 wait, -1 cancel
 	switch(result)
 	{
@@ -1498,13 +1498,13 @@ bool PlayerController::CanUseAbilityCheck() const
 		check = 1;
 		break;
 	case CanUseAbilityResult::TakeWand:
-		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_ONE_HANDED)
+		if(unit->action == A_TAKE_WEAPON && unit->weaponTaken == W_ONE_HANDED)
 			check = 0;
 		else
 			check = -1;
 		break;
 	case CanUseAbilityResult::TakeBow:
-		if(unit->action == A_TAKE_WEAPON && unit->weapon_taken == W_BOW)
+		if(unit->action == A_TAKE_WEAPON && unit->weaponTaken == W_BOW)
 			check = 0;
 		else
 			check = -1;
@@ -1516,8 +1516,8 @@ bool PlayerController::CanUseAbilityCheck() const
 
 	if(check == -1)
 	{
-		data.ability_ready = nullptr;
-		sound_mgr->PlaySound2d(game_res->sCancel);
+		data.abilityReady = nullptr;
+		soundMgr->PlaySound2d(gameRes->sCancel);
 	}
 
 	return check == 1;
@@ -1537,14 +1537,14 @@ void PlayerController::RefreshCooldown()
 //=================================================================================================
 int PlayerController::GetNextActionItemIndex() const
 {
-	return FindItemIndex(unit->items, next_action_data.index, next_action_data.item, false);
+	return FindItemIndex(unit->items, nextActionData.index, nextActionData.item, false);
 }
 
 //=================================================================================================
 void PlayerController::PayCredit(int count)
 {
 	rvector<Unit> units;
-	for(Unit& u : team->active_members)
+	for(Unit& u : team->activeMembers)
 	{
 		if(&u != unit)
 			units.push_back(&u);
@@ -1568,17 +1568,17 @@ void PlayerController::UseDays(int count)
 {
 	assert(count > 0);
 
-	if(free_days >= count)
-		free_days -= count;
+	if(freeDays >= count)
+		freeDays -= count;
 	else
 	{
-		count -= free_days;
-		free_days = 0;
+		count -= freeDays;
+		freeDays = 0;
 
 		for(PlayerInfo& info : net->players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && info.pc != this)
-				info.pc->free_days += count;
+				info.pc->freeDays += count;
 		}
 
 		world->Update(count, UM_NORMAL);
@@ -1592,12 +1592,12 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 {
 	assert(talker);
 
-	DialogContext& ctx = *dialog_ctx;
-	assert(!ctx.dialog_mode);
+	DialogContext& ctx = *dialogCtx;
+	assert(!ctx.dialogMode);
 
-	if(!is_local)
+	if(!isLocal)
 	{
-		NetChangePlayer& c = Add1(player_info->changes);
+		NetChangePlayer& c = Add1(playerInfo->changes);
 		c.type = NetChangePlayer::START_DIALOG;
 		c.id = talker->id;
 	}
@@ -1618,11 +1618,11 @@ bool PlayerController::HavePerk(Perk* perk, int value)
 }
 
 //=================================================================================================
-bool PlayerController::HavePerkS(const string& perk_id)
+bool PlayerController::HavePerkS(const string& perkId)
 {
-	Perk* perk = Perk::Get(perk_id);
+	Perk* perk = Perk::Get(perkId);
 	if(!perk)
-		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
+		throw ScriptException("Invalid perk '%s'.", perkId.c_str());
 	return HavePerk(perk);
 }
 
@@ -1638,7 +1638,7 @@ bool PlayerController::AddPerk(Perk* perk, int value)
 	tp.Apply(ctx);
 	if(Net::IsServer() && !IsLocal())
 	{
-		NetChangePlayer& c = Add1(player_info->changes);
+		NetChangePlayer& c = Add1(playerInfo->changes);
 		c.type = NetChangePlayer::ADD_PERK;
 		c.id = perk->hash;
 		c.count = value;
@@ -1661,7 +1661,7 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 			tp_copy.Remove(ctx);
 			if(Net::IsServer() && !IsLocal())
 			{
-				NetChangePlayer& c = Add1(player_info->changes);
+				NetChangePlayer& c = Add1(playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_PERK;
 				c.id = perk->hash;
 				c.count = value;
@@ -1675,10 +1675,10 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 //=================================================================================================
 void PlayerController::AddLearningPoint(int count)
 {
-	learning_points += count;
-	game_gui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
-	if(!is_local)
-		player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
+	learningPoints += count;
+	gameGui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
+	if(!isLocal)
+		playerInfo->updateFlags |= PlayerInfo::UF_LEARNING_POINTS;
 }
 
 //=================================================================================================
@@ -1686,12 +1686,12 @@ void PlayerController::AddExp(int xp)
 {
 	exp += xp;
 	int points = 0;
-	while(exp >= exp_need)
+	while(exp >= expNeed)
 	{
 		++points;
-		++exp_level;
-		exp -= exp_need;
-		exp_need = GetExpNeed();
+		++expLevel;
+		exp -= expNeed;
+		expNeed = GetExpNeed();
 	}
 	if(points > 0)
 		AddLearningPoint(points);
@@ -1701,7 +1701,7 @@ void PlayerController::AddExp(int xp)
 int PlayerController::GetExpNeed() const
 {
 	int exp_per_level = 1000 - (unit->GetBase(AttributeId::INT) - 50);
-	return exp_per_level * (exp_level + 1);
+	return exp_per_level * (expLevel + 1);
 }
 
 //=================================================================================================
@@ -1773,8 +1773,8 @@ void PlayerController::Yell()
 	}
 	unit->Talk(RandomString(game->txYell), 0);
 
-	LevelArea& area = *unit->area;
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	LocationPart& locPart = *unit->locPart;
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
@@ -1810,7 +1810,7 @@ void PlayerController::SetShortcut(int index, Shortcut::Type type, int value)
 }
 
 //=================================================================================================
-void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type)
+void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& bestDist, BeforePlayer type)
 {
 	assert(ptr);
 
@@ -1818,7 +1818,7 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 		return;
 
 	float dist = Vec3::Distance2d(unit->pos, pos);
-	if(dist < PICKUP_RANGE && dist < best_dist)
+	if(dist < PICKUP_RANGE && dist < bestDist)
 	{
 		float angle = AngleDiff(Clip(unit->rot + PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos)));
 		assert(angle >= 0.f);
@@ -1834,10 +1834,10 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 			{
 				Usable* use = static_cast<Usable*>(ptr);
 				auto& bu = *use->base;
-				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+				if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 				{
 					float allowed_dif;
-					switch(bu.limit_rot)
+					switch(bu.limitRot)
 					{
 					default:
 					case 0:
@@ -1855,18 +1855,18 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && game_level->CanSee(*unit->area, unit->pos, pos, type == BP_DOOR, ptr))
+			if(dist < bestDist && gameLevel->CanSee(*unit->locPart, unit->pos, pos, type == BP_DOOR, ptr))
 			{
-				best_dist = dist;
-				data.before_player_ptr.any = ptr;
-				data.before_player = type;
+				bestDist = dist;
+				data.beforePlayerPtr.any = ptr;
+				data.beforePlayer = type;
 			}
 		}
 	}
 }
 
 //=================================================================================================
-void PlayerController::UseUsable(Usable* usable, bool after_action)
+void PlayerController::UseUsable(Usable* usable, bool afterAction)
 {
 	Unit& u = *unit;
 	Usable& use = *usable;
@@ -1877,22 +1877,22 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	{
 		if(!u.HaveItem(bu.item) && u.GetEquippedItem(SLOT_WEAPON) != bu.item)
 		{
-			game_gui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
+			gameGui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
-		else if(unit->weapon_state != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
+		else if(unit->weaponState != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
 		{
-			if(after_action)
+			if(afterAction)
 				return;
 			u.HideWeapon();
-			next_action = NA_USE;
-			next_action_data.usable = &use;
+			nextAction = NA_USE;
+			nextActionData.usable = &use;
 			if(Net::IsClient())
 				Net::PushChange(NetChange::SET_NEXT_ACTION);
 			ok = false;
 		}
 		else
-			u.used_item = bu.item;
+			u.usedItem = bu.item;
 	}
 
 	if(!ok)
@@ -1901,25 +1901,25 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	if(Net::IsLocal())
 	{
 		u.UseUsable(&use);
-		data.before_player = BP_NONE;
+		data.beforePlayer = BP_NONE;
 
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 		{
 			// loot container
-			game_gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
+			gameGui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
 		}
 		else
 		{
 			u.action = A_USE_USABLE;
-			u.animation_state = AS_USE_USABLE_MOVE_TO_OBJECT;
+			u.animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
 			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
-			u.target_pos = u.pos;
-			u.target_pos2 = use.pos;
-			if(use.base->limit_rot == 4)
-				u.target_pos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
+			u.meshInst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.targetPos = u.pos;
+			u.targetPos2 = use.pos;
+			if(use.base->limitRot == 4)
+				u.targetPos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
 			u.timer = 0.f;
-			u.act.use_usable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+			u.act.useUsable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 		}
 
 		if(Net::IsOnline())
@@ -1935,14 +1935,14 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::USE_USABLE;
-		c.id = data.before_player_ptr.usable->id;
+		c.id = data.beforePlayerPtr.usable->id;
 		c.count = USE_USABLE_START;
 
-		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 		{
 			action = PlayerAction::LootContainer;
-			action_usable = data.before_player_ptr.usable;
-			chest_trade = &action_usable->container->items;
+			actionUsable = data.beforePlayerPtr.usable;
+			chestTrade = &actionUsable->container->items;
 		}
 
 		unit->action = A_PREPARE;
@@ -1950,12 +1950,12 @@ void PlayerController::UseUsable(Usable* usable, bool after_action)
 }
 
 //=================================================================================================
-void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3* pos, Unit* target)
+void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3* pos, Unit* target)
 {
-	if(is_local && from_server)
+	if(isLocal && fromServer)
 		return;
 
-	if(!from_server && !nocd)
+	if(!fromServer && !nocd)
 	{
 		PlayerAbility* ab = GetAbility(ability);
 		if(ab)
@@ -1976,17 +1976,17 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 	{
 		// cast animation
 		unit->action = A_CAST;
-		unit->animation_state = AS_CAST_ANIMATION;
+		unit->animationState = AS_CAST_ANIMATION;
 		unit->act.cast.ability = ability;
-		unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-		if(is_local)
+		unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		if(isLocal)
 		{
-			unit->target_pos = data.ability_point;
-			unit->act.cast.target = data.ability_target;
+			unit->targetPos = data.abilityPoint;
+			unit->act.cast.target = data.abilityTarget;
 		}
 		else if(Net::IsServer())
 		{
-			unit->target_pos = *pos;
+			unit->targetPos = *pos;
 			unit->act.cast.target = target;
 		}
 	}
@@ -1995,32 +1995,32 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 		// kneel animation
 		unit->action = A_CAST;
 		unit->animation = ANI_KNEELS;
-		unit->animation_state = AS_CAST_KNEEL;
+		unit->animationState = AS_CAST_KNEEL;
 		unit->act.cast.ability = ability;
-		unit->timer = ability->cast_time;
-		if(is_local)
+		unit->timer = ability->castTime;
+		if(isLocal)
 		{
-			unit->target_pos = data.ability_point;
-			unit->act.cast.target = data.ability_target;
+			unit->targetPos = data.abilityPoint;
+			unit->act.cast.target = data.abilityTarget;
 		}
 		else if(Net::IsServer())
 		{
-			unit->target_pos = *pos;
+			unit->targetPos = *pos;
 			unit->act.cast.target = target;
 		}
 	}
 	else if(ability->type == Ability::RangedAttack)
 	{
 		float speed = -1.f;
-		if(from_server)
+		if(fromServer)
 			speed = pos->x;
-		action_key = data.wasted_key;
-		data.wasted_key = Key::None;
+		actionKey = data.wastedKey;
+		data.wastedKey = Key::None;
 		unit->DoRangedAttack(true, false, speed);
 		unit->act.shoot.ability = ability;
 	}
-	else if(ability->sound_cast)
-		game->PlayAttachedSound(*unit, ability->sound_cast, ability->sound_cast_dist);
+	else if(ability->soundCast)
+		game->PlayAttachedSound(*unit, ability->soundCast, ability->soundCastDist);
 
 	if(ability->type == Ability::Charge)
 	{
@@ -2029,25 +2029,25 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			Train(TrainWhat::Dash, 0.f, 0);
 		unit->action = A_DASH;
 		unit->act.dash.ability = ability;
-		if(Net::IsLocal() || !from_server)
-			unit->act.dash.rot = Clip(data.ability_rot + unit->rot + PI);
+		if(Net::IsLocal() || !fromServer)
+			unit->act.dash.rot = Clip(data.abilityRot + unit->rot + PI);
 		unit->animation = ANI_RUN;
-		unit->current_animation = ANI_RUN;
-		unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		unit->currentAnimation = ANI_RUN;
+		unit->meshInst->Play(NAMES::aniRun, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 
 		if(dash)
 		{
 			unit->timer = 0.33f;
 			unit->speed = ability->range / 0.33f;
-			unit->mesh_inst->groups[0].speed = 3.f;
+			unit->meshInst->groups[0].speed = 3.f;
 		}
 		else
 		{
 			unit->timer = 0.5f;
 			unit->speed = ability->range / 0.5f;
-			unit->mesh_inst->groups[0].speed = 2.5f;
-			unit->mesh_inst->groups[1].blend_max = 0.1f;
-			unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
+			unit->meshInst->groups[0].speed = 2.5f;
+			unit->meshInst->groups[1].blendMax = 0.1f;
+			unit->meshInst->Play("charge", PLAY_PRIO1, 1);
 		}
 
 		if(ability->RequireList())
@@ -2067,26 +2067,26 @@ void PlayerController::UseAbility(Ability* ability, bool from_server, const Vec3
 			c.type = NetChange::PLAYER_ABILITY;
 			c.unit = unit;
 			c.ability = ability;
-			c.extra_f = unit->mesh_inst->groups[1].speed;
+			c.extraFloat = unit->meshInst->groups[1].speed;
 		}
-		else if(!from_server)
+		else if(!fromServer)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ABILITY;
-			c.unit = data.ability_target;
-			c.pos = data.ability_point;
+			c.unit = data.abilityTarget;
+			c.pos = data.abilityPoint;
 			c.ability = ability;
 		}
 	}
 
-	if(is_local)
-		data.ability_ready = nullptr;
+	if(isLocal)
+		data.abilityReady = nullptr;
 }
 
 //=================================================================================================
 bool PlayerController::IsAbilityPrepared() const
 {
-	if(data.ability_ready)
+	if(data.abilityReady)
 		return true;
 	if(unit->action == A_SHOOT)
 		return unit->act.shoot.ability != nullptr;
@@ -2104,13 +2104,13 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 	mr.recipe = recipe;
 	recipes.push_back(mr);
 
-	if(!unit->fake_unit)
+	if(!unit->fakeUnit)
 	{
 		if(IsLocal())
 			messenger->Post(Msg::LearnRecipe);
 		else
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
+			NetChangePlayer& c = Add1(playerInfo->changes);
 			c.type = NetChangePlayer::ADD_RECIPE;
 			c.recipe = recipe;
 		}
@@ -2133,148 +2133,148 @@ bool PlayerController::HaveRecipe(Recipe* recipe) const
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
-	last_dmg = 0.f;
+	lastDmg = 0.f;
 	if(Net::IsLocal())
-		last_dmg_poison = 0.f;
+		lastDmgPoison = 0.f;
 
 	if(unit->IsAlive())
 		data.grayout = max(data.grayout - dt, 0.f);
 	else
 		data.grayout = min(data.grayout + dt, 1.f);
 
-	if(data.wasted_key != Key::None && input->Up(data.wasted_key))
-		data.wasted_key = Key::None;
+	if(data.wastedKey != Key::None && input->Up(data.wastedKey))
+		data.wastedKey = Key::None;
 
-	Unit* look_target = unit->look_target;
-	if(game->dialog_context.dialog_mode || look_target || game_gui->inventory->mode > I_INVENTORY)
+	Unit* lookTarget = unit->lookTarget;
+	if(game->dialogContext.dialogMode || lookTarget || gameGui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
-		if(look_target)
+		if(lookTarget)
 		{
-			pos = look_target->pos;
+			pos = lookTarget->pos;
 			unit->animation = ANI_STAND;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_CHEST)
+		else if(gameGui->inventory->mode == I_LOOT_CHEST)
 		{
 			assert(action == PlayerAction::LootChest);
-			pos = action_chest->pos;
+			pos = actionChest->pos;
 			unit->animation = ANI_KNEELS;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_BODY)
+		else if(gameGui->inventory->mode == I_LOOT_BODY)
 		{
 			assert(action == PlayerAction::LootUnit);
-			pos = action_unit->GetLootCenter();
+			pos = actionUnit->GetLootCenter();
 			unit->animation = ANI_KNEELS;
 		}
-		else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
+		else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
 		{
 			assert(action == PlayerAction::LootContainer);
-			pos = action_usable->pos;
+			pos = actionUsable->pos;
 			unit->animation = ANI_STAND;
 		}
-		else if(game->dialog_context.dialog_mode)
+		else if(game->dialogContext.dialogMode)
 		{
-			pos = game->dialog_context.talker->pos;
+			pos = game->dialogContext.talker->pos;
 			unit->animation = ANI_STAND;
 		}
 		else
 		{
-			assert(action == InventoryModeToActionRequired(game_gui->inventory->mode));
-			pos = action_unit->pos;
+			assert(action == InventoryModeToActionRequired(gameGui->inventory->mode));
+			pos = actionUnit->pos;
 			unit->animation = ANI_STAND;
 		}
 
 		unit->RotateTo(pos, dt);
-		if(game_gui->inventory->mode > I_INVENTORY)
+		if(gameGui->inventory->mode > I_INVENTORY)
 		{
-			if(game_gui->inventory->mode == I_LOOT_BODY)
+			if(gameGui->inventory->mode == I_LOOT_BODY)
 			{
-				if(action_unit->IsAlive())
+				if(actionUnit->IsAlive())
 				{
 					// looted corpse was resurected
 					game->CloseInventory();
 				}
 			}
-			else if(game_gui->inventory->mode == I_TRADE || game_gui->inventory->mode == I_SHARE || game_gui->inventory->mode == I_GIVE)
+			else if(gameGui->inventory->mode == I_TRADE || gameGui->inventory->mode == I_SHARE || gameGui->inventory->mode == I_GIVE)
 			{
-				if(!action_unit->IsStanding() || !action_unit->IsIdle())
+				if(!actionUnit->IsStanding() || !actionUnit->IsIdle())
 				{
 					// trader was attacked/died
 					game->CloseInventory();
 				}
 			}
 		}
-		else if(game->dialog_context.dialog_mode && Net::IsLocal())
+		else if(game->dialogContext.dialogMode && Net::IsLocal())
 		{
-			if(!game->dialog_context.talker->IsStanding() || !game->dialog_context.talker->IsIdle() || game->dialog_context.talker->to_remove
-				|| game->dialog_context.talker->frozen != FROZEN::NO)
+			if(!game->dialogContext.talker->IsStanding() || !game->dialogContext.talker->IsIdle() || game->dialogContext.talker->toRemove
+				|| game->dialogContext.talker->frozen != FROZEN::NO)
 			{
 				// talker waas removed/died/was attacked
-				game->dialog_context.EndDialog();
+				game->dialogContext.EndDialog();
 			}
 		}
 
-		data.before_player = BP_NONE;
-		data.rot_buf = 0.f;
+		data.beforePlayer = BP_NONE;
+		data.rotBuf = 0.f;
 		data.autowalk = false;
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 	}
 	else if(!IsBlocking(unit->action) && !unit->HaveEffect(EffectId::Stun))
 	{
-		bool allow_rot = true;
+		bool allowRot = true;
 		if(unit->action == A_CAST && unit->act.cast.ability->type == Ability::Target && unit->act.cast.target != unit)
 		{
 			Vec3 pos;
 			if(Unit* target = unit->act.cast.target)
 				pos = target->pos;
 			else
-				pos = unit->target_pos;
+				pos = unit->targetPos;
 			unit->RotateTo(pos, dt);
-			allow_rot = false;
+			allowRot = false;
 		}
-		UpdateMove(dt, allow_rot);
+		UpdateMove(dt, allowRot);
 	}
 	else
 	{
-		data.before_player = BP_NONE;
-		data.rot_buf = 0.f;
+		data.beforePlayer = BP_NONE;
+		data.rotBuf = 0.f;
 		data.autowalk = false;
-		data.ability_ready = nullptr;
+		data.abilityReady = nullptr;
 	}
 
 	UpdateCooldown(dt);
 	ClearShortcuts();
 
 	// last damage
-	dmgc += last_dmg;
+	dmgc += lastDmg;
 	dmgc *= (1.f - dt * 2);
-	if(last_dmg == 0.f && dmgc < 0.1f)
+	if(lastDmg == 0.f && dmgc < 0.1f)
 		dmgc = 0.f;
 
 	// poison damage
-	poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
-	if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
-		poison_dmgc = 0.f;
+	poisonDmgc += (lastDmgPoison - poisonDmgc) * dt;
+	if(lastDmgPoison == 0.f && poisonDmgc < 0.1f)
+		poisonDmgc = 0.f;
 
-	if(recalculate_level)
+	if(recalculateLevel)
 	{
-		recalculate_level = false;
+		recalculateLevel = false;
 		RecalculateLevel();
 	}
 }
 
 //=================================================================================================
-void PlayerController::UpdateMove(float dt, bool allow_rot)
+void PlayerController::UpdateMove(float dt, bool allowRot)
 {
 	Unit& u = *unit;
-	LevelArea& area = *u.area;
+	LocationPart& locPart = *u.locPart;
 
 	// unit lying on ground
 	if(!u.IsStanding())
 	{
 		data.autowalk = false;
-		data.ability_ready = nullptr;
-		data.rot_buf = 0.f;
+		data.abilityReady = nullptr;
+		data.rotBuf = 0.f;
 		if(Net::IsLocal())
 			u.TryStandup(dt);
 		return;
@@ -2284,30 +2284,30 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	if(u.frozen >= FROZEN::YES)
 	{
 		data.autowalk = false;
-		data.ability_ready = nullptr;
-		data.rot_buf = 0.f;
+		data.abilityReady = nullptr;
+		data.rotBuf = 0.f;
 		if(u.frozen == FROZEN::YES)
 			u.animation = ANI_STAND;
 		return;
 	}
 
 	// casting - can't move
-	if(u.action == A_CAST && u.animation_state == AS_CAST_KNEEL)
+	if(u.action == A_CAST && u.animationState == AS_CAST_KNEEL)
 		return;
 
 	// using usable
 	if(u.usable)
 	{
-		if(u.action == A_USE_USABLE && OR2_EQ(u.animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND))
+		if(u.action == A_USE_USABLE && Any(u.animationState, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND))
 		{
 			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
 				u.StopUsingUsable();
 		}
-		data.rot_buf = 0.f;
-		data.ability_ready = nullptr;
+		data.rotBuf = 0.f;
+		data.abilityReady = nullptr;
 	}
 
-	u.prev_pos = u.pos;
+	u.prevPos = u.pos;
 	u.changed = true;
 
 	bool idle = true;
@@ -2315,29 +2315,29 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 	if(!u.usable)
 	{
-		if(u.weapon_taken == W_NONE)
+		if(u.weaponTaken == W_NONE)
 		{
 			if(u.animation != ANI_IDLE)
 				u.animation = ANI_STAND;
 		}
-		else if(u.weapon_taken == W_ONE_HANDED)
+		else if(u.weaponTaken == W_ONE_HANDED)
 			u.animation = ANI_BATTLE;
-		else if(u.weapon_taken == W_BOW)
+		else if(u.weaponTaken == W_BOW)
 			u.animation = ANI_BATTLE_BOW;
 
 		if(GKey.KeyPressedReleaseAllowed(GK_TOGGLE_WALK))
 		{
-			always_run = !always_run;
+			alwaysRun = !alwaysRun;
 			if(Net::IsClient())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_ALWAYS_RUN;
-				c.id = (always_run ? 1 : 0);
+				c.id = (alwaysRun ? 1 : 0);
 			}
 		}
 
 		int rotate = 0;
-		if(allow_rot)
+		if(allowRot)
 		{
 			if(GKey.KeyDownAllowed(GK_ROTATE_LEFT))
 				--rotate;
@@ -2384,20 +2384,20 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot && allow_rot)
+		if((GKey.allowInput == GameKeys::ALLOW_INPUT || GKey.allowInput == GameKeys::ALLOW_MOUSE) && !gameLevel->camera.freeRot && allowRot)
 		{
 			int div = (u.action == A_SHOOT ? 800 : 400);
-			data.rot_buf *= (1.f - dt * 2);
-			data.rot_buf += float(input->GetMouseDif().x) * game->settings.mouse_sensitivity_f / div;
-			if(data.rot_buf > 0.1f)
-				data.rot_buf = 0.1f;
-			else if(data.rot_buf < -0.1f)
-				data.rot_buf = -0.1f;
+			data.rotBuf *= (1.f - dt * 2);
+			data.rotBuf += float(input->GetMouseDif().x) * game->settings.GetMouseSensitivity() / div;
+			if(data.rotBuf > 0.1f)
+				data.rotBuf = 0.1f;
+			else if(data.rotBuf < -0.1f)
+				data.rotBuf = -0.1f;
 		}
 		else
-			data.rot_buf = 0.f;
+			data.rotBuf = 0.f;
 
-		const bool rotating = (rotate != 0 || data.rot_buf != 0.f);
+		const bool rotating = (rotate != 0 || data.rotBuf != 0.f);
 		if(move != 0 && !u.CanMove())
 			move = 0;
 
@@ -2411,10 +2411,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			if(rotating)
 			{
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = Clamp(data.rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = Clamp(data.rotBuf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt * rotate + mouse_rot;
 
-				data.rot_buf -= mouse_rot;
+				data.rotBuf -= mouse_rot;
 				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
@@ -2427,7 +2427,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 				// set angle & speed of move
 				float angle = u.rot;
-				bool run = always_run;
+				bool run = alwaysRun;
 				if(u.action == A_ATTACK && u.act.attack.run)
 					run = true;
 				else
@@ -2438,47 +2438,44 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						run = false;
 				}
 
-				float speed_mod;
+				float speedMod;
 				switch(move)
 				{
 				case 10: // forward
 					angle += PI;
-					speed_mod = 1.f;
+					speedMod = 1.f;
 					break;
 				case -10: // backward
 					run = false;
-					speed_mod = 0.8f;
+					speedMod = 0.8f;
 					break;
 				case -1: // left
 					angle += PI / 2;
-					speed_mod = 0.75f;
+					speedMod = 0.75f;
 					break;
 				case 1: // right
 					angle += PI * 3 / 2;
-					speed_mod = 0.75f;
+					speedMod = 0.75f;
 					break;
 				case 9: // forward left
 					angle += PI * 3 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case 11: // forward right
 					angle += PI * 5 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case -11: // backward left
 					run = false;
 					angle += PI / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				case -9: // backward right
 					run = false;
 					angle += PI * 7 / 4;
-					speed_mod = 0.9f;
+					speedMod = 0.9f;
 					break;
 				}
-
-				if(u.action == A_SHOOT)
-					run = false;
 
 				if(run)
 					u.animation = ANI_RUN;
@@ -2491,11 +2488,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				else
 					u.animation = ANI_WALK;
 
-				u.speed = (run ? u.GetRunSpeed() : u.GetWalkSpeed()) * speed_mod;
-				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed) * dt * 3), 0.f, u.speed);
-				float speed = u.prev_speed * dt;
+				if(u.action == A_SHOOT || u.action == A_CAST)
+					speedMod /= 2;
+				u.speed = (run ? u.GetRunSpeed() : u.GetWalkSpeed()) * speedMod;
+				u.prevSpeed = Clamp((u.prevSpeed + (u.speed - u.prevSpeed) * dt * 3), 0.f, u.speed);
+				float speed = u.prevSpeed * dt;
 
-				u.prev_pos = u.pos;
+				u.prevPos = u.pos;
 
 				const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
 				Int2 prev_tile(int(u.pos.x / 2), int(u.pos.z / 2));
@@ -2506,7 +2505,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					u.pos += dir;
 					moved = true;
 				}
-				else if(game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+				else if(gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
 					moved = true;
 
 				if(moved)
@@ -2518,24 +2517,24 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						TrainMove(speed);
 
 					// revealing minimap
-					if(!game_level->location->outside)
+					if(!gameLevel->location->outside)
 					{
 						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(new_tile != prev_tile)
-							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
+							FOV::DungeonReveal(new_tile, gameLevel->minimapReveal);
 					}
 				}
 
-				if(run && abs(u.speed - u.prev_speed) < 0.25f && move >= 9)
+				if(run && abs(u.speed - u.prevSpeed) < 0.25f && move >= 9)
 					u.running = true;
 			}
 		}
 
 		if(move == 0)
 		{
-			u.prev_speed -= dt * 3;
-			if(u.prev_speed < 0)
-				u.prev_speed = 0;
+			u.prevSpeed -= dt * 3;
+			if(u.prevSpeed < 0)
+				u.prevSpeed = 0;
 		}
 	}
 
@@ -2571,7 +2570,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						bool ignore_team = !team->HaveOtherActiveTeamMember();
 						int i_index = u.FindItem([=](const ItemSlot& slot)
 						{
-							return slot.item == item && (slot.team_count == 0u || ignore_team);
+							return slot.item == item && (slot.teamCount == 0u || ignore_team);
 						});
 						if(i_index != Unit::INVALID_IINDEX)
 						{
@@ -2583,9 +2582,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 								if(u.action == A_TAKE_WEAPON)
 								{
 									ok = false;
-									next_action = NA_EQUIP_DRAW;
-									next_action_data.item = item;
-									next_action_data.index = i_index;
+									nextAction = NA_EQUIP_DRAW;
+									nextActionData.item = item;
+									nextActionData.index = i_index;
 									if(Net::IsClient())
 										Net::PushChange(NetChange::SET_NEXT_ACTION);
 								}
@@ -2593,7 +2592,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 
 							if(ok)
 							{
-								game_gui->inventory->inv_mine->EquipSlotItem(i_index);
+								gameGui->inventory->invMine->EquipSlotItem(i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -2612,7 +2611,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				{
 					int i_index = u.FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
-						game_gui->inventory->inv_mine->ConsumeItem(i_index);
+						gameGui->inventory->invMine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{
@@ -2626,10 +2625,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 						else
 						{
-							OpenPanel open = game_gui->level_gui->GetOpenPanel();
+							OpenPanel open = gameGui->levelGui->GetOpenPanel();
 							if(open != OpenPanel::Inventory)
-								game_gui->level_gui->ClosePanels();
-							game_gui->book->Show((const Book*)item);
+								gameGui->levelGui->ClosePanels();
+							gameGui->book->Show((const Book*)item);
 						}
 					}
 				}
@@ -2638,12 +2637,12 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 	}
 
-	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing() || (u.action == A_ATTACK && u.animation_state == AS_ATTACK_PREPARE)
-		|| (u.action == A_SHOOT && u.animation_state == AS_SHOOT_PREPARE))
+	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing() || (u.action == A_ATTACK && u.animationState == AS_ATTACK_PREPARE)
+		|| (u.action == A_SHOOT && u.animationState == AS_SHOOT_PREPARE))
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
 		{
-			if(Any(u.weapon_state, WeaponState::Taken, WeaponState::Taking))
+			if(Any(u.weaponState, WeaponState::Taken, WeaponState::Taking))
 			{
 				u.HideWeapon();
 				idle = false;
@@ -2651,7 +2650,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else
 			{
 				// decide which weapon to take out
-				WeaponType weapon = last_weapon;
+				WeaponType weapon = lastWeapon;
 				if(weapon == W_NONE)
 				{
 					if(u.HaveWeapon())
@@ -2681,7 +2680,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				}
 
 				if(weapon == W_NONE)
-					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
+					gameGui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				else
 				{
 					if(u.SetWeaponState(true, weapon, true))
@@ -2719,7 +2718,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.ConsumeItem(potion_index);
 			}
 			else
-				game_gui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
+				gameGui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
 		}
 		else if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MANA_POTION && u.mp < u.mpmax)
 		{
@@ -2731,100 +2730,100 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 				u.ConsumeItem(potion_index);
 			}
 			else
-				game_gui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
+				gameGui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
 		}
-	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
+	} // allowInput == ALLOW_INPUT || allowInput == ALLOW_KEYBOARD
 
 	if(u.usable)
 		return;
 
 	// check what is in front of player
-	data.before_player = BP_NONE;
-	float best_dist = 3.0f;
+	data.beforePlayer = BP_NONE;
+	float bestDist = 3.0f;
 
 	// doors in front of player
-	for(Door* door : area.doors)
+	for(Door* door : locPart.doors)
 	{
-		if(OR2_EQ(door->state, Door::Opened, Door::Closed))
-			CheckObjectDistance(door->pos, door, best_dist, BP_DOOR);
+		if(Any(door->state, Door::Opened, Door::Closed))
+			CheckObjectDistance(door->pos, door, bestDist, BP_DOOR);
 	}
 
-	if(!data.ability_ready && u.action != A_CAST)
+	if(!data.abilityReady && u.action != A_CAST)
 	{
 		// units in front of player
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 		{
 			Unit& u2 = **it;
-			if(&u == &u2 || u2.to_remove)
+			if(&u == &u2 || u2.toRemove)
 				continue;
 
 			if(u2.IsStanding())
-				CheckObjectDistance(u2.visual_pos, &u2, best_dist, BP_UNIT);
-			else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
-				CheckObjectDistance(u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
+				CheckObjectDistance(u2.visualPos, &u2, bestDist, BP_UNIT);
+			else if(u2.liveState == Unit::FALL || u2.liveState == Unit::DEAD)
+				CheckObjectDistance(u2.GetLootCenter(), &u2, bestDist, BP_UNIT);
 		}
 
 		// chests in front of player
-		for(Chest* chest : area.chests)
+		for(Chest* chest : locPart.chests)
 		{
 			if(!chest->GetUser())
-				CheckObjectDistance(chest->pos, chest, best_dist, BP_CHEST);
+				CheckObjectDistance(chest->pos, chest, bestDist, BP_CHEST);
 		}
 
 		// ground items in front of player
-		for(GroundItem* ground_item : area.items)
-			CheckObjectDistance(ground_item->pos, ground_item, best_dist, BP_ITEM);
+		for(GroundItem* groundItem : locPart.GetGroundItems())
+			CheckObjectDistance(groundItem->pos, groundItem, bestDist, BP_ITEM);
 
 		// usable objects in front of player
-		for(Usable* usable : area.usables)
+		for(Usable* usable : locPart.usables)
 		{
 			if(!usable->user)
-				CheckObjectDistance(usable->pos, usable, best_dist, BP_USABLE);
+				CheckObjectDistance(usable->pos, usable, bestDist, BP_USABLE);
 		}
 	}
 
 	// use something in front of player
-	if(u.frozen == FROZEN::NO && data.before_player != BP_NONE
+	if(u.frozen == FROZEN::NO && data.beforePlayer != BP_NONE
 		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
-		if(data.before_player == BP_UNIT)
+		if(data.beforePlayer == BP_UNIT)
 		{
-			Unit* u2 = data.before_player_ptr.unit;
+			Unit* u2 = data.beforePlayerPtr.unit;
 
 			// there is unit in front of player
-			if(u2->live_state == Unit::DEAD || u2->live_state == Unit::FALL)
+			if(u2->liveState == Unit::DEAD || u2->liveState == Unit::FALL)
 			{
 				if(u.action != A_NONE)
 				{
 				}
-				else if(u2->live_state == Unit::FALL)
+				else if(u2->liveState == Unit::FALL)
 				{
 					// can't loot alive units that are just lying on ground
-					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
+					gameGui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// can't loot allies
-					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
+					gameGui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
-				else if(u2->in_arena != -1)
-					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
+				else if(u2->inArena != -1)
+					gameGui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
 						// someone else is looting
-						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
+						gameGui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
 						// start looting corpse
 						action = PlayerAction::LootUnit;
-						action_unit = u2;
+						actionUnit = u2;
 						u2->busy = Unit::Busy_Looted;
-						chest_trade = &u2->items;
-						game_gui->inventory->StartTrade(I_LOOT_BODY, *u2);
+						chestTrade = &u2->items;
+						gameGui->inventory->StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2834,24 +2833,24 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->id;
 					action = PlayerAction::LootUnit;
-					action_unit = u2;
-					chest_trade = &u2->items;
+					actionUnit = u2;
+					chestTrade = &u2->items;
 				}
 			}
-			else if(u2->IsAI() && u2->IsIdle() && u2->in_arena == -1 && u2->data->dialog && !u.IsEnemy(*u2))
+			else if(u2->IsAI() && u2->IsIdle() && u2->inArena == -1 && u2->data->dialog && !u.IsEnemy(*u2))
 			{
 				if(Net::IsLocal())
 				{
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
 						// using is busy
-						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
+						gameGui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
 						// start dialog
-						game->dialog_context.StartDialog(u2);
-						data.before_player = BP_NONE;
+						game->dialogContext.StartDialog(u2);
+						data.beforePlayer = BP_NONE;
 					}
 				}
 				else
@@ -2861,13 +2860,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					c.type = NetChange::TALK;
 					c.id = u2->id;
 					action = PlayerAction::Talk;
-					action_unit = u2;
-					game->dialog_context.predialog.clear();
-					game->dialog_context.predialogBubble = u2->bubble;
+					actionUnit = u2;
+					game->dialogContext.predialog.clear();
+					game->dialogContext.predialogBubble = u2->bubble;
 				}
 			}
 		}
-		else if(data.before_player == BP_CHEST)
+		else if(data.beforePlayer == BP_CHEST)
 		{
 			if(u.action != A_NONE)
 			{
@@ -2875,25 +2874,25 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			else if(Net::IsLocal())
 			{
 				// start looting chest
-				game_gui->inventory->StartTrade2(I_LOOT_CHEST, data.before_player_ptr.chest);
-				data.before_player_ptr.chest->OpenClose(unit);
+				gameGui->inventory->StartTrade2(I_LOOT_CHEST, data.beforePlayerPtr.chest);
+				data.beforePlayerPtr.chest->OpenClose(unit);
 			}
 			else
 			{
 				// send message to server about looting chest
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
-				c.id = data.before_player_ptr.chest->id;
+				c.id = data.beforePlayerPtr.chest->id;
 				action = PlayerAction::LootChest;
-				action_chest = data.before_player_ptr.chest;
-				chest_trade = &action_chest->items;
+				actionChest = data.beforePlayerPtr.chest;
+				chestTrade = &actionChest->items;
 				u.action = A_PREPARE;
 			}
 		}
-		else if(data.before_player == BP_DOOR)
+		else if(data.beforePlayer == BP_DOOR)
 		{
 			// opening/closing door
-			Door* door = data.before_player_ptr.door;
+			Door* door = data.beforePlayerPtr.door;
 			if(door->state == Door::Closed)
 			{
 				// open door
@@ -2919,38 +2918,38 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					Vec3 center = door->GetCenter();
 					if(key && u.HaveItem(Item::Get(key)))
 					{
-						sound_mgr->PlaySound3d(game_res->sUnlock, center, Door::UNLOCK_SOUND_DIST);
-						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
+						soundMgr->PlaySound3d(gameRes->sUnlock, center, Door::UNLOCK_SOUND_DIST);
+						gameGui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
 						door->Open();
 					}
 					else
 					{
-						game_gui->messages->AddGameMsg3(GMS_NEED_KEY);
-						sound_mgr->PlaySound3d(game_res->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
+						gameGui->messages->AddGameMsg3(GMS_NEED_KEY);
+						soundMgr->PlaySound3d(gameRes->sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
 					}
 				}
 			}
 			else
 				door->Close();
 		}
-		else if(data.before_player == BP_ITEM)
+		else if(data.beforePlayer == BP_ITEM)
 		{
 			// pickup item
-			GroundItem& item = *data.before_player_ptr.item;
+			GroundItem* groundItem = data.beforePlayerPtr.item;
 			if(u.action == A_NONE)
 			{
-				bool up_anim = (item.pos.y > u.pos.y + 0.5f);
+				bool up_anim = (groundItem->pos.y > u.pos.y + 0.5f);
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.meshInst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
 				if(Net::IsLocal())
 				{
-					u.AddItem2(item.item, item.count, item.team_count, false);
+					u.AddItem2(groundItem->item, groundItem->count, groundItem->teamCount, false);
 
-					if(item.item->type == IT_GOLD)
-						sound_mgr->PlaySound2d(game_res->sCoins);
+					if(groundItem->item->type == IT_GOLD)
+						soundMgr->PlaySound2d(gameRes->sCoins);
 
 					if(Net::IsOnline())
 					{
@@ -2958,60 +2957,50 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.type = NetChange::PICKUP_ITEM;
 						c.unit = unit;
 						c.count = (up_anim ? 1 : 0);
-
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::REMOVE_ITEM;
-						c2.id = item.id;
 					}
 
-					RemoveElement(area.items, &item);
-					data.before_player = BP_NONE;
-
-					for(Event& event : game_level->location->events)
+					for(Event& event : gameLevel->location->events)
 					{
 						if(event.type == EVENT_PICKUP)
 						{
 							ScriptEvent e(EVENT_PICKUP);
-							e.on_pickup.unit = unit;
-							e.on_pickup.item = &item;
+							e.onPickup.unit = unit;
+							e.onPickup.item = groundItem;
 							event.quest->FireEvent(e);
 						}
 					}
 
-					delete& item;
+					locPart.RemoveGroundItem(groundItem);
 				}
 				else
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::PICKUP_ITEM;
-					c.id = item.id;
-
-					data.picking_item = &item;
-					data.picking_item_state = 1;
+					c.id = groundItem->id;
 				}
 			}
 		}
 		else if(u.action == A_NONE)
-			UseUsable(data.before_player_ptr.usable, false);
+			UseUsable(data.beforePlayerPtr.usable, false);
 	}
 
 	// attack
-	if(u.weapon_state == WeaponState::Taken)
+	if(u.weaponState == WeaponState::Taken)
 	{
 		idle = false;
-		if(u.weapon_taken == W_ONE_HANDED)
+		if(u.weaponTaken == W_ONE_HANDED)
 		{
 			if(u.action == A_ATTACK)
 			{
-				if(u.animation_state == AS_ATTACK_PREPARE)
+				if(u.animationState == AS_ATTACK_PREPARE)
 				{
-					if(GKey.KeyUpAllowed(action_key))
+					if(GKey.KeyUpAllowed(actionKey))
 					{
 						// release attack
-						const float ratio = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
+						const float ratio = u.meshInst->groups[1].time / u.GetAttackFrame(0);
 						const float speed = (ratio + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
-						u.mesh_inst->groups[1].speed = speed;
-						u.animation_state = AS_ATTACK_CAN_HIT;
+						u.meshInst->groups[1].speed = speed;
+						u.animationState = AS_ATTACK_CAN_HIT;
 						u.act.attack.power = ratio + 1.f;
 
 						if(Net::IsOnline())
@@ -3028,9 +3017,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 					{
-						u.mesh_inst->Deactivate(1);
+						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
-						data.wasted_key = action_key;
+						data.wastedKey = actionKey;
 
 						if(Net::IsOnline())
 						{
@@ -3042,7 +3031,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						}
 					}
 				}
-				else if(u.animation_state == AS_ATTACK_FINISHED && !data.ability_ready)
+				else if(u.animationState == AS_ATTACK_FINISHED && !data.abilityReady)
 				{
 					Key k = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
 					if(k == Key::None)
@@ -3052,13 +3041,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						// prepare next attack
 						float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						u.action = A_ATTACK;
-						u.animation_state = AS_ATTACK_PREPARE;
+						u.animationState = AS_ATTACK_PREPARE;
 						u.act.attack.index = u.GetRandomAttack();
 						u.act.attack.run = false;
 						u.act.attack.hitted = false;
-						u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						u.mesh_inst->groups[1].speed = speed;
-						action_key = k;
+						u.meshInst->Play(NAMES::aniAttacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+						u.meshInst->groups[1].speed = speed;
+						actionKey = k;
 						u.timer = 0.f;
 
 						if(Net::IsOnline())
@@ -3080,11 +3069,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 			else if(u.action == A_BLOCK)
 			{
-				if(GKey.KeyUpAllowed(action_key))
+				if(GKey.KeyUpAllowed(actionKey))
 				{
 					// stop blocking
 					u.action = A_NONE;
-					u.mesh_inst->Deactivate(1);
+					u.meshInst->Deactivate(1);
 
 					if(Net::IsOnline())
 					{
@@ -3095,16 +3084,16 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield() && !data.ability_ready)
+				else if(!u.meshInst->groups[1].IsBlending() && u.HaveShield() && !data.abilityReady)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
 						// shield bash
 						const float speed = u.GetBashSpeed();
 						u.action = A_BASH;
-						u.animation_state = AS_BASH_ANIMATION;
-						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1, 1);
-						u.mesh_inst->groups[1].speed = speed;
+						u.animationState = AS_BASH_ANIMATION;
+						u.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, 1);
+						u.meshInst->groups[1].speed = speed;
 
 						if(Net::IsOnline())
 						{
@@ -3123,13 +3112,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.ability_ready)
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK) && !data.abilityReady)
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wastedKey);
 				bool secondary = false;
 				if(k == Key::None)
 				{
-					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
+					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wastedKey);
 					secondary = true;
 				}
 				if(k != Key::None)
@@ -3144,13 +3133,13 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						u.action = A_ATTACK;
 						u.act.attack.index = u.GetRandomAttack();
 						u.act.attack.hitted = false;
-						u.mesh_inst->Play(NAMES::ani_attacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
+						u.meshInst->Play(NAMES::aniAttacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						if(u.running)
 						{
 							// running attack
 							float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.mesh_inst->groups[1].speed = speed;
-							u.animation_state = AS_ATTACK_CAN_HIT;
+							u.meshInst->groups[1].speed = speed;
+							u.animationState = AS_ATTACK_CAN_HIT;
 							u.act.attack.run = true;
 							u.act.attack.power = 1.5f;
 
@@ -3174,9 +3163,9 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						{
 							// prepare attack
 							float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.mesh_inst->groups[1].speed = speed;
-							action_key = k;
-							u.animation_state = AS_ATTACK_PREPARE;
+							u.meshInst->groups[1].speed = speed;
+							actionKey = k;
+							u.animationState = AS_ATTACK_PREPARE;
 							u.act.attack.run = false;
 							u.timer = 0.f;
 
@@ -3200,18 +3189,18 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			}
 
 			// no action or non-heavy attack
-			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.ability_ready && (u.action == A_NONE
-				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animation_state == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
+			if(u.frozen == FROZEN::NO && u.HaveShield() && !data.abilityReady && (u.action == A_NONE
+				|| (u.action == A_ATTACK && !u.act.attack.run && !(u.animationState == AS_ATTACK_CAN_HIT && u.act.attack.power > 1.5f))))
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, data.wastedKey);
 				if(k != Key::None)
 				{
 					// start blocking
-					const float blend_max = u.GetBlockSpeed();
+					const float blendMax = u.GetBlockSpeed();
 					u.action = A_BLOCK;
-					u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-					u.mesh_inst->groups[1].blend_max = blend_max;
-					action_key = k;
+					u.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
+					u.meshInst->groups[1].blendMax = blendMax;
+					actionKey = k;
 
 					if(Net::IsOnline())
 					{
@@ -3219,7 +3208,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 						c.type = NetChange::ATTACK;
 						c.unit = unit;
 						c.id = AID_Block;
-						c.f[1] = blend_max;
+						c.f[1] = blendMax;
 					}
 				}
 			}
@@ -3229,11 +3218,11 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == AS_SHOOT_PREPARE)
+				if(u.animationState == AS_SHOOT_PREPARE)
 				{
-					if(GKey.KeyUpAllowed(action_key))
+					if(GKey.KeyUpAllowed(actionKey))
 					{
-						u.animation_state = AS_SHOOT_CAN;
+						u.animationState = AS_SHOOT_CAN;
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3245,10 +3234,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 					else if(GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
 					{
-						u.mesh_inst->Deactivate(1);
+						u.meshInst->Deactivate(1);
 						u.action = A_NONE;
-						data.wasted_key = action_key;
-						game_level->FreeBowInstance(u.bow_instance);
+						data.wastedKey = actionKey;
+						gameLevel->FreeBowInstance(u.bowInstance);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -3260,14 +3249,14 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 					}
 				}
 			}
-			else if(u.frozen == FROZEN::NO && !data.ability_ready)
+			else if(u.frozen == FROZEN::NO && !data.abilityReady)
 			{
-				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wasted_key);
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, data.wastedKey);
 				if(k == Key::None)
-					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wasted_key);
+					k = GKey.KeyDoReturnIgnore(GK_SECONDARY_ATTACK, &Input::Down, data.wastedKey);
 				if(k != Key::None)
 				{
-					action_key = k;
+					actionKey = k;
 					u.DoRangedAttack(true);
 				}
 			}
@@ -3275,7 +3264,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 	}
 
 	// ability
-	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.ability_ready != shortcut.ability)
+	if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_ABILITY && data.abilityReady != shortcut.ability)
 	{
 		PlayerController::CanUseAbilityResult result = CanUseAbility(shortcut.ability, true);
 		if(Any(result,
@@ -3283,10 +3272,10 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			PlayerController::CanUseAbilityResult::TakeWand,
 			PlayerController::CanUseAbilityResult::TakeBow))
 		{
-			data.ability_ready = shortcut.ability;
-			data.ability_ok = false;
-			data.ability_rot = 0.f;
-			data.ability_target = nullptr;
+			data.abilityReady = shortcut.ability;
+			data.abilityOk = false;
+			data.abilityRot = 0.f;
+			data.abilityTarget = nullptr;
 			if(result == PlayerController::CanUseAbilityResult::TakeWand)
 				unit->TakeWeapon(W_ONE_HANDED);
 			else if(result == PlayerController::CanUseAbilityResult::TakeBow)
@@ -3295,15 +3284,15 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		else
 		{
 			if(result == PlayerController::CanUseAbilityResult::NeedWand)
-				game_gui->messages->AddGameMsg3(GMS_NEED_WAND);
+				gameGui->messages->AddGameMsg3(GMS_NEED_WAND);
 			else if(result == PlayerController::CanUseAbilityResult::NeedBow)
-				game_gui->messages->AddGameMsg3(GMS_NEED_BOW);
-			sound_mgr->PlaySound2d(game_res->sCancel);
+				gameGui->messages->AddGameMsg3(GMS_NEED_BOW);
+			soundMgr->PlaySound2d(gameRes->sCancel);
 		}
 	}
-	else if(data.ability_ready)
+	else if(data.abilityReady)
 	{
-		Ability& ability = *data.ability_ready;
+		Ability& ability = *data.abilityReady;
 		if(ability.type == Ability::Charge && IsSet(ability.flags, Ability::PickDir))
 		{
 			// adjust action dir
@@ -3311,61 +3300,61 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 			{
 			case 0: // none
 			case 10: // forward
-				data.ability_rot = 0.f;
+				data.abilityRot = 0.f;
 				break;
 			case -10: // backward
-				data.ability_rot = PI;
+				data.abilityRot = PI;
 				break;
 			case -1: // left
-				data.ability_rot = -PI / 2;
+				data.abilityRot = -PI / 2;
 				break;
 			case 1: // right
-				data.ability_rot = PI / 2;
+				data.abilityRot = PI / 2;
 				break;
 			case 9: // forward left
-				data.ability_rot = -PI / 4;
+				data.abilityRot = -PI / 4;
 				break;
 			case 11: // forward right
-				data.ability_rot = PI / 4;
+				data.abilityRot = PI / 4;
 				break;
 			case -11: // backward left
-				data.ability_rot = -PI * 3 / 4;
+				data.abilityRot = -PI * 3 / 4;
 				break;
 			case -9: // backward right
-				data.ability_rot = PI * 3 / 4;
+				data.abilityRot = PI * 3 / 4;
 				break;
 			}
 		}
 
-		data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
-		if(data.wasted_key != Key::None)
+		data.wastedKey = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
+		if(data.wastedKey != Key::None)
 		{
-			if(data.ability_ok && CanUseAbility(data.ability_ready, false) == CanUseAbilityResult::Yes)
-				UseAbility(data.ability_ready, false);
+			if(data.abilityOk && CanUseAbility(data.abilityReady, false) == CanUseAbilityResult::Yes)
+				UseAbility(data.abilityReady, false);
 			else
-				data.wasted_key = Key::None;
+				data.wastedKey = Key::None;
 		}
 		else
 		{
-			data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
-			if(data.wasted_key != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
-				data.ability_ready = nullptr;
+			data.wastedKey = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
+			if(data.wastedKey != Key::None || GKey.KeyPressedUpAllowed(GK_CANCEL_ATTACK))
+				data.abilityReady = nullptr;
 		}
 	}
 
 	// idle animation
 	if(idle && u.action == A_NONE)
 	{
-		idle_timer += dt;
-		if(idle_timer >= 4.f)
+		idleTimer += dt;
+		if(idleTimer >= 4.f)
 		{
 			if(u.animation == ANI_LEFT || u.animation == ANI_RIGHT)
-				idle_timer = Random(2.f, 3.f);
+				idleTimer = Random(2.f, 3.f);
 			else
 			{
 				int id = Rand() % u.data->idles->anims.size();
-				idle_timer = Random(0.f, 0.5f);
-				u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
+				idleTimer = Random(0.f, 0.5f);
+				u.meshInst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
 				u.animation = ANI_IDLE;
 
 				if(Net::IsOnline())
@@ -3379,7 +3368,7 @@ void PlayerController::UpdateMove(float dt, bool allow_rot)
 		}
 	}
 	else
-		idle_timer = Random(0.f, 0.5f);
+		idleTimer = Random(0.f, 0.5f);
 }
 
 //=================================================================================================
@@ -3413,9 +3402,9 @@ bool PlayerController::WantExitLevel()
 //=================================================================================================
 void PlayerController::ClearNextAction()
 {
-	if(next_action != NA_NONE)
+	if(nextAction != NA_NONE)
 	{
-		next_action = NA_NONE;
+		nextAction = NA_NONE;
 		if(Net::IsClient())
 			Net::PushChange(NetChange::SET_NEXT_ACTION);
 	}
@@ -3425,25 +3414,27 @@ void PlayerController::ClearNextAction()
 Vec3 PlayerController::RaytestTarget(float range)
 {
 	RaytestWithIgnoredCallback clbk(unit, nullptr);
-	Vec3 from = game_level->camera.from;
-	Vec3 dir = (game_level->camera.to - from).Normalized();
-	from += dir * game_level->camera.dist;
+	Vec3 from = gameLevel->camera.from;
+	Vec3 dir = (gameLevel->camera.to - from).Normalized();
+	from += dir * gameLevel->camera.dist;
 	Vec3 to = from + dir * range;
-	phy_world->rayTest(ToVector3(from), ToVector3(to), clbk);
+	phyWorld->rayTest(ToVector3(from), ToVector3(to), clbk);
 	if(range < 10)
-		data.range_ratio = clbk.fraction * range / 10;
+		data.rangeRatio = clbk.fraction * range / 10;
 	else
-		data.range_ratio = clbk.fraction;
+		data.rangeRatio = clbk.fraction;
 	return from + dir * range * clbk.fraction;
 }
 
 //=================================================================================================
 bool PlayerController::ShouldUseRaytest() const
 {
-	return (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
-		|| (data.ability_ready && Any(data.ability_ready->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
+	if(action != PlayerAction::None)
+		return false;
+	return (unit->weaponState == WeaponState::Taken && unit->weaponTaken == W_BOW && Any(unit->action, A_NONE, A_SHOOT))
+		|| (data.abilityReady && Any(data.abilityReady->type, Ability::Target, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
 		|| (unit->action == A_CAST && Any(unit->act.cast.ability->type, Ability::Point, Ability::Ray, Ability::Summon, Ability::Trap))
-		|| (unit->weapon_state == WeaponState::Taken && unit->weapon_taken == W_ONE_HANDED
+		|| (unit->weaponState == WeaponState::Taken && unit->weaponTaken == W_ONE_HANDED
 			&& IsSet(unit->GetWeapon().flags, ITEM_WAND) && unit->Get(SkillId::MYSTIC_MAGIC) > 0
 			&& Any(unit->action, A_NONE, A_ATTACK, A_CAST, A_BLOCK, A_BASH));
 }
@@ -3462,8 +3453,8 @@ void PlayerController::ReadBook(int index)
 		if(Net::IsLocal())
 		{
 			unit->action = A_USE_ITEM;
-			unit->used_item = slot.item;
-			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			unit->usedItem = slot.item;
+			unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -3498,9 +3489,9 @@ void PlayerController::ReadBook(int index)
 			}
 
 			if(!anythingNew)
-				game_gui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
+				gameGui->messages->AddGameMsg3(GMS_ALREADY_LEARNED);
 			else if(!anythingAllowed)
-				game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+				gameGui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
 			else
 			{
 				if(Net::IsLocal())
@@ -3513,7 +3504,7 @@ void PlayerController::ReadBook(int index)
 					if(IsSet(book.flags, ITEM_SINGLE_USE))
 						unit->RemoveItem(index, 1u);
 					if(anythingTooHard)
-						game_gui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
+						gameGui->messages->AddGameMsg3(GMS_TOO_COMPLICATED);
 				}
 				else
 				{
@@ -3526,6 +3517,6 @@ void PlayerController::ReadBook(int index)
 		}
 
 		if(!IsSet(book.flags, ITEM_SINGLE_USE))
-			game_gui->book->Show(&book);
+			gameGui->book->Show(&book);
 	}
 }

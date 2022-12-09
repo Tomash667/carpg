@@ -14,7 +14,7 @@ public:
 	CraftPanel();
 	void LoadData();
 	void LoadLanguage();
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Show();

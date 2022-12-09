@@ -9,12 +9,12 @@
 #include "World.h"
 #pragma warning(error: 4062)
 
-string Vars::tmp_str;
+string Vars::tmpStr;
 
 //=================================================================================================
 bool Var::IsGeneric(void* ptr, int type)
 {
-	Type is_type = script_mgr->GetVarType(type);
+	Type is_type = scriptMgr->GetVarType(type);
 	return this->type == is_type && this->ptr == ptr;
 }
 
@@ -22,7 +22,7 @@ bool Var::IsGeneric(void* ptr, int type)
 Var* Var::SetGeneric(void* ptr, int type)
 {
 	// TODO: check if this is known type
-	this->type = script_mgr->GetVarType(type);
+	this->type = scriptMgr->GetVarType(type);
 	this->ptr = ptr;
 	return this;
 }
@@ -31,7 +31,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == script_mgr->GetVarType(type) || this->type == Type::Magic);
+	assert(this->type == scriptMgr->GetVarType(type) || this->type == Type::Magic);
 	*(void**)ptr = this->ptr;
 }
 
@@ -121,7 +121,7 @@ void Vars::Save(GameWriter& f)
 			f << (e.second->encounter ? e.second->encounter->index : -1);
 			break;
 		case Var::Type::GroundItem:
-			f << (e.second->ground_item ? e.second->ground_item->id : -1);
+			f << (e.second->groundItem ? e.second->groundItem->id : -1);
 			break;
 		case Var::Type::String:
 		case Var::Type::Unit:
@@ -140,14 +140,14 @@ void Vars::Load(GameReader& f)
 	f >> count;
 	for(uint i = 0; i < count; ++i)
 	{
-		tmp_str = f.ReadString1();
-		auto it = vars.find(tmp_str);
+		tmpStr = f.ReadString1();
+		auto it = vars.find(tmpStr);
 		Var* v;
 		if(it == vars.end())
 		{
 			v = new Var;
 			f.ReadCasted<byte>(v->type);
-			vars[tmp_str] = v;
+			vars[tmpStr] = v;
 		}
 		else
 		{
@@ -218,7 +218,7 @@ void Vars::Load(GameReader& f)
 			{
 				int id;
 				f >> id;
-				v->ground_item = GroundItem::GetById(id);
+				v->groundItem = GroundItem::GetById(id);
 			}
 			break;
 		case Var::Type::String:

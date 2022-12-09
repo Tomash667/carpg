@@ -14,7 +14,7 @@ class StatsPanel : public GamePanel
 public:
 	StatsPanel();
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 	static char StatStateToColor(StatState s);
@@ -30,7 +30,7 @@ private:
 
 	TooltipController tooltip;
 	FlowContainer flowAttribs, flowStats, flowSkills, flowFeats;
-	float last_update;
+	float lastUpdate;
 	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsStartMp, txTraitsEnd, txStatsText, txBase, txRelatedAttributes, txFeats, txTraits, txStats,
 		txDate, txAttack, txMeleeAttack, txRangedAttack, txHardcoreMode;
 	vector<pair<cstring, int>> perks;

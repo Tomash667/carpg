@@ -35,8 +35,8 @@ struct TerrainTileInfo
 };
 
 //-----------------------------------------------------------------------------
-extern const TerrainTileInfo terrain_tile_info[];
-extern cstring tile_mode_name[];
+extern const TerrainTileInfo terrainTileInfo[];
+extern cstring tileModeName[];
 
 //-----------------------------------------------------------------------------
 struct TerrainTile
@@ -50,18 +50,18 @@ struct TerrainTile
 		return mode >= TM_BUILDING_BLOCK && mode != TM_NO_GRASS;
 	}
 
-	void Set(TERRAIN_TILE _t, TILE_MODE _mode)
+	void Set(TERRAIN_TILE t, TILE_MODE mode)
 	{
-		t = _t;
-		mode = _mode;
+		this->t = t;
+		this->mode = mode;
 	}
 
-	void Set(TERRAIN_TILE _t, TERRAIN_TILE _t2, byte _alpha, TILE_MODE _mode)
+	void Set(TERRAIN_TILE t, TERRAIN_TILE t2, byte alpha, TILE_MODE mode)
 	{
-		t = _t;
-		t2 = _t2;
-		alpha = _alpha;
-		mode = _mode;
+		this->t = t;
+		this->t2 = t2;
+		this->alpha = alpha;
+		this->mode = mode;
 	}
 
 	bool IsRoadOrPath() const
@@ -76,6 +76,6 @@ struct TerrainTile
 
 	cstring GetInfo() const
 	{
-		return Format("T:%s T2:%s Alpha:%d Mode:%s", terrain_tile_info[t].name, terrain_tile_info[t2].name, alpha, tile_mode_name[mode]);
+		return Format("T:%s T2:%s Alpha:%d Mode:%s", terrainTileInfo[t].name, terrainTileInfo[t2].name, alpha, tileModeName[mode]);
 	}
 };

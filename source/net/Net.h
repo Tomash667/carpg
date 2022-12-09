@@ -121,21 +121,20 @@ public:
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
 	void OpenPeer();
-	void ClosePeer(bool wait = false, bool check_was_client = false);
-	bool IsFastTravel() const { return fast_travel; }
+	void ClosePeer(bool wait = false, bool checkWasClient = false);
+	bool IsFastTravel() const { return fastTravel; }
 	void StartFastTravel(int who);
 	void CancelFastTravel(int mode, int id);
 	void ClearFastTravel();
 	void OnFastTravel(bool accept);
-	void AddServerMsg(cstring msg);
 
 	RakPeerInterface* peer;
 	rvector<PlayerInfo> players; // contains players that left too
-	vector<string*> net_strs;
-	PacketLogger* packet_logger;
-	float update_timer, mp_interp;
+	vector<string*> netStrs;
+	PacketLogger* packetLogger;
+	float updateTimer, mpInterp;
 	int port;
-	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world, mp_quickload;
+	bool mpLoad, mpLoadWorldmap, mpUseInterp, prepareWorld, mpQuickload;
 
 	//****************************************************************************
 	// Server
@@ -181,12 +180,12 @@ public:
 		c.id = where;
 	}
 
-	rvector<PlayerInfo> old_players;
-	uint active_players, max_players;
-	string server_name, password;
-	int last_id;
-	MasterServerState master_server_state;
-	SystemAddress master_server_adr;
+	rvector<PlayerInfo> oldPlayers;
+	uint activePlayers, maxPlayers;
+	string serverName, password;
+	int lastId;
+	MasterServerState masterServerState;
+	SystemAddress masterServerAdr;
 	struct WarpData
 	{
 		Unit* u;
@@ -195,7 +194,7 @@ public:
 		float timer;
 	};
 	vector<WarpData> warps;
-	bool players_left, server_lan;
+	bool playersLeft, serverLan;
 
 	//****************************************************************************
 	// Client
@@ -210,7 +209,6 @@ public:
 	bool ProcessControlMessageClientForMe(BitStreamReader& f);
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
-	void Client_ServerSay(BitStreamReader& f);
 	void FilterClientChanges();
 	bool FilterOut(NetChange& c);
 	void ReadNetVars(BitStreamReader& f);
@@ -220,15 +218,15 @@ public:
 	bool ReadPlayerData(BitStreamReader& f);
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
 
-	SystemAddress server, ping_adr;
-	float interpolate_timer;
-	bool was_client, join_lan;
+	SystemAddress server, pingAdr;
+	float interpolateTimer;
+	bool wasClient, joinLan;
 
 private:
 	static Mode mode;
 	TexturePtr tFastTravel, tFastTravelDeny;
 	cstring txCreateServerFailed, txInitConnectionFailed, txFastTravelText, txFastTravelWaiting, txFastTravelCancel, txFastTravelDeny, txFastTravelNotSafe;
-	Notification* fast_travel_notif;
-	float fast_travel_timer;
-	bool fast_travel;
+	Notification* fastTravelNotification;
+	float fastTravelTimer;
+	bool fastTravel;
 };

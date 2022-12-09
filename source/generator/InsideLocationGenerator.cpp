@@ -8,6 +8,7 @@
 #include "GameStats.h"
 #include "ItemHelper.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "MultiInsideLocation.h"
 #include "OutsideLocation.h"
 #include "Pathfinding.h"
@@ -20,6 +21,8 @@
 #include "Team.h"
 #include "World.h"
 
+#include <ResourceManager.h>
+#include <Scene.h>
 #include <Texture.h>
 
 // don't spawn objects near other objects to not block path
@@ -45,16 +48,16 @@ int InsideLocationGenerator::GetNumberOfSteps()
 //=================================================================================================
 void InsideLocationGenerator::OnEnter()
 {
-	inside->SetActiveLevel(dungeon_level);
-	game_level->lvl = &inside->GetLevelData();
+	inside->SetActiveLevel(dungeonLevel);
+	gameLevel->lvl = &inside->GetLevelData();
 	int days;
 	bool need_reset = inside->CheckUpdate(days, world->GetWorldtime());
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
-	game_level->Apply();
+	gameLevel->Apply();
 
-	game->SetDungeonParamsAndTextures(base);
+	SetDungeonParamsAndTextures(base);
 
 	if(first)
 	{
@@ -70,14 +73,14 @@ void InsideLocationGenerator::OnEnter()
 	{
 		game->LoadingStep(game->txRegeneratingLevel);
 
-		game_level->RecreateTmpObjectPhysics();
+		gameLevel->RecreateTmpObjectPhysics();
 
 		int update_flags = HandleUpdate(days);
 		if(IsSet(update_flags, PREVENT_RESET))
 			need_reset = false;
 
 		if(days > 0)
-			game_level->UpdateLocation(days, base.door_open, need_reset);
+			gameLevel->UpdateLocation(days, base.doorOpen, need_reset);
 
 		if(need_reset)
 		{
@@ -86,7 +89,7 @@ void InsideLocationGenerator::OnEnter()
 				(*it)->items.clear();
 
 			// nowa zawartoœæ skrzyni
-			int dlevel = game_level->GetDifficultyLevel();
+			int dlevel = gameLevel->GetDifficultyLevel();
 			for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
 			{
 				Chest& chest = **it;
@@ -108,7 +111,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game_level->OnRevisitLevel();
+		gameLevel->OnRevisitLevel();
 
 		// odtwórz jednostki
 		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
@@ -117,79 +120,79 @@ void InsideLocationGenerator::OnEnter()
 
 		// odtwórz fizykê
 		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
-			game_level->RecreateObjects();
+			gameLevel->RecreateObjects();
 
 		if(need_reset)
 			GenerateUnits();
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != ACTIVE_QUEST_HOLDER)
+	if(inside->activeQuest && inside->activeQuest != ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->active_quest);
-		Quest_Event* event = quest ? quest->GetEvent(game_level->location) : nullptr;
+		Quest_Dungeon* quest = dynamic_cast<Quest_Dungeon*>(inside->activeQuest);
+		Quest_Event* event = quest ? quest->GetEvent(gameLevel->location) : nullptr;
 		if(event)
 		{
-			if(event->at_level == dungeon_level)
+			if(event->atLevel == dungeonLevel)
 			{
 				if(!event->done)
 				{
-					quest_mgr->HandleQuestEvent(event);
+					questMgr->HandleQuestEvent(event);
 
 					// generowanie orków
-					if(game_level->location == quest_mgr->quest_orcs2->targetLoc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+					if(gameLevel->location == questMgr->questOrcs2->targetLoc && questMgr->questOrcs2->orcsState == Quest_Orcs2::State::GenerateOrcs)
 					{
-						quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
+						questMgr->questOrcs2->orcsState = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
 						for(Room* room : lvl.rooms)
 						{
 							if(!room->IsCorridor() && Rand() % 2 == 0)
 							{
-								Unit* u = game_level->SpawnUnitInsideRoom(*room, *ud, -2, Int2(-999, -999), Int2(-999, -999));
+								Unit* u = gameLevel->SpawnUnitInsideRoom(*room, *ud, -2, Int2(-999, -999), Int2(-999, -999));
 								if(u)
-									u->dont_attack = true;
+									u->dontAttack = true;
 							}
 						}
 
 						UnitData* orc_smith = UnitData::Get("q_orkowie_kowal");
-						Unit* u = game_level->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
+						Unit* u = gameLevel->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
-							u->dont_attack = true;
+							u->dontAttack = true;
 					}
 				}
 
-				game_level->event_handler = event->location_event_handler;
+				gameLevel->eventHandler = event->locationEventHandler;
 			}
-			else if(quest->whole_location_event_handler)
-				game_level->event_handler = event->location_event_handler;
+			else if(quest->wholeLocationEventHandler)
+				gameLevel->eventHandler = event->locationEventHandler;
 		}
 	}
 
-	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && game_level->location->type != L_CAVE && inside->target != LABYRINTH
-		&& !game_level->location->active_quest && dungeon_level == 0 && !game_level->location->group->IsEmpty() && inside->IsMultilevel())
+	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && gameLevel->location->type != L_CAVE && inside->target != LABYRINTH
+		&& !gameLevel->location->activeQuest && dungeonLevel == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
-	game_level->SpawnDungeonColliders();
+	gameLevel->SpawnDungeonColliders();
 
 	// generuj minimapê
 	game->LoadingStep(game->txGeneratingMinimap);
 	CreateMinimap();
 
 	// sekret
-	Quest_Secret* secret = quest_mgr->quest_secret;
-	if(game_level->location_index == secret->where && !inside->HaveNextEntry() && secret->state == Quest_Secret::SECRET_DROPPED_STONE)
+	Quest_Secret* secret = questMgr->questSecret;
+	if(gameLevel->locationIndex == secret->where && !inside->HaveNextEntry() && secret->state == Quest_Secret::SECRET_DROPPED_STONE)
 	{
 		secret->state = Quest_Secret::SECRET_GENERATED;
 		if(game->devmode)
 			Info("Generated secret room.");
 
-		if(game->hardcore_mode)
+		if(game->hardcoreMode)
 		{
 			Object* o = lvl.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
-			loc->active_quest = ACTIVE_QUEST_HOLDER;
+			loc->activeQuest = ACTIVE_QUEST_HOLDER;
 			loc->pos = Vec2(-999, -999);
 			loc->st = 20;
 			loc->name = game->txHiddenPlace;
@@ -199,12 +202,12 @@ void InsideLocationGenerator::OnEnter()
 			int loc_id = world->AddLocation(loc);
 
 			Portal* portal = new Portal;
-			portal->at_level = 2;
-			portal->next_portal = nullptr;
+			portal->atLevel = 2;
+			portal->nextPortal = nullptr;
 			portal->pos = o->pos;
 			portal->rot = o->rot.y;
 			portal->index = 0;
-			portal->target_loc = loc_id;
+			portal->targetLoc = loc_id;
 
 			inside->portal = portal;
 			secret->where2 = loc_id;
@@ -212,30 +215,19 @@ void InsideLocationGenerator::OnEnter()
 		else
 		{
 			// dodaj kartkê (overkill sprawdzania!)
-			const Item* kartka = Item::Get("sekret_kartka2");
-			assert(kartka);
-			Room& r = *GetLevelData().rooms[0];
-			Chest* c = lvl.FindChestInRoom(r);
-			assert(c);
-			if(c)
-				c->AddItem(kartka, 1, 1);
+			const Item* item = Item::Get("sekret_kartka2");
+			assert(item);
+			Room& room = *GetLevelData().rooms[0];
+			Chest* chest = lvl.FindChestInRoom(room);
+			if(chest)
+				chest->AddItem(item, 1, 1);
 			else
 			{
-				Object* o = lvl.FindObject(BaseObject::Get("portal"));
-				assert(0);
-				if(o)
-				{
-					GroundItem* item = new GroundItem;
-					item->Register();
-					item->count = 1;
-					item->team_count = 1;
-					item->item = kartka;
-					item->pos = o->pos;
-					item->rot = Quat::RotY(Random(MAX_ANGLE));
-					lvl.items.push_back(item);
-				}
+				Object* obj = lvl.FindObject(BaseObject::Get("portal"));
+				if(obj)
+					gameLevel->SpawnItem(item, obj->pos);
 				else
-					game_level->SpawnGroundItemInsideRoom(r, kartka);
+					gameLevel->SpawnGroundItemInsideRoom(room, item);
 			}
 
 			secret->state = Quest_Secret::SECRET_CLOSED;
@@ -247,9 +239,9 @@ void InsideLocationGenerator::OnEnter()
 	Vec3 spawn_pos;
 	float spawn_rot;
 
-	if(game_level->enter_from < ENTER_FROM_PORTAL)
+	if(gameLevel->enterFrom < ENTER_FROM_PORTAL)
 	{
-		if(game_level->enter_from == ENTER_FROM_NEXT_LEVEL)
+		if(gameLevel->enterFrom == ENTER_FROM_NEXT_LEVEL)
 		{
 			spawn_pt = lvl.GetNextEntryFrontTile();
 			spawn_rot = DirToRot(lvl.nextEntryDir);
@@ -263,16 +255,16 @@ void InsideLocationGenerator::OnEnter()
 	}
 	else
 	{
-		Portal* portal = inside->GetPortal(game_level->enter_from);
+		Portal* portal = inside->GetPortal(gameLevel->enterFrom);
 		spawn_pos = portal->GetSpawnPos();
 		spawn_rot = Clip(portal->rot + PI);
 		spawn_pt = PosToPt(spawn_pos);
 	}
 
-	game_level->AddPlayerTeam(spawn_pos, spawn_rot);
+	gameLevel->AddPlayerTeam(spawn_pos, spawn_rot);
 	OpenDoorsByTeam(spawn_pt);
 
-	game_level->RemoveTmpObjectPhysics();
+	gameLevel->RemoveTmpObjectPhysics();
 }
 
 //=================================================================================================
@@ -335,17 +327,17 @@ void InsideLocationGenerator::AddRoomColliders(InsideLocationLevel& lvl, Room& r
 void InsideLocationGenerator::GenerateDungeonObjects()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	static vector<Chest*> room_chests;
-	static vector<Vec3> on_wall;
+	static vector<Vec3> onWall;
 	static vector<Int2> blocks;
-	int chest_lvl = game_level->GetChestDifficultyLevel();
+	int chest_lvl = gameLevel->GetChestDifficultyLevel();
 
 	// prev entry
 	if(inside->HavePrevEntry())
 		GenerateDungeonEntry(lvl, lvl.prevEntryType, lvl.prevEntryPt, lvl.prevEntryDir);
 	else
-		game_level->SpawnObjectEntity(lvl, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
+		gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
 
 	// next entry
 	if(inside->HaveNextEntry())
@@ -360,7 +352,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == BARS || p == BARS_FLOOR)
 			{
 				Object* o = new Object;
-				o->mesh = game_res->aGrating;
+				o->mesh = gameRes->aGrating;
 				o->rot = Vec3(0, 0, 0);
 				o->pos = Vec3(float(x * 2), 0, float(y * 2));
 				o->scale = 1;
@@ -370,7 +362,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == BARS || p == BARS_CEILING)
 			{
 				Object* o = new Object;
-				o->mesh = game_res->aGrating;
+				o->mesh = gameRes->aGrating;
 				o->rot = Vec3(0, 0, 0);
 				o->pos = Vec3(float(x * 2), 4, float(y * 2));
 				o->scale = 1;
@@ -380,9 +372,9 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(p == DOORS)
 			{
 				Object* o = new Object;
-				o->mesh = game_res->aDoorWall;
+				o->mesh = gameRes->aDoorWall;
 				if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
-					o->mesh = game_res->aDoorWall2;
+					o->mesh = gameRes->aDoorWall2;
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
@@ -415,7 +407,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						o->pos.x -= 0.8229f;
 				}
 
-				if(Rand() % 100 < base.door_chance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
+				if(Rand() % 100 < base.doorChance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
 					LockId lock;
 					bool open;
@@ -428,7 +420,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					else
 					{
 						lock = LOCK_NONE;
-						open = (Rand() % 100 < base.door_open);
+						open = (Rand() % 100 < base.doorOpen);
 					}
 
 					Door* door = new Door;
@@ -521,16 +513,16 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		// try to spawn all objects
 		for(uint i = 0, size = rt->objs.size(); i < size && fail > 0; ++i)
 		{
-			RoomType::Obj& room_obj = rt->objs[i];
-			int count = room_obj.count.Random();
+			RoomType::Obj& roomObj = rt->objs[i];
+			int count = roomObj.count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
-				BaseObject* base = room_obj.is_group ? room_obj.group->GetRandom() : room_obj.obj;
-				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &room_obj, on_wall, blocks, flags);
+				BaseObject* base = roomObj.isGroup ? roomObj.group->GetRandom() : roomObj.obj;
+				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &roomObj, onWall, blocks, flags);
 				if(!e)
 				{
-					if(IsSet(base->flags, OBJ_IMPORTANT) || IsSet(room_obj.flags, RoomType::Obj::F_REQUIRED))
+					if(IsSet(base->flags, OBJ_IMPORTANT) || IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
 						--j;
 					--fail;
 					continue;
@@ -539,7 +531,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				if(e.type == ObjectEntity::CHEST)
 					room_chests.push_back(e);
 
-				if(IsSet(room_obj.flags, RoomType::Obj::F_REQUIRED))
+				if(IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
 					required_object = true;
 			}
 		}
@@ -554,7 +546,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			room_chests.clear();
 		}
 
-		on_wall.clear();
+		onWall.clear();
 		blocks.clear();
 	}
 
@@ -567,14 +559,14 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		BaseObject* base = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
-			on_wall.clear();
+			onWall.clear();
 			blocks.clear();
-			Room& r = *lvl.rooms[Rand() % lvl.rooms.size()];
-			if(r.target == RoomTarget::None)
+			Room& room = *lvl.rooms[Rand() % lvl.rooms.size()];
+			if(room.target == RoomTarget::None)
 			{
-				AddRoomColliders(lvl, r, blocks);
+				AddRoomColliders(lvl, room, blocks);
 
-				ObjectEntity e = GenerateDungeonObject(lvl, r, base, nullptr, on_wall, blocks, flags);
+				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, onWall, blocks, flags);
 				if(e)
 				{
 					GenerateDungeonTreasure(lvl.chests, chest_lvl);
@@ -589,7 +581,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 void InsideLocationGenerator::GenerateDungeonEntry(InsideLocationLevel& lvl, EntryType type, const Int2& pt, GameDirection dir)
 {
 	Object* o = new Object;
-	o->mesh = game_res->GetEntryMesh(type);
+	o->mesh = gameRes->GetEntryMesh(type);
 	o->pos = PtToPos(pt);
 	if(type == ENTRY_DOOR)
 	{
@@ -604,8 +596,8 @@ void InsideLocationGenerator::GenerateDungeonEntry(InsideLocationLevel& lvl, Ent
 }
 
 //=================================================================================================
-ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* room_obj,
-	vector<Vec3>& on_wall, vector<Int2>& blocks, int flags)
+ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, RoomType::Obj* roomObj,
+	vector<Vec3>& onWall, vector<Int2>& blocks, int flags)
 {
 	Vec3 pos;
 	float rot;
@@ -613,17 +605,17 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 
 	if(base->type == OBJ_CYLINDER)
 	{
-		shift.x = base->r + base->extra_dist;
-		shift.y = base->r + base->extra_dist;
+		shift.x = base->r + base->extraDist;
+		shift.y = base->r + base->extraDist;
 	}
 	else
-		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
+		shift = base->size + Vec2(base->extraDist, base->extraDist);
 
-	if(room_obj && room_obj->force_pos)
+	if(roomObj && roomObj->forcePos)
 	{
-		pos = room.Center() + room_obj->pos;
-		if(room_obj->force_rot)
-			rot = room_obj->rot;
+		pos = room.Center() + roomObj->pos;
+		if(roomObj->forceRot)
+			rot = roomObj->rot;
 		else
 			rot = PI / 2 * (Rand() % 4);
 	}
@@ -658,7 +650,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 				break;
 			}
 
-			for(vector<Vec3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
+			for(vector<Vec3>::iterator it2 = onWall.begin(), end2 = onWall.end(); it2 != end2; ++it2)
 			{
 				float dist = Vec3::Distance2d(*it2, pos);
 				if(dist < 2.f)
@@ -684,7 +676,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 			}
 		}
 	}
-	else if(room_obj && IsSet(room_obj->flags, RoomType::Obj::F_IN_MIDDLE))
+	else if(roomObj && IsSet(roomObj->flags, RoomType::Obj::F_IN_MIDDLE))
 	{
 		rot = PI / 2 * (Rand() % 4);
 		pos = room.Center();
@@ -749,11 +741,11 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		Level::IgnoreObjects ignore = { 0 };
-		ignore.ignore_blocks = true;
-		game_level->global_col.clear();
-		game_level->GatherCollisionObjects(lvl, game_level->global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
-		if(!game_level->global_col.empty() && game_level->Collide(game_level->global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), EXTRA_RADIUS, rot))
+		Level::IgnoreObjects ignore{};
+		ignore.ignoreBlocks = true;
+		gameLevel->globalCol.clear();
+		gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
+		if(!gameLevel->globalCol.empty() && gameLevel->Collide(gameLevel->globalCol, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), EXTRA_RADIUS, rot))
 			return nullptr;
 	}
 	else
@@ -769,18 +761,18 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		Level::IgnoreObjects ignore = { 0 };
-		ignore.ignore_blocks = true;
-		game_level->global_col.clear();
-		game_level->GatherCollisionObjects(lvl, game_level->global_col, pos, base->r, &ignore);
-		if(!game_level->global_col.empty() && game_level->Collide(game_level->global_col, pos, base->r + EXTRA_RADIUS))
+		Level::IgnoreObjects ignore{};
+		ignore.ignoreBlocks = true;
+		gameLevel->globalCol.clear();
+		gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, base->r, &ignore);
+		if(!gameLevel->globalCol.empty() && gameLevel->Collide(gameLevel->globalCol, pos, base->r + EXTRA_RADIUS))
 			return nullptr;
 	}
 
 	if(IsSet(base->flags, OBJ_ON_WALL))
-		on_wall.push_back(pos);
+		onWall.push_back(pos);
 
-	return game_level->SpawnObjectEntity(lvl, base, pos, rot, 1.f, flags);
+	return gameLevel->SpawnObjectEntity(lvl, base, pos, rot, 1.f, flags);
 }
 
 //=================================================================================================
@@ -806,20 +798,20 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 
 	float rot = Random(MAX_ANGLE);
 	Vec3 pos = allowed_region.GetRandomPos3();
-	Level::IgnoreObjects ignore = { 0 };
-	ignore.ignore_blocks = true;
-	game_level->global_col.clear();
-	game_level->GatherCollisionObjects(lvl, game_level->global_col, pos, base->r + EXTRA_RADIUS, &ignore);
-	if(!game_level->global_col.empty() && game_level->Collide(game_level->global_col, pos, base->r + EXTRA_RADIUS))
+	Level::IgnoreObjects ignore{};
+	ignore.ignoreBlocks = true;
+	gameLevel->globalCol.clear();
+	gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, pos, base->r + EXTRA_RADIUS, &ignore);
+	if(!gameLevel->globalCol.empty() && gameLevel->Collide(gameLevel->globalCol, pos, base->r + EXTRA_RADIUS))
 		return nullptr;
 
-	return game_level->SpawnObjectEntity(lvl, base, pos, rot, 1.f, 0);
+	return gameLevel->SpawnObjectEntity(lvl, base, pos, rot, 1.f, 0);
 }
 
 //=================================================================================================
 void InsideLocationGenerator::GenerateTraps()
 {
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	if(!IsSet(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
 		return;
@@ -830,7 +822,7 @@ void InsideLocationGenerator::GenerateTraps()
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
-		if(dungeon_level != 0)
+		if(dungeonLevel != 0)
 			return;
 		chance = 10;
 		pt = lvl.prevEntryPt;
@@ -847,35 +839,35 @@ void InsideLocationGenerator::GenerateTraps()
 				chance = 25;
 				break;
 			case 1:
-				if(dungeon_level == 1)
+				if(dungeonLevel == 1)
 					chance = 25;
 				else
 					chance = 0;
 				break;
 			case 2:
-				if(dungeon_level == 2)
+				if(dungeonLevel == 2)
 					chance = 25;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 15;
 				else
 					chance = 0;
 				break;
 			case 3:
-				if(dungeon_level == 3)
+				if(dungeonLevel == 3)
 					chance = 25;
-				else if(dungeon_level == 2)
+				else if(dungeonLevel == 2)
 					chance = 15;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 10;
 				else
 					chance = 0;
 				break;
 			default:
-				if(dungeon_level == size - 1)
+				if(dungeonLevel == size - 1)
 					chance = 25;
-				else if(dungeon_level == size - 2)
+				else if(dungeonLevel == size - 2)
 					chance = 15;
-				else if(dungeon_level == size - 3)
+				else if(dungeonLevel == size - 3)
 					chance = 10;
 				else
 					chance = 0;
@@ -906,13 +898,13 @@ void InsideLocationGenerator::GenerateTraps()
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
 			if(lvl.map[x + y * lvl.w].type == EMPTY
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
+				&& !Any(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
 				if(Rand() % 500 < chance + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
-					game_level->CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
+					gameLevel->TryCreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
 	}
@@ -921,7 +913,7 @@ void InsideLocationGenerator::GenerateTraps()
 //=================================================================================================
 void InsideLocationGenerator::RegenerateTraps()
 {
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 
 	if(!IsSet(base.traps, TRAPS_MAGIC))
 		return;
@@ -932,7 +924,7 @@ void InsideLocationGenerator::RegenerateTraps()
 	Int2 pt(-1000, -1000);
 	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
-		if(dungeon_level != 0)
+		if(dungeonLevel != 0)
 			return;
 		chance = 0;
 		pt = lvl.prevEntryPt;
@@ -949,35 +941,35 @@ void InsideLocationGenerator::RegenerateTraps()
 				chance = 25;
 				break;
 			case 1:
-				if(dungeon_level == 1)
+				if(dungeonLevel == 1)
 					chance = 25;
 				else
 					chance = 0;
 				break;
 			case 2:
-				if(dungeon_level == 2)
+				if(dungeonLevel == 2)
 					chance = 25;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 15;
 				else
 					chance = 0;
 				break;
 			case 3:
-				if(dungeon_level == 3)
+				if(dungeonLevel == 3)
 					chance = 25;
-				else if(dungeon_level == 2)
+				else if(dungeonLevel == 2)
 					chance = 15;
-				else if(dungeon_level == 1)
+				else if(dungeonLevel == 1)
 					chance = 10;
 				else
 					chance = 0;
 				break;
 			default:
-				if(dungeon_level == size - 1)
+				if(dungeonLevel == size - 1)
 					chance = 25;
-				else if(dungeon_level == size - 2)
+				else if(dungeonLevel == size - 2)
 					chance = 15;
-				else if(dungeon_level == size - 3)
+				else if(dungeonLevel == size - 3)
 					chance = 10;
 				else
 					chance = 0;
@@ -1001,10 +993,10 @@ void InsideLocationGenerator::RegenerateTraps()
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
 			if(lvl.map[x + y * lvl.w].type == EMPTY
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
-				&& !OR2_EQ(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
+				&& !Any(lvl.map[x - 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + 1 + y * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y - 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT)
+				&& !Any(lvl.map[x + (y + 1) * lvl.w].type, ENTRY_PREV, ENTRY_NEXT))
 			{
 				int s = chance + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
 				if(IsSet(base.traps, TRAPS_NORMAL))
@@ -1039,7 +1031,7 @@ void InsideLocationGenerator::RegenerateTraps()
 					}
 
 					if(ok)
-						game_level->CreateTrap(Int2(x, y), TRAP_FIREBALL);
+						gameLevel->TryCreateTrap(Int2(x, y), TRAP_FIREBALL);
 				}
 			}
 		}
@@ -1052,7 +1044,7 @@ void InsideLocationGenerator::RegenerateTraps()
 //=================================================================================================
 void InsideLocationGenerator::RespawnTraps()
 {
-	for(Trap* trap : game_level->local_area->traps)
+	for(Trap* trap : gameLevel->localPart->traps)
 	{
 		trap->state = 0;
 		if(trap->base->type == TRAP_SPEAR)
@@ -1080,7 +1072,7 @@ void InsideLocationGenerator::CreateMinimap()
 			Tile& p = lvl.map[x + (lvl.w - 1 - y) * lvl.w];
 			if(IsSet(p.flags, Tile::F_REVEALED))
 			{
-				if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
+				if(Any(p.type, WALL, BLOCKADE_WALL))
 					*pix = Color(100, 100, 100);
 				else if(p.type == DOORS)
 					*pix = Color(127, 51, 0);
@@ -1107,20 +1099,20 @@ void InsideLocationGenerator::CreateMinimap()
 	}
 
 	tex.Unlock();
-	game_level->minimap_size = lvl.w;
+	gameLevel->minimapSize = lvl.w;
 }
 
 //=================================================================================================
 void InsideLocationGenerator::OnLoad()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
-	inside->SetActiveLevel(game_level->dungeon_level);
-	game_level->lvl = &inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	inside->SetActiveLevel(gameLevel->dungeonLevel);
+	gameLevel->lvl = &inside->GetLevelData();
+	BaseLocation& base = gBaseLocations[inside->target];
 
-	game->SetDungeonParamsAndTextures(base);
-	game_level->RecreateObjects(Net::IsClient());
-	game_level->SpawnDungeonColliders();
+	SetDungeonParamsAndTextures(base);
+	gameLevel->RecreateObjects(Net::IsClient());
+	gameLevel->SpawnDungeonColliders();
 	CreateMinimap();
 }
 
@@ -1186,7 +1178,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					{
 						ItemSlot& slot = Add1(items);
 						slot.item = equipped[i];
-						slot.count = slot.team_count = 1u;
+						slot.count = slot.teamCount = 1u;
 						u.RemoveEquippedItem((ITEM_SLOT)i);
 					}
 				}
@@ -1283,7 +1275,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
-		Unit* u = game_level->SpawnUnitInsideRoom(*room, *Class::GetRandomHeroData(), level);
+		Unit* u = gameLevel->SpawnUnitInsideRoom(*room, *Class::GetRandomHeroData(), level);
 		if(u)
 		{
 			team->Add(u);
@@ -1352,7 +1344,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// check if location is cleared (realy small chance)
-	game_level->CheckIfLocationCleared();
+	gameLevel->CheckIfLocationCleared();
 }
 
 //=================================================================================================
@@ -1406,4 +1398,62 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 		else
 			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit.data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
 	}
+}
+
+//=================================================================================================
+void InsideLocationGenerator::SetDungeonParamsAndTextures(BaseLocation& base)
+{
+	// scene parameters
+	LevelPart& lvlPart = *GetLevelData().lvlPart;
+	lvlPart.drawRange = base.drawRange;
+
+	Scene* scene = lvlPart.scene;
+	scene->clearColor = base.fogColor;
+	scene->fogRange = base.fogRange;
+	scene->fogColor = base.fogColor;
+	scene->ambientColor = base.ambientColor;
+	scene->useLightDir = false;
+
+	// first dungeon textures
+	ApplyLocationTextureOverride(gameRes->tFloor[0], gameRes->tWall[0], gameRes->tCeil[0], base.tex);
+
+	// second dungeon textures
+	if(base.tex2 != -1)
+	{
+		BaseLocation& base2 = gBaseLocations[base.tex2];
+		ApplyLocationTextureOverride(gameRes->tFloor[1], gameRes->tWall[1], gameRes->tCeil[1], base2.tex);
+	}
+	else
+	{
+		gameRes->tFloor[1] = gameRes->tFloor[0];
+		gameRes->tCeil[1] = gameRes->tCeil[0];
+		gameRes->tWall[1] = gameRes->tWall[0];
+	}
+}
+
+//=================================================================================================
+void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& floor, TexOverride& wall, TexOverride& ceil, LocationTexturePack& tex)
+{
+	ApplyLocationTextureOverride(floor, tex.floor, gameRes->tFloorBase);
+	ApplyLocationTextureOverride(wall, tex.wall, gameRes->tWallBase);
+	ApplyLocationTextureOverride(ceil, tex.ceil, gameRes->tCeilBase);
+}
+
+//=================================================================================================
+void InsideLocationGenerator::ApplyLocationTextureOverride(TexOverride& texOverride, LocationTexturePack::Entry& e, TexOverride& texOverrideDefault)
+{
+	if(e.tex)
+	{
+		texOverride.diffuse = e.tex;
+		texOverride.normal = e.texNormal;
+		texOverride.specular = e.texSpecular;
+	}
+	else
+		texOverride = texOverrideDefault;
+
+	resMgr->Load(texOverride.diffuse);
+	if(texOverride.normal)
+		resMgr->Load(texOverride.normal);
+	if(texOverride.specular)
+		resMgr->Load(texOverride.specular);
 }

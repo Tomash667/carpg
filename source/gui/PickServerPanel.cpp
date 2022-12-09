@@ -14,54 +14,53 @@
 #include <ResourceManager.h>
 
 //=================================================================================================
-PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pick_autojoin(false)
+PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pickAutojoin(false)
 {
-	size = Int2(524, 340);
+	size = Int2(544, 390);
 	bts.resize(2);
 
+	grid.pos = Int2(20, 70);
+	grid.size = Int2(320, 300);
+	grid.event = GridEvent(this, &PickServerPanel::GetCell);
+
+	cbInternet.id = IdInternet;
+	cbInternet.radiobox = true;
+	cbInternet.btSize = Int2(32, 32);
+	cbInternet.parent = this;
+	cbInternet.pos = Int2(355, 80);
+	cbInternet.size = Int2(200, 32);
+
+	cbLan.id = IdLan;
+	cbLan.radiobox = true;
+	cbLan.btSize = Int2(32, 32);
+	cbLan.parent = this;
+	cbLan.pos = Int2(355, 120);
+	cbLan.size = Int2(200, 32);
+
 	bts[0].size = Int2(180, 44);
-	bts[0].pos = Int2(336, 30);
+	bts[0].pos = Int2(345, 390 - 22 - 44 - 50);
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
-	bts[1].pos = Int2(336, 80);
+	bts[1].pos = Int2(345, 390 - 22 - 44);
 	bts[1].id = IdCancel;
 	bts[1].parent = this;
-
-	cb_internet.id = IdInternet;
-	cb_internet.radiobox = true;
-	cb_internet.bt_size = Int2(32, 32);
-	cb_internet.parent = this;
-	cb_internet.pos = Int2(336, 130);
-	cb_internet.size = Int2(200, 32);
-
-	cb_lan.id = IdLan;
-	cb_lan.radiobox = true;
-	cb_lan.bt_size = Int2(32, 32);
-	cb_lan.parent = this;
-	cb_lan.pos = Int2(336, 170);
-	cb_lan.size = Int2(200, 32);
-
-	grid.pos = Int2(8, 8);
-	grid.size = Int2(320, 300);
-	grid.event = GridEvent(this, &PickServerPanel::GetCell);
-	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = Color(0, 255, 0, 128);
 }
 
 //=================================================================================================
 void PickServerPanel::LoadLanguage()
 {
 	auto s = Language::GetSection("PickServerPanel");
+	txTitle = s.Get("title");
 	txFailedToGetServers = s.Get("failedToGetServers");
 	txInvalidServerVersion = s.Get("invalidServerVersion");
 
 	bts[0].text = s.Get("join");
 	bts[1].text = gui->txCancel;
 
-	cb_internet.text = s.Get("internet");
-	cb_lan.text = s.Get("lan");
+	cbInternet.text = s.Get("internet");
+	cbLan.text = s.Get("lan");
 
 	grid.AddColumn(Grid::IMGSET, 50);
 	grid.AddColumn(Grid::TEXT_COLOR, 100, s.Get("players"));
@@ -72,20 +71,24 @@ void PickServerPanel::LoadLanguage()
 //=================================================================================================
 void PickServerPanel::LoadData()
 {
-	tIcoSave = res_mgr->Load<Texture>("save-16.png");
-	tIcoPassword = res_mgr->Load<Texture>("padlock-16.png");
+	tIcoSave = resMgr->Load<Texture>("save-16.png");
+	tIcoPassword = resMgr->Load<Texture>("padlock-16.png");
 }
 
 //=================================================================================================
-void PickServerPanel::Draw(ControlDrawData*)
+void PickServerPanel::Draw()
 {
 	DrawPanel();
+
+	// header
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
-	cb_internet.Draw();
-	cb_lan.Draw();
+	cbInternet.Draw();
+	cbLan.Draw();
 	grid.Draw();
 }
 
@@ -95,13 +98,13 @@ void PickServerPanel::Update(float dt)
 	// update gui
 	for(int i = 0; i < 2; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
-	cb_internet.mouse_focus = focus;
-	cb_internet.Update(dt);
-	cb_lan.mouse_focus = focus;
-	cb_lan.Update(dt);
+	cbInternet.mouseFocus = focus;
+	cbInternet.Update(dt);
+	cbLan.mouseFocus = focus;
+	cbLan.Update(dt);
 	grid.focus = focus;
 	grid.Update(dt);
 
@@ -118,12 +121,12 @@ void PickServerPanel::Update(float dt)
 	timer += dt;
 	if(timer >= 1.f)
 	{
-		if(lan_mode)
+		if(lanMode)
 		{
 			net->peer->Ping("255.255.255.255", (word)net->port, false);
 			timer = 0;
 		}
-		else if(!bad_request)
+		else if(!badRequest)
 		{
 			if(timer > 30.f)
 				api->GetServers();
@@ -144,7 +147,7 @@ void PickServerPanel::Update(float dt)
 		switch(msg_id)
 		{
 		case ID_UNCONNECTED_PONG:
-			if(lan_mode)
+			if(lanMode)
 			{
 				// header
 				TimeMS time_ms;
@@ -159,12 +162,12 @@ void PickServerPanel::Update(float dt)
 
 				// info about server
 				uint version;
-				byte active_players, players_max, flags;
+				byte activePlayers, players_max, flags;
 				reader >> version;
-				reader >> active_players;
+				reader >> activePlayers;
 				reader >> players_max;
 				reader >> flags;
-				const string& server_name = reader.ReadString1();
+				const string& serverName = reader.ReadString1();
 				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
@@ -181,9 +184,9 @@ void PickServerPanel::Update(float dt)
 						// update
 						found = true;
 						Info("PickServer: Updated server %s (%s).", it->name.c_str(), it->adr.ToString());
-						it->name = server_name;
-						it->active_players = active_players;
-						it->max_players = players_max;
+						it->name = serverName;
+						it->activePlayers = activePlayers;
+						it->maxPlayers = players_max;
 						it->flags = flags;
 						it->timer = 0.f;
 						it->version = version;
@@ -196,12 +199,12 @@ void PickServerPanel::Update(float dt)
 				if(!found)
 				{
 					// add to servers list
-					Info("PickServer: Added server %s (%s).", server_name.c_str(), packet->systemAddress.ToString());
+					Info("PickServer: Added server %s (%s).", serverName.c_str(), packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
 					sd.id = -1;
-					sd.name = server_name;
-					sd.active_players = active_players;
-					sd.max_players = players_max;
+					sd.name = serverName;
+					sd.activePlayers = activePlayers;
+					sd.maxPlayers = players_max;
 					sd.adr = packet->systemAddress;
 					sd.flags = flags;
 					sd.timer = 0.f;
@@ -223,7 +226,7 @@ void PickServerPanel::Update(float dt)
 	}
 
 	// update servers
-	if(lan_mode)
+	if(lanMode)
 	{
 		int index = 0;
 		for(vector<ServerData>::iterator it = servers.begin(), end = servers.end(); it != end;)
@@ -260,12 +263,12 @@ void PickServerPanel::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		cb_internet.global_pos = global_pos + cb_internet.pos;
-		cb_lan.global_pos = global_pos + cb_lan.pos;
-		grid.Move(global_pos);
+			bts[i].globalPos = globalPos + bts[i].pos;
+		cbInternet.globalPos = globalPos + cbInternet.pos;
+		cbLan.globalPos = globalPos + cbLan.pos;
+		grid.Move(globalPos);
 		break;
 	case GuiEvent_Close:
 		visible = false;
@@ -286,20 +289,20 @@ void PickServerPanel::Event(GuiEvent e)
 		CloseDialog();
 		break;
 	case IdInternet:
-		cb_lan.checked = false;
+		cbLan.checked = false;
 		OnChangeMode(false);
 		break;
 	case IdLan:
-		cb_internet.checked = false;
+		cbInternet.checked = false;
 		OnChangeMode(true);
 		break;
 	}
 }
 
 //=================================================================================================
-void PickServerPanel::Show(bool pick_autojoin)
+void PickServerPanel::Show(bool pickAutojoin)
 {
-	this->pick_autojoin = pick_autojoin;
+	this->pickAutojoin = pickAutojoin;
 
 	try
 	{
@@ -307,29 +310,29 @@ void PickServerPanel::Show(bool pick_autojoin)
 	}
 	catch(cstring err)
 	{
-		gui->SimpleDialog(err, (Control*)game_gui->main_menu);
+		gui->SimpleDialog(err, (Control*)gameGui->mainMenu);
 		return;
 	}
 
-	if(net->join_lan)
+	if(net->joinLan)
 	{
 		Info("Pinging LAN servers...");
-		lan_mode = true;
-		cb_internet.checked = false;
-		cb_lan.checked = true;
+		lanMode = true;
+		cbInternet.checked = false;
+		cbLan.checked = true;
 		net->peer->Ping("255.255.255.255", (word)net->port, false);
 	}
 	else
 	{
 		Info("Getting servers from master server.");
-		lan_mode = false;
-		cb_internet.checked = true;
-		cb_lan.checked = false;
+		lanMode = false;
+		cbInternet.checked = true;
+		cbLan.checked = false;
 		api->Reset();
 		api->GetServers();
 	}
 
-	bad_request = false;
+	badRequest = false;
 	timer = 0;
 	servers.clear();
 	grid.Reset();
@@ -352,19 +355,19 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.IsValidVersion() ? Color::Black : Color::Red);
+		cell.textColor->color = (server.IsValidVersion() ? Color::Black : Color::Red);
 		if(column == 1)
-			cell.text_color->text = Format("%d/%d", server.active_players, server.max_players);
+			cell.textColor->text = Format("%d/%d", server.activePlayers, server.maxPlayers);
 		else
-			cell.text_color->text = server.name.c_str();
+			cell.textColor->text = server.name.c_str();
 	}
 }
 
 //=================================================================================================
-void PickServerPanel::OnChangeMode(bool lan_mode)
+void PickServerPanel::OnChangeMode(bool lanMode)
 {
-	this->lan_mode = lan_mode;
-	if(lan_mode)
+	this->lanMode = lanMode;
+	if(lanMode)
 	{
 		api->Reset();
 		net->peer->Ping("255.255.255.255", (word)net->port, false);
@@ -372,10 +375,10 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 	else
 	{
 		api->GetServers();
-		bad_request = false;
+		badRequest = false;
 	}
-	net->join_lan = lan_mode;
-	game->cfg.Add("join_lan", lan_mode);
+	net->joinLan = lanMode;
+	game->cfg.Add("joinLan", lanMode);
 	game->SaveCfg();
 	servers.clear();
 	grid.Reset();
@@ -385,7 +388,7 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 //=================================================================================================
 bool PickServerPanel::HandleGetServers(nlohmann::json& j)
 {
-	if(!visible || lan_mode || gui->HaveDialog("GetTextDialog"))
+	if(!visible || lanMode || gui->HaveDialog("GetTextDialog"))
 		return false;
 
 	auto& servers = j["servers"];
@@ -403,8 +406,8 @@ void PickServerPanel::AddServer(nlohmann::json& server)
 	sd.id = server["id"].get<int>();
 	sd.guid = server["guid"].get_ref<string&>();
 	sd.name = server["name"].get_ref<string&>();
-	sd.active_players = server["players"].get<int>();
-	sd.max_players = server["maxPlayers"].get<int>();
+	sd.activePlayers = server["players"].get<int>();
+	sd.maxPlayers = server["maxPlayers"].get<int>();
 	sd.flags = server["flags"].get<int>();
 	sd.version = server["version"].get<int>();
 	sd.timer = 0.f;
@@ -415,7 +418,7 @@ void PickServerPanel::AddServer(nlohmann::json& server)
 //=================================================================================================
 bool PickServerPanel::HandleGetChanges(nlohmann::json& j)
 {
-	if(!visible || lan_mode || gui->HaveDialog("GetTextDialog"))
+	if(!visible || lanMode || gui->HaveDialog("GetTextDialog"))
 		return false;
 
 	auto& changes = j["changes"];
@@ -438,7 +441,7 @@ bool PickServerPanel::HandleGetChanges(nlohmann::json& j)
 				{
 					if(sd.id == id)
 					{
-						sd.active_players = players;
+						sd.activePlayers = players;
 						found = true;
 						Info("PickServer: Updated server %s (%d).", sd.name.c_str(), id);
 						break;
@@ -479,16 +482,16 @@ bool PickServerPanel::HandleGetChanges(nlohmann::json& j)
 //=================================================================================================
 void PickServerPanel::CheckAutojoin()
 {
-	if(!pick_autojoin)
+	if(!pickAutojoin)
 		return;
 	int index = 0;
 	for(ServerData& sd : servers)
 	{
-		if(sd.active_players != sd.max_players && sd.IsValidVersion())
+		if(sd.activePlayers != sd.maxPlayers && sd.IsValidVersion())
 		{
 			// autojoin server
 			bts[0].state = Button::NONE;
-			pick_autojoin = false;
+			pickAutojoin = false;
 			grid.selected = index;
 			Event(GuiEvent(IdOk));
 		}
@@ -499,6 +502,6 @@ void PickServerPanel::CheckAutojoin()
 //=================================================================================================
 void PickServerPanel::HandleBadRequest()
 {
-	bad_request = true;
+	badRequest = true;
 	gui->SimpleDialog(txFailedToGetServers, this);
 }

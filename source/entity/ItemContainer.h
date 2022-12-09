@@ -12,11 +12,11 @@ struct ItemContainer
 	void Load(GameReader& f);
 
 	int FindItem(const Item* item) const;
-	int FindQuestItem(int quest_id) const;
+	int FindQuestItem(int questId) const;
 
-	bool AddItem(const Item* item, uint count, uint team_count)
+	bool AddItem(const Item* item, uint count, uint teamCount)
 	{
-		return InsertItem(items, item, count, team_count);
+		return InsertItem(items, item, count, teamCount);
 	}
 	bool AddItem(const Item* item, uint count = 1)
 	{

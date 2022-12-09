@@ -10,7 +10,7 @@
 
 //-----------------------------------------------------------------------------
 vector<Perk*> Perk::perks;
-std::map<int, Perk*> Perk::hash_perks;
+std::map<int, Perk*> Perk::hashPerks;
 
 //=================================================================================================
 ::Perk* old::Convert(Perk perk)
@@ -108,8 +108,8 @@ std::map<int, Perk*> Perk::hash_perks;
 //=================================================================================================
 Perk* Perk::Get(int hash)
 {
-	auto it = hash_perks.find(hash);
-	if(it != hash_perks.end())
+	auto it = hashPerks.find(hash);
+	if(it != hashPerks.end())
 		return it->second;
 	return nullptr;
 }
@@ -162,7 +162,7 @@ bool PerkContext::Have(SkillId s, int value)
 //=================================================================================================
 bool PerkContext::CanMod(AttributeId a)
 {
-	if(check_remove)
+	if(checkRemove)
 		return true;
 	if(cc)
 		return !cc->a[(int)a].mod;
@@ -178,7 +178,7 @@ void PerkContext::AddEffect(Perk* perk, EffectId effect, float power)
 		Effect e;
 		e.effect = effect;
 		e.source = EffectSource::Perk;
-		e.source_id = perk->hash;
+		e.sourceId = perk->hash;
 		e.value = -1;
 		e.power = power;
 		e.time = 0.f;
@@ -214,7 +214,7 @@ void PerkContext::Mod(SkillId s, int value, bool mod)
 	if(cc)
 	{
 		cc->s[(int)s].Mod(value, mod);
-		cc->to_update.push_back(s);
+		cc->toUpdate.push_back(s);
 	}
 	else
 	{
@@ -230,7 +230,7 @@ void PerkContext::Mod(SkillId s, int value, bool mod)
 void PerkContext::AddPerk(Perk* perk)
 {
 	if(cc)
-		cc->taken_perks.push_back(TakenPerk(perk));
+		cc->takenPerks.push_back(TakenPerk(perk));
 	else
 		pc->AddPerk(perk, -1);
 }
@@ -240,11 +240,11 @@ void PerkContext::RemovePerk(Perk* perk)
 {
 	if(cc)
 	{
-		for(auto it = cc->taken_perks.begin(), end = cc->taken_perks.end(); it != end; ++it)
+		for(auto it = cc->takenPerks.begin(), end = cc->takenPerks.end(); it != end; ++it)
 		{
 			if(it->perk == perk)
 			{
-				cc->taken_perks.erase(it);
+				cc->takenPerks.erase(it);
 				return;
 			}
 		}
@@ -261,7 +261,7 @@ void TakenPerk::GetDetails(string& str) const
 	if(pos != string::npos)
 	{
 		cstring text;
-		switch(perk->value_type)
+		switch(perk->valueType)
 		{
 		case Perk::Attribute:
 			text = Attribute::attributes[value].name.c_str();
@@ -284,12 +284,12 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	if(IsSet(perk->flags, Perk::Start) && !ctx.startup)
 		return false;
 
-	if(ctx.cc && !ctx.check_remove && !ctx.validate)
+	if(ctx.cc && !ctx.checkRemove && !ctx.validate)
 	{
 		// can take only one history perk
 		if(IsSet(perk->flags, Perk::History))
 		{
-			for(TakenPerk& tp : ctx.cc->taken_perks)
+			for(TakenPerk& tp : ctx.cc->takenPerks)
 			{
 				if(IsSet(tp.perk->flags, Perk::History))
 					return false;
@@ -297,7 +297,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		}
 
 		// can't take more then 2 flaws
-		if(IsSet(perk->flags, Perk::Flaw) && ctx.cc->perks_max >= 4)
+		if(IsSet(perk->flags, Perk::Flaw) && ctx.cc->perksMax >= 4)
 			return false;
 	}
 
@@ -335,7 +335,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	// check value type
 	if(ctx.validate)
 	{
-		if(perk->value_type == Perk::Attribute)
+		if(perk->valueType == Perk::Attribute)
 		{
 			if(value < 0 || value >= (int)AttributeId::MAX)
 			{
@@ -343,7 +343,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 				return false;
 			}
 		}
-		else if(perk->value_type == Perk::Skill)
+		else if(perk->valueType == Perk::Skill)
 		{
 			if(value < 0 || value >= (int)SkillId::MAX)
 			{
@@ -400,8 +400,8 @@ void TakenPerk::Apply(PerkContext& ctx)
 			if(ctx.cc)
 			{
 				ctx.cc->sp += e.value;
-				ctx.cc->sp_max += e.value;
-				ctx.cc->update_skills = true;
+				ctx.cc->spMax += e.value;
+				ctx.cc->updateSkills = true;
 			}
 			break;
 		case Perk::Effect::GOLD:
@@ -415,7 +415,7 @@ void TakenPerk::Apply(PerkContext& ctx)
 	{
 		if(IsSet(perk->flags, Perk::Flaw))
 		{
-			ctx.cc->perks_max++;
+			ctx.cc->perksMax++;
 			ctx.cc->perks++;
 		}
 		else
@@ -453,8 +453,8 @@ void TakenPerk::Remove(PerkContext& ctx)
 			if(ctx.cc)
 			{
 				ctx.cc->sp -= e.value;
-				ctx.cc->sp_max -= e.value;
-				ctx.cc->update_skills = true;
+				ctx.cc->spMax -= e.value;
+				ctx.cc->updateSkills = true;
 			}
 			break;
 		}
@@ -466,7 +466,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 	{
 		if(IsSet(perk->flags, Perk::Flaw))
 		{
-			ctx.cc->perks_max--;
+			ctx.cc->perksMax--;
 			ctx.cc->perks--;
 		}
 		else
@@ -477,7 +477,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 //=================================================================================================
 cstring TakenPerk::FormatName()
 {
-	switch(perk->value_type)
+	switch(perk->valueType)
 	{
 	case Perk::Attribute:
 		return Format("%s (%s)", perk->name.c_str(), Attribute::attributes[value].name.c_str());

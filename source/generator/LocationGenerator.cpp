@@ -11,7 +11,7 @@
 int LocationGenerator::GetNumberOfSteps()
 {
 	int steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete
-	if(loc->last_visit == -1)
+	if(loc->lastVisit == -1)
 		++steps; // txGeneratingMap
 	return steps;
 }
@@ -19,9 +19,9 @@ int LocationGenerator::GetNumberOfSteps()
 //=================================================================================================
 void LocationGenerator::RespawnUnits()
 {
-	for(LevelArea& area : game_level->ForEachArea())
+	for(LocationPart& locPart : gameLevel->ForEachPart())
 	{
-		for(Unit* u : area.units)
+		for(Unit* u : locPart.units)
 		{
 			if(u->player)
 				continue;

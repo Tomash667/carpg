@@ -8,7 +8,7 @@ Quest::LoadResult Quest_BanditsCollectToll::Load(GameReader& f)
 {
 	Quest_Encounter::Load(f);
 
-	f >> other_loc;
+	f >> otherLoc;
 
 	return LoadResult::Convert;
 }
@@ -17,12 +17,12 @@ Quest::LoadResult Quest_BanditsCollectToll::Load(GameReader& f)
 void Quest_BanditsCollectToll::GetConversionData(ConversionData& data)
 {
 	data.id = "bandits_collect_toll";
-	data.Add("start_loc", startLoc->index);
-	data.Add("other_loc", other_loc);
+	data.Add("startLoc", startLoc->index);
+	data.Add("otherLoc", otherLoc);
 	data.Add("enc", enc);
-	data.Add("start_time", start_time);
-	const bool in_enc = game_level->event_handler == this;
-	data.Add("in_enc", in_enc);
-	if(in_enc)
-		game_level->event_handler = nullptr;
+	data.Add("startTime", startTime);
+	const bool inEnc = gameLevel->eventHandler == this;
+	data.Add("inEnc", inEnc);
+	if(inEnc)
+		gameLevel->eventHandler = nullptr;
 }

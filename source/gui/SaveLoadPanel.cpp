@@ -20,7 +20,7 @@
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0)
 {
-	size = Int2(610, 400);
+	size = Int2(600, 414);
 
 	bt[0].pos = Int2(238, 344);
 	bt[0].parent = this;
@@ -61,17 +61,17 @@ void SaveLoad::LoadLanguage()
 }
 
 //=================================================================================================
-void SaveLoad::Draw(ControlDrawData*)
+void SaveLoad::Draw()
 {
 	DrawPanel();
-	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(GameGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, saveMode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
 
 	// slot names
-	r = Rect::Create(global_pos + Int2(12, 76), Int2(256, 20));
+	r = Rect::Create(globalPos + Int2(20, 76), Int2(256, 20));
 	for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 	{
 		cstring text;
@@ -90,7 +90,15 @@ void SaveLoad::Draw(ControlDrawData*)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		gui->DrawText(GameGui::font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
+		Color color;
+		if(choice == i)
+			color = Color::Green;
+		else if(hover == i)
+			color = Color(0, 128, 0);
+		else
+			color = Color::Black;
+
+		gui->DrawText(GameGui::font, text, DTF_SINGLELINE | DTF_VCENTER, color, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;
@@ -99,7 +107,7 @@ void SaveLoad::Draw(ControlDrawData*)
 	// image
 	if(tMiniSave.tex)
 	{
-		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
+		Rect r2 = Rect::Create(Int2(globalPos.x + 400 - 81, globalPos.y + 42 + 103), Int2(256, 192));
 		gui->DrawSpriteRect(&tMiniSave, r2);
 	}
 }
@@ -107,28 +115,30 @@ void SaveLoad::Draw(ControlDrawData*)
 //=================================================================================================
 void SaveLoad::Update(float dt)
 {
-	textbox.mouse_focus = focus;
+	textbox.mouseFocus = focus;
 	textbox.Update(dt);
+	hover = -1;
 
 	if(focus && input->Focus())
 	{
-		Rect rect = Rect::Create(Int2(global_pos.x + 12, global_pos.y + 76), Int2(256, 20));
+		Rect rect = Rect::Create(Int2(globalPos.x + 20, globalPos.y + 76), Int2(256, 20));
 
 		for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 		{
-			if(rect.IsInside(gui->cursor_pos))
+			if(rect.IsInside(gui->cursorPos))
 			{
-				gui->cursor_mode = CURSOR_HOVER;
+				hover = i;
+				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
 					ValidateSelectedSave();
-					if(!save_mode)
+					if(!saveMode)
 						bt[0].state = slots[i].valid ? Button::NONE : Button::DISABLED;
 					SetSaveImage();
 					SetText();
 				}
-				if(gui->DoubleClick(Key::LeftButton) && (save_mode || slots[i].valid))
+				if(gui->DoubleClick(Key::LeftButton) && (saveMode || slots[i].valid))
 					Event((GuiEvent)IdOk);
 			}
 
@@ -142,7 +152,7 @@ void SaveLoad::Update(float dt)
 
 	for(int i = 0; i < 2; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 }
@@ -152,11 +162,12 @@ void SaveLoad::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		hover = -1;
+		globalPos = pos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bt[i].global_pos = bt[i].pos + global_pos;
-		textbox.global_pos = textbox.pos + global_pos;
-		textbox.scrollbar->global_pos = textbox.scrollbar->pos + textbox.global_pos;
+			bt[i].globalPos = bt[i].pos + globalPos;
+		textbox.globalPos = textbox.pos + globalPos;
+		textbox.scrollbar->globalPos = textbox.scrollbar->pos + textbox.globalPos;
 		if(e == GuiEvent_Show)
 			SetText();
 	}
@@ -164,12 +175,12 @@ void SaveLoad::Event(GuiEvent e)
 	{
 		if(e == IdCancel)
 		{
-			net->mp_load = false;
+			net->mpLoad = false;
 			gui->CloseDialog(this);
 			return;
 		}
 
-		if(save_mode)
+		if(saveMode)
 		{
 			// saving
 			if(choice == SaveSlot::MAX_SLOTS - 1)
@@ -184,16 +195,16 @@ void SaveLoad::Event(GuiEvent e)
 				SaveSlot& slot = slots[choice];
 				cstring names[] = { nullptr, txSave };
 				if(slot.valid)
-					save_input_text = slot.text;
-				else if(game->hardcore_mode)
-					save_input_text = hardcore_savename;
+					saveInputText = slot.text;
+				else if(game->hardcoreMode)
+					saveInputText = hardcoreSavename;
 				else
-					save_input_text.clear();
-				GetTextDialogParams params(txSaveName, save_input_text);
-				params.custom_names = names;
+					saveInputText.clear();
+				GetTextDialogParams params(txSaveName, saveInputText);
+				params.customNames = names;
 				params.event = [this](int id)
 				{
-					if(id == BUTTON_OK && game->SaveGameSlot(choice + 1, save_input_text.c_str()))
+					if(id == BUTTON_OK && game->SaveGameSlot(choice + 1, saveInputText.c_str()))
 					{
 						gui->CloseDialog(this);
 					}
@@ -212,16 +223,16 @@ void SaveLoad::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
+void SaveLoad::SetSaveMode(bool saveMode, bool online, SaveSlot* slots)
 {
-	this->save_mode = save_mode;
+	this->saveMode = saveMode;
 	this->online = online;
 	this->slots = slots;
 
 	ValidateSelectedSave();
 
 	// setup buttons
-	if(save_mode)
+	if(saveMode)
 	{
 		bt[0].state = Button::NONE;
 		bt[0].text = txSave;
@@ -239,16 +250,16 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 //=================================================================================================
 Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 {
-	SaveSlot& slot = (isOnline ? multi_saves : single_saves)[slotIndex - 1];
+	SaveSlot& slot = (isOnline ? multiSaves : singleSaves)[slotIndex - 1];
 	tMiniSave.Release();
 	if(!slot.valid)
 		return nullptr;
-	if(slot.img_size == 0)
+	if(slot.imgSize == 0)
 	{
 		cstring filename = Format("saves/%s/%d.jpg", isOnline ? "multi" : "single", slotIndex);
 		if(io::FileExists(filename))
 		{
-			tMiniSave.tex = res_mgr->LoadRawTexture(filename);
+			tMiniSave.tex = resMgr->LoadRawTexture(filename);
 			tMiniSave.state = ResourceState::Loaded;
 		}
 		else
@@ -257,8 +268,8 @@ Texture* SaveLoad::GetSaveImage(int slotIndex, bool isOnline)
 	else
 	{
 		cstring filename = Format("saves/%s/%d.sav", isOnline ? "multi" : "single", slotIndex);
-		Buffer* buf = GameReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-		tMiniSave.tex = res_mgr->LoadRawTexture(buf);
+		Buffer* buf = GameReader::ReadToBuffer(filename, slot.imgOffset, slot.imgSize);
+		tMiniSave.tex = resMgr->LoadRawTexture(buf);
 		tMiniSave.state = ResourceState::Loaded;
 		buf->Free();
 	}
@@ -283,16 +294,16 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 	saveText.clear();
 
 	bool exists = false;
-	if(!slot.player_name.empty())
+	if(!slot.playerName.empty())
 	{
-		saveText += slot.player_name;
+		saveText += slot.playerName;
 		exists = true;
 	}
-	if(slot.player_class)
+	if(slot.playerClass)
 	{
 		if(exists)
 			saveText += " ";
-		saveText += slot.player_class->name;
+		saveText += slot.playerClass->name;
 		exists = true;
 	}
 	if(slot.hardcore)
@@ -304,11 +315,11 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 	}
 	if(exists)
 		saveText += "\n";
-	if(online && !slot.mp_players.empty())
+	if(online && !slot.mpPlayers.empty())
 	{
 		saveText += txSavePlayers;
 		bool first = true;
-		for(string& str : slot.mp_players)
+		for(string& str : slot.mpPlayers)
 		{
 			if(first)
 				first = false;
@@ -318,14 +329,14 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 		}
 		saveText += "\n";
 	}
-	if(slot.save_date != 0)
+	if(slot.saveDate != 0)
 	{
 		tm t;
-		localtime_s(&t, &slot.save_date);
+		localtime_s(&t, &slot.saveDate);
 		saveText += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
-	if(slot.game_date.IsValid())
-		saveText += Format(txSaveTime, world->GetDate(slot.game_date));
+	if(slot.gameDate.IsValid())
+		saveText += Format(txSaveTime, world->GetDate(slot.gameDate));
 	if(!slot.location.empty())
 		saveText += slot.location;
 	return saveText;
@@ -334,9 +345,9 @@ const string& SaveLoad::GetSaveText(SaveSlot& slot)
 //=================================================================================================
 void SaveLoad::RemoveHardcoreSave(int slot)
 {
-	SaveSlot& s = single_saves[slot - 1];
+	SaveSlot& s = singleSaves[slot - 1];
 	s.valid = false;
-	hardcore_savename = s.text;
+	hardcoreSavename = s.text;
 }
 
 //=================================================================================================
@@ -346,7 +357,7 @@ void SaveLoad::LoadSaveSlots()
 	{
 		for(int i = 1; i <= SaveSlot::MAX_SLOTS; ++i)
 		{
-			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i - 1];
+			SaveSlot& slot = (multi == 0 ? singleSaves : multiSaves)[i - 1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
 			GameReader f(filename);
 			if(!game->LoadGameHeader(f, slot))
@@ -357,46 +368,6 @@ void SaveLoad::LoadSaveSlots()
 			}
 
 			slot.valid = true;
-			if(slot.load_version < V_0_9)
-			{
-				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(io::FileExists(filename))
-				{
-					Config cfg;
-					cfg.Load(filename);
-					slot.player_name = cfg.GetString("player_name", "");
-					slot.location = cfg.GetString("location", "");
-					slot.text = cfg.GetString("text", "");
-					slot.game_date = Date(cfg.GetInt("game_year", -1),
-						cfg.GetInt("game_month", -1),
-						cfg.GetInt("game_day", -1));
-					slot.hardcore = cfg.GetBool("hardcore");
-					slot.mp_players.clear();
-					slot.save_date = cfg.GetInt("save_date");
-					const string& str = cfg.GetString("player_class");
-					if(str == "0")
-						slot.player_class = Class::TryGet("warrior");
-					else if(str == "1")
-						slot.player_class = Class::TryGet("hunter");
-					else if(str == "2")
-						slot.player_class = Class::TryGet("rogue");
-					else
-						slot.player_class = Class::TryGet(str);
-				}
-				else
-				{
-					slot.player_name.clear();
-					slot.text.clear();
-					slot.location.clear();
-					slot.game_date = Date(-1, -1, -1);
-					slot.player_class = nullptr;
-					slot.mp_players.clear();
-					slot.save_date = 0;
-					slot.hardcore = false;
-				}
-				slot.img_size = 0;
-			}
-
 			if(i == SaveSlot::MAX_SLOTS)
 				slot.text = txQuickSave;
 		}
@@ -406,28 +377,28 @@ void SaveLoad::LoadSaveSlots()
 //=================================================================================================
 void SaveLoad::ShowSavePanel()
 {
-	SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? multi_saves : single_saves);
+	SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? multiSaves : singleSaves);
 	gui->ShowDialog(this);
 }
 
 //=================================================================================================
 void SaveLoad::ShowLoadPanel()
 {
-	bool online = (net->mp_load || Net::IsServer());
-	SetSaveMode(false, online, online ? multi_saves : single_saves);
+	bool online = (net->mpLoad || Net::IsServer());
+	SetSaveMode(false, online, online ? multiSaves : singleSaves);
 	gui->ShowDialog(this);
 }
 
 //=================================================================================================
 SaveSlot& SaveLoad::GetSaveSlot(int slot, bool isOnline)
 {
-	return (isOnline ? multi_saves : single_saves)[slot - 1];
+	return (isOnline ? multiSaves : singleSaves)[slot - 1];
 }
 
 //=================================================================================================
 void SaveLoad::ValidateSelectedSave()
 {
-	SaveSlot& slot = Net::IsOnline() ? multi_saves[choice] : single_saves[choice];
+	SaveSlot& slot = Net::IsOnline() ? multiSaves[choice] : singleSaves[choice];
 	cstring filename = Format("saves/%s/%d.sav", !Net::IsOnline() ? "single" : "multi", choice + 1);
 	GameReader f(filename);
 	if(!game->LoadGameHeader(f, slot))

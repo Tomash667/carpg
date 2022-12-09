@@ -33,6 +33,6 @@ public:
 	LoadResult Load(GameReader& f) override;
 
 private:
-	int end_loc;
+	int endLoc;
 	OtherItem parcel;
 };

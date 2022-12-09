@@ -85,22 +85,22 @@ void Room::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool RoomGroup::IsConnected(int group_index) const
+bool RoomGroup::IsConnected(int groupIndex) const
 {
 	for(const Connection& c : connections)
 	{
-		if(c.group_index == group_index)
+		if(c.groupIndex == groupIndex)
 			return true;
 	}
 	return false;
 }
 
 //=================================================================================================
-bool RoomGroup::HaveRoom(int room_index) const
+bool RoomGroup::HaveRoom(int roomIndex) const
 {
 	for(int index : rooms)
 	{
-		if(index == room_index)
+		if(index == roomIndex)
 			return true;
 	}
 	return false;
@@ -128,13 +128,13 @@ void RoomGroup::SetRoomGroupConnections(vector<RoomGroup>& groups, vector<Room*>
 {
 	for(RoomGroup& group : groups)
 	{
-		for(int room_index : group.rooms)
+		for(int roomIndex : group.rooms)
 		{
-			Room* room = rooms[room_index];
+			Room* room = rooms[roomIndex];
 			for(Room* room2 : room->connected)
 			{
 				if(!group.HaveRoom(room2->index))
-					group.connections.push_back({ room2->group, room_index, room2->index });
+					group.connections.push_back({ room2->group, roomIndex, room2->index });
 			}
 		}
 	}

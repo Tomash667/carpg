@@ -24,7 +24,6 @@ public:
 
 private:
 	const Item* item;
-	OtherItem quest_item;
 	UnitGroup* group;
 	int st;
 };

@@ -1,8 +1,33 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.18 (???):
+Version 0.19 (???):
+! cannot load saves from version 0.8 or older
++ slower movement when shooting/casting
++ scene manager improvements - ground items
++ shortcuts for fast travel notification (F1/F3)
++ converted quest "lost artifact" to script
++ removed useless console commands
++ UI improvements
+- crash when leave location, save on worldmap & load
+- crash when loading game in dungeon with vines effect
+- broken skill tooltips
+- ai don't change target while attacking
+- taking equiped item from corpse wrongly updated inventory view
+- when finished traveler quest another traveler quest in same location will never timeout
+- script error on quest timeout with "find artifact"/"stolen artifact" in dungeon with single level
+- wrong fast travel accept icon
+- missing application icon when starting in fullscreen
+- hide crosshair when talking
+- not refreshing ability cooldowns on short travels
+- sometimes stairs was generated next to doors
+- don't spawn traps under objects
+- fixed scaled unit points
+
+--------------------------------------------------------------------------------
+Version 0.18 (2021-07-02):
 ! cannot load saves from version 0.7.1 or older
++ new gui textures, mages tower, spider, mannequin and shield - created by Groszek
 + small continued storyline
 + effects: rooted and slow moving
 + abilities "entangling arrow" / "bear trap" - can be learned in hunters camp

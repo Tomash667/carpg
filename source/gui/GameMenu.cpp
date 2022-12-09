@@ -10,7 +10,7 @@
 #include <ResourceManager.h>
 
 //=================================================================================================
-GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
+GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prevCanSave(true), prevCanLoad(true), prevHardcoreMode(false)
 {
 	visible = false;
 }
@@ -45,9 +45,9 @@ void GameMenu::LoadLanguage()
 		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
 
-	size = Int2(256 + 16, 128 + 16 + (maxsize.y + 8) * 6);
+	size = Int2(272, 104 + (maxsize.y + 8) * 6);
 
-	Int2 offset((size.x - maxsize.x) / 2, 128 + 8);
+	Int2 offset((size.x - maxsize.x) / 2, 92);
 
 	// ustaw przyciski
 	for(int i = 0; i < 6; ++i)
@@ -61,15 +61,15 @@ void GameMenu::LoadLanguage()
 //=================================================================================================
 void GameMenu::LoadData()
 {
-	tLogo = res_mgr->Load<Texture>("logo_small.png");
+	tLogo = resMgr->Load<Texture>("logo_small.png");
 }
 
 //=================================================================================================
-void GameMenu::Draw(ControlDrawData*)
+void GameMenu::Draw()
 {
 	DrawPanel();
 
-	gui->DrawSprite(tLogo, global_pos + Int2(8, 8));
+	gui->DrawSprite(tLogo, globalPos + Int2(8, -24));
 
 	for(int i = 0; i < 6; ++i)
 		bt[i].Draw();
@@ -82,7 +82,7 @@ void GameMenu::Update(float dt)
 
 	for(int i = 0; i < 6; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 
@@ -93,26 +93,26 @@ void GameMenu::Update(float dt)
 //=================================================================================================
 void GameMenu::CheckButtons()
 {
-	bool can_save = game->CanSaveGame(),
-		can_load = game->CanLoadGame(),
-		hardcore_mode = game->hardcore_mode;
+	bool canSave = game->CanSaveGame() == ActionResult::Yes,
+		canLoad = game->CanLoadGame() == ActionResult::Yes,
+		hardcoreMode = game->hardcoreMode;
 
-	if(can_save != prev_can_save)
+	if(canSave != prevCanSave)
 	{
-		bt[1].state = (can_save ? Button::NONE : Button::DISABLED);
-		prev_can_save = can_save;
+		bt[1].state = (canSave ? Button::NONE : Button::DISABLED);
+		prevCanSave = canSave;
 	}
 
-	if(can_load != prev_can_load)
+	if(canLoad != prevCanLoad)
 	{
-		bt[2].state = (can_load ? Button::NONE : Button::DISABLED);
-		prev_can_load = can_load;
+		bt[2].state = (canLoad ? Button::NONE : Button::DISABLED);
+		prevCanLoad = canLoad;
 	}
 
-	if(hardcore_mode != prev_hardcore_mode)
+	if(hardcoreMode != prevHardcoreMode)
 	{
-		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
-		prev_hardcore_mode = hardcore_mode;
+		bt[1].text = (hardcoreMode ? txSaveAndExit : txSave);
+		prevHardcoreMode = hardcoreMode;
 	}
 }
 
@@ -126,9 +126,9 @@ void GameMenu::Event(GuiEvent e)
 			CheckButtons();
 			visible = true;
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 6; ++i)
-			bt[i].global_pos = bt[i].pos + global_pos;
+			bt[i].globalPos = bt[i].pos + globalPos;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;
@@ -140,13 +140,13 @@ void GameMenu::Event(GuiEvent e)
 			CloseDialog();
 			break;
 		case IdSaveGame:
-			game_gui->saveload->ShowSavePanel();
+			gameGui->saveload->ShowSavePanel();
 			break;
 		case IdLoadGame:
-			game_gui->saveload->ShowLoadPanel();
+			gameGui->saveload->ShowLoadPanel();
 			break;
 		case IdOptions:
-			game_gui->ShowOptions();
+			gameGui->ShowOptions();
 			break;
 		case IdExit:
 			{
@@ -159,15 +159,15 @@ void GameMenu::Event(GuiEvent e)
 				info.name = "exit_to_menu";
 				info.parent = nullptr;
 				info.pause = true;
-				info.text = game->hardcore_mode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
-				info.order = ORDER_TOP;
+				info.text = game->hardcoreMode ? txExitToMenuDialogHardcore : txExitToMenuDialog;
+				info.order = DialogOrder::Top;
 				info.type = DIALOG_YESNO;
 
 				gui->ShowDialog(info);
 			}
 			break;
 		case IdQuit:
-			game_gui->ShowQuitDialog();
+			gameGui->ShowQuitDialog();
 			break;
 		}
 	}

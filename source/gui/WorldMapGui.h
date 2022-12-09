@@ -14,7 +14,7 @@ public:
 	WorldMapGui();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	bool NeedCursor() const override { return true; }
 	void Event(GuiEvent e) override;
@@ -24,7 +24,7 @@ public:
 	Vec2 WorldPosToScreen(const Vec2& pt) const;
 	void ShowEncounterMessage(cstring text);
 	void StartTravel(bool fast = false);
-	bool HaveFocus() const { return !combo_search.focus; }
+	bool HaveFocus() const { return !comboSearch.focus; }
 
 	DialogBox* dialog_enc;
 
@@ -37,11 +37,11 @@ private:
 
 	TexturePtr tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
 	cstring txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel, txBuildings;
-	ComboBox combo_search;
+	ComboBox comboSearch;
 	Button buttons[2];
 	TooltipController tooltip;
-	Vec2 offset, c_pos;
+	Vec2 offset, mapPos;
 	float zoom;
-	int picked_location, tracking;
-	bool clicked, follow, fast_follow, c_pos_valid;
+	int pickedLocation, tracking;
+	bool clicked, follow, fastFollow, mapPosValid;
 };

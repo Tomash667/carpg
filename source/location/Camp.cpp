@@ -6,7 +6,7 @@ void Camp::Save(GameWriter& f)
 {
 	OutsideLocation::Save(f);
 
-	f << create_time;
+	f << createTime;
 }
 
 //=================================================================================================
@@ -14,5 +14,5 @@ void Camp::Load(GameReader& f)
 {
 	OutsideLocation::Load(f);
 
-	f >> create_time;
+	f >> createTime;
 }

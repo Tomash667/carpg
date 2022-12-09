@@ -18,20 +18,20 @@ struct UnitGroup
 			UnitGroup* group;
 		};
 		int weight;
-		bool is_leader;
+		bool isLeader;
 
 		Entry() {}
-		Entry(UnitData* ud, int weight, bool is_leader) : ud(ud), weight(weight), is_leader(is_leader) {}
-		Entry(UnitGroup* group, int weight) : group(group), weight(weight), is_leader(false) {}
+		Entry(UnitData* ud, int weight, bool isLeader) : ud(ud), weight(weight), isLeader(isLeader) {}
+		Entry(UnitGroup* group, int weight) : group(group), weight(weight), isLeader(false) {}
 	};
 
-	string id, name, name2, name3, encounter_text;
+	string id, name, name2, name3, encounterText;
 	vector<Entry> entries;
 	Special special;
-	int max_weight, food_mod, encounter_chance;
-	bool is_list, orc_food, have_camps, gender;
+	int maxWeight, foodMod, encounterChance;
+	bool isList, orcFood, haveCamps, gender;
 
-	UnitGroup() : food_mod(0), encounter_chance(0), max_weight(0), is_list(false), orc_food(false), have_camps(false), special(S_NONE), gender(false) {}
+	UnitGroup() : foodMod(0), encounterChance(0), maxWeight(0), isList(false), orcFood(false), haveCamps(false), special(S_NONE), gender(false) {}
 	bool HaveLeader() const;
 	bool IsEmpty() const { return special == S_EMPTY; }
 	bool IsChallange() const { return special == S_CHALLANGE; }
@@ -60,13 +60,13 @@ struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 
 	vector<UnitGroup::Entry> entries;
 	vector<Spawn> spawn;
-	int total_weight, min_level, max_level, refs;
+	int totalWeight, minLevel, maxLevel, refs;
 
 	void AddRefS() { ++refs; }
 	void ReleaseS();
-	void Fill(UnitGroup* group, int min_level, int max_level, bool required = true);
+	void Fill(UnitGroup* group, int minLevel, int maxLevel, bool required = true);
 	void Fill(UnitGroup* group, int level, bool required = true) { Fill(group, Max(level - 5, level / 2), level + 1, required); }
-	void FillS(const string& group_id, int count, int level);
+	void FillS(const string& groupId, int count, int level);
 	void FillInternal(UnitGroup* group);
 	Spawn Get();
 	Spawn GetS(uint index) { return spawn[index]; }

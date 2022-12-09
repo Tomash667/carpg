@@ -96,8 +96,8 @@ public:
 
 	void Init() override;
 	void Init(TerrainTile* tiles, float* height, int w, int h);
-	void SetRoadSize(int road_size, int road_part);
-	void GenerateMainRoad(RoadType type, GameDirection dir, int roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads);
+	void SetRoadSize(int roadSize, int roadPart);
+	void GenerateMainRoad(RoadType type, GameDirection dir, int roads, bool plaza, int swap, vector<EntryPoint>& entryPoints, int& gates, bool fillRoads);
 	void GenerateBuildings(vector<ToBuild>& tobuild);
 	void FlattenRoad();
 	void SmoothTerrain();
@@ -105,10 +105,10 @@ public:
 	void FlattenRoadExits();
 	void GenerateFields();
 	void ApplyWallTiles(int gates);
-	void GenerateRoads(TERRAIN_TILE road_tile, int tries);
-	int MakeRoad(const Int2& pt, GameDirection dir, int road_index, int& collided_road);
+	void GenerateRoads(TERRAIN_TILE roadTile, int tries);
+	int MakeRoad(const Int2& pt, GameDirection dir, int roadIndex, int& collidedRoad);
 	void FillRoad(const Int2& pt, GameDirection dir, int dist);
-	bool MakeAndFillRoad(const Int2& pt, GameDirection dir, int road_index);
+	bool MakeAndFillRoad(const Int2& pt, GameDirection dir, int roadIndex);
 	void CheckTiles(TERRAIN_TILE t);
 	void Test();
 
@@ -125,17 +125,17 @@ public:
 	void OnEnter() override;
 
 private:
-	void CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
-	void CreateRoadLineBottomTop(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
-	void CreateRoadPartLeft(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
-	void CreateRoadPartRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
-	void CreateRoadPartBottom(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
-	void CreateRoadPartTop(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
+	void CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
+	void CreateRoadLineBottomTop(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
+	void CreateRoadPartLeft(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
+	void CreateRoadPartRight(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
+	void CreateRoadPartBottom(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
+	void CreateRoadPartTop(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);
 	void CreateRoadCenter(TERRAIN_TILE t);
 	void CreateRoad(const Rect& r, TERRAIN_TILE t);
 	void CreateCurveRoad(Int2 points[], uint count, TERRAIN_TILE t);
 	void GeneratePath(const Int2& pt);
-	void CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir);
+	void CreateEntry(vector<EntryPoint>& entryPoints, EntryDir dir);
 	bool IsPointNearRoad(int x, int y);
 	void SpawnObjects();
 	void SpawnBuildings();
@@ -147,22 +147,23 @@ private:
 	void CreateMinimap() override;
 	void OnLoad() override;
 	void RespawnBuildingPhysics();
+	void SetBuildingsParams();
 
 	City* city;
 	TerrainTile* tiles;
-	int w, h, road_part, road_size;
+	int w, h, roadPart, roadSize;
 	float* height;
 	vector<Pixel> pixels;
 	int rs1, rs2;
 	vector<APoint2> grid;
 	APoint2Sorter2 sorter;
-	vector<int> to_check;
-	vector<Int2> tmp_pts;
+	vector<int> toCheck;
+	vector<Int2> tmpPts;
 	vector<Road> roads;
-	vector<int> road_ids;
-	TERRAIN_TILE road_tile;
-	vector<pair<Int2, GameDirection>> valid_pts;
+	vector<int> roadIds;
+	TERRAIN_TILE roadTile;
+	vector<pair<Int2, GameDirection>> validPts;
 	vector<Rect> fields;
-	Int2 well_pt;
-	bool have_well;
+	Int2 wellPt;
+	bool haveWell;
 };

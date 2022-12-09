@@ -7,9 +7,9 @@ Quest::LoadResult Quest_DeliverLetter::Load(GameReader& f)
 	Quest::Load(f);
 
 	if(prog < Progress::Finished)
-		f >> end_loc;
+		f >> endLoc;
 	else
-		end_loc = 0;
+		endLoc = 0;
 
 	return LoadResult::Convert;
 }
@@ -18,7 +18,7 @@ Quest::LoadResult Quest_DeliverLetter::Load(GameReader& f)
 void Quest_DeliverLetter::GetConversionData(ConversionData& data)
 {
 	data.id = "deliver_letter";
-	data.Add("start_loc", startLoc->index);
-	data.Add("end_loc", end_loc);
-	data.Add("start_time", start_time);
+	data.Add("startLoc", startLoc->index);
+	data.Add("endLoc", endLoc);
+	data.Add("startTime", startTime);
 }

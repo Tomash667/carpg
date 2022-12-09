@@ -17,14 +17,14 @@ enum class AttributeId
 // Unit attribute
 struct Attribute
 {
-	AttributeId attrib_id;
+	AttributeId attribId;
 	cstring id;
 	string name, desc;
 
 	static const int MIN = 1;
 	static const int MAX = 255;
 
-	Attribute(AttributeId attrib_id, cstring id) : attrib_id(attrib_id), id(id)
+	Attribute(AttributeId attribId, cstring id) : attribId(attribId), id(id)
 	{
 	}
 

@@ -198,7 +198,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	case OP_MESH:
 		{
 			const string& mesh_id = t.MustGetString();
-			obj->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+			obj->mesh = resMgr->TryGet<Mesh>(mesh_id);
 			if(!obj->mesh)
 				LoadError("Missing mesh '%s'.", mesh_id.c_str());
 			t.Next();
@@ -234,7 +234,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			while(!t.IsSymbol('}'))
 			{
 				const string& mesh_id = t.MustGetString();
-				Mesh* mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				Mesh* mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(mesh)
 					obj->variants->meshes.push_back(mesh);
 				else
@@ -247,8 +247,8 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 		}
 		break;
 	case OP_EXTRA_DIST:
-		obj->extra_dist = t.MustGetFloat();
-		if(obj->extra_dist < 0.f)
+		obj->extraDist = t.MustGetFloat();
+		if(obj->extraDist < 0.f)
 			t.Throw("Invalid extra distance.");
 		t.Next();
 		break;
@@ -295,7 +295,7 @@ void ObjectLoader::ParseUsable(const string& id)
 			{
 				t.ParseFlags({
 					{ &use->flags, G_OBJECT_FLAGS },
-					{ &use->use_flags, G_USABLE_FLAGS }
+					{ &use->useFlags, G_USABLE_FLAGS }
 					});
 				t.Next();
 			}
@@ -327,12 +327,12 @@ void ObjectLoader::ParseUsable(const string& id)
 					t.AssertSymbol('{');
 					t.Next();
 					const string& sound_id = t.MustGetString();
-					use->sound = res_mgr->TryGet<Sound>(sound_id);
+					use->sound = resMgr->TryGet<Sound>(sound_id);
 					if(!use->sound)
 						LoadError("Missing sound '%s'.", sound_id.c_str());
 					t.Next();
-					use->sound_timer = t.MustGetFloat();
-					if(!InRange(use->sound_timer, 0.f, 1.f))
+					use->soundTimer = t.MustGetFloat();
+					if(!InRange(use->soundTimer, 0.f, 1.f))
 						LoadError("Invalid animation sound timer.");
 					t.Next();
 					t.AssertSymbol('}');
@@ -340,8 +340,8 @@ void ObjectLoader::ParseUsable(const string& id)
 				}
 				break;
 			case UP_LIMIT_ROT:
-				use->limit_rot = t.MustGetInt();
-				if(use->limit_rot < 0)
+				use->limitRot = t.MustGetInt();
+				if(use->limitRot < 0)
 					t.Throw("Invalid limit rot.");
 				t.Next();
 				break;
@@ -363,7 +363,7 @@ void ObjectLoader::ParseGroup(const string& id)
 {
 	Ptr<ObjectGroup> group;
 	ObjectGroup::EntryList* list = &group->list;
-	list->total_chance = 0;
+	list->totalChance = 0;
 	list->parent = nullptr;
 	group->id = id;
 	group->hash = Hash(id);
@@ -395,17 +395,17 @@ void ObjectLoader::ParseGroup(const string& id)
 		if(t.IsSymbol('{'))
 		{
 			auto new_list = new ObjectGroup::EntryList;
-			new_list->total_chance = 0;
+			new_list->totalChance = 0;
 			new_list->parent = list;
 			ObjectGroup::EntryList::Entry e;
 			e.list = new_list;
-			e.is_list = true;
+			e.isList = true;
 			e.chance = chance;
 			list->entries.push_back(std::move(e));
-			list->total_chance += chance;
+			list->totalChance += chance;
 			list = new_list;
 			t.Next();
-			e.is_list = false;
+			e.isList = false;
 		}
 		else if(t.IsText())
 		{
@@ -418,10 +418,10 @@ void ObjectLoader::ParseGroup(const string& id)
 				t.Throw("Missing object '%s'.", obj_id.c_str());
 			ObjectGroup::EntryList::Entry e;
 			e.obj = obj;
-			e.is_list = false;
+			e.isList = false;
 			e.chance = chance;
 			list->entries.push_back(std::move(e));
-			list->total_chance += chance;
+			list->totalChance += chance;
 			t.Next();
 		}
 		else
@@ -459,7 +459,7 @@ void ObjectLoader::CalculateCrc()
 			for(Mesh* mesh : obj.variants->meshes)
 				crc.Update(mesh->filename);
 		}
-		crc.Update(obj.extra_dist);
+		crc.Update(obj.extraDist);
 
 		if(obj.IsUsable())
 		{
@@ -469,9 +469,9 @@ void ObjectLoader::CalculateCrc()
 				crc.Update(use.item->id);
 			if(use.sound)
 				crc.Update(use.sound->filename);
-			crc.Update(use.sound_timer);
-			crc.Update(use.limit_rot);
-			crc.Update(use.use_flags);
+			crc.Update(use.soundTimer);
+			crc.Update(use.limitRot);
+			crc.Update(use.useFlags);
 		}
 	}
 
@@ -487,11 +487,11 @@ void ObjectLoader::CalculateCrc()
 //=================================================================================================
 void ObjectLoader::UpdateObjectGroupCrc(Crc& crc, ObjectGroup::EntryList& list)
 {
-	crc.Update(list.total_chance);
+	crc.Update(list.totalChance);
 	for(auto& e : list.entries)
 	{
 		crc.Update(e.chance);
-		if(e.is_list)
+		if(e.isList)
 			UpdateObjectGroupCrc(crc, *e.list);
 		else
 			crc.Update(e.obj->id);

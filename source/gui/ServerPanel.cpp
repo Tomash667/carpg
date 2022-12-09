@@ -35,55 +35,53 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopick_class(nullptr)
+ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopickClass(nullptr)
 {
-	size = Int2(540, 510);
+	size = Int2(550, 572);
 	bts.resize(6);
 
 	const Int2 bt_size(180, 44);
 
 	bts[0].id = IdPickCharacter;
 	bts[0].parent = this;
-	bts[0].pos = Int2(340, 30);
+	bts[0].pos = Int2(350, 60);
 	bts[0].size = bt_size;
 
 	bts[1].id = IdReady;
 	bts[1].parent = this;
-	bts[1].pos = Int2(340, 80);
+	bts[1].pos = Int2(350, 110);
 	bts[1].size = bt_size;
 
 	bts[2].id = IdKick;
 	bts[2].parent = this;
-	bts[2].pos = Int2(340, 130);
+	bts[2].pos = Int2(350, 160);
 	bts[2].size = bt_size;
 
 	bts[3].id = IdLeader;
 	bts[3].parent = this;
-	bts[3].pos = Int2(340, 180);
+	bts[3].pos = Int2(350, 210);
 	bts[3].size = bt_size;
 
 	bts[4].id = IdStart;
 	bts[4].parent = this;
-	bts[4].pos = Int2(340, 230);
+	bts[4].pos = Int2(350, 260);
 	bts[4].size = bt_size;
 
 	bts[5].id = IdCancel;
 	bts[5].parent = this;
-	bts[5].pos = Int2(340, 280);
+	bts[5].pos = Int2(350, 310);
 	bts[5].size = bt_size;
 
-	grid.pos = Int2(10, 10);
+	grid.pos = Int2(20, 60);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
-	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = Color(0, 255, 0, 128);
 
 	itb.parent = this;
-	itb.max_cache = 10;
-	itb.max_lines = 100;
-	itb.esc_clear = false;
-	itb.lose_focus = false;
-	itb.pos = Int2(10, 320);
+	itb.maxCache = 10;
+	itb.maxLines = 100;
+	itb.escClear = false;
+	itb.loseFocus = false;
+	itb.pos = Int2(20, 370);
 	itb.size = Int2(320, 182);
 	itb.event = InputTextBox::InputEvent(this, &ServerPanel::OnInput);
 	itb.Init();
@@ -94,26 +92,26 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 //=================================================================================================
 void ServerPanel::Init()
 {
-	random_class = reinterpret_cast<Class*>(&random_class);
+	randomClass = reinterpret_cast<Class*>(&randomClass);
 
-	autostart_count = game->cfg.GetUint("autostart");
-	if(autostart_count > MAX_PLAYERS)
-		autostart_count = 0;
+	autostartCount = game->cfg.GetUint("autostart");
+	if(autostartCount > MAX_PLAYERS)
+		autostartCount = 0;
 
 	const string& class_id = game->cfg.GetString("autopick", "");
 	if(!class_id.empty())
 	{
 		if(class_id == "random")
-			autopick_class = random_class;
+			autopickClass = randomClass;
 		else
 		{
-			autopick_class = Class::TryGet(class_id);
-			if(autopick_class)
+			autopickClass = Class::TryGet(class_id);
+			if(autopickClass)
 			{
-				if(!autopick_class->IsPickable())
+				if(!autopickClass->IsPickable())
 				{
 					Warn("Settings [autopick]: Class '%s' is not pickable by players.", class_id.c_str());
-					autopick_class = nullptr;
+					autopickClass = nullptr;
 				}
 			}
 			else
@@ -126,6 +124,7 @@ void ServerPanel::Init()
 void ServerPanel::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("ServerPanel");
+	txTitle = s.Get("title");
 	txReady = s.Get("ready");
 	txNotReady = s.Get("notReady");
 	txStart = s.Get("start");
@@ -183,14 +182,18 @@ void ServerPanel::LoadLanguage()
 //=================================================================================================
 void ServerPanel::LoadData()
 {
-	tReady = res_mgr->Load<Texture>("gotowy.png");
-	tNotReady = res_mgr->Load<Texture>("niegotowy.png");
+	tReady = resMgr->Load<Texture>("gotowy.png");
+	tNotReady = resMgr->Load<Texture>("niegotowy.png");
 }
 
 //=================================================================================================
-void ServerPanel::Draw(ControlDrawData*)
+void ServerPanel::Draw()
 {
 	DrawPanel();
+
+	// header
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
 	int count = (Net::IsServer() ? 6 : 3);
@@ -200,8 +203,8 @@ void ServerPanel::Draw(ControlDrawData*)
 	grid.Draw();
 
 	// text
-	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	const string& password = (Net::IsServer() ? net->password : game->enter_pswd);
+	r = { globalPos.x + 350, globalPos.y + 370, globalPos.x + size.x, globalPos.y + size.y };
+	const string& password = (Net::IsServer() ? net->password : game->enterPswd);
 	LocalString pswd;
 	if(password.empty())
 		pswd = gui->txNo;
@@ -210,7 +213,7 @@ void ServerPanel::Draw(ControlDrawData*)
 		for(uint i = 0; i < password.length(); ++i)
 			pswd += '*';
 	}
-	gui->DrawText(GameGui::font, Format(txServerText, server_name.c_str(), net->active_players, max_players, pswd->c_str()), 0, Color::Black, r, &r);
+	gui->DrawText(GameGui::font, Format(txServerText, serverName.c_str(), net->activePlayers, maxPlayers, pswd->c_str()), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
@@ -220,10 +223,10 @@ void ServerPanel::Update(float dt)
 	int count = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < count; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
-	itb.mouse_focus = focus;
+	itb.mouseFocus = focus;
 	itb.Update(dt);
 	grid.focus = focus;
 	grid.Update(dt);
@@ -263,7 +266,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 	for(Packet* packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		// ignore messages from master server (disconnect notification)
-		if(packet->systemAddress == net->master_server_adr)
+		if(packet->systemAddress == net->masterServerAdr)
 			continue;
 
 		BitStreamReader reader(packet);
@@ -277,9 +280,6 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			break;
 		case ID_WHISPER:
 			net->Client_Whisper(reader);
-			break;
-		case ID_SERVER_SAY:
-			net->Client_ServerSay(reader);
 			break;
 		case ID_LOBBY_UPDATE:
 			DoLobbyUpdate(reader);
@@ -370,15 +370,15 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				AddMsg(Format(txStartingIn, 0));
 
 				// close lobby and wait for server
-				net->mp_quickload = false;
-				net->mp_load_worldmap = (packet->data[1] == 1);
+				net->mpQuickload = false;
+				net->mpLoadWorldmap = (packet->data[1] == 1);
 				Info("ServerPanel: Waiting for server.");
-				game->LoadingStart(net->mp_load_worldmap ? 4 : 9);
-				game_gui->main_menu->visible = false;
+				game->LoadingStart(net->mpLoadWorldmap ? 4 : 9);
+				gameGui->mainMenu->visible = false;
 				CloseDialog();
-				game_gui->info_box->Show(txWaitingForServer);
-				game->net_mode = Game::NM_TRANSFER;
-				game->net_state = NetState::Client_BeforeTransfer;
+				gameGui->infoBox->Show(txWaitingForServer);
+				game->netMode = Game::NM_TRANSFER;
+				game->netState = NetState::Client_BeforeTransfer;
 				net->peer->DeallocatePacket(packet);
 				return;
 			}
@@ -452,7 +452,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					Error("ServerPanel: Broken Lobby_AddPlayer.");
 					return false;
 				}
-				else if(id != team->my_id)
+				else if(id != team->myId)
 				{
 					PlayerInfo* pinfo = new PlayerInfo;
 					net->players.push_back(pinfo);
@@ -488,7 +488,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 			}
 			break;
 		case Lobby_ChangeCount:
-			net->active_players = id;
+			net->activePlayers = id;
 			break;
 		case Lobby_ChangeLeader:
 			{
@@ -499,8 +499,8 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					return false;
 				}
 				Info("%s is now leader.", info->name.c_str());
-				team->leader_id = id;
-				if(team->my_id == id)
+				team->leaderId = id;
+				if(team->myId == id)
 					AddMsg(txYouAreLeader);
 				else
 					AddMsg(Format(txLeaderChanged, info->name.c_str()));
@@ -519,7 +519,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 void ServerPanel::UpdateLobbyServer(float dt)
 {
 	// handle autostart
-	if(!starting && autostart_count != 0u && autostart_count <= net->active_players)
+	if(!starting && autostartCount != 0u && autostartCount <= net->activePlayers)
 	{
 		bool ok = true;
 		for(PlayerInfo& info : net->players)
@@ -534,7 +534,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 		if(ok)
 		{
 			Info("ServerPanel: Automatic server startup.");
-			autostart_count = 0u;
+			autostartCount = 0u;
 			Start();
 		}
 	}
@@ -554,7 +554,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				// nie odes³a³ informacji tylko siê roz³¹czy³
 				Info(!info->name.empty() ? Format("ServerPanel: Player %s has disconnected.", info->name.c_str()) :
 					Format("ServerPanel: %s has disconnected.", packet->systemAddress.ToString()));
-				--net->active_players;
+				--net->activePlayers;
 				OnChangePlayersCount();
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
@@ -581,14 +581,14 @@ void ServerPanel::UpdateLobbyServer(float dt)
 		case ID_CONNECTION_REQUEST_ACCEPTED:
 			// connected to master server
 			{
-				assert(net->master_server_state == MasterServerState::Connecting);
+				assert(net->masterServerState == MasterServerState::Connecting);
 				Info("ServerPanel: Connected to master server.");
-				net->master_server_state = MasterServerState::Registering;
-				net->master_server_adr = packet->systemAddress;
+				net->masterServerState = MasterServerState::Registering;
+				net->masterServerAdr = packet->systemAddress;
 				BitStreamWriter f;
 				f << ID_MASTER_HOST;
-				f << server_name;
-				f << max_players;
+				f << serverName;
+				f << maxPlayers;
 				f << net->GetServerFlags();
 				f << VERSION;
 				net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
@@ -596,7 +596,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			break;
 		case ID_CONNECTION_ATTEMPT_FAILED:
 			Info("ServerPanel: Failed to connect to master server.");
-			net->master_server_state = MasterServerState::NotConnected;
+			net->masterServerState = MasterServerState::NotConnected;
 			AddMsg(txRegisterFailed);
 			break;
 		case ID_MASTER_HOST:
@@ -606,21 +606,21 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				if(result != 0)
 				{
 					Info("ServerPanel: Failed to register server (%u).", result);
-					net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
-					net->master_server_state = MasterServerState::NotConnected;
-					net->master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+					net->peer->CloseConnection(net->masterServerAdr, true, 1, IMMEDIATE_PRIORITY);
+					net->masterServerState = MasterServerState::NotConnected;
+					net->masterServerAdr = UNASSIGNED_SYSTEM_ADDRESS;
 					AddMsg(txRegisterFailed);
 				}
 				else
 				{
 					Info("ServerPanel: Registered server.");
-					net->master_server_state = MasterServerState::Connected;
+					net->masterServerState = MasterServerState::Connected;
 					api->StartPunchthrough(nullptr);
-					if(net->active_players != 1)
+					if(net->activePlayers != 1)
 					{
 						BitStreamWriter f;
 						f << ID_MASTER_UPDATE;
-						f << net->active_players;
+						f << net->activePlayers;
 						net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
 					}
 				}
@@ -647,8 +647,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				// wait to receive info about version, nick
 				info.state = PlayerInfo::WAITING_FOR_HELLO;
 				info.timer = T_WAIT_FOR_HELLO;
-				info.devmode = game->default_player_devmode;
-				++net->active_players;
+				info.devmode = game->defaultPlayerDevmode;
+				++net->activePlayers;
 				OnChangePlayersCount();
 			}
 			break;
@@ -673,24 +673,24 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						Info("ServerPanel: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
 						delete info;
 						net->players.erase(index);
-						--net->active_players;
+						--net->activePlayers;
 						OnChangePlayersCount();
 					}
 					else
 					{
 						// roz³¹czy³ siê bêd¹c w lobby
-						--net->active_players;
+						--net->activePlayers;
 						AddMsg(Format(dis ? txLeft : txPlayerLostConnection, info->name.c_str()));
 						Info("ServerPanel: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection");
 						OnChangePlayersCount();
-						if(net->active_players > 1)
+						if(net->activePlayers > 1)
 							AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
-						if(team->leader_id == info->id)
+						if(team->leaderId == info->id)
 						{
 							// serwer zostaje przywódc¹
 							Info("ServerPanel: You are leader now.");
-							team->leader_id = team->my_id;
-							if(net->active_players > 1)
+							team->leaderId = team->myId;
+							if(net->activePlayers > 1)
 								AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 							AddMsg(txYouAreLeader);
 						}
@@ -784,12 +784,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				else
 				{
 					// everything is ok, let player join
-					if(net->active_players > 2)
+					if(net->activePlayers > 2)
 						AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
 					fw << ID_JOIN;
 					fw.WriteCasted<byte>(info->id);
-					fw.WriteCasted<byte>(net->active_players);
-					fw.WriteCasted<byte>(team->leader_id);
+					fw.WriteCasted<byte>(net->activePlayers);
+					fw.WriteCasted<byte>(team->leaderId);
 					fw.Write0();
 					int count = 0;
 					for(PlayerInfo& info2 : net->players)
@@ -806,7 +806,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						fw << info2.name;
 					}
 					fw.Patch<byte>(4, count);
-					if(net->mp_load)
+					if(net->mpLoad)
 					{
 						// informacja o postaci w zapisie
 						PlayerInfo* old = net->FindOldPlayer(info->name.c_str());
@@ -818,12 +818,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 							info->clas = old->clas;
 							info->loaded = true;
 							info->devmode = old->devmode;
-							if(game->default_player_devmode)
+							if(game->defaultPlayerDevmode)
 								info->devmode = true;
 							info->hd.CopyFrom(old->hd);
 							info->notes = old->notes;
 
-							if(net->active_players > 2)
+							if(net->activePlayers > 2)
 								AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 							Info("ServerPanel: Player %s is using loaded character.", info->name.c_str());
@@ -855,7 +855,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				else if(ready != info->ready)
 				{
 					info->ready = ready;
-					if(net->active_players > 2)
+					if(net->activePlayers > 2)
 						AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 					CheckReady();
 				}
@@ -881,9 +881,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				cstring name = info->state == PlayerInfo::WAITING_FOR_HELLO ? info->adr.ToString() : info->name.c_str();
 				AddMsg(Format(txPlayerLeft, name));
 				Info("ServerPanel: Player %s left lobby.", name);
-				--net->active_players;
+				--net->activePlayers;
 				OnChangePlayersCount();
-				if(net->active_players > 1 && info->state == PlayerInfo::IN_LOBBY)
+				if(net->activePlayers > 1 && info->state == PlayerInfo::IN_LOBBY)
 					AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
@@ -931,8 +931,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				}
 				CheckReady();
 
-				// send info to other net->active_players
-				if((old_ready != info->ready || old_class != info->clas) && net->active_players > 2)
+				// send info to other net->activePlayers
+				if((old_ready != info->ready || old_class != info->clas) && net->activePlayers > 2)
 					AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 				// send result
@@ -957,9 +957,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				// czas oczekiwania min¹³, zkickuj
 				Info("ServerPanel: Removed %s due to inactivity.", info.adr.ToString());
 				net->peer->CloseConnection(info.adr, false);
-				--net->active_players;
+				--net->activePlayers;
 				OnChangePlayersCount();
-				if(net->active_players > 1)
+				if(net->activePlayers > 1)
 					AddLobbyUpdate(Int2(Lobby_RemovePlayer, info.id));
 				delete &info;
 				grid.RemoveItem(index);
@@ -979,23 +979,23 @@ void ServerPanel::UpdateLobbyServer(float dt)
 	});
 
 	// wysy³anie aktualizacji lobby
-	update_timer += dt;
-	if(update_timer >= T_LOBBY_UPDATE)
+	updateTimer += dt;
+	if(updateTimer >= T_LOBBY_UPDATE)
 	{
-		update_timer = 0.f;
-		if(!lobby_updates.empty())
+		updateTimer = 0.f;
+		if(!lobbyUpdates.empty())
 		{
-			assert(lobby_updates.size() < 255);
-			if(net->active_players > 1)
+			assert(lobbyUpdates.size() < 255);
+			if(net->activePlayers > 1)
 			{
 				// aktualizacje w lobby
 				BitStreamWriter f;
 				f << ID_LOBBY_UPDATE;
 				f.Write0();
 				int count = 0;
-				for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
+				for(uint i = 0; i < min(lobbyUpdates.size(), 255u); ++i)
 				{
-					Int2& u = lobby_updates[i];
+					Int2& u = lobbyUpdates[i];
 					switch(u.x)
 					{
 					case Lobby_UpdatePlayer:
@@ -1032,12 +1032,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					case Lobby_ChangeCount:
 						++count;
 						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(net->active_players);
+						f.WriteCasted<byte>(net->activePlayers);
 						break;
 					case Lobby_ChangeLeader:
 						++count;
 						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(team->leader_id);
+						f.WriteCasted<byte>(team->leaderId);
 						break;
 					default:
 						assert(0);
@@ -1047,23 +1047,23 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				f.Patch<byte>(1, count);
 				net->SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 			}
-			lobby_updates.clear();
+			lobbyUpdates.clear();
 		}
 	}
 
 	// starting game
 	if(starting)
 	{
-		startup_timer -= dt;
-		int sec = int(startup_timer) + 1;
+		startupTimer -= dt;
+		int sec = int(startupTimer) + 1;
 		int d = -1;
-		if(startup_timer <= 0.f)
+		if(startupTimer <= 0.f)
 		{
 			// disconnect from master server
-			if(net->master_server_state == MasterServerState::Connected)
-				net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
-			net->master_server_state = MasterServerState::NotConnected;
-			net->master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+			if(net->masterServerState == MasterServerState::Connected)
+				net->peer->CloseConnection(net->masterServerAdr, true, 1, IMMEDIATE_PRIORITY);
+			net->masterServerState = MasterServerState::NotConnected;
+			net->masterServerAdr = UNASSIGNED_SYSTEM_ADDRESS;
 			api->EndPunchthrough();
 			// change server status
 			Info("ServerPanel: Starting game.");
@@ -1071,9 +1071,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			d = 0;
 			net->peer->SetMaximumIncomingConnections(0);
 			net->peer->SetOfflinePingResponse(nullptr, 0);
-			game->net_mode = Game::NM_TRANSFER_SERVER;
-			game->net_timer = game->mp_timeout;
-			game->net_state = NetState::Server_Starting;
+			game->netMode = Game::NM_TRANSFER_SERVER;
+			game->netTimer = game->mpTimeout;
+			game->netState = NetState::Server_Starting;
 			// kick players that connected but didn't join
 			LoopAndRemove(net->players, [](PlayerInfo& info)
 			{
@@ -1082,22 +1082,22 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					net->peer->CloseConnection(info.adr, true);
 					Warn("ServerPanel: Disconnecting %s.", info.adr.ToString());
 					delete &info;
-					--net->active_players;
+					--net->activePlayers;
 					return true;
 				}
 				return false;
 			});
 			CloseDialog();
-			game_gui->info_box->Show(txStartingGame);
+			gameGui->infoBox->Show(txStartingGame);
 			BitStreamWriter f;
 			f << ID_STARTUP;
-			f << (byte)(net->mp_load && !game_level->is_open ? 1 : 0);
+			f << (byte)(net->mpLoad && !gameLevel->isOpen ? 1 : 0);
 			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			return;
 		}
-		else if(sec != last_startup_sec)
+		else if(sec != lastStartupSec)
 		{
-			last_startup_sec = sec;
+			lastStartupSec = sec;
 			d = sec;
 		}
 
@@ -1108,7 +1108,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			BitStreamWriter f;
 			f << ID_TIMER;
 			f << (byte)d;
-			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, net->master_server_adr, true);
+			net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE, 0, net->masterServerAdr, true);
 		}
 	}
 }
@@ -1116,14 +1116,14 @@ void ServerPanel::UpdateLobbyServer(float dt)
 //=================================================================================================
 void ServerPanel::OnChangePlayersCount()
 {
-	if(net->master_server_state == MasterServerState::Connected && game->net_mode != Game::NM_QUITTING_SERVER)
+	if(net->masterServerState == MasterServerState::Connected && game->netMode != Game::NM_QUITTING_SERVER)
 	{
 		BitStreamWriter f;
 		f << ID_MASTER_UPDATE;
-		f << net->active_players;
-		net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, net->master_server_adr, false);
+		f << net->activePlayers;
+		net->peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, net->masterServerAdr, false);
 	}
-	if(net->active_players > 1)
+	if(net->activePlayers > 1)
 		AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 	UpdateServerInfo();
 }
@@ -1142,10 +1142,10 @@ void ServerPanel::UpdateServerInfo()
 	f.WriteCasted<byte>('C');
 	f.WriteCasted<byte>('A');
 	f << VERSION;
-	f.WriteCasted<byte>(net->active_players);
-	f.WriteCasted<byte>(max_players);
+	f.WriteCasted<byte>(net->activePlayers);
+	f.WriteCasted<byte>(maxPlayers);
 	f.WriteCasted<byte>(net->GetServerFlags());
-	f << server_name;
+	f << serverName;
 
 	net->peer->SetOfflinePingResponse(f.GetData(), f.GetSize());
 }
@@ -1163,11 +1163,11 @@ void ServerPanel::Event(GuiEvent e)
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
 		}
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		globalPos = pos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 6; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
+			bts[i].globalPos = globalPos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
-		grid.Move(global_pos);
+		grid.Move(globalPos);
 		break;
 	case GuiEvent_GainFocus:
 		itb.focus = true;
@@ -1196,10 +1196,10 @@ void ServerPanel::Event(GuiEvent e)
 					info.ready = false;
 					ChangeReady();
 				}
-				game_gui->ShowCreateCharacterPanel(false, true);
+				gameGui->ShowCreateCharacterPanel(false, true);
 			}
 			else
-				game_gui->ShowCreateCharacterPanel(false);
+				gameGui->ShowCreateCharacterPanel(false);
 		}
 		break;
 	case IdReady: // ready / unready
@@ -1224,11 +1224,11 @@ void ServerPanel::Event(GuiEvent e)
 				else
 				{
 					// na pewno?
-					kick_id = info.id;
+					kickId = info.id;
 					DialogInfo di;
 					di.event = DialogEvent(this, &ServerPanel::OnKick);
 					di.name = "kick";
-					di.order = ORDER_TOP;
+					di.order = DialogOrder::Top;
 					di.parent = this;
 					di.pause = false;
 					di.text = Format(txReallyKick, info.name.c_str());
@@ -1247,11 +1247,11 @@ void ServerPanel::Event(GuiEvent e)
 		else
 		{
 			PlayerInfo& info = net->players[grid.selected];
-			if(info.id == team->leader_id)
+			if(info.id == team->leaderId)
 				AddMsg(txAlreadyLeader);
 			else if(info.state == PlayerInfo::IN_LOBBY)
 			{
-				team->leader_id = info.id;
+				team->leaderId = info.id;
 				AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 				AddMsg(Format(txLeaderChanged, info.name.c_str()));
 			}
@@ -1290,7 +1290,7 @@ void ServerPanel::Event(GuiEvent e)
 void ServerPanel::Show()
 {
 	starting = false;
-	update_timer = 0.f;
+	updateTimer = 0.f;
 
 	bts[0].text = txPickChar;
 	bts[0].state = Button::NONE;
@@ -1322,8 +1322,8 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.img = (info.ready ? tReady : tNotReady);
 	else if(column == 1)
 	{
-		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == team->leader_id ? Color(255, 215, 0) : Color::Black);
+		cell.textColor->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
+		cell.textColor->color = (info.id == team->leaderId ? Color(255, 215, 0) : Color::Black);
 	}
 	else
 		cell.text = (info.clas ? info.clas->name.c_str() : txNone);
@@ -1336,7 +1336,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 
 	if(Net::IsServer())
 	{
-		if(net->mp_load)
+		if(net->mpLoad)
 			game->ClearGame();
 
 		Info("ServerPanel: Closing server.");
@@ -1347,23 +1347,24 @@ void ServerPanel::ExitLobby(VoidF callback)
 		// wy³¹cz info o serwerze
 		net->peer->SetOfflinePingResponse(nullptr, 0);
 
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 		{
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
-			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, net->master_server_adr, true);
-			game->net_mode = Game::NM_QUITTING_SERVER;
-			--net->active_players;
-			game->net_timer = T_WAIT_FOR_DISCONNECT;
-			game_gui->info_box->Show(txDisconnecting);
-			game->net_callback = callback;
+			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, net->masterServerAdr, true);
+			game->netMode = Game::NM_QUITTING_SERVER;
+			--net->activePlayers;
+			game->netTimer = T_WAIT_FOR_DISCONNECT;
+			gameGui->infoBox->Show(txDisconnecting);
+			game->netCallback = callback;
 		}
 		else
 		{
 			// nie ma graczy, mo¿na zamkn¹æ
-			net->ClosePeer(net->master_server_state >= MasterServerState::Connecting);
+			net->ClosePeer(net->masterServerState >= MasterServerState::Connecting);
 			CloseDialog();
+			game->SetTitle(nullptr);
 			if(callback)
 				callback();
 		}
@@ -1373,11 +1374,12 @@ void ServerPanel::ExitLobby(VoidF callback)
 		BitStreamWriter f;
 		f << ID_LEAVE;
 		net->SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
-		game_gui->info_box->Show(txDisconnecting);
-		game->net_mode = Game::NM_QUITTING;
-		game->net_timer = T_WAIT_FOR_DISCONNECT;
-		game->net_callback = callback;
+		gameGui->infoBox->Show(txDisconnecting);
+		game->netMode = Game::NM_QUITTING;
+		game->netTimer = T_WAIT_FOR_DISCONNECT;
+		game->netCallback = callback;
 		CloseDialog();
+		game->SetTitle(nullptr);
 	}
 }
 
@@ -1386,7 +1388,7 @@ void ServerPanel::OnKick(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		PlayerInfo* info = net->TryGetPlayer(kick_id);
+		PlayerInfo* info = net->TryGetPlayer(kickId);
 		if(info)
 			net->KickPlayer(*info);
 	}
@@ -1400,18 +1402,18 @@ void ServerPanel::OnInput(const string& str)
 	else
 	{
 		// wyœlij tekst
-		if(net->active_players != 1)
+		if(net->activePlayers != 1)
 		{
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(team->my_id);
+			f.WriteCasted<byte>(team->myId);
 			f << str;
 			if(Net::IsServer())
 				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
 				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
-		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
+		cstring s = Format("%s: %s", game->playerName.c_str(), str.c_str());
 		AddMsg(s);
 		Info(s);
 	}
@@ -1425,10 +1427,10 @@ void ServerPanel::StopStartup()
 	starting = false;
 	bts[4].text = txStart;
 
-	if(net->active_players > 1)
+	if(net->activePlayers > 1)
 	{
 		byte c = ID_END_TIMER;
-		net->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, net->master_server_adr, true);
+		net->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, net->masterServerAdr, true);
 	}
 }
 
@@ -1438,7 +1440,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		Info("ServerPanel: Joined loaded game with existing character.");
-		autopick_class = nullptr;
+		autopickClass = nullptr;
 		bts[0].state = Button::DISABLED;
 		bts[0].text = txChangeChar;
 		bts[1].state = Button::NONE;
@@ -1454,13 +1456,13 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(autopick_class)
+	if(autopickClass)
 	{
 		Info("ServerPanel: Autopicking character.");
-		if(autopick_class == random_class)
-			autopick_class = nullptr;
-		PickClass(autopick_class, true);
-		autopick_class = nullptr;
+		if(autopickClass == randomClass)
+			autopickClass = nullptr;
+		PickClass(autopickClass, true);
+		autopickClass = nullptr;
 		autoready = false;
 	}
 }
@@ -1471,7 +1473,7 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 {
 	PlayerInfo& info = net->GetMe();
 	info.clas = clas;
-	game->RandomCharacter(info.clas, game_gui->create_character->last_hair_color_index, info.hd, info.cc);
+	game->RandomCharacter(info.clas, gameGui->createCharacter->lastHairColorIndex, info.hd, info.cc);
 	bts[0].text = txChangeChar;
 	bts[1].state = Button::NONE;
 	bts[1].text = (ready ? txNotReady : txReady);
@@ -1487,7 +1489,7 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 	}
 	else
 	{
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 			AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		CheckReady();
 	}
@@ -1496,12 +1498,12 @@ void ServerPanel::PickClass(Class* clas, bool ready)
 //=================================================================================================
 void ServerPanel::AddLobbyUpdate(const Int2& u)
 {
-	for(Int2& update : lobby_updates)
+	for(Int2& update : lobbyUpdates)
 	{
 		if(update == u)
 			return;
 	}
-	lobby_updates.push_back(u);
+	lobbyUpdates.push_back(u);
 }
 
 //=================================================================================================
@@ -1533,7 +1535,7 @@ void ServerPanel::ChangeReady()
 	if(Net::IsServer())
 	{
 		// zmieñ info
-		if(net->active_players > 1)
+		if(net->activePlayers > 1)
 			AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		CheckReady();
 	}
@@ -1614,8 +1616,8 @@ cstring ServerPanel::TryStart()
 void ServerPanel::Start()
 {
 	starting = true;
-	last_startup_sec = STARTUP_TIMER;
-	startup_timer = float(STARTUP_TIMER);
+	lastStartupSec = STARTUP_TIMER;
+	startupTimer = float(STARTUP_TIMER);
 	BitStreamWriter f;
 	f << ID_TIMER;
 	f << (byte)STARTUP_TIMER;

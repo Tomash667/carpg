@@ -21,36 +21,38 @@ struct Area2 : public ObjectPoolProxy<Area2>
 //-----------------------------------------------------------------------------
 struct DungeonPart
 {
-	uint group, start_index, primitive_count;
-	TexOverride* tex_o;
+	uint group, startIndex, primitiveCount;
+	TexOverride* texOverride;
 };
 
 //-----------------------------------------------------------------------------
 struct DungeonPartGroup
 {
-	Matrix mat_world;
-	Matrix mat_combined;
+	Matrix matWorld;
+	Matrix matCombined;
 	array<Light*, 3> lights;
 };
 
 //-----------------------------------------------------------------------------
 struct DrawBatch : public SceneBatch
 {
-	static ObjectPool<Light> light_pool;
+	static ObjectPool<Light> lightPool;
 
-	vector<DebugNode*> debug_nodes;
-	vector<GlowNode> glow_nodes;
-	vector<uint> terrain_parts;
+	LocationPart* locPart;
+	vector<DebugNode*> debugNodes;
+	vector<GlowNode> glowNodes;
+	vector<uint> terrainParts;
 	vector<Blood*> bloods;
 	vector<Billboard> billboards;
 	vector<ParticleEmitter*> pes;
 	vector<TrailParticleEmitter*>* tpes;
 	vector<Area> areas;
-	float area_range;
+	float areaRange;
 	vector<Area2*> areas2;
-	vector<DungeonPart> dungeon_parts;
-	vector<DungeonPartGroup> dungeon_part_groups;
-	vector<Light*> tmp_lights;
+	vector<DungeonPart> dungeonParts;
+	vector<DungeonPartGroup> dungeonPartGroups;
+	vector<Light*> tmpLights;
+	SceneNode* tmpGlow;
 
 	void Clear();
 };

@@ -17,7 +17,7 @@ void UpdateTest()
 	switch(state)
 	{
 	case 0:
-		if(game->game_state == GS_LEVEL && input->Pressed(Key::N8))
+		if(game->gameState == GS_LEVEL && input->Pressed(Key::N8))
 		{
 			Info("TEST: Started.");
 			state = 1;
@@ -31,13 +31,13 @@ void UpdateTest()
 			++steps;
 			if(steps >= 10 && Rand() % 3 == 0)
 			{
-				game->Quickload(false);
+				game->Quickload();
 				steps = 0;
 				tdt = 10.f;
 			}
 			else if(Rand() % 2 == 0)
 			{
-				game->Quicksave(false);
+				game->Quicksave();
 				tdt = 3.f;
 			}
 			state = 2;
@@ -48,7 +48,7 @@ void UpdateTest()
 		if(tdt <= 0.f)
 		{
 			Location* cl = world->GetCurrentLocation();
-			if(cl->outside || cl->GetLastLevel() == game_level->dungeon_level)
+			if(cl->outside || cl->GetLastLevel() == gameLevel->dungeonLevel)
 			{
 				loc = world->GetRandomLocation([](Location* l)
 				{

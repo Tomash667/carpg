@@ -75,7 +75,7 @@ void Skill::Validate(uint& err)
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		Skill& si = Skill::skills[i];
-		if(si.skill_id != (SkillId)i)
+		if(si.skillId != (SkillId)i)
 		{
 			Warn("Test: SkillId %s: id mismatch.", si.id);
 			++err;

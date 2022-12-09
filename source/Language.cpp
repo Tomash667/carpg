@@ -55,7 +55,7 @@ enum Property
 };
 
 //-----------------------------------------------------------------------------
-extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
+extern vector<string> nameRandom, nicknameRandom, crazyName, txLocationStart, txLocationEnd;
 string Language::prefix, Language::dir, Language::tstr;
 Language::Map Language::strs;
 Language::Sections Language::sections;
@@ -359,14 +359,14 @@ void Language::ParseObject(Tokenizer& t)
 				{
 					if(nickname)
 						t.Throw("Crazies can't have nicknames.");
-					names = &crazy_name;
+					names = &crazyName;
 				}
 				else if(id == K_RANDOM)
 				{
 					if(nickname)
-						names = &nickname_random;
+						names = &nicknameRandom;
 					else
-						names = &name_random;
+						names = &nameRandom;
 				}
 				else if(id == K_LOCATION_START)
 				{
@@ -498,7 +498,7 @@ void Language::ParseObject(Tokenizer& t)
 						ud->name = t.MustGetString();
 						break;
 					case P_REAL_NAME:
-						ud->real_name = t.MustGetString();
+						ud->realName = t.MustGetString();
 						break;
 					}
 					t.Next();
@@ -515,8 +515,8 @@ void Language::ParseObject(Tokenizer& t)
 			{
 				if(ud->name.empty())
 					ud->name = ud->parent->name;
-				if(ud->real_name.empty())
-					ud->real_name = ud->parent->real_name;
+				if(ud->realName.empty())
+					ud->realName = ud->parent->realName;
 			}
 			if(ud->name.empty())
 				Warn("Missing unit '%s' name.", ud->id.c_str());
@@ -555,7 +555,7 @@ void Language::ParseObject(Tokenizer& t)
 					group->name3 = t.MustGetString();
 					break;
 				case P_ENCOUNTER_TEXT:
-					group->encounter_text = t.MustGetString();
+					group->encounterText = t.MustGetString();
 					break;
 				}
 				t.Next();

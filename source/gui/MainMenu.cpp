@@ -14,7 +14,7 @@
 #include <thread>
 
 //=================================================================================================
-MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)
+MainMenu::MainMenu() : checkStatus(CheckVersionStatus::None), checkUpdates(game->checkUpdates)
 {
 	focusable = true;
 	visible = false;
@@ -75,37 +75,37 @@ void MainMenu::LoadLanguage()
 //=================================================================================================
 void MainMenu::LoadData()
 {
-	tBackground = res_mgr->Load<Texture>("menu_bg.jpg");
-	tLogo = res_mgr->Load<Texture>("logo.png");
-	tFModLogo = res_mgr->Load<Texture>("fmod_logo.png");
+	tBackground = resMgr->Load<Texture>("menu_bg.jpg");
+	tLogo = resMgr->Load<Texture>("logo.png");
+	tFModLogo = resMgr->Load<Texture>("fmod_logo.png");
 }
 
 //=================================================================================================
-void MainMenu::Draw(ControlDrawData*)
+void MainMenu::Draw()
 {
 	gui->DrawSpriteFull(tBackground);
-	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
+	gui->DrawSprite(tLogo, Int2(gui->wndSize.x - 512 - 16, 16));
 	gui->DrawSpriteRect(tFModLogo, Rect(
-		int(gui->wnd_size.x - (512.f * 0.6f + 50.f) * gui->wnd_size.x / 1920),
-		int(gui->wnd_size.y - (135.f * 0.6f + 50.f) * gui->wnd_size.y / 1080),
-		int(gui->wnd_size.x - 50.f * gui->wnd_size.x / 1920),
-		int(gui->wnd_size.y - 50.f * gui->wnd_size.y / 1080)), Color::Alpha(250));
+		int(gui->wndSize.x - (512.f * 0.6f + 50.f) * gui->wndSize.x / 1920),
+		int(gui->wndSize.y - (135.f * 0.6f + 50.f) * gui->wndSize.y / 1080),
+		int(gui->wndSize.x - 50.f * gui->wndSize.x / 1920),
+		int(gui->wndSize.y - 50.f * gui->wndSize.y / 1080)), Color::Alpha(250));
 
-	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
+	Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, "Devmode(2013,2021) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2022) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
-	r.Left() = gui->wnd_size.x - 512 - 16;
-	r.Right() = gui->wnd_size.x - 16;
+	r.Left() = gui->wndSize.x - 512 - 16;
+	r.Right() = gui->wndSize.x - 16;
 	r.Top() = 256;
 	r.Bottom() = r.Top() + 64;
 	gui->DrawText(GameGui::font, version, DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
-	r.Right() = gui->wnd_size.x;
-	r.Bottom() = gui->wnd_size.y - 16;
+	r.Right() = gui->wndSize.x;
+	r.Bottom() = gui->wndSize.y - 16;
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, versionText, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -121,7 +121,7 @@ void MainMenu::Update(float dt)
 {
 	for(int i = 0; i < BUTTONS; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
 	}
 
@@ -139,69 +139,69 @@ void MainMenu::Update(float dt)
 //=================================================================================================
 void MainMenu::UpdateCheckVersion()
 {
-	if(check_status == CheckVersionStatus::None)
+	if(checkStatus == CheckVersionStatus::None)
 	{
-		if(check_updates)
+		if(checkUpdates)
 		{
 			Info("Checking CaRpg version.");
-			check_status = CheckVersionStatus::Checking;
-			check_version_thread = thread(&MainMenu::CheckVersion, this);
+			checkStatus = CheckVersionStatus::Checking;
+			checkVersionThread = thread(&MainMenu::CheckVersion, this);
 		}
 		else
-			check_status = CheckVersionStatus::Finished;
+			checkStatus = CheckVersionStatus::Finished;
 	}
-	else if(check_status == CheckVersionStatus::Done)
+	else if(checkStatus == CheckVersionStatus::Done)
 	{
 		if(version_new > VERSION)
 		{
 			cstring str = VersionToString(version_new);
-			version_text = Format(txNewVersion, str);
+			versionText = Format(txNewVersion, str);
 			Info("New version %s is available.", str);
 
 			// show dialog box with question about updating
 			DialogInfo info;
 			info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
 			info.name = "new_version";
-			info.order = ORDER_TOP;
+			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(version_new));
-			if(!version_changelog.empty())
-				info.text += Format("\n\n%s\n%s", txChanges, version_changelog.c_str());
+			if(!versionChangelog.empty())
+				info.text += Format("\n\n%s\n%s", txChanges, versionChangelog.c_str());
 			info.type = DIALOG_YESNO;
-			cstring names[] = { version_update ? txUpdate : txDownload, txSkip };
-			info.custom_names = names;
+			cstring names[] = { versionUpdate ? txUpdate : txDownload, txSkip };
+			info.customNames = names;
 
 			gui->ShowDialog(info);
 		}
 		else if(version_new < VERSION)
 		{
-			version_text = txNewerVersion;
+			versionText = txNewerVersion;
 			Info("You have newer version then available.");
 		}
 		else
 		{
-			version_text = txNoNewVersion;
+			versionText = txNoNewVersion;
 			Info("No new version available.");
 		}
-		check_status = CheckVersionStatus::Finished;
-		check_version_thread.join();
+		checkStatus = CheckVersionStatus::Finished;
+		checkVersionThread.join();
 	}
-	else if(check_status == CheckVersionStatus::Error)
+	else if(checkStatus == CheckVersionStatus::Error)
 	{
-		version_text = txCheckVersionError;
+		versionText = txCheckVersionError;
 		Error("Failed to check version.");
-		check_status = CheckVersionStatus::Finished;
-		check_version_thread.join();
+		checkStatus = CheckVersionStatus::Finished;
+		checkVersionThread.join();
 	}
 }
 
 //=================================================================================================
 void MainMenu::CheckVersion()
 {
-	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
-	version_new = api->GetVersion(cancel, version_changelog, version_update);
-	check_status = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
+	auto cancel = [&]() { return checkStatus == CheckVersionStatus::Cancel; };
+	version_new = api->GetVersion(cancel, versionChangelog, versionUpdate);
+	checkStatus = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
 }
 
 //=================================================================================================
@@ -209,9 +209,9 @@ void MainMenu::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show)
 	{
-		if(check_status == CheckVersionStatus::Checking)
-			version_text = txCheckingVersion;
-		if(game->lastSave != -1 && !game_gui->saveload->GetSaveSlot(game->lastSave, false).valid)
+		if(checkStatus == CheckVersionStatus::Checking)
+			versionText = txCheckingVersion;
+		if(game->lastSave != -1 && !gameGui->saveload->GetSaveSlot(game->lastSave, false).valid)
 			game->SetLastSave(-1);
 		bt[0].state = (game->lastSave == -1 ? Button::DISABLED : Button::NONE);
 		tooltip.Clear();
@@ -228,17 +228,17 @@ void MainMenu::Event(GuiEvent e)
 			break;
 		case IdNewGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game_gui->ShowCreateCharacterPanel(true);
+			gameGui->ShowCreateCharacterPanel(true);
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game_gui->saveload->ShowLoadPanel();
+			gameGui->saveload->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
-			game_gui->ShowMultiplayer();
+			gameGui->ShowMultiplayer();
 			break;
 		case IdOptions:
-			game_gui->ShowOptions();
+			gameGui->ShowOptions();
 			break;
 		case IdInfo:
 			gui->SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
@@ -261,7 +261,7 @@ void MainMenu::PlaceButtons()
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].global_pos = Int2(16 + gui->wnd_size.x - 200 + int(sin(kat)*(gui->wnd_size.x - 200)), 100 + int(cos(kat)*gui->wnd_size.y));
+		bt[i].pos = bt[i].globalPos = Int2(16 + gui->wndSize.x - 200 + int(sin(kat) * (gui->wndSize.x - 200)), 100 + int(cos(kat) * gui->wndSize.y));
 		kat += PI / 4 / BUTTONS;
 	}
 }
@@ -271,7 +271,7 @@ void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		if(version_update)
+		if(versionUpdate)
 		{
 			// start updater
 			GetModuleFileNameA(nullptr, BUF, 256);
@@ -290,23 +290,23 @@ void MainMenu::OnNewVersion(int id)
 //=================================================================================================
 void MainMenu::ShutdownThread()
 {
-	if(check_status != CheckVersionStatus::Finished && check_status != CheckVersionStatus::None)
+	if(checkStatus != CheckVersionStatus::Finished && checkStatus != CheckVersionStatus::None)
 	{
-		check_status = CheckVersionStatus::Cancel;
-		check_version_thread.join();
-		check_status = CheckVersionStatus::Cancel;
+		checkStatus = CheckVersionStatus::Cancel;
+		checkVersionThread.join();
+		checkStatus = CheckVersionStatus::Cancel;
 	}
-	else if(check_status == CheckVersionStatus::Done)
-		check_version_thread.join();
+	else if(checkStatus == CheckVersionStatus::Done)
+		checkVersionThread.join();
 }
 
 //=================================================================================================
 void MainMenu::GetTooltip(TooltipController* tooltip, int group, int id, bool refresh)
 {
 	tooltip->anything = true;
-	SaveSlot& slot = game_gui->saveload->GetSaveSlot(game->lastSave, false);
-	tooltip->img = game_gui->saveload->GetSaveImage(game->lastSave, false);
+	SaveSlot& slot = gameGui->saveload->GetSaveSlot(game->lastSave, false);
+	tooltip->img = gameGui->saveload->GetSaveImage(game->lastSave, false);
 	tooltip->imgSize = Int2(256, 192);
-	tooltip->big_text = slot.text;
-	tooltip->text = game_gui->saveload->GetSaveText(slot);
+	tooltip->bigText = slot.text;
+	tooltip->text = gameGui->saveload->GetSaveText(slot);
 }

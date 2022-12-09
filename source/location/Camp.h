@@ -7,7 +7,7 @@
 // Camp location
 struct Camp : public OutsideLocation
 {
-	int create_time;
+	int createTime;
 
 	void Save(GameWriter& f) override;
 	void Load(GameReader& f) override;

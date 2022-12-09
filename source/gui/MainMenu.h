@@ -25,7 +25,7 @@ public:
 	MainMenu();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
@@ -53,11 +53,11 @@ private:
 	TooltipController tooltip;
 	Button bt[BUTTONS];
 	TexturePtr tBackground, tLogo, tFModLogo;
-	CheckVersionStatus check_status;
+	CheckVersionStatus checkStatus;
 	int version_new;
-	string version, version_text, version_changelog;
+	string version, versionText, versionChangelog;
 	cstring txInfoText, txCheckingVersion, txNewVersion, txNewVersionDialog, txChanges, txDownload, txUpdate, txSkip, txNewerVersion, txNoNewVersion,
 		txCheckVersionError;
-	thread check_version_thread;
-	bool check_updates, version_update;
+	thread checkVersionThread;
+	bool checkUpdates, versionUpdate;
 };

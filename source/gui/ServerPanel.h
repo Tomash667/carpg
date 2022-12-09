@@ -26,7 +26,7 @@ public:
 	void Init();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void UpdateLobby(float dt);
 	void UpdateLobbyClient(float dt);
@@ -54,19 +54,20 @@ public:
 
 	Grid grid;
 	InputTextBox itb;
-	vector<Int2> lobby_updates;
-	string server_name;
-	float update_timer, startup_timer;
-	uint max_players, autostart_count;
-	int last_startup_sec, kick_id;
-	Class* autopick_class;
+	vector<Int2> lobbyUpdates;
+	string serverName;
+	float updateTimer, startupTimer;
+	uint maxPlayers, autostartCount;
+	int lastStartupSec, kickId;
+	Class* autopickClass;
 	bool starting, autoready;
-	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
-		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
-		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
-		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed, txPlayerDisconnected;
+	cstring txTitle, txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo,
+		txChangeChar, txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn,
+		txStartingStop, txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked,
+		txUnknown, txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed,
+		txPlayerDisconnected;
 
 private:
 	TexturePtr tReady, tNotReady;
-	Class* random_class;
+	Class* randomClass;
 };

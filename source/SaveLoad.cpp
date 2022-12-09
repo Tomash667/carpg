@@ -26,6 +26,7 @@
 #include "Journal.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "LevelPart.h"
 #include "LoadingHandler.h"
 #include "LoadScreen.h"
 #include "LocationGeneratorFactory.h"
@@ -63,45 +64,66 @@ enum SaveFlags
 int LOAD_VERSION;
 
 //=================================================================================================
-bool Game::CanSaveGame() const
+ActionResult Game::CanSaveGame() const
 {
-	if(game_state == GS_MAIN_MENU || quest_mgr->quest_secret->state == Quest_Secret::SECRET_FIGHT)
-		return false;
+	if(!Any(gameState, GS_LEVEL, GS_WORLDMAP))
+		return ActionResult::Ignore;
 
-	if(game_state == GS_WORLDMAP)
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog)
+	{
+		return dialog->name != "console" && dialog->name != "gameMenu" && dialog->name != "saveload" && dialog->name != "GetTextDialog";
+	};
+	if(gui->HaveDialog(pred))
+		return ActionResult::Ignore;
+
+	if(GS_MAIN_MENU || questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
+		return ActionResult::No;
+
+	if(gameState == GS_WORLDMAP)
 	{
 		if(Any(world->GetState(), World::State::TRAVEL, World::State::ENCOUNTER))
-			return false;
+			return ActionResult::No;
 	}
 	else
 	{
-		if(quest_mgr->quest_tutorial->in_tutorial || arena->mode != Arena::NONE || quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
-			|| quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			return false;
+		if(questMgr->questTutorial->inTutorial || arena->mode != Arena::NONE || questMgr->questContest->state >= Quest_Contest::CONTEST_STARTING
+			|| questMgr->questTournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			return ActionResult::No;
 	}
 
 	if(Net::IsOnline())
 	{
 		if(team->IsAnyoneAlive() && Net::IsServer())
-			return true;
+			return ActionResult::Yes;
 	}
-	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
-		return true;
+	else if(pc->unit->IsAlive() || pc->unit->inArena != -1)
+		return ActionResult::Yes;
 
-	return false;
+	return ActionResult::No;
 }
 
 //=================================================================================================
-bool Game::CanLoadGame() const
+ActionResult Game::CanLoadGame() const
 {
+	if(!Any(gameState, GS_MAIN_MENU, GS_LEVEL, GS_WORLDMAP))
+		return ActionResult::Ignore;
+
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog)
+	{
+		return dialog->name != "console" && dialog->name != "gameMenu" && dialog->name != "saveload" && dialog->name != "GetTextDialog";
+	};
+	if(gui->HaveDialog(pred))
+		return ActionResult::Ignore;
+
 	if(Net::IsOnline())
 	{
-		if(Net::IsClient() || !Any(game_state, GS_LEVEL, GS_WORLDMAP))
-			return false;
+		if(Net::IsClient() || !Any(gameState, GS_LEVEL, GS_WORLDMAP))
+			return ActionResult::No;
 	}
-	else if(hardcore_mode)
-		return false;
-	return true;
+	else if(hardcoreMode)
+		return ActionResult::No;
+
+	return ActionResult::Yes;
 }
 
 //=================================================================================================
@@ -109,15 +131,20 @@ bool Game::SaveGameSlot(int slot, cstring text)
 {
 	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
-	if(!CanSaveGame())
+	ActionResult actionResult = CanSaveGame();
+	if(actionResult == ActionResult::Yes)
+	{
+		LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+		return SaveGameCommon(filename, slot, text);
+	}
+	else if(actionResult == ActionResult::No)
 	{
 		// can't save right now
-		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, game_gui->saveload->visible ? game_gui->saveload : nullptr);
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gameGui->saveload->visible ? gameGui->saveload : nullptr);
 		return false;
 	}
-
-	LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
-	return SaveGameCommon(filename, slot, text);
+	else
+		return false;
 }
 
 //=================================================================================================
@@ -143,19 +170,19 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 	CreateSaveImage();
 
-	LocalString tmp_filename = Format("%s.new", filename);
-	GameWriter f(tmp_filename);
+	LocalString tmpFilename = Format("%s.new", filename);
+	GameWriter f(tmpFilename);
 	if(!f)
 	{
-		Error(txLoadOpenError, tmp_filename, GetLastError());
-		gui->SimpleDialog(txSaveFailed, game_gui->saveload->visible ? game_gui->saveload : nullptr);
+		Error("Failed to save game '%s' (%d).", tmpFilename.c_str(), GetLastError());
+		gui->SimpleDialog(txSaveFailed, gameGui->saveload->visible ? gameGui->saveload : nullptr);
 		return false;
 	}
 
 	SaveSlot* ss = nullptr;
 	if(slot != -1)
 	{
-		ss = &game_gui->saveload->GetSaveSlot(slot, Net::IsOnline());
+		ss = &gameGui->saveload->GetSaveSlot(slot, Net::IsOnline());
 		ss->text = text;
 	}
 
@@ -164,15 +191,15 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 	if(io::FileExists(filename))
 		io::MoveFile(filename, Format("%s.bak", filename));
-	io::MoveFile(tmp_filename, filename);
+	io::MoveFile(tmpFilename, filename);
 
 	cstring msg = Format("Game saved '%s'.", filename);
-	game_gui->console->AddMsg(msg);
+	gameGui->console->AddMsg(msg);
 	Info(msg);
 	if(slot != -1 && !Net::IsOnline())
 		SetLastSave(slot);
 
-	if(hardcore_mode)
+	if(hardcoreMode)
 	{
 		Info("Hardcore mode, exiting to menu.");
 		ExitToMenu();
@@ -185,22 +212,22 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 //=================================================================================================
 void Game::CreateSaveImage()
 {
-	int old_flags = draw_flags;
-	if(game_state == GS_LEVEL)
-		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
+	int old_flags = drawFlags;
+	if(gameState == GS_LEVEL)
+		drawFlags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
-		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	render->SetRenderTarget(rt_save);
+		drawFlags = (0xFFFFFFFF & ~DF_MENU);
+	render->SetRenderTarget(rtSave);
 	DrawGame();
 	render->SetRenderTarget(nullptr);
-	draw_flags = old_flags;
+	drawFlags = old_flags;
 }
 
 //=================================================================================================
 void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
-	bool online = (net->mp_load || Net::IsServer());
+	bool online = (net->mpLoad || Net::IsServer());
 	cstring filename = Format(online ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
 }
@@ -237,76 +264,77 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	GameReader f(filename);
 	if(!f)
 	{
-		DWORD last_error = GetLastError();
-		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
+		DWORD lastError = GetLastError();
+		throw SaveException(Format(txLoadOpenError, filename, lastError), Format("Failed to open file '%s' (%d).", filename, lastError),
+			lastError == ERROR_FILE_NOT_FOUND);
 	}
 
 	Info("Loading save '%s'.", filename);
 
-	net->mp_quickload = (Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP));
-	if(net->mp_quickload)
+	net->mpQuickload = (Net::IsOnline() && Any(gameState, GS_LEVEL, GS_WORLDMAP));
+	if(net->mpQuickload)
 	{
-		bool on_worldmap;
+		bool onWorldmap;
 		try
 		{
-			on_worldmap = ValidateNetSaveForLoading(f, slot);
+			onWorldmap = ValidateNetSaveForLoading(f, slot);
 		}
 		catch(SaveException& ex)
 		{
-			throw SaveException(Format(txCantLoadMultiplayer, ex.localized_msg), Format("Can't quick load mp game: %s", ex.msg));
+			throw SaveException(Format(txCantLoadMultiplayer, ex.localizedMsg), Format("Can't quick load mp game: %s", ex.msg));
 		}
 
 		BitStreamWriter f;
 		f << ID_LOADING;
-		f << on_worldmap;
+		f << onWorldmap;
 		net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 
-		net->mp_load = true;
+		net->mpLoad = true;
 		net->ClearChanges();
 	}
 
-	prev_game_state = game_state;
-	if(net->mp_load && !net->mp_quickload)
-		game_gui->multiplayer->visible = false;
+	prevGameState = gameState;
+	if(net->mpLoad && !net->mpQuickload)
+		gameGui->multiplayer->visible = false;
 	else
 	{
-		game_gui->main_menu->visible = false;
-		game_gui->level_gui->visible = false;
-		game_gui->game_menu->CloseDialog();
-		game_gui->world_map->Hide();
+		gameGui->mainMenu->visible = false;
+		gameGui->levelGui->visible = false;
+		gameGui->gameMenu->CloseDialog();
+		gameGui->worldMap->Hide();
 	}
 
 	try
 	{
-		in_load = true;
+		inLoad = true;
 		LoadGame(f);
-		in_load = false;
+		inLoad = false;
 	}
 	catch(const SaveException&)
 	{
-		in_load = false;
-		prev_game_state = GS_LOAD;
+		inLoad = false;
+		prevGameState = GS_LOAD;
 		ExitToMenu();
 		throw;
 	}
 	catch(cstring msg)
 	{
-		in_load = false;
-		prev_game_state = GS_LOAD;
+		inLoad = false;
+		prevGameState = GS_LOAD;
 		ExitToMenu();
 		throw SaveException(nullptr, msg);
 	}
 
 	f.Close();
-	prev_game_state = GS_LOAD;
+	prevGameState = GS_LOAD;
 
-	if(hardcore_mode)
+	if(hardcoreMode)
 	{
 		Info("Hardcore mode, deleting save.");
 
 		if(slot != -1)
 		{
-			game_gui->saveload->RemoveHardcoreSave(slot);
+			gameGui->saveload->RemoveHardcoreSave(slot);
 			io::DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
 			if(!Net::IsOnline())
 				SetLastSave(-1);
@@ -317,38 +345,40 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else if(slot != -1 && !Net::IsOnline())
 		SetLastSave(slot);
 
-	if(net->mp_quickload)
+	if(net->mpQuickload)
 	{
 		for(PlayerInfo& info : net->players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO)
 				info.loaded = true;
 		}
-		game_state = GS_LOAD;
-		net_mode = NM_TRANSFER_SERVER;
-		net_timer = mp_timeout;
-		net_state = NetState::Server_Starting;
-		game_gui->info_box->Show("");
+		gameState = GS_LOAD;
+		gameLevel->ready = false;
+		netMode = NM_TRANSFER_SERVER;
+		netTimer = mpTimeout;
+		netState = NetState::Server_Starting;
+		gameGui->infoBox->Show("");
 	}
-	else if(!net->mp_load)
+	else if(!net->mpLoad)
 	{
-		if(game_state == GS_LEVEL)
+		if(gameState == GS_LEVEL)
 		{
-			game_gui->level_gui->visible = true;
-			game_gui->world_map->Hide();
+			gameGui->levelGui->visible = true;
+			gameGui->worldMap->Hide();
 		}
 		else
 		{
-			game_gui->level_gui->visible = false;
-			game_gui->world_map->Show();
+			gameGui->levelGui->visible = false;
+			gameGui->worldMap->Show();
 		}
-		game_gui->Setup(pc);
+		gameGui->Setup(pc);
+		SetTitle("SINGLE");
 	}
 	else
 	{
-		game_gui->multiplayer->visible = true;
-		game_gui->main_menu->Show();
-		game_gui->create_server->Show();
+		gameGui->multiplayer->visible = true;
+		gameGui->mainMenu->Show();
+		gameGui->createServer->Show();
 	}
 }
 
@@ -359,14 +389,12 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	if(!LoadGameHeader(f, ss))
 		throw SaveException(txLoadSignature, "Invalid file signature.");
 	f.SetPos(0);
-	if(ss.load_version < V_0_9)
-		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo& info : net->players)
 	{
 		bool ok = false;
-		if(info.pc->name == ss.player_name)
+		if(info.pc->name == ss.playerName)
 			continue;
-		for(string& str : ss.mp_players)
+		for(string& str : ss.mpPlayers)
 		{
 			if(str == info.name)
 			{
@@ -377,7 +405,7 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 		if(!ok)
 			throw SaveException(Format(txMissingPlayerInSave, info.name.c_str()), Format("Missing player '%s' in save.", info.name.c_str()));
 	}
-	return ss.on_worldmap;
+	return ss.onWorldmap;
 }
 
 //=================================================================================================
@@ -388,11 +416,9 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
 		net->ProcessLeftPlayers();
-	game_level->UpdateDungeonMinimap(false);
-	game_level->ProcessUnitWarps();
-	game_level->ProcessRemoveUnits(false);
-	if(game_state == GS_WORLDMAP && game_level->is_open)
-		LeaveLocation(false, false);
+	gameLevel->UpdateDungeonMinimap(false);
+	gameLevel->ProcessUnitWarps();
+	gameLevel->ProcessRemoveUnits(false);
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -401,7 +427,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// version
 	f << VERSION;
 	f << V_CURRENT;
-	f << start_version;
+	f << startVersion;
 	f << content.version;
 
 	// save flags
@@ -410,9 +436,9 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		flags |= SF_ONLINE;
 	if(IsDebug())
 		flags |= SF_DEBUG;
-	if(hardcore_mode)
+	if(hardcoreMode)
 		flags |= SF_HARDCORE;
-	if(game_state == GS_WORLDMAP)
+	if(gameState == GS_WORLDMAP)
 		flags |= SF_ON_WORLDMAP;
 	f << flags;
 
@@ -422,97 +448,97 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << pc->unit->GetClass()->id;
 	if(Net::IsOnline())
 	{
-		f.WriteCasted<byte>(net->active_players - 1);
+		f.WriteCasted<byte>(net->activePlayers - 1);
 		for(PlayerInfo& info : net->players)
 		{
-			if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+			if(!info.pc->isLocal && info.left == PlayerInfo::LEFT_NO)
 				f << info.pc->name;
 		}
 	}
 	f << time(nullptr);
 	f << world->GetDateValue();
-	f << game_level->GetCurrentLocationText();
+	f << gameLevel->GetCurrentLocationText();
 	if(slot)
 	{
 		slot->valid = true;
-		slot->load_version = V_CURRENT;
-		slot->player_name = pc->name;
-		slot->player_class = pc->unit->data->clas;
-		slot->mp_players.clear();
+		slot->loadVersion = V_CURRENT;
+		slot->playerName = pc->name;
+		slot->playerClass = pc->unit->data->clas;
+		slot->mpPlayers.clear();
 		if(Net::IsOnline())
 		{
 			for(PlayerInfo& info : net->players)
 			{
-				if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
-					slot->mp_players.push_back(info.pc->name);
+				if(!info.pc->isLocal && info.left == PlayerInfo::LEFT_NO)
+					slot->mpPlayers.push_back(info.pc->name);
 			}
 		}
-		slot->save_date = time(nullptr);
-		slot->game_date = world->GetDateValue();
-		slot->hardcore = hardcore_mode;
-		slot->on_worldmap = (game_state == GS_WORLDMAP);
-		slot->location = game_level->GetCurrentLocationText();
-		slot->img_offset = f.GetPos() + 4;
+		slot->saveDate = time(nullptr);
+		slot->gameDate = world->GetDateValue();
+		slot->hardcore = hardcoreMode;
+		slot->onWorldmap = (gameState == GS_WORLDMAP);
+		slot->location = gameLevel->GetCurrentLocationText();
+		slot->imgOffset = f.GetPos() + 4;
 	}
-	uint img_size = app::render->SaveToFile(rt_save->tex, f);
+	uint imgSize = app::render->SaveToFile(rtSave->tex, f);
 	if(slot)
-		slot->img_size = img_size;
+		slot->imgSize = imgSize;
 
 	// ids
-	f << ParticleEmitter::impl.id_counter;
-	f << TrailParticleEmitter::impl.id_counter;
-	f << Unit::impl.id_counter;
-	f << GroundItem::impl.id_counter;
-	f << Chest::impl.id_counter;
-	f << Usable::impl.id_counter;
-	f << Trap::impl.id_counter;
-	f << Door::impl.id_counter;
-	f << Electro::impl.id_counter;
-	f << Bullet::impl.id_counter;
+	f << ParticleEmitter::impl.idCounter;
+	f << TrailParticleEmitter::impl.idCounter;
+	f << Unit::impl.idCounter;
+	f << GroundItem::impl.idCounter;
+	f << Chest::impl.idCounter;
+	f << Usable::impl.idCounter;
+	f << Trap::impl.idCounter;
+	f << Door::impl.idCounter;
+	f << Electro::impl.idCounter;
+	f << Bullet::impl.idCounter;
 
-	game_stats->Save(f);
+	gameStats->Save(f);
 
-	f << game_state;
+	f << gameState;
 	aiMgr->Save(f);
 	world->Save(f);
 
 	byte check_id = 0;
 
-	if(game_state == GS_LEVEL)
-		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestId() : -1);
+	if(gameState == GS_LEVEL)
+		f << (gameLevel->eventHandler ? gameLevel->eventHandler->GetLocationEventHandlerQuestId() : -1);
 	else
 		team->SaveOnWorldmap(f);
-	f << game_level->enter_from;
-	f << game_level->light_angle;
+	f << gameLevel->enterFrom;
+	f << gameLevel->lightAngle;
 
 	// camera
-	f << game_level->camera.real_rot.y;
-	f << game_level->camera.dist;
-	f << game_level->camera.drunk_anim;
+	f << gameLevel->camera.realRot.y;
+	f << gameLevel->camera.dist;
+	f << gameLevel->camera.drunkAnim;
 
 	// vars
 	f << devmode;
 	f << noai;
-	f << dont_wander;
-	f << scene_mgr->use_fog;
-	f << scene_mgr->use_lighting;
-	f << draw_particle_sphere;
-	f << draw_unit_radius;
-	f << draw_hitbox;
-	f << draw_phy;
-	f << draw_col;
-	f << game_speed;
-	f << next_seed;
-	f << draw_flags;
+	f << dontWander;
+	f << sceneMgr->useFog;
+	f << sceneMgr->useLighting;
+	f << drawParticleSphere;
+	f << drawUnitRadius;
+	f << drawHitbox;
+	f << drawPhy;
+	f << drawCol;
+	f << gameSpeed;
+	f << nextSeed;
+	f << drawFlags;
 	f << pc->unit->id;
-	f << game_level->dungeon_level;
-	f << portal_anim;
+	f << gameLevel->dungeonLevel;
+	f << portalAnim;
 	f << ais.size();
 	for(AIController* ai : ais)
 		ai->Save(f);
-	f << game_level->boss;
+	f << gameLevel->boss;
 
-	game_gui->Save(f);
+	gameGui->Save(f);
 
 	check_id = (byte)world->GetLocations().size();
 	f << check_id++;
@@ -521,8 +547,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	team->Save(f);
 
 	// save quests
-	quest_mgr->Save(f);
-	script_mgr->Save(f);
+	questMgr->Save(f);
+	scriptMgr->Save(f);
 
 	f << check_id++;
 
@@ -533,7 +559,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		f << check_id++;
 
 		Net::PushChange(NetChange::GAME_SAVED);
-		game_gui->mp_box->Add(txGameSaved);
+		gameGui->mpBox->Add(txGameSaved);
 	}
 
 	f.Write("EOS", 3);
@@ -559,8 +585,8 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	f.Skip<int>();
 
 	// save version
-	f >> slot.load_version;
-	if(slot.load_version < MIN_SUPPORT_LOAD_VERSION)
+	f >> slot.loadVersion;
+	if(slot.loadVersion < MIN_SUPPORT_LOAD_VERSION)
 		return false;
 
 	// start version
@@ -569,28 +595,23 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	// content version
 	f.Skip<uint>();
 
-	// save flags
+	// info
 	byte flags;
 	f >> flags;
-
-	// info
-	if(slot.load_version >= V_0_9)
-	{
-		slot.hardcore = IsSet(flags, SF_HARDCORE);
-		slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
-		f >> slot.text;
-		f >> slot.player_name;
-		slot.player_class = Class::TryGet(f.ReadString1());
-		if(IsSet(flags, SF_ONLINE))
-			f.ReadStringArray<byte, byte>(slot.mp_players);
-		else
-			slot.mp_players.clear();
-		f >> slot.save_date;
-		f >> slot.game_date;
-		f >> slot.location;
-		f >> slot.img_size;
-		slot.img_offset = f.GetPos();
-	}
+	slot.hardcore = IsSet(flags, SF_HARDCORE);
+	slot.onWorldmap = IsSet(flags, SF_ON_WORLDMAP);
+	f >> slot.text;
+	f >> slot.playerName;
+	slot.playerClass = Class::TryGet(f.ReadString1());
+	if(IsSet(flags, SF_ONLINE))
+		f.ReadStringArray<byte, byte>(slot.mpPlayers);
+	else
+		slot.mpPlayers.clear();
+	f >> slot.saveDate;
+	f >> slot.gameDate;
+	f >> slot.location;
+	f >> slot.imgSize;
+	slot.imgOffset = f.GetPos();
 
 	return true;
 }
@@ -602,15 +623,15 @@ void Game::LoadGame(GameReader& f)
 	ClearGame();
 	ClearGameVars(false);
 	StopAllSounds();
-	quest_mgr->quest_tutorial->in_tutorial = false;
+	questMgr->questTutorial->inTutorial = false;
 	arena->Reset();
 	pc->data.autowalk = false;
-	ai_bow_targets.clear();
-	load_location_quest.clear();
-	load_unit_handler.clear();
-	load_chest_handler.clear();
-	units_mesh_load.clear();
-	game_level->entering = true;
+	aiBowTargets.clear();
+	loadLocationQuest.clear();
+	loadUnitHandler.clear();
+	loadChestHandler.clear();
+	unitsMeshLoad.clear();
+	gameLevel->ready = false;
 
 	byte check_id = 0, read_id;
 
@@ -640,20 +661,20 @@ void Game::LoadGame(GameReader& f)
 		cstring ver_str = VersionToString(version);
 		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
 	}
-	f >> start_version;
+	f >> startVersion;
 
 	// content version
 	uint content_version;
 	f >> content_version;
-	content.require_update = (content.version != content_version);
-	if(content.require_update)
+	content.requireUpdate = (content.version != content_version);
+	if(content.requireUpdate)
 		Info("Loading old system version. Content update required.");
 
 	// save flags
 	byte flags;
 	f >> flags;
 	bool online_save = IsSet(flags, SF_ONLINE);
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		if(!online_save)
 			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
@@ -664,49 +685,47 @@ void Game::LoadGame(GameReader& f)
 			throw SaveException(txLoadMP, "Save is from multiplayer mode.");
 	}
 
-	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
+	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(startVersion), LOAD_VERSION,
 		online_save ? 1 : 0, IsSet(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
-	if(LOAD_VERSION >= V_0_9)
-	{
-		f.SkipString1(); // text
-		f.SkipString1(); // player name
-		f.SkipString1(); // player class
-		if(net->mp_load) // mp players
-			f.SkipStringArray<byte, byte>();
-		f.Skip<time_t>(); // save_date
-		f.Skip<int>(); // game_year
-		f.Skip<int>(); // game_month
-		f.Skip<int>(); // game_day
-		f.SkipString1(); // location
-		f.SkipData<uint>(); // image
-	}
+	f.SkipString1(); // text
+	f.SkipString1(); // player name
+	f.SkipString1(); // player class
+	if(net->mpLoad) // mp players
+		f.SkipStringArray<byte, byte>();
+	f.Skip<time_t>(); // saveDate
+	f.Skip<int>(); // game_year
+	f.Skip<int>(); // game_month
+	f.Skip<int>(); // game_day
+	f.SkipString1(); // location
+	f.SkipData<uint>(); // image
 
 	// ids
 	if(LOAD_VERSION >= V_0_12)
 	{
-		f >> ParticleEmitter::impl.id_counter;
-		f >> TrailParticleEmitter::impl.id_counter;
-		f >> Unit::impl.id_counter;
-		f >> GroundItem::impl.id_counter;
-		f >> Chest::impl.id_counter;
-		f >> Usable::impl.id_counter;
-		f >> Trap::impl.id_counter;
-		f >> Door::impl.id_counter;
-		f >> Electro::impl.id_counter;
+		f >> ParticleEmitter::impl.idCounter;
+		f >> TrailParticleEmitter::impl.idCounter;
+		f >> Unit::impl.idCounter;
+		f >> GroundItem::impl.idCounter;
+		f >> Chest::impl.idCounter;
+		f >> Usable::impl.idCounter;
+		f >> Trap::impl.idCounter;
+		f >> Door::impl.idCounter;
+		f >> Electro::impl.idCounter;
 	}
 	if(LOAD_VERSION >= V_0_16)
-		f >> Bullet::impl.id_counter;
+		f >> Bullet::impl.idCounter;
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
-	hardcore_mode = IsSet(flags, SF_HARDCORE);
+	hardcoreMode = IsSet(flags, SF_HARDCORE);
 
-	game_stats->Load(f);
+	gameStats->Load(f);
 
 	// game state
 	f >> game_state2;
+	gameLevel->isOpen = game_state2 == GS_LEVEL;
 
 	if(LOAD_VERSION >= V_0_17)
 		aiMgr->Load(f);
@@ -715,20 +734,20 @@ void Game::LoadGame(GameReader& f)
 	LoadingStep(txLoadingLocations);
 	world->Load(f, loading);
 
-	uint count;
-	int location_event_handler_quest_id;
+	int locationEventHandlerQuestId;
 	if(game_state2 == GS_LEVEL)
-		f >> location_event_handler_quest_id;
+		f >> locationEventHandlerQuestId;
 	else
 	{
-		location_event_handler_quest_id = -1;
+		locationEventHandlerQuestId = -1;
 		// load team
+		uint count;
 		f >> count;
 		for(uint i = 0; i < count; ++i)
 		{
 			Unit* u = new Unit;
 			u->Load(f);
-			u->area = nullptr;
+			u->locPart = nullptr;
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
 			if(!u->IsPlayer())
@@ -739,8 +758,8 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	f >> game_level->enter_from;
-	f >> game_level->light_angle;
+	f >> gameLevel->enterFrom;
+	f >> gameLevel->lightAngle;
 
 	// apply entity requests
 	LoadingStep(txLoadingData);
@@ -748,43 +767,43 @@ void Game::LoadGame(GameReader& f)
 	Usable::ApplyRequests();
 
 	// camera
-	f >> game_level->camera.real_rot.y;
-	f >> game_level->camera.dist;
+	f >> gameLevel->camera.realRot.y;
+	f >> gameLevel->camera.dist;
 	if(LOAD_VERSION >= V_0_14)
-		f >> game_level->camera.drunk_anim;
-	game_level->camera.Reset();
-	pc->data.rot_buf = 0.f;
+		f >> gameLevel->camera.drunkAnim;
+	gameLevel->camera.Reset();
+	pc->data.rotBuf = 0.f;
 
 	// vars
 	f >> devmode;
 	f >> noai;
 	if(IsDebug())
 		noai = true;
-	f >> dont_wander;
-	f >> scene_mgr->use_fog;
-	f >> scene_mgr->use_lighting;
-	f >> draw_particle_sphere;
-	f >> draw_unit_radius;
-	f >> draw_hitbox;
-	f >> draw_phy;
-	f >> draw_col;
-	f >> game_speed;
-	f >> next_seed;
-	f >> draw_flags;
+	f >> dontWander;
+	f >> sceneMgr->useFog;
+	f >> sceneMgr->useLighting;
+	f >> drawParticleSphere;
+	f >> drawUnitRadius;
+	f >> drawHitbox;
+	f >> drawPhy;
+	f >> drawCol;
+	f >> gameSpeed;
+	f >> nextSeed;
+	f >> drawFlags;
 	Unit* player;
 	f >> player;
 	pc = player->player;
-	if(!net->mp_load)
+	if(!net->mpLoad)
 		pc->id = 0;
-	game_level->camera.target = pc->unit;
-	game_level->camera.real_rot.x = pc->unit->rot;
-	pc->dialog_ctx = &dialog_context;
-	dialog_context.dialog_mode = false;
-	dialog_context.is_local = true;
-	f >> game_level->dungeon_level;
-	f >> portal_anim;
+	gameLevel->camera.target = pc->unit;
+	gameLevel->camera.realRot.x = pc->unit->rot;
+	pc->dialogCtx = &dialogContext;
+	dialogContext.dialogMode = false;
+	dialogContext.isLocal = true;
+	f >> gameLevel->dungeonLevel;
+	f >> portalAnim;
 	if(LOAD_VERSION < V_0_14)
-		f >> game_level->camera.drunk_anim;
+		f >> gameLevel->camera.drunkAnim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
 	{
@@ -793,12 +812,12 @@ void Game::LoadGame(GameReader& f)
 	}
 	if(LOAD_VERSION >= V_0_17)
 	{
-		f >> game_level->boss;
-		if(game_level->boss)
-			game_gui->level_gui->SetBoss(game_level->boss, true);
+		f >> gameLevel->boss;
+		if(gameLevel->boss)
+			gameGui->levelGui->SetBoss(gameLevel->boss, true);
 	}
 
-	game_gui->Load(f);
+	gameGui->Load(f);
 
 	check_id = (byte)world->GetLocations().size();
 	if(LOAD_VERSION < V_0_14)
@@ -812,9 +831,9 @@ void Game::LoadGame(GameReader& f)
 
 	// load quests
 	LoadingStep(txLoadingQuests);
-	quest_mgr->Load(f);
+	questMgr->Load(f);
 
-	script_mgr->Load(f);
+	scriptMgr->Load(f);
 
 	f >> read_id;
 	if(read_id != check_id++)
@@ -824,14 +843,12 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
-		game_level->is_open = true;
-
-		LocationGenerator* loc_gen = loc_gen_factory->Get(game_level->location);
+		LocationGenerator* loc_gen = locGenFactory->Get(gameLevel->location);
 		loc_gen->OnLoad();
 
 		if(LOAD_VERSION < V_0_11)
 		{
-			game_level->local_area->tmp->Load(f);
+			gameLevel->localPart->lvlPart->Load(f);
 
 			f >> read_id;
 			if(read_id != check_id++)
@@ -840,22 +857,20 @@ void Game::LoadGame(GameReader& f)
 
 		RemoveUnusedAiAndCheck();
 	}
-	else
-		game_level->is_open = false;
 
 	// gui
-	game_gui->level_gui->PositionPanels();
+	gameGui->levelGui->PositionPanels();
 
 	// set ai bow targets
-	if(!ai_bow_targets.empty())
+	if(!aiBowTargets.empty())
 	{
 		BaseObject* bow_target = BaseObject::Get("bow_target");
-		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
+		for(vector<AIController*>::iterator it = aiBowTargets.begin(), end = aiBowTargets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
 			Object* ptr = nullptr;
 			float dist, best_dist;
-			for(Object* obj : ai.unit->area->objects)
+			for(Object* obj : ai.unit->locPart->objects)
 			{
 				if(obj->base == bow_target)
 				{
@@ -873,56 +888,56 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// location quests
-	for(Location* loc : load_location_quest)
+	for(Location* loc : loadLocationQuest)
 	{
-		loc->active_quest = static_cast<Quest_Dungeon*>(quest_mgr->FindAnyQuest((int)loc->active_quest));
-		assert(loc->active_quest);
+		loc->activeQuest = static_cast<Quest_Dungeon*>(questMgr->FindAnyQuest((int)loc->activeQuest));
+		assert(loc->activeQuest);
 	}
 
 	// unit event handlers
-	for(Unit* unit : load_unit_handler)
+	for(Unit* unit : loadUnitHandler)
 	{
-		unit->event_handler = dynamic_cast<UnitEventHandler*>(quest_mgr->FindAnyQuest((int)unit->event_handler));
-		assert(unit->event_handler);
+		unit->eventHandler = dynamic_cast<UnitEventHandler*>(questMgr->FindAnyQuest((int)unit->eventHandler));
+		assert(unit->eventHandler);
 	}
 
 	// chest event handlers
-	for(Chest* chest : load_chest_handler)
+	for(Chest* chest : loadChestHandler)
 	{
-		chest->handler = dynamic_cast<ChestEventHandler*>(quest_mgr->FindAnyQuest((int)chest->handler));
+		chest->handler = dynamic_cast<ChestEventHandler*>(questMgr->FindAnyQuest((int)chest->handler));
 		assert(chest->handler);
 	}
 
 	// current location event handler
-	if(location_event_handler_quest_id != -1)
+	if(locationEventHandlerQuestId != -1)
 	{
-		Quest* quest = quest_mgr->FindAnyQuest(location_event_handler_quest_id);
+		Quest* quest = questMgr->FindAnyQuest(locationEventHandlerQuestId);
 		if(quest->isNew)
-			game_level->event_handler = nullptr;
+			gameLevel->eventHandler = nullptr;
 		else
 		{
-			game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest);
-			assert(game_level->event_handler);
+			gameLevel->eventHandler = dynamic_cast<LocationEventHandler*>(quest);
+			assert(gameLevel->eventHandler);
 		}
 	}
 	else
-		game_level->event_handler = nullptr;
+		gameLevel->eventHandler = nullptr;
 
-	quest_mgr->UpgradeQuests();
-	quest_mgr->ProcessQuestRequests();
+	questMgr->UpgradeQuests();
+	questMgr->ProcessQuestRequests();
 
-	dialog_context.dialog_mode = false;
+	dialogContext.dialogMode = false;
 	team->Clear(false);
-	fallback_type = FALLBACK::NONE;
-	fallback_t = -0.5f;
-	game_gui->inventory->mode = I_NONE;
-	game_gui->ability->Refresh();
-	pc->data.before_player = BP_NONE;
-	pc->data.selected_unit = pc->unit;
-	dialog_context.pc = pc;
-	dialog_context.dialog_mode = false;
+	fallbackType = FALLBACK::NONE;
+	fallbackTimer = -0.5f;
+	gameGui->inventory->mode = I_NONE;
+	gameGui->ability->Refresh();
+	pc->data.beforePlayer = BP_NONE;
+	pc->data.selectedUnit = pc->unit;
+	dialogContext.pc = pc;
+	dialogContext.dialogMode = false;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		net->Load(f);
 
@@ -931,7 +946,7 @@ void Game::LoadGame(GameReader& f)
 			throw "Failed to read multiplayer data.";
 	}
 	else
-		pc->is_local = true;
+		pc->isLocal = true;
 
 	// end of save
 	char eos[3];
@@ -939,104 +954,104 @@ void Game::LoadGame(GameReader& f)
 	if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
 		throw "Missing EOS.";
 
-	game_res->LoadCommonMusic();
+	gameRes->LoadCommonMusic();
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
-	if(!net->mp_quickload)
-		game_gui->load_screen->visible = false;
+	if(game_state2 == GS_LEVEL)
+	{
+		for(LocationPart& locPart : gameLevel->ForEachPart())
+			locPart.BuildScene();
+	}
+	if(!net->mpQuickload)
+		gameGui->loadScreen->visible = false;
 
 	Info("Game loaded.");
-	game_level->entering = false;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
-		game_state = GS_MAIN_MENU;
+		gameState = GS_MAIN_MENU;
+		gameLevel->ready = false;
 		return;
 	}
 
-	if(game_state2 == GS_LEVEL)
+	gameState = game_state2;
+	if(gameState == GS_LEVEL)
 	{
+		gameLevel->ready = true;
 		SetMusic();
-		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animation_state, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
-			&& IsSet(pc->unit->usable->base->use_flags, BaseUsable::ALCHEMY))
-			game_gui->craft->Show();
+		if(pc->unit->usable && pc->unit->action == A_USE_USABLE && Any(pc->unit->animationState, AS_USE_USABLE_USING, AS_USE_USABLE_USING_SOUND)
+			&& IsSet(pc->unit->usable->base->useFlags, BaseUsable::ALCHEMY))
+			gameGui->craft->Show();
 	}
 	else
+	{
 		SetMusic(MusicType::Travel);
-	game_state = game_state2;
-	clear_color = clear_color_next;
+		gameLevel->ready = false;
+	}
 }
 
 //=================================================================================================
-bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
+bool Game::TryLoadGame(int slot, bool quickload, bool fromConsole)
 {
 	try
 	{
-		game->LoadGameSlot(slot);
+		LoadGameSlot(slot);
 		return true;
 	}
 	catch(const SaveException& ex)
 	{
-		if(quickload && ex.missing_file)
+		if(quickload && ex.missingFile)
 		{
-			Warn("Missing quicksave.");
-			if(from_console)
-				game_gui->console->AddMsg("Missing quicksave.");
+			if(fromConsole)
+				gameGui->console->AddMsg("Missing quicksave.");
+			else
+				gui->SimpleDialog(txMissingQuicksave, nullptr);
 			return false;
 		}
 
 		cstring msg = Format("Failed to load game: %s", ex.msg);
 		Error(msg);
-		if(from_console)
-			game_gui->console->AddMsg(msg);
+		if(fromConsole)
+			gameGui->console->AddMsg(msg);
 		else
 		{
-			cstring dialog_text;
-			if(ex.localized_msg)
-				dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+			cstring dialogText;
+			if(ex.localizedMsg)
+				dialogText = Format("%s%s", txLoadError, ex.localizedMsg);
 			else
-				dialog_text = txLoadErrorGeneric;
+				dialogText = txLoadErrorGeneric;
+
 			Control* parent = nullptr;
-			if(game_gui->game_menu->visible)
-				parent = game_gui->game_menu;
-			gui->SimpleDialog(dialog_text, parent, "fatal");
+			if(gameGui->gameMenu->visible)
+				parent = gameGui->gameMenu;
+			gui->SimpleDialog(dialogText, parent, "fatal");
 		}
-		net->mp_load = false;
+		net->mpLoad = false;
 		return false;
 	}
 }
 
 //=================================================================================================
-void Game::Quicksave(bool from_console)
+void Game::Quicksave()
 {
-	if(!CanSaveGame())
+	ActionResult actionResult = CanSaveGame();
+	if(actionResult == ActionResult::Yes)
 	{
-		if(from_console)
-			game_gui->console->AddMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
-		else
-			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
-		return;
+		if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
+			gameGui->messages->AddGameMsg3(GMS_GAME_SAVED);
 	}
-
-	if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
-	{
-		if(!from_console)
-			game_gui->messages->AddGameMsg3(GMS_GAME_SAVED);
-	}
+	else if(actionResult == ActionResult::No)
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 }
 
 //=================================================================================================
-void Game::Quickload(bool from_console)
+void Game::Quickload()
 {
-	if(!CanLoadGame())
-	{
-		if(from_console)
-			game_gui->console->AddMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
-		else
-			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
-		return;
-	}
-	TryLoadGame(SaveSlot::MAX_SLOTS, true, from_console);
+	ActionResult actionResult = CanLoadGame();
+	if(actionResult == ActionResult::Yes)
+		TryLoadGame(SaveSlot::MAX_SLOTS, true, false);
+	else if(actionResult == ActionResult::No)
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
 }
 
 //=================================================================================================
@@ -1048,9 +1063,9 @@ void Game::RemoveUnusedAiAndCheck()
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
-		for(LevelArea& area : game_level->ForEachArea())
+		for(LocationPart& locPart : gameLevel->ForEachPart())
 		{
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->ai == *it)
 				{
@@ -1077,33 +1092,33 @@ void Game::RemoveUnusedAiAndCheck()
 
 	if(IsDebug())
 	{
-		int err_count = 0;
-		for(LevelArea& area : game_level->ForEachArea())
-			CheckUnitsAi(area, err_count);
-		if(err_count)
-			game_gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+		int errors = 0;
+		for(LocationPart& locPart : gameLevel->ForEachPart())
+			CheckUnitsAi(locPart, errors);
+		if(errors)
+			gameGui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", errors), 10.f);
 	}
 }
 
 //=================================================================================================
-void Game::CheckUnitsAi(LevelArea& area, int& err_count)
+void Game::CheckUnitsAi(LocationPart& locPart, int& errors)
 {
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(u.player && u.ai)
 		{
-			++err_count;
+			++errors;
 			Error("Unit %s is player 0x%p and ai 0x%p.", u.data->id.c_str(), u.player, u.ai);
 		}
 		else if(u.player && u.hero)
 		{
-			++err_count;
+			++errors;
 			Error("Unit %s is player 0x%p and hero 0x%p.", u.data->id.c_str(), u.player, u.hero);
 		}
 		else if(!u.player && !u.ai)
 		{
-			++err_count;
+			++errors;
 			Error("Unit %s is neither player or ai.", u.data->id.c_str());
 		}
 	}

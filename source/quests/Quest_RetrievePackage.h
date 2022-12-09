@@ -31,7 +31,7 @@ public:
 private:
 	int GetReward() const;
 
-	int from_loc;
+	int fromLoc;
 	OtherItem parcel;
 	int st;
 };

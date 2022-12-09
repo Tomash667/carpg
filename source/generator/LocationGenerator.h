@@ -26,6 +26,6 @@ public:
 	void RespawnUnits();
 
 	Location* loc;
-	int dungeon_level;
+	int dungeonLevel;
 	bool first;
 };

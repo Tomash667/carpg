@@ -19,7 +19,7 @@
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), call_depth(0), in_upgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), cellDepth(0), inUpgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -37,7 +37,7 @@ void Quest_Scripted::Start()
 {
 	category = scheme->category;
 
-	if(scheme->startup_use_vars)
+	if(scheme->startupUseVars)
 		return;
 
 	Start(nullptr);
@@ -52,13 +52,13 @@ void Quest_Scripted::Start(Vars* vars)
 	instance = CreateInstance(false);
 
 	// call Startup
-	if(!scheme->f_startup)
+	if(!scheme->fStartup)
 		return;
 	BeforeCall();
-	if(scheme->startup_use_vars)
+	if(scheme->startupUseVars)
 	{
 		assert(vars);
-		script_mgr->RunScript(scheme->f_startup, instance, [vars](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fStartup, instance, [vars](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgAddress(0, vars));
@@ -67,7 +67,7 @@ void Quest_Scripted::Start(Vars* vars)
 	else
 	{
 		assert(!vars);
-		script_mgr->RunScript(scheme->f_startup, instance);
+		scriptMgr->RunScript(scheme->fStartup, instance);
 	}
 	AfterCall();
 }
@@ -78,22 +78,22 @@ void Quest_Scripted::Save(GameWriter& f)
 	Quest::Save(f);
 
 	f << scheme->id;
-	f << timeout_days;
+	f << timeoutDays;
 
 	if(!instance)
 		return;
 
-	uint props = scheme->script_type->GetPropertyCount();
+	uint props = scheme->scriptType->GetPropertyCount();
 	f << props;
 	for(uint i = 0; i < props; ++i)
 	{
 		int type_id;
 		cstring name;
-		scheme->script_type->GetProperty(i, &name, &type_id);
-		Var::Type var_type = script_mgr->GetVarType(type_id);
+		scheme->scriptType->GetProperty(i, &name, &type_id);
+		Var::Type varType = scriptMgr->GetVarType(type_id);
 		f << Hash(name);
 		void* ptr = instance->GetAddressOfProperty(i);
-		switch(var_type)
+		switch(varType)
 		{
 		case Var::Type::None:
 			break;
@@ -125,7 +125,7 @@ void Quest_Scripted::Save(GameWriter& f)
 				{
 					f << item->id;
 					if(item->id[0] == '$')
-						f << item->quest_id;
+						f << item->questId;
 				}
 				else
 					f.Write0();
@@ -194,7 +194,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	scheme = QuestScheme::TryGet(scheme_id);
 	if(!scheme)
 		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
-	f >> timeout_days;
+	f >> timeoutDays;
 	isNew = true;
 
 	// fix for not initializing category for 'side_cleric' quest
@@ -211,7 +211,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	{
 		uint props;
 		f >> props;
-		const uint scheme_props = scheme->script_type->GetPropertyCount();
+		const uint scheme_props = scheme->scriptType->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
 			uint name_hash;
@@ -220,12 +220,12 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 			{
 				int type_id;
 				cstring name;
-				scheme->script_type->GetProperty(j, &name, &type_id);
+				scheme->scriptType->GetProperty(j, &name, &type_id);
 				if(name_hash == Hash(name))
 				{
-					Var::Type var_type = script_mgr->GetVarType(type_id);
+					Var::Type varType = scriptMgr->GetVarType(type_id);
 					void* ptr = instance->GetAddressOfProperty(j);
-					LoadVar(f, var_type, ptr);
+					LoadVar(f, varType, ptr);
 					break;
 				}
 			}
@@ -233,19 +233,19 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	}
 	else
 	{
-		const uint props = scheme->script_type->GetPropertyCount();
+		const uint props = scheme->scriptType->GetPropertyCount();
 		if(scheme->id == "main")
 		{
 			for(uint i = 0; i < props; ++i)
 			{
 				int type_id;
 				cstring name;
-				scheme->script_type->GetProperty(i, &name, &type_id);
+				scheme->scriptType->GetProperty(i, &name, &type_id);
 				if(strcmp(name, "village") == 0 || strcmp(name, "counter") == 0)
 				{
-					Var::Type var_type = script_mgr->GetVarType(type_id);
+					Var::Type varType = scriptMgr->GetVarType(type_id);
 					void* ptr = instance->GetAddressOfProperty(i);
-					LoadVar(f, var_type, ptr);
+					LoadVar(f, varType, ptr);
 				}
 			}
 		}
@@ -254,10 +254,10 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 			for(uint i = 0; i < props; ++i)
 			{
 				int type_id;
-				scheme->script_type->GetProperty(i, nullptr, &type_id);
-				Var::Type var_type = script_mgr->GetVarType(type_id);
+				scheme->scriptType->GetProperty(i, nullptr, &type_id);
+				Var::Type varType = scriptMgr->GetVarType(type_id);
 				void* ptr = instance->GetAddressOfProperty(i);
-				LoadVar(f, var_type, ptr);
+				LoadVar(f, varType, ptr);
 			}
 		}
 	}
@@ -266,9 +266,9 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 }
 
 //=================================================================================================
-void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
+void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 {
-	switch(var_type)
+	switch(varType)
 	{
 	case Var::Type::None:
 		break;
@@ -302,8 +302,8 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type var_type, void* ptr)
 				*(Item**)ptr = Item::Get(item_id);
 			else
 			{
-				int quest_id = f.Read<int>();
-				quest_mgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), quest_id, nullptr);
+				int questId = f.Read<int>();
+				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), questId, nullptr);
 			}
 		}
 		break;
@@ -366,34 +366,34 @@ GameDialog* Quest_Scripted::GetDialog(const string& dialog_id)
 //=================================================================================================
 void Quest_Scripted::BeforeCall()
 {
-	if(call_depth == 0)
+	if(cellDepth == 0)
 	{
-		journal_state = JournalState::None;
-		journal_changes = 0;
-		script_mgr->GetContext().quest = this;
+		journalState = JournalState::None;
+		journalChanges = 0;
+		scriptMgr->GetContext().quest = this;
 	}
-	++call_depth;
+	++cellDepth;
 }
 
 //=================================================================================================
 void Quest_Scripted::AfterCall()
 {
-	--call_depth;
-	if(call_depth != 0)
+	--cellDepth;
+	if(cellDepth != 0)
 		return;
-	if(journal_changes || journal_state == JournalState::Changed)
+	if(journalChanges || journalState == JournalState::Changed)
 	{
-		game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-		game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+		gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
+		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.id = id;
 			c.type = NetChange::UPDATE_QUEST;
-			c.count = journal_changes;
+			c.count = journalChanges;
 		}
 	}
-	script_mgr->GetContext().quest = nullptr;
+	scriptMgr->GetContext().quest = nullptr;
 }
 
 //=================================================================================================
@@ -401,7 +401,7 @@ void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
-	if(in_upgrade)
+	if(inUpgrade)
 	{
 		prog = prog2;
 		return;
@@ -409,24 +409,24 @@ void Quest_Scripted::SetProgress(int prog2)
 	int prev = prog;
 	prog = prog2;
 	BeforeCall();
-	if(scheme->set_progress_use_prev)
+	if(scheme->setProgressUsePrev)
 	{
-		script_mgr->RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fProgress, instance, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		script_mgr->RunScript(scheme->f_progress, instance);
+		scriptMgr->RunScript(scheme->fProgress, instance);
 	AfterCall();
 }
 
 //=================================================================================================
 void Quest_Scripted::AddEntry(const string& str)
 {
-	if(journal_state != JournalState::Added)
-		++journal_changes;
+	if(journalState != JournalState::Added)
+		++journalChanges;
 	msgs.push_back(str);
 }
 
@@ -434,46 +434,46 @@ void Quest_Scripted::AddEntry(const string& str)
 void Quest_Scripted::SetStarted(const string& name)
 {
 	assert(state == Quest::Hidden);
-	assert(journal_state == JournalState::None);
+	assert(journalState == JournalState::None);
 	OnStart(name.c_str());
-	journal_state = JournalState::Added;
+	journalState = JournalState::Added;
 }
 
 //=================================================================================================
 void Quest_Scripted::SetCompleted()
 {
-	assert(journal_state == JournalState::None);
-	journal_state = JournalState::Changed;
+	assert(journalState == JournalState::None);
+	journalState = JournalState::Changed;
 	state = Quest::Completed;
 	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::None;
+		static_cast<City*>(startLoc)->questMayor = CityQuestState::None;
 	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::None;
+		static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
 	if(category == QuestCategory::Unique)
-		quest_mgr->EndUniqueQuest();
+		questMgr->EndUniqueQuest();
 	Cleanup();
 }
 
 //=================================================================================================
 void Quest_Scripted::SetFailed()
 {
-	assert(journal_state == JournalState::None);
-	journal_state = JournalState::Changed;
+	assert(journalState == JournalState::None);
+	journalState = JournalState::Changed;
 	state = Quest::Failed;
 	if(category == QuestCategory::Mayor)
-		static_cast<City*>(startLoc)->quest_mayor = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->questMayor = CityQuestState::Failed;
 	else if(category == QuestCategory::Captain)
-		static_cast<City*>(startLoc)->quest_captain = CityQuestState::Failed;
+		static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
 	Cleanup();
 }
 
 //=================================================================================================
 void Quest_Scripted::FireEvent(ScriptEvent& event)
 {
-	if(!scheme->f_event)
+	if(!scheme->fEvent)
 		return;
 	BeforeCall();
-	script_mgr->RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fEvent, instance, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
@@ -484,7 +484,7 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 //=================================================================================================
 string Quest_Scripted::GetString(int index)
 {
-	assert(script_mgr->GetContext().quest == this);
+	assert(scriptMgr->GetContext().quest == this);
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
@@ -508,7 +508,7 @@ string Quest_Scripted::GetString(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				script_mgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -542,13 +542,13 @@ string Quest_Scripted::GetString(int index)
 //=================================================================================================
 void Quest_Scripted::AddRumor(const string& str)
 {
-	quest_mgr->AddQuestRumor(id, str.c_str());
+	questMgr->AddQuestRumor(id, str.c_str());
 }
 
 //=================================================================================================
 void Quest_Scripted::RemoveRumor()
 {
-	quest_mgr->RemoveQuestRumor(id);
+	questMgr->RemoveQuestRumor(id);
 }
 
 //=================================================================================================
@@ -559,7 +559,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	name = quest->name;
 	prog = quest->prog;
 	id = quest->id;
-	start_time = quest->start_time;
+	startTime = quest->startTime;
 	startLoc = quest->startLoc;
 	msgs = quest->msgs;
 
@@ -569,7 +569,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	quest->GetConversionData(data);
 	scheme = QuestScheme::TryGet(data.id);
 	isNew = true;
-	if(!scheme || !scheme->f_upgrade)
+	if(!scheme || !scheme->fUpgrade)
 		throw Format("Missing upgrade quest '%s'.", data.id);
 
 	type = Q_SCRIPTED;
@@ -577,13 +577,13 @@ void Quest_Scripted::Upgrade(Quest* quest)
 	instance = CreateInstance(false);
 
 	// call method
-	in_upgrade = true;
+	inUpgrade = true;
 	BeforeCall();
-	script_mgr->RunScript(scheme->f_upgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fUpgrade, instance, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
 	AfterCall();
-	in_upgrade = false;
+	inUpgrade = false;
 }

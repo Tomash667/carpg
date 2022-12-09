@@ -19,12 +19,12 @@
 //=================================================================================================
 void Quest_Secret::InitOnce()
 {
-	quest_mgr->RegisterSpecialHandler(this, "secret_attack");
-	quest_mgr->RegisterSpecialHandler(this, "secret_reward");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_first_dialog");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_fight");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_win");
-	quest_mgr->RegisterSpecialIfHandler(this, "secret_can_get_reward");
+	questMgr->RegisterSpecialHandler(this, "secret_attack");
+	questMgr->RegisterSpecialHandler(this, "secret_reward");
+	questMgr->RegisterSpecialIfHandler(this, "secret_first_dialog");
+	questMgr->RegisterSpecialIfHandler(this, "secret_can_fight");
+	questMgr->RegisterSpecialIfHandler(this, "secret_win");
+	questMgr->RegisterSpecialIfHandler(this, "secret_can_get_reward");
 }
 
 //=================================================================================================
@@ -70,7 +70,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 		state = SECRET_FIGHT;
 		game->arena->units.clear();
 
-		ctx.talker->in_arena = 1;
+		ctx.talker->inArena = 1;
 		game->arena->units.push_back(ctx.talker);
 		if(Net::IsOnline())
 		{
@@ -81,7 +81,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 
 		for(Unit& unit : team->members)
 		{
-			unit.in_arena = 0;
+			unit.inArena = 0;
 			game->arena->units.push_back(&unit);
 			if(Net::IsOnline())
 			{
@@ -132,23 +132,31 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 	if(state == SECRET_NONE && world->GetCurrentLocation()->type == L_OUTSIDE && world->GetCurrentLocation()->target == MOONWELL && item->item->id == "krystal"
 		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
-		game_gui->messages->AddGameMsg(txSecretAppear, 3.f);
+		gameGui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
 		Location& l = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), DWARF_FORT, 3);
 		l.group = UnitGroup::Get("challange");
 		l.st = 18;
-		l.active_quest = ACTIVE_QUEST_HOLDER;
+		l.activeQuest = ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
 		where = l.index;
 		Vec2& cpos = world->GetCurrentLocation()->pos;
 		Item* note = &GetNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
 		unit.AddItem2(note, 1u, 1u, false);
-		delete item;
 		team->AddExp(5000);
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::SECRET_TEXT);
-		return true;
+		if(item->count > 1)
+		{
+			--item->count;
+			return false;
+		}
+		else
+		{
+			delete item;
+			return true;
+		}
 	}
 
 	return false;
@@ -166,7 +174,7 @@ void Quest_Secret::UpdateFight()
 	for(vector<Unit*>::iterator it = arena->units.begin(), end = arena->units.end(); it != end; ++it)
 	{
 		if((*it)->IsStanding())
-			count[(*it)->in_arena]++;
+			count[(*it)->inArena]++;
 	}
 
 	if(arena->units[0]->hp < 10.f)
@@ -177,7 +185,7 @@ void Quest_Secret::UpdateFight()
 		// revive all
 		for(Unit* unit : arena->units)
 		{
-			unit->in_arena = -1;
+			unit->inArena = -1;
 			if(unit->hp <= 0.f)
 				unit->Standup();
 

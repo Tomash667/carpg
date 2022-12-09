@@ -62,8 +62,8 @@ struct Quest : public QuestHandler
 	State state;
 	string name;
 	Location* startLoc;
-	int prog, start_time;
-	uint quest_index;
+	int prog, startTime;
+	uint questIndex;
 	QuestCategory category;
 	vector<string> msgs;
 	bool timeout, isNew;
@@ -142,30 +142,30 @@ struct Quest_Event
 
 	static const int MAX_ITEMS = 4;
 
-	SpawnItem spawn_item;
-	const Item* item_to_give[MAX_ITEMS]; // multiple items works only in Item_InChest
+	SpawnItem spawnItem;
+	const Item* itemToGive[MAX_ITEMS]; // multiple items works only in Item_InChest
 	Location* targetLoc;
-	int at_level;
+	int atLevel;
 	bool done;
-	LocationEventHandler* location_event_handler;
-	Quest_Event* next_event; // only works in dungeon
-	ChestEventHandler* chest_event_handler;
-	bool whole_location_event_handler; // is location_event_handler is for all dungeon levels or only selected
+	LocationEventHandler* locationEventHandler;
+	Quest_Event* nextEvent; // only works in dungeon
+	ChestEventHandler* chestEventHandler;
+	bool wholeLocationEventHandler; // is locationEventHandler is for all dungeon levels or only selected
 	VoidDelegate callback;
 
 	// unit
-	UnitData* unit_to_spawn, *unit_to_spawn2; // second unit only in inside location
-	bool unit_dont_attack, unit_auto_talk, send_spawn_event;
-	bool spawn_2_guard_1; // only works in inside location
-	UnitEventHandler* unit_event_handler;
-	int unit_spawn_level, unit_spawn_level2; // spawned unit levels - >=0-value, -1-minimum, -2-Random(min,max), -3-Random(dungeon units level)
-	RoomTarget spawn_unit_room; // room to spawn unit, only works in inside location
-	RoomTarget spawn_unit_room2; // room to spawn second unit, only works in inside location
+	UnitData* unitToSpawn, *unitToSpawn2; // second unit only in inside location
+	bool unitDontAttack, unitAutoTalk, sendSpawnEvent;
+	bool spawnGuards; // only works in inside location
+	UnitEventHandler* unitEventHandler;
+	int unitSpawnLevel, unitSpawnLevel2; // spawned unit levels - >=0-value, -1-minimum, -2-Random(min,max), -3-Random(dungeon units level)
+	RoomTarget unitSpawnRoom; // room to spawn unit, only works in inside location
+	RoomTarget unitSpawnRoom2; // room to spawn second unit, only works in inside location
 
-	Quest_Event() : done(false), item_to_give(), at_level(-1), spawn_item(Item_DontSpawn), unit_to_spawn(nullptr), unit_dont_attack(false),
-		location_event_handler(nullptr), targetLoc(nullptr), next_event(nullptr), chest_event_handler(nullptr), unit_event_handler(nullptr), unit_auto_talk(false),
-		whole_location_event_handler(false), spawn_unit_room(RoomTarget::None), callback(nullptr), unit_to_spawn2(nullptr), send_spawn_event(false),
-		unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false), spawn_unit_room2(RoomTarget::None)
+	Quest_Event() : done(false), itemToGive(), atLevel(-1), spawnItem(Item_DontSpawn), unitToSpawn(nullptr), unitDontAttack(false),
+		locationEventHandler(nullptr), targetLoc(nullptr), nextEvent(nullptr), chestEventHandler(nullptr), unitEventHandler(nullptr), unitAutoTalk(false),
+		wholeLocationEventHandler(false), unitSpawnRoom(RoomTarget::None), callback(nullptr), unitToSpawn2(nullptr), sendSpawnEvent(false),
+		unitSpawnLevel(-2), unitSpawnLevel2(-2), spawnGuards(false), unitSpawnRoom2(RoomTarget::None)
 	{
 	}
 };
@@ -179,5 +179,5 @@ struct Quest_Dungeon : public Quest, public Quest_Event
 	cstring GetTargetLocationName() const;
 	cstring GetTargetLocationDir() const;
 
-	Quest_Event* GetEvent(Location* current_loc);
+	Quest_Event* GetEvent(Location* currentLoc);
 };

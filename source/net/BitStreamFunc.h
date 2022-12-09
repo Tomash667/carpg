@@ -36,7 +36,7 @@ public:
 
 private:
 	BitStream& bitstream;
-	uint total_size;
+	uint totalSize;
 	bool owned;
 };
 

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "LevelAreaContext.h"
+#include "LocationContext.h"
 
 #include "City.h"
 #include "Game.h"
@@ -9,10 +9,10 @@
 #include "SingleInsideLocation.h"
 #include "World.h"
 
-static ObjectPool<LevelAreaContext> LevelAreaContextPool;
+static ObjectPool<LocationContext> LevelAreaContextPool;
 
 //=================================================================================================
-// Get area levels for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
+// Get location parts for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
 // Level have special meaning here
 // >= 0 (dungeon_level, building index)
 // -1 whole location
@@ -36,7 +36,7 @@ void ForLocation::Setup(Location* l, int level)
 
 	int loc = l->index;
 	bool active = (world->GetCurrentLocationIndex() == loc);
-	assert(l->last_visit != -1);
+	assert(l->lastVisit != -1);
 
 	switch(l->type)
 	{
@@ -45,35 +45,35 @@ void ForLocation::Setup(Location* l, int level)
 			City* city = static_cast<City*>(l);
 			if(level == -1)
 			{
-				ctx->entries.resize(city->inside_buildings.size() + 1);
-				LevelAreaContext::Entry& e = ctx->entries[0];
+				ctx->entries.resize(city->insideBuildings.size() + 1);
+				LocationContext::Entry& e = ctx->entries[0];
 				e.active = active;
-				e.area = city;
+				e.locPart = city;
 				e.level = -2;
 				e.loc = loc;
-				for(int i = 0, len = (int)city->inside_buildings.size(); i < len; ++i)
+				for(int i = 0, len = (int)city->insideBuildings.size(); i < len; ++i)
 				{
-					LevelAreaContext::Entry& e2 = ctx->entries[i + 1];
+					LocationContext::Entry& e2 = ctx->entries[i + 1];
 					e2.active = active;
-					e2.area = city->inside_buildings[i];
+					e2.locPart = city->insideBuildings[i];
 					e2.level = i;
 					e2.loc = loc;
 				}
 			}
 			else if(level == -2)
 			{
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
+				LocationContext::Entry& e = Add1(ctx->entries);
 				e.active = active;
-				e.area = city;
+				e.locPart = city;
 				e.level = -2;
 				e.loc = loc;
 			}
 			else
 			{
-				assert(level >= 0 && level < (int)city->inside_buildings.size());
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
+				assert(level >= 0 && level < (int)city->insideBuildings.size());
+				LocationContext::Entry& e = Add1(ctx->entries);
 				e.active = active;
-				e.area = city->inside_buildings[level];
+				e.locPart = city->insideBuildings[level];
 				e.level = level;
 				e.loc = loc;
 			}
@@ -91,9 +91,9 @@ void ForLocation::Setup(Location* l, int level)
 					ctx->entries.resize(multi->generated);
 					for(int i = 0; i < multi->generated; ++i)
 					{
-						LevelAreaContext::Entry& e = ctx->entries[i];
-						e.active = (active && game_level->dungeon_level == i);
-						e.area = multi->levels[i];
+						LocationContext::Entry& e = ctx->entries[i];
+						e.active = (active && gameLevel->dungeonLevel == i);
+						e.locPart = multi->levels[i];
 						e.level = i;
 						e.loc = loc;
 					}
@@ -101,9 +101,9 @@ void ForLocation::Setup(Location* l, int level)
 				else
 				{
 					assert(level >= 0 && level < multi->generated);
-					LevelAreaContext::Entry& e = Add1(ctx->entries);
-					e.active = (active && game_level->dungeon_level == level);
-					e.area = multi->levels[level];
+					LocationContext::Entry& e = Add1(ctx->entries);
+					e.active = (active && gameLevel->dungeonLevel == level);
+					e.locPart = multi->levels[level];
 					e.level = level;
 					e.loc = loc;
 				}
@@ -112,9 +112,9 @@ void ForLocation::Setup(Location* l, int level)
 			{
 				assert(level == -1 || level == 0);
 				SingleInsideLocation* single = static_cast<SingleInsideLocation*>(inside);
-				LevelAreaContext::Entry& e = Add1(ctx->entries);
+				LocationContext::Entry& e = Add1(ctx->entries);
 				e.active = active;
-				e.area = single;
+				e.locPart = single;
 				e.level = 0;
 				e.loc = loc;
 			}
@@ -126,9 +126,9 @@ void ForLocation::Setup(Location* l, int level)
 		{
 			assert(level == -1);
 			OutsideLocation* outside = static_cast<OutsideLocation*>(l);
-			LevelAreaContext::Entry& e = Add1(ctx->entries);
+			LocationContext::Entry& e = Add1(ctx->entries);
 			e.active = active;
-			e.area = outside;
+			e.locPart = outside;
 			e.level = -1;
 			e.loc = loc;
 		}
@@ -146,43 +146,21 @@ ForLocation::~ForLocation()
 }
 
 //=================================================================================================
-GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry, int* item_index)
-{
-	for(LevelAreaContext::Entry& e : entries)
-	{
-		for(int i = 0, len = (int)e.area->items.size(); i < len; ++i)
-		{
-			GroundItem* it = e.area->items[i];
-			if(it->item->IsQuest(quest_id))
-			{
-				if(entry)
-					*entry = &e;
-				if(item_index)
-					*item_index = i;
-				return it;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-bool LevelAreaContext::FindUnit(Unit* unit, LevelAreaContext::Entry** entry, int* unit_index)
+bool LocationContext::FindUnit(Unit* unit, LocationContext::Entry** entry, int* unitIndex)
 {
 	assert(unit);
 
-	for(LevelAreaContext::Entry& e : entries)
+	for(LocationContext::Entry& e : entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
+		for(int i = 0, len = (int)e.locPart->units.size(); i < len; ++i)
 		{
-			Unit* unit2 = e.area->units[i];
+			Unit* unit2 = e.locPart->units[i];
 			if(unit == unit2)
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return true;
 			}
 		}
@@ -192,21 +170,21 @@ bool LevelAreaContext::FindUnit(Unit* unit, LevelAreaContext::Entry** entry, int
 }
 
 //=================================================================================================
-Unit* LevelAreaContext::FindUnit(UnitData* data, LevelAreaContext::Entry** entry, int* unit_index)
+Unit* LocationContext::FindUnit(UnitData* data, LocationContext::Entry** entry, int* unitIndex)
 {
 	assert(data);
 
-	for(LevelAreaContext::Entry& e : entries)
+	for(LocationContext::Entry& e : entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
+		for(int i = 0, len = (int)e.locPart->units.size(); i < len; ++i)
 		{
-			Unit* unit = e.area->units[i];
+			Unit* unit = e.locPart->units[i];
 			if(unit->data == data)
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return unit;
 			}
 		}
@@ -216,19 +194,19 @@ Unit* LevelAreaContext::FindUnit(UnitData* data, LevelAreaContext::Entry** entry
 }
 
 //=================================================================================================
-Unit* LevelAreaContext::FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry, int* unit_index)
+Unit* LocationContext::FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry, int* unitIndex)
 {
-	for(LevelAreaContext::Entry& e : entries)
+	for(LocationContext::Entry& e : entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
+		for(int i = 0, len = (int)e.locPart->units.size(); i < len; ++i)
 		{
-			Unit* unit2 = e.area->units[i];
+			Unit* unit2 = e.locPart->units[i];
 			if(clbk(unit2))
 			{
 				if(entry)
 					*entry = &e;
-				if(unit_index)
-					*unit_index = i;
+				if(unitIndex)
+					*unitIndex = i;
 				return unit2;
 			}
 		}
@@ -238,43 +216,22 @@ Unit* LevelAreaContext::FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::E
 }
 
 //=================================================================================================
-bool LevelAreaContext::RemoveQuestGroundItem(int quest_id)
-{
-	LevelAreaContext::Entry* entry;
-	int index;
-	GroundItem* item = FindQuestGroundItem(quest_id, &entry, &index);
-	if(item)
-	{
-		if(entry->active && Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
-			c.id = item->id;
-		}
-		RemoveElementIndex(entry->area->items, index);
-		return true;
-	}
-	else
-		return false;
-}
-
-//=================================================================================================
 // only remove alive units for now
-bool LevelAreaContext::RemoveUnit(Unit* unit)
+bool LocationContext::RemoveUnit(Unit* unit)
 {
 	assert(unit);
 
-	LevelAreaContext::Entry* entry;
-	int unit_index;
-	if(FindUnit(unit, &entry, &unit_index))
+	LocationContext::Entry* entry;
+	int unitIndex;
+	if(FindUnit(unit, &entry, &unitIndex))
 	{
 		if(entry->active)
 		{
-			unit->to_remove = true;
-			game_level->to_remove.push_back(unit);
+			unit->toRemove = true;
+			gameLevel->toRemove.push_back(unit);
 		}
 		else
-			RemoveElementIndex(entry->area->units, unit_index);
+			RemoveElementIndex(entry->locPart->units, unitIndex);
 		return true;
 	}
 	else

@@ -14,7 +14,7 @@ bool UnitGroup::HaveLeader() const
 {
 	for(const UnitGroup::Entry& entry : entries)
 	{
-		if(entry.is_leader)
+		if(entry.isLeader)
 			return true;
 	}
 	return false;
@@ -26,7 +26,7 @@ UnitData* UnitGroup::GetLeader(int level) const
 	int best = -1, best_dif, index = 0;
 	for(const UnitGroup::Entry& entry : entries)
 	{
-		if(entry.is_leader)
+		if(entry.isLeader)
 		{
 			int dif = entry.ud->GetLevelDif(level);
 			if(best == -1 || best_dif > dif)
@@ -43,7 +43,7 @@ UnitData* UnitGroup::GetLeader(int level) const
 //=================================================================================================
 UnitData* UnitGroup::GetRandomUnit() const
 {
-	int a = Rand() % max_weight, b = 0;
+	int a = Rand() % maxWeight, b = 0;
 	for(const Entry& entry : entries)
 	{
 		b += entry.weight;
@@ -70,12 +70,12 @@ Int2 UnitGroup::GetLevelRange() const
 //=================================================================================================
 UnitGroup* UnitGroup::GetRandomGroup()
 {
-	assert(is_list);
-	if(entries.size() == max_weight)
+	assert(isList);
+	if(entries.size() == maxWeight)
 		return RandomItem(entries).group;
 	else
 	{
-		int a = Rand() % max_weight, b = 0;
+		int a = Rand() % maxWeight, b = 0;
 		for(const Entry& entry : entries)
 		{
 			b += entry.weight;
@@ -105,12 +105,12 @@ void TmpUnitGroup::ReleaseS()
 }
 
 //=================================================================================================
-void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool required)
+void TmpUnitGroup::Fill(UnitGroup* group, int minLevel, int maxLevel, bool required)
 {
-	assert(group && min_level <= max_level);
-	this->min_level = min_level;
-	this->max_level = max_level;
-	total_weight = 0;
+	assert(group && minLevel <= maxLevel);
+	this->minLevel = minLevel;
+	this->maxLevel = maxLevel;
+	totalWeight = 0;
 	entries.clear();
 
 	FillInternal(group);
@@ -120,17 +120,17 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool req
 		// if level is too low pick lowest possible in this unit group
 		// if level is too high pick highest possible in this unit group
 		Int2 level_range = group->GetLevelRange();
-		if(level_range.y > min_level)
+		if(level_range.y > minLevel)
 		{
 			// too low location level
-			this->min_level = level_range.x;
-			this->max_level = level_range.x + 1;
+			this->minLevel = level_range.x;
+			this->maxLevel = level_range.x + 1;
 		}
 		else
 		{
 			// too high location level
-			this->min_level = level_range.y - 1;
-			this->max_level = level_range.y;
+			this->minLevel = level_range.y - 1;
+			this->maxLevel = level_range.y;
 		}
 
 		FillInternal(group);
@@ -139,9 +139,9 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool req
 }
 
 //=================================================================================================
-void TmpUnitGroup::FillS(const string& group_id, int count, int level)
+void TmpUnitGroup::FillS(const string& groupId, int count, int level)
 {
-	UnitGroup* group = UnitGroup::TryGet(group_id);
+	UnitGroup* group = UnitGroup::TryGet(groupId);
 	if(!group)
 		throw ScriptException("");
 	Fill(group, level);
@@ -153,12 +153,12 @@ void TmpUnitGroup::FillInternal(UnitGroup* group)
 {
 	for(UnitGroup::Entry& entry : group->entries)
 	{
-		if(entry.ud->level.y >= min_level && entry.ud->level.x <= max_level)
+		if(entry.ud->level.y >= minLevel && entry.ud->level.x <= maxLevel)
 		{
 			UnitGroup::Entry& new_entry = Add1(entries);
 			new_entry.ud = entry.ud;
 			new_entry.weight = entry.weight;
-			total_weight += new_entry.weight;
+			totalWeight += new_entry.weight;
 		}
 	}
 }
@@ -166,17 +166,17 @@ void TmpUnitGroup::FillInternal(UnitGroup* group)
 //=================================================================================================
 TmpUnitGroup::Spawn TmpUnitGroup::Get()
 {
-	int x = Rand() % total_weight, y = 0;
+	int x = Rand() % totalWeight, y = 0;
 	for(UnitGroup::Entry& entry : entries)
 	{
 		y += entry.weight;
 		if(x < y)
 		{
 			int unit_lvl = entry.ud->level.Random();
-			if(unit_lvl < min_level)
-				unit_lvl = min_level;
-			else if(unit_lvl > max_level)
-				unit_lvl = max_level;
+			if(unit_lvl < minLevel)
+				unit_lvl = minLevel;
+			else if(unit_lvl > maxLevel)
+				unit_lvl = maxLevel;
 
 			return std::make_pair(entry.ud, unit_lvl);
 		}
@@ -194,7 +194,7 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	int points = level * count + Random(-level / 2, level / 2);
 	while(points > 0 && spawn.size() < (uint)count * 2)
 	{
-		int x = Rand() % total_weight, y = 0;
+		int x = Rand() % totalWeight, y = 0;
 		for(UnitGroup::Entry& entry : entries)
 		{
 			y += entry.weight;
@@ -202,12 +202,12 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 			{
 				// chose unit level
 				int unit_lvl = entry.ud->level.Random();
-				if(unit_lvl < min_level)
-					unit_lvl = min_level;
+				if(unit_lvl < minLevel)
+					unit_lvl = minLevel;
 				else
 				{
-					if(unit_lvl > max_level)
-						unit_lvl = max_level;
+					if(unit_lvl > maxLevel)
+						unit_lvl = maxLevel;
 					if(unit_lvl > points)
 						unit_lvl = Max(points, entry.ud->level.x);
 				}
@@ -218,7 +218,7 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 					int points_required = unit_lvl - points;
 					int points_available = 0;
 					for(Spawn& s : spawn)
-						points_available += s.second - Max(min_level, s.first->level.x);
+						points_available += s.second - Max(minLevel, s.first->level.x);
 					if(points_available < points_required)
 					{
 						points = 0;
@@ -226,7 +226,7 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 					}
 					for(Spawn& s : spawn)
 					{
-						int p = s.second - Max(min_level, s.first->level.x);
+						int p = s.second - Max(minLevel, s.first->level.x);
 						if(p > 0)
 						{
 							int r = Min(p, points_required);
@@ -248,12 +248,12 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	if(spawn.empty())
 	{
 		// add anything with lowest level
-		int min_level = 99, min_index = -1, index = 0;
+		int minLevel = 99, min_index = -1, index = 0;
 		for(UnitGroup::Entry& entry : entries)
 		{
-			if(entry.ud->level.x < min_level)
+			if(entry.ud->level.x < minLevel)
 			{
-				min_level = entry.ud->level.x;
+				minLevel = entry.ud->level.x;
 				min_index = index;
 			}
 			++index;
@@ -282,7 +282,7 @@ TmpUnitGroupList::~TmpUnitGroupList()
 //=================================================================================================
 void TmpUnitGroupList::Fill(UnitGroup* group, int level)
 {
-	assert(group->is_list);
+	assert(group->isList);
 	TmpUnitGroup* tmp = nullptr;
 	for(UnitGroup::Entry& entry : group->entries)
 	{

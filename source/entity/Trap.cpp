@@ -7,7 +7,8 @@
 #include "Explo.h"
 #include "GameCommon.h"
 #include "GameResources.h"
-#include "LevelArea.h"
+#include "LevelPart.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Unit.h"
 
@@ -24,7 +25,7 @@ Trap::~Trap()
 }
 
 //=================================================================================================
-bool Trap::Update(float dt, LevelArea& area)
+bool Trap::Update(float dt, LocationPart& locPart)
 {
 	Unit* owner = this->owner;
 
@@ -37,7 +38,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -56,7 +57,7 @@ bool Trap::Update(float dt, LevelArea& area)
 
 			if(trigger)
 			{
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 				state = 1;
 				time = Random(0.5f, 0.75f);
 
@@ -90,7 +91,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				meshInst->Play("takeOut", PLAY_ONCE | PLAY_STOP_AT_END);
 				time = 0.f;
 
-				sound_mgr->PlaySound3d(base->sound2, pos, base->sound_dist2);
+				soundMgr->PlaySound3d(base->sound2, pos, base->soundDist2);
 
 				if(Net::IsServer())
 				{
@@ -107,7 +108,7 @@ bool Trap::Update(float dt, LevelArea& area)
 
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!unit->IsAlive())
 						continue;
@@ -173,7 +174,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			{
 				state = 4;
 				meshInst->Play("hide", PLAY_ONCE);
-				sound_mgr->PlaySound3d(base->sound3, pos, base->sound_dist3);
+				soundMgr->PlaySound3d(base->sound3, pos, base->soundDist3);
 			}
 		}
 		else if(state == 4)
@@ -190,7 +191,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(Net::IsLocal())
 			{
 				reactivate = true;
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
 						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
@@ -231,7 +232,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -253,43 +254,43 @@ bool Trap::Update(float dt, LevelArea& area)
 				// someone step on trap, shoot arrow
 				state = Net::IsLocal() ? 1 : 2;
 				time = Random(5.f, 7.5f);
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 
 				if(Net::IsLocal())
 				{
 					Bullet* bullet = new Bullet;
-					area.tmp->bullets.push_back(bullet);
+					locPart.lvlPart->bullets.push_back(bullet);
 
 					bullet->Register();
 					bullet->isArrow = true;
 					bullet->level = 4;
 					bullet->backstab = 0.25f;
 					bullet->attack = GetAttack();
-					bullet->mesh = game_res->aArrow;
+					bullet->mesh = gameRes->aArrow;
 					bullet->pos = Vec3(2.f * tile.x + pos.x - float(int(pos.x / 2) * 2) + Random(-base->rw, base->rw) - 1.2f * DirToPos(dir).x,
 						Random(0.5f, 1.5f),
 						2.f * tile.y + pos.z - float(int(pos.z / 2) * 2) + Random(-base->h, base->h) - 1.2f * DirToPos(dir).y);
-					bullet->start_pos = bullet->pos;
+					bullet->startPos = bullet->pos;
 					bullet->rot = Vec3(0, DirToRot(dir), 0);
 					bullet->owner = nullptr;
 					bullet->pe = nullptr;
 					bullet->speed = TRAP_ARROW_SPEED;
 					bullet->ability = nullptr;
 					bullet->tex = nullptr;
-					bullet->tex_size = 0.f;
+					bullet->texSize = 0.f;
 					bullet->timer = ARROW_TIMER;
 					bullet->yspeed = 0.f;
-					bullet->poison_attack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
+					bullet->poisonAttack = (base->type == TRAP_POISON ? bullet->attack : 0.f);
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
 					tpe->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
-					area.tmp->tpes.push_back(tpe);
+					locPart.lvlPart->tpes.push_back(tpe);
 					bullet->trail = tpe;
 
-					sound_mgr->PlaySound3d(game_res->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
+					soundMgr->PlaySound3d(gameRes->sBow[Rand() % 2], bullet->pos, SHOOT_SOUND_DIST);
 
 					if(Net::IsServer())
 					{
@@ -297,11 +298,12 @@ bool Trap::Update(float dt, LevelArea& area)
 						c.type = NetChange::SHOOT_ARROW;
 						c << bullet->id
 							<< -1 // owner
-							<< bullet->start_pos
+							<< bullet->startPos
 							<< bullet->rot.x
 							<< bullet->rot.y
 							<< bullet->speed
-							<< bullet->yspeed;
+							<< bullet->yspeed
+							<< 0; // ability
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::TRIGGER_TRAP;
@@ -323,7 +325,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			if(Net::IsLocal())
 			{
 				empty = true;
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
 						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
@@ -362,7 +364,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				break;
 
 			bool trigger = false;
-			for(Unit* unit : area.units)
+			for(Unit* unit : locPart.units)
 			{
 				if(unit->IsStanding()
 					&& (!owner || owner->IsEnemy(*unit))
@@ -377,18 +379,18 @@ bool Trap::Update(float dt, LevelArea& area)
 			{
 				Ability* fireball = Ability::Get("fireball");
 				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
-				Explo* explo = area.CreateExplo(fireball, exploPos);
+				Explo* explo = locPart.CreateExplo(fireball, exploPos);
 				explo->dmg = GetAttack();
 				explo->owner = owner;
 
-				if(fireball->sound_hit)
+				if(fireball->soundHit)
 				{
-					sound_mgr->PlaySound3d(fireball->sound_hit, pos, fireball->sound_hit_dist);
+					soundMgr->PlaySound3d(fireball->soundHit, pos, fireball->soundHitDist);
 					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SPELL_SOUND;
-						c.e_id = 1;
+						c.extraId = 1;
 						c.ability = fireball;
 						c.pos = pos;
 					}
@@ -413,7 +415,7 @@ bool Trap::Update(float dt, LevelArea& area)
 			bool trigger = false;
 			if(Net::IsLocal())
 			{
-				for(Unit* unit : area.units)
+				for(Unit* unit : locPart.units)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
@@ -432,7 +434,7 @@ bool Trap::Update(float dt, LevelArea& area)
 
 			if(trigger)
 			{
-				sound_mgr->PlaySound3d(base->sound, pos, base->sound_dist);
+				soundMgr->PlaySound3d(base->sound, pos, base->soundDist);
 				state = 1;
 				meshInst->Play("trigger", PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND);
 
@@ -453,7 +455,7 @@ bool Trap::Update(float dt, LevelArea& area)
 				{
 					Unit* target = nullptr;
 					float bestDist = 10.f;
-					for(Unit* unit : area.units)
+					for(Unit* unit : locPart.units)
 					{
 						if(unit->IsStanding()
 							&& (!owner || owner->IsEnemy(*unit))
@@ -500,7 +502,7 @@ bool Trap::Update(float dt, LevelArea& area)
 						Effect e;
 						e.effect = EffectId::Rooted;
 						e.source = EffectSource::Temporary;
-						e.source_id = -1;
+						e.sourceId = -1;
 						e.power = 0;
 						e.time = 5.f;
 						e.value = EffectValue_Generic;
@@ -648,7 +650,7 @@ void Trap::Write(BitStreamWriter& f)
 	f << pos;
 	f << rot;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
@@ -676,7 +678,7 @@ bool Trap::Read(BitStreamReader& f)
 	mpTrigger = false;
 	hitted = nullptr;
 
-	if(net->mp_load)
+	if(net->mpLoad)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;

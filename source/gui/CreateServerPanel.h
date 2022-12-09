@@ -20,7 +20,7 @@ class CreateServerPanel : public DialogBox
 public:
 	explicit CreateServerPanel(const DialogInfo& info);
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Show();

@@ -193,7 +193,7 @@ int CaveGenerator::TryGenerate()
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext)
+void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairsDir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
 
@@ -222,7 +222,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 	for(int i = 0; i < size2; ++i)
 		tiles[i].type = (m2[i] ? WALL : EMPTY);
 
-	CreateStairs(tiles, stairs, stairs_dir);
+	CreateStairs(tiles, stairs, stairsDir);
 	CreateHoles(tiles, holes);
 
 	Tile::SetupFlags(tiles, Int2(size, size), ENTRY_STAIRS_UP, ENTRY_STAIRS_DOWN);
@@ -233,7 +233,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 }
 
 //=================================================================================================
-void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairs_dir)
+void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairsDir)
 {
 	do
 	{
@@ -294,7 +294,7 @@ void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stair
 				if(count == 1)
 				{
 					stairs = pt;
-					stairs_dir = stairs_dir_result;
+					stairsDir = stairs_dir_result;
 					tiles[pt.x + pt.y * size].type = ENTRY_PREV;
 					return;
 				}
@@ -374,20 +374,20 @@ void CaveGenerator::GenerateObjects()
 	Cave* cave = (Cave*)inside;
 
 	Object* o = new Object;
-	o->mesh = game_res->aStairsUp;
+	o->mesh = gameRes->aStairsUp;
 	o->pos = PtToPos(lvl.prevEntryPt);
 	o->rot = Vec3(0, DirToRot(lvl.prevEntryDir), 0);
 	o->scale = 1;
 	o->base = nullptr;
-	game_level->local_area->objects.push_back(o);
+	gameLevel->localPart->objects.push_back(o);
 
 	// lights
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
 	{
 		GameLight& light = Add1(lvl.lights);
-		light.start_pos = Vec3(2.f * it->x + 1.f, 3.f, 2.f * it->y + 1.f);
+		light.startPos = Vec3(2.f * it->x + 1.f, 3.f, 2.f * it->y + 1.f);
 		light.range = 5;
-		light.start_color = Vec3(1.f, 1.0f, 1.0f);
+		light.startColor = Vec3(1.f, 1.0f, 1.0f);
 	}
 
 	// stalactites
@@ -419,7 +419,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = Random(1.f, 2.f);
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + 1.f, 4.f, 2.f * pt.y + 1.f);
-			game_level->local_area->objects.push_back(o);
+			gameLevel->localPart->objects.push_back(o);
 			sta.push_back(pt);
 		}
 	}
@@ -438,7 +438,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + Random(0.1f, 1.9f), 0.f, 2.f * pt.y + Random(0.1f, 1.9f));
-			game_level->local_area->objects.push_back(o);
+			gameLevel->localPart->objects.push_back(o);
 		}
 	}
 
@@ -456,7 +456,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + Random(0.1f, 1.9f), 0.f, 2.f * pt.y + Random(0.1f, 1.9f));
-			game_level->local_area->objects.push_back(o);
+			gameLevel->localPart->objects.push_back(o);
 		}
 	}
 
@@ -470,14 +470,14 @@ void CaveGenerator::GenerateObjects()
 			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
-	if(game_level->location == quest_mgr->quest_mine->targetLoc)
-		quest_mgr->quest_mine->GenerateMine(this, true);
+	if(gameLevel->location == questMgr->questMine->targetLoc)
+		questMgr->questMine->GenerateMine(this, true);
 }
 
 //=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
-	int level = game_level->GetDifficultyLevel();
+	int level = gameLevel->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
 	static vector<Int2> tiles;
@@ -509,7 +509,7 @@ void CaveGenerator::GenerateUnits()
 			++added;
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!game_level->SpawnUnitNearLocation(*game_level->local_area, Vec3(2.f * pt.x + 1.f, 0, 2.f * pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
+				if(!gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, Vec3(2.f * pt.x + 1.f, 0, 2.f * pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;
 			}
 		}
@@ -526,15 +526,15 @@ void CaveGenerator::GenerateItems()
 int CaveGenerator::HandleUpdate(int days)
 {
 	int update_flags = 0;
-	if(game_level->location == quest_mgr->quest_mine->targetLoc)
-		update_flags = quest_mgr->quest_mine->GenerateMine(this, false);
+	if(gameLevel->location == questMgr->questMine->targetLoc)
+		update_flags = questMgr->questMine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateCaveItems(min(days, 10));
 	return update_flags;
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCaveItems(int days_since)
+void CaveGenerator::GenerateCaveItems(int daysSince)
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	const Item* toSpawn[] = {
@@ -543,10 +543,10 @@ void CaveGenerator::GenerateCaveItems(int days_since)
 		Item::Get("heal_crystal")
 	};
 
-	for(int i = 0; i < days_since * 20; ++i)
+	for(int i = 0; i < daysSince * 20; ++i)
 	{
 		Int2 pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
-		if(!OR2_EQ(lvl.map[pt.x + pt.y * lvl.w].type, EMPTY, BARS_CEILING))
+		if(!Any(lvl.map[pt.x + pt.y * lvl.w].type, EMPTY, BARS_CEILING))
 			continue;
 
 		int dir;
@@ -572,12 +572,12 @@ void CaveGenerator::GenerateCaveItems(int days_since)
 				pos.y += 0.5f;
 				break;
 			}
-			game_level->SpawnGroundItemInsideRadius(toSpawn[Rand() % countof(toSpawn)], pos, 0.5f);
+			gameLevel->SpawnGroundItemInsideRadius(toSpawn[Rand() % countof(toSpawn)], pos, 0.5f);
 		}
 		else if(Rand() % 3 == 0)
 		{
 			Vec2 pos(2.f * pt.x + Random(0.25f, 1.75f), 2.f * pt.y + Random(0.25f, 1.75f));
-			game_level->SpawnGroundItemInsideRadius(toSpawn[Rand() % countof(toSpawn)], pos, 0.5f);
+			gameLevel->SpawnGroundItemInsideRadius(toSpawn[Rand() % countof(toSpawn)], pos, 0.5f);
 		}
 	}
 }

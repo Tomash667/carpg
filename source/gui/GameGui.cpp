@@ -40,23 +40,23 @@
 #include <Render.h>
 #include <ResourceManager.h>
 
-GameGui* game_gui;
-FontPtr GameGui::font, GameGui::font_small, GameGui::font_big;
+GameGui* gameGui;
+FontPtr GameGui::font, GameGui::fontSmall, GameGui::fontBig;
 extern string g_system_dir;
 
 //=================================================================================================
-GameGui::GameGui() : load_screen(nullptr), level_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
-ability(nullptr), book(nullptr), craft(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr), console(nullptr),
-game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr), pick_server(nullptr),
-server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
+GameGui::GameGui() : loadScreen(nullptr), levelGui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
+ability(nullptr), book(nullptr), craft(nullptr), messages(nullptr), mpBox(nullptr), worldMap(nullptr), mainMenu(nullptr), console(nullptr), gameMenu(nullptr),
+options(nullptr), saveload(nullptr), createCharacter(nullptr), multiplayer(nullptr), createServer(nullptr), pickServer(nullptr), server(nullptr),
+infoBox(nullptr), controls(nullptr), cursorAllowMove(true), notifications(nullptr)
 {
 }
 
 //=================================================================================================
 GameGui::~GameGui()
 {
-	delete load_screen;
-	delete level_gui;
+	delete loadScreen;
+	delete levelGui;
 	delete inventory;
 	delete stats;
 	delete team;
@@ -66,32 +66,28 @@ GameGui::~GameGui()
 	delete book;
 	delete craft;
 	delete messages;
-	delete mp_box;
-	delete world_map;
-	delete main_menu;
+	delete mpBox;
+	delete worldMap;
+	delete mainMenu;
 	delete console;
-	delete game_menu;
+	delete gameMenu;
 	delete options;
 	delete saveload;
-	delete create_character;
+	delete createCharacter;
 	delete multiplayer;
-	delete create_server;
-	delete pick_server;
+	delete createServer;
+	delete pickServer;
 	delete server;
-	delete info_box;
+	delete infoBox;
 	delete controls;
 	delete notifications;
-	delete GetTextDialog::self;
-	delete GetNumberDialog::self;
-	delete PickItemDialog::self;
-	PickFileDialog::Destroy();
 }
 
 //=================================================================================================
 void GameGui::PreInit()
 {
-	load_screen = new LoadScreen;
-	gui->Add(load_screen);
+	loadScreen = new LoadScreen;
+	gui->Add(loadScreen);
 }
 
 //=================================================================================================
@@ -101,53 +97,53 @@ void GameGui::Init()
 	LayoutLoader* loader = new LayoutLoader(gui);
 	Layout* layout = loader->LoadFromFile(Format("%s/layout.txt", g_system_dir.c_str()));
 	font = loader->GetFont("normal");
-	font_small = loader->GetFont("small");
-	font_big = loader->GetFont("big");
+	fontSmall = loader->GetFont("small");
+	fontBig = loader->GetFont("big");
 	gui->SetLayout(layout);
 	delete loader;
 
 	// level gui & panels
-	level_gui = new LevelGui;
-	gui->Add(level_gui);
+	levelGui = new LevelGui;
+	gui->Add(levelGui);
 
-	mp_box = new MpBox;
-	level_gui->Add(mp_box);
+	mpBox = new MpBox;
+	levelGui->Add(mpBox);
 
 	inventory = new Inventory;
 	inventory->InitOnce();
-	level_gui->Add(inventory->inv_mine);
-	level_gui->Add(inventory->gp_trade);
+	levelGui->Add(inventory->invMine);
+	levelGui->Add(inventory->gpTrade);
 
 	stats = new StatsPanel;
-	level_gui->Add(stats);
+	levelGui->Add(stats);
 
 	team = new TeamPanel;
-	level_gui->Add(team);
+	levelGui->Add(team);
 
 	journal = new Journal;
-	level_gui->Add(journal);
+	levelGui->Add(journal);
 
 	minimap = new Minimap;
-	level_gui->Add(minimap);
+	levelGui->Add(minimap);
 
 	ability = new AbilityPanel;
-	level_gui->Add(ability);
+	levelGui->Add(ability);
 
 	book = new BookPanel;
-	level_gui->Add(book);
+	levelGui->Add(book);
 
 	craft = new CraftPanel;
-	level_gui->Add(craft);
+	levelGui->Add(craft);
 
 	messages = new GameMessages;
 
 	// worldmap
-	world_map = new WorldMapGui;
-	gui->Add(world_map);
+	worldMap = new WorldMapGui;
+	gui->Add(worldMap);
 
 	// main menu
-	main_menu = new MainMenu;
-	gui->Add(main_menu);
+	mainMenu = new MainMenu;
+	gui->Add(mainMenu);
 
 	// notifications
 	notifications = new Notifications;
@@ -160,13 +156,13 @@ void GameGui::Init()
 	info.parent = nullptr;
 	info.pause = true;
 	info.text = "";
-	info.order = ORDER_TOPMOST;
+	info.order = DialogOrder::TopMost;
 	info.type = DIALOG_CUSTOM;
 	console = new Console(info);
 
-	info.name = "game_menu";
-	info.order = ORDER_TOP;
-	game_menu = new GameMenu(info);
+	info.name = "gameMenu";
+	info.order = DialogOrder::Top;
+	gameMenu = new GameMenu(info);
 
 	info.name = "options";
 	options = new Options(info);
@@ -174,28 +170,28 @@ void GameGui::Init()
 	info.name = "saveload";
 	saveload = new SaveLoad(info);
 
-	info.name = "create_character";
+	info.name = "createCharacter";
 	info.event = DialogEvent(game, &Game::OnCreateCharacter);
-	create_character = new CreateCharacterPanel(info);
+	createCharacter = new CreateCharacterPanel(info);
 
 	info.name = "multiplayer";
 	info.event = DialogEvent(game, &Game::MultiplayerPanelEvent);
 	multiplayer = new MultiplayerPanel(info);
 
-	info.name = "create_server";
+	info.name = "createServer";
 	info.event = DialogEvent(game, &Game::CreateServerEvent);
-	create_server = new CreateServerPanel(info);
+	createServer = new CreateServerPanel(info);
 
-	info.name = "pick_server";
+	info.name = "pickServer";
 	info.event = DialogEvent(game, &Game::OnPickServer);
-	pick_server = new PickServerPanel(info);
+	pickServer = new PickServerPanel(info);
 
 	info.name = "server";
 	info.event = nullptr;
 	server = new ServerPanel(info);
 
-	info.name = "info_box";
-	info_box = new InfoBox(info);
+	info.name = "infoBox";
+	infoBox = new InfoBox(info);
 
 	info.name = "controls";
 	info.parent = options;
@@ -215,77 +211,78 @@ void GameGui::LoadLanguage()
 	ability->LoadLanguage();
 	controls->LoadLanguage();
 	craft->LoadLanguage();
-	create_character->LoadLanguage();
-	create_server->LoadLanguage();
-	level_gui->LoadLanguage();
-	game_menu->LoadLanguage();
+	createCharacter->LoadLanguage();
+	createServer->LoadLanguage();
+	levelGui->LoadLanguage();
+	gameMenu->LoadLanguage();
 	inventory->LoadLanguage();
 	journal->LoadLanguage();
-	main_menu->LoadLanguage();
+	mainMenu->LoadLanguage();
 	messages->LoadLanguage();
 	multiplayer->LoadLanguage();
 	options->LoadLanguage();
-	pick_server->LoadLanguage();
+	pickServer->LoadLanguage();
 	saveload->LoadLanguage();
 	stats->LoadLanguage();
 	server->LoadLanguage();
 	team->LoadLanguage();
-	world_map->LoadLanguage();
+	worldMap->LoadLanguage();
 }
 
 //=================================================================================================
 void GameGui::LoadData()
 {
-	GamePanel::tBackground = res_mgr->Load<Texture>("game_panel.png");
-	GamePanel::tDialog = res_mgr->Load<Texture>("dialog.png");
+	GamePanel::tBackground = resMgr->Load<Texture>("game_panel.png");
+	GamePanel::tDialog = resMgr->Load<Texture>("dialog.png");
 
 	ability->LoadData();
 	book->LoadData();
 	console->LoadData();
 	craft->LoadData();
-	create_character->LoadData();
-	level_gui->LoadData();
-	game_menu->LoadData();
+	createCharacter->LoadData();
+	levelGui->LoadData();
+	gameMenu->LoadData();
 	inventory->LoadData();
 	journal->LoadData();
-	main_menu->LoadData();
+	mainMenu->LoadData();
 	messages->LoadData();
 	minimap->LoadData();
-	pick_server->LoadData();
+	pickServer->LoadData();
 	server->LoadData();
 	team->LoadData();
-	world_map->LoadData();
+	worldMap->LoadData();
 }
 
 //=================================================================================================
 void GameGui::PostInit()
 {
-	create_character->Init();
+	createCharacter->Init();
 	saveload->LoadSaveSlots();
+	ChangeControls();
 }
 
 //=================================================================================================
-void GameGui::Draw(ControlDrawData*)
+void GameGui::Draw()
 {
 	Container::Draw();
 }
 
 //=================================================================================================
-void GameGui::Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs)
+void GameGui::Draw(const Matrix& matViewProj, bool drawGui, bool drawDialogs)
 {
-	gui->mViewProj = mat_view_proj;
-	gui->Draw(draw_gui, draw_dialogs);
+	gui->mViewProj = matViewProj;
+	gui->Draw(drawGui, drawDialogs);
 }
 
 //=================================================================================================
 void GameGui::UpdateGui(float dt)
 {
 	// handle panels
-	if(gui->HaveDialog() || (mp_box->visible && mp_box->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode && !game->cutscene)
+	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
+		GKey.allowInput = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialogMode && !game->cutscene)
 	{
-		OpenPanel open = level_gui->GetOpenPanel(),
+		OpenPanel open = levelGui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
 		if(GKey.PressedRelease(GK_STATS))
@@ -304,15 +301,15 @@ void GameGui::UpdateGui(float dt)
 			to_open = OpenPanel::Trade; // ShowPanel will hide when already opened
 
 		if(to_open != OpenPanel::None)
-			level_gui->ShowPanel(to_open, open);
+			levelGui->ShowPanel(to_open, open);
 
 		switch(open)
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(level_gui->use_cursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			if(levelGui->useCursor)
+				GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -322,53 +319,54 @@ void GameGui::UpdateGui(float dt)
 		case OpenPanel::Journal:
 		case OpenPanel::Book:
 		case OpenPanel::Craft:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 
-	gui->Update(dt, cursor_allow_move ? game->settings.mouse_sensitivity_f : -1.f);
+	const float mouseSpeed = cursorAllowMove ? Lerp(0.5f, 1.5f, float(game->settings.mouseSensitivity) / 100) : -1.f;
+	gui->Update(dt, mouseSpeed);
 
 	// handle blocking input by gui
-	if(gui->HaveDialog() || (mp_box->visible && mp_box->itb.focus))
-		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game->game_state == GS_LEVEL && game->death_screen == 0 && !game->dialog_context.dialog_mode)
+	if(gui->HaveDialog() || (mpBox->visible && mpBox->itb.focus))
+		GKey.allowInput = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialogMode)
 	{
-		switch(level_gui->GetOpenPanel())
+		switch(levelGui->GetOpenPanel())
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(level_gui->use_cursor)
-				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			if(levelGui->useCursor)
+				GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Ability:
-			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			GKey.allowInput = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
 		case OpenPanel::Craft:
-			GKey.allow_input = GameKeys::ALLOW_NONE;
+			GKey.allowInput = GameKeys::ALLOW_NONE;
 			break;
 		}
 	}
 	else
-		GKey.allow_input = GameKeys::ALLOW_INPUT;
+		GKey.allowInput = GameKeys::ALLOW_INPUT;
 
 	// mp box
-	if(game->game_state == GS_LEVEL)
+	if(game->gameState == GS_LEVEL)
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-			mp_box->visible = !mp_box->visible;
+			mpBox->visible = !mpBox->visible;
 
-		if(GKey.AllowKeyboard() && mp_box->visible && !mp_box->itb.focus && input->PressedRelease(Key::Enter))
+		if(GKey.AllowKeyboard() && mpBox->visible && !mpBox->itb.focus && input->PressedRelease(Key::Enter))
 		{
-			mp_box->itb.focus = true;
-			mp_box->Event(GuiEvent_GainFocus);
-			mp_box->itb.Event(GuiEvent_GainFocus);
+			mpBox->itb.focus = true;
+			mpBox->Event(GuiEvent_GainFocus);
+			mpBox->itb.Event(GuiEvent_GainFocus);
 		}
 	}
 }
@@ -377,31 +375,31 @@ void GameGui::UpdateGui(float dt)
 void GameGui::Save(GameWriter& f)
 {
 	messages->Save(f);
-	level_gui->Save(f);
+	levelGui->Save(f);
 	journal->Save(f);
-	world_map->Save(f);
+	worldMap->Save(f);
 }
 
 //=================================================================================================
 void GameGui::Load(GameReader& f)
 {
 	messages->Load(f);
-	level_gui->Load(f);
+	levelGui->Load(f);
 	journal->Load(f);
-	world_map->Load(f);
+	worldMap->Load(f);
 }
 
 //=================================================================================================
 // Clear gui state after new game/loading/entering new location
-void GameGui::Clear(bool reset_mpbox, bool on_enter)
+void GameGui::Clear(bool resetMpBox, bool onEnter)
 {
-	if(level_gui)
+	if(levelGui)
 	{
-		level_gui->Reset();
-		if(!on_enter)
+		levelGui->Reset();
+		if(!onEnter)
 			messages->Reset();
-		if(mp_box && reset_mpbox && !net->mp_quickload)
-			mp_box->visible = false;
+		if(mpBox && resetMpBox && !net->mpQuickload)
+			mpBox->visible = false;
 	}
 }
 
@@ -416,8 +414,8 @@ void GameGui::Setup(PlayerController* pc)
 void GameGui::OnResize()
 {
 	gui->OnResize();
-	if(level_gui)
-		level_gui->PositionPanels();
+	if(levelGui)
+		levelGui->PositionPanels();
 	console->Event(GuiEvent_WindowResize);
 	craft->Event(GuiEvent_WindowResize);
 }
@@ -425,16 +423,16 @@ void GameGui::OnResize()
 //=================================================================================================
 void GameGui::OnFocus(bool focus, const Int2& activationPoint)
 {
-	if(!focus && level_gui)
-		level_gui->use_cursor = false;
+	if(!focus && levelGui)
+		levelGui->useCursor = false;
 	if(focus && activationPoint.x != -1)
-		gui->cursor_pos = activationPoint;
+		gui->cursorPos = activationPoint;
 }
 
 //=================================================================================================
 void GameGui::ShowMultiplayer()
 {
-	net->mp_load = false;
+	net->mpLoad = false;
 	multiplayer->Show();
 }
 
@@ -442,7 +440,7 @@ void GameGui::ShowMultiplayer()
 void GameGui::ShowQuitDialog()
 {
 	DialogInfo di;
-	di.text = game->hardcore_mode ? txReallyQuitHardcore : txReallyQuit;
+	di.text = game->hardcoreMode ? txReallyQuitHardcore : txReallyQuit;
 	di.event = [](int id)
 	{
 		if(id == BUTTON_YES)
@@ -454,29 +452,29 @@ void GameGui::ShowQuitDialog()
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
 	di.parent = nullptr;
-	di.order = ORDER_TOPMOST;
+	di.order = DialogOrder::TopMost;
 	di.pause = true;
 
 	gui->ShowDialog(di);
 }
 
 //=================================================================================================
-void GameGui::ShowCreateCharacterPanel(bool require_name, bool redo)
+void GameGui::ShowCreateCharacterPanel(bool enterName, bool redo)
 {
 	if(redo)
 	{
 		PlayerInfo& info = net->GetMe();
-		create_character->ShowRedo(info.clas, info.hd, info.cc);
+		createCharacter->ShowRedo(info.clas, info.hd, info.cc);
 	}
 	else
-		create_character->Show(require_name);
+		createCharacter->Show(enterName);
 }
 
 //=================================================================================================
-void GameGui::CloseAllPanels(bool close_mp_box)
+void GameGui::CloseAllPanels(bool closeMpBox)
 {
-	if(level_gui)
-		level_gui->ClosePanels(close_mp_box);
+	if(levelGui)
+		levelGui->ClosePanels(closeMpBox);
 }
 
 //=================================================================================================
@@ -486,5 +484,13 @@ void GameGui::AddMsg(cstring msg)
 	if(server->visible)
 		server->AddMsg(msg);
 	else
-		mp_box->itb.Add(msg);
+		mpBox->itb.Add(msg);
+}
+
+//=================================================================================================
+void GameGui::ChangeControls()
+{
+	GameKey& accept = GKey[GK_ACCEPT_NOTIFICATION];
+	GameKey& decline = GKey[GK_DECLINE_NOTIFICATION];
+	notifications->SetShortcuts(accept.key, decline.key, controls->GetKeyText(accept.GetFirstKey()), controls->GetKeyText(decline.GetFirstKey()));
 }

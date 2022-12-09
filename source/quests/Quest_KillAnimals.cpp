@@ -32,7 +32,7 @@ void Quest_KillAnimals::SetProgress(int p)
 			else
 				targetLoc = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, { FOREST, HILLS });
 			targetLoc->AddEventHandler(this, EVENT_CLEARED);
-			targetLoc->active_quest = this;
+			targetLoc->activeQuest = this;
 			targetLoc->SetKnown();
 			if(targetLoc->st < 5)
 				targetLoc->st = 5;
@@ -49,7 +49,7 @@ void Quest_KillAnimals::SetProgress(int p)
 	case ClearedLocation:
 		// player cleared location from animals
 		{
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			OnUpdate(GetText(3));
 		}
 		break;
@@ -72,7 +72,7 @@ void Quest_KillAnimals::SetProgress(int p)
 	case OnTimeout:
 		{
 			targetLoc->RemoveEventHandler(this, EVENT_CLEARED);
-			targetLoc->active_quest = nullptr;
+			targetLoc->activeQuest = nullptr;
 			OnUpdate(GetText(5));
 		}
 		break;
@@ -118,14 +118,9 @@ Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 		f >> targetLoc;
 		f.Skip<bool>(); // done
 		f.Skip<int>(); // at_level
-		SetScheme(quest_mgr->FindQuestInfo(type)->scheme);
+		SetScheme(questMgr->FindQuestInfo(type)->scheme);
 
-		if(LOAD_VERSION >= V_0_9)
-			f >> st;
-		else if(targetLoc)
-			st = targetLoc->st;
-		else
-			st = 5;
+		f >> st;
 
 		if(IsActive())
 		{
@@ -136,7 +131,7 @@ Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 				else
 				{
 					targetLoc->AddEventHandler(this, EVENT_CLEARED);
-					SetTimeout(30 + start_time - world->GetWorldtime());
+					SetTimeout(30 + startTime - world->GetWorldtime());
 				}
 			}
 			LocationHelper::GetCaptain(startLoc)->AddDialog(this, GetDialog("captain"));

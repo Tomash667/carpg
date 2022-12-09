@@ -17,7 +17,7 @@
 //=================================================================================================
 void SecretLocationGenerator::Generate()
 {
-	quest_mgr->quest_secret->state = Quest_Secret::SECRET_GENERATED2;
+	questMgr->questSecret->state = Quest_Secret::SECRET_GENERATED2;
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -84,29 +84,29 @@ void SecretLocationGenerator::Generate()
 //=================================================================================================
 void SecretLocationGenerator::GenerateObjects()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *gameLevel->localPart;
 
 	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetY(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	game_level->SpawnObjectEntity(area, o, pos, 0);
-	game_level->ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
+	gameLevel->SpawnObjectEntity(locPart, o, pos, 0);
+	gameLevel->ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetY(pos);
-	game_level->SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
+	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
-	portal->at_level = -1;
-	portal->next_portal = nullptr;
+	portal->atLevel = -1;
+	portal->nextPortal = nullptr;
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->index = 0;
-	portal->target_loc = quest_mgr->quest_secret->where;
-	game_level->location->portal = portal;
+	portal->targetLoc = questMgr->questSecret->where;
+	gameLevel->location->portal = portal;
 
-	TerrainTile* tiles = ((OutsideLocation*)game_level->location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)gameLevel->location)->tiles;
 
 	// trees
 	for(int i = 0; i < 1024; ++i)
@@ -115,17 +115,17 @@ void SecretLocationGenerator::GenerateObjects()
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
-			TERRAIN_TILE tile = tiles[pt.x + pt.y*OutsideLocation::size].t;
+			TERRAIN_TILE tile = tiles[pt.x + pt.y * OutsideLocation::size].t;
 			if(tile == TT_GRASS)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = trees[Rand() % n_trees];
-				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				OutsideObject& o = trees[Rand() % nTrees];
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
 				int type;
 				if(Rand() % 12 == 0)
@@ -133,7 +133,7 @@ void SecretLocationGenerator::GenerateObjects()
 				else
 					type = Rand() % 3;
 				OutsideObject& o = trees2[type];
-				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -145,12 +145,12 @@ void SecretLocationGenerator::GenerateObjects()
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
-			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
+			if(tiles[pt.x + pt.y * OutsideLocation::size].t != TT_SAND)
 			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f * pt.x, 0, Random(2.f) + 2.f * pt.y);
 				pos.y = terrain->GetH(pos);
-				OutsideObject& o = misc[Rand() % n_misc];
-				game_level->SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				OutsideObject& o = misc[Rand() % nMisc];
+				gameLevel->SpawnObjectEntity(locPart, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -159,7 +159,7 @@ void SecretLocationGenerator::GenerateObjects()
 //=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *gameLevel->localPart;
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -182,7 +182,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			game_level->SpawnUnitNearLocation(area, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			gameLevel->SpawnUnitNearLocation(locPart, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}
@@ -200,7 +200,7 @@ void SecretLocationGenerator::GenerateItems()
 //=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	game_level->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI);
+	gameLevel->AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI);
 }
 
 //=================================================================================================

@@ -23,7 +23,7 @@ struct Trap : public EntityType<Trap>
 
 	Trap() : hitted(nullptr) {}
 	~Trap();
-	bool Update(float dt, LevelArea& area);
+	bool Update(float dt, LocationPart& locPart);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

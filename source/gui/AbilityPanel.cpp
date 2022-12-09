@@ -61,11 +61,11 @@ void AbilityPanel::LoadLanguage()
 //=================================================================================================
 void AbilityPanel::LoadData()
 {
-	tItemBar = res_mgr->Load<Texture>("item_bar.png");
-	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
-	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
-	tHealthPotion = res_mgr->Load<Texture>("health-potion.png");
-	tManaPotion = res_mgr->Load<Texture>("mana-potion.png");
+	tItemBar = resMgr->Load<Texture>("item_bar.png");
+	tMelee = resMgr->Load<Texture>("sword-brandish.png");
+	tRanged = resMgr->Load<Texture>("bow-arrow.png");
+	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
+	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
 }
 
 //=================================================================================================
@@ -77,7 +77,7 @@ void AbilityPanel::Refresh()
 }
 
 //=================================================================================================
-void AbilityPanel::Draw(ControlDrawData*)
+void AbilityPanel::Draw()
 {
 	GamePanel::Draw();
 	grid_offset = 0;
@@ -89,14 +89,14 @@ void AbilityPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!abilities.empty())
 	{
 		images.clear();
 		for(Ability* ability : abilities)
-			images.push_back(ability->tex_icon);
+			images.push_back(ability->texIcon);
 		DrawGroup(txAbilities);
 	}
 
@@ -120,7 +120,7 @@ void AbilityPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	gui->DrawText(GameGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(GameGui::fontBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
@@ -151,7 +151,7 @@ void AbilityPanel::Event(GuiEvent e)
 
 	if(e == GuiEvent_Show)
 	{
-		drag_and_drop = false;
+		dragAndDrop = false;
 		tooltip.Clear();
 	}
 }
@@ -163,26 +163,26 @@ void AbilityPanel::Update(float dt)
 
 	if(!focus)
 	{
-		drag_and_drop = false;
+		dragAndDrop = false;
 		return;
 	}
 
-	if(game_gui->level_gui->IsDragAndDrop())
+	if(gameGui->levelGui->IsDragAndDrop())
 	{
 		tooltip.anything = false;
 		return;
 	}
 
-	if(drag_and_drop)
+	if(dragAndDrop)
 	{
-		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
+		if(Int2::Distance(gui->cursorPos, dragAndDropPos) > 3)
 		{
-			pair<int, int> shortcut = ConvertToShortcut(drag_and_drop_group, drag_and_drop_index);
+			pair<int, int> shortcut = ConvertToShortcut(dragAndDropGroup, dragAndDropIndex);
 			Texture* icon = nullptr;
 			if(shortcut.first == Shortcut::TYPE_ABILITY)
 			{
 				Ability* ability = reinterpret_cast<Ability*>(shortcut.second);
-				icon = ability->tex_icon;
+				icon = ability->texIcon;
 			}
 			else
 			{
@@ -202,11 +202,11 @@ void AbilityPanel::Update(float dt)
 					break;
 				}
 			}
-			game_gui->level_gui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
-			drag_and_drop = false;
+			gameGui->levelGui->StartDragAndDrop(shortcut.first, shortcut.second, icon);
+			dragAndDrop = false;
 		}
 		if(input->Released(Key::LeftButton))
-			drag_and_drop = false;
+			dragAndDrop = false;
 	}
 
 	int group = G_NONE, id = -1;
@@ -218,7 +218,7 @@ void AbilityPanel::Update(float dt)
 
 	if(input->Focus())
 	{
-		if(IsInside(gui->cursor_pos))
+		if(IsInside(gui->cursorPos))
 		{
 			for(int i = 0; i < Shortcut::MAX; ++i)
 			{
@@ -236,7 +236,7 @@ void AbilityPanel::Update(float dt)
 }
 
 //=================================================================================================
-void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id_result)
+void AbilityPanel::UpdateGroup(uint count, int group, int& groupResult, int& idResult)
 {
 	int count_w = (size.x - 48) / 63;
 	int count_h = count / count_w + 1;
@@ -250,16 +250,16 @@ void AbilityPanel::UpdateGroup(uint count, int group, int& group_result, int& id
 			uint index = x + y * count_w;
 			if(index >= count)
 				break;
-			if(PointInRect(gui->cursor_pos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+			if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
 			{
-				group_result = group;
-				id_result = index;
+				groupResult = group;
+				idResult = index;
 				if(input->Focus() && input->Pressed(Key::LeftButton))
 				{
-					drag_and_drop = true;
-					drag_and_drop_pos = gui->cursor_pos;
-					drag_and_drop_group = group;
-					drag_and_drop_index = index;
+					dragAndDrop = true;
+					dragAndDropPos = gui->cursorPos;
+					dragAndDropGroup = group;
+					dragAndDropIndex = index;
 				}
 				break;
 			}
@@ -286,27 +286,27 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 	else
 	{
 		tooltip.anything = true;
-		tooltip.small_text.clear();
+		tooltip.smallText.clear();
 		switch(id)
 		{
 		case O_MELEE_WEAPON:
 			tooltip.img = tMelee;
-			tooltip.big_text = txMeleeWeapon;
+			tooltip.bigText = txMeleeWeapon;
 			tooltip.text = txMeleeWeaponDesc;
 			break;
 		case O_RANGED_WEAPON:
 			tooltip.img = tRanged;
-			tooltip.big_text = txRangedWeapon;
+			tooltip.bigText = txRangedWeapon;
 			tooltip.text = txRangedWeaponDesc;
 			break;
 		case O_HEALTH_POTION:
 			tooltip.img = tHealthPotion;
-			tooltip.big_text = txHealthPotion;
+			tooltip.bigText = txHealthPotion;
 			tooltip.text = txHealthPotionDesc;
 			break;
 		case O_MANA_POTION:
 			tooltip.img = tManaPotion;
-			tooltip.big_text = txManaPotion;
+			tooltip.bigText = txManaPotion;
 			tooltip.text = txManaPotionDesc;
 			break;
 		}
@@ -317,8 +317,8 @@ void AbilityPanel::GetTooltip(TooltipController*, int group, int id, bool refres
 void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& ability)
 {
 	tooltip.anything = true;
-	tooltip.img = ability.tex_icon;
-	tooltip.big_text = ability.name;
+	tooltip.img = ability.texIcon;
+	tooltip.bigText = ability.name;
 
 	tooltip.text = ability.desc;
 	uint pos = tooltip.text.find("{power}", 0);
@@ -326,20 +326,20 @@ void AbilityPanel::GetAbilityTooltip(TooltipController& tooltip, Ability& abilit
 		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->unit->GetAbilityPower(ability)));
 
 	if(ability.charges == 1)
-		tooltip.small_text = Format(txCooldown, ability.cooldown.x);
+		tooltip.smallText = Format(txCooldown, ability.cooldown.x);
 	else
-		tooltip.small_text = Format(txCooldownCharges, ability.cooldown.x, ability.charges, ability.recharge);
+		tooltip.smallText = Format(txCooldownCharges, ability.cooldown.x, ability.charges, ability.recharge);
 	if(ability.mana > 0.f || ability.stamina > 0.f)
 	{
-		tooltip.small_text += '\n';
-		tooltip.small_text += txCost;
+		tooltip.smallText += '\n';
+		tooltip.smallText += txCost;
 		if(ability.mana > 0.f)
-			tooltip.small_text += Format("$cb%g %s$c-", ability.mana, txMana);
+			tooltip.smallText += Format("$cb%g %s$c-", ability.mana, txMana);
 		if(ability.stamina > 0.f)
 		{
 			if(ability.mana > 0.f)
-				tooltip.small_text += ", ";
-			tooltip.small_text += Format("$cy%g %s$c-", ability.stamina, txStamina);
+				tooltip.smallText += ", ";
+			tooltip.smallText += Format("$cy%g %s$c-", ability.stamina, txStamina);
 		}
 	}
 }

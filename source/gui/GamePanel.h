@@ -22,7 +22,7 @@ public:
 
 	GamePanel();
 
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
 
@@ -37,14 +37,14 @@ private:
 	void DrawBoxInternal();
 
 protected:
-	BOX_STATE box_state;
-	float show_timer, box_alpha;
-	int last_index, last_index2;
-	string box_text, box_text_small;
-	Texture* box_img;
-	Rect box_big, box_small;
-	Int2 box_size, box_pos;
-	Int2 box_img_pos, box_img_size;
+	BOX_STATE boxState;
+	float showTimer, boxAlpha;
+	int lastIndex, lastIndex2;
+	string boxText, boxTextSmall;
+	Texture* boxImg;
+	Rect boxBig, boxSmall;
+	Int2 boxSize, boxPos;
+	Int2 boxImgPos, boxImgSize;
 };
 
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class GamePanelContainer : public Container
 {
 public:
 	GamePanelContainer();
-	void Draw(ControlDrawData*);
+	void Draw();
 	void Update(float dt) override;
 	bool NeedCursor() const { return true; }
 
@@ -60,9 +60,9 @@ public:
 	void Show();
 	void Hide();
 
-	GamePanel* draw_box;
+	GamePanel* drawBox;
 
 private:
 	int order;
-	bool lost_focus;
+	bool lostFocus;
 };

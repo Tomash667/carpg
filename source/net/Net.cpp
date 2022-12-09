@@ -21,7 +21,7 @@ Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
-Net::Net() : peer(nullptr), packet_logger(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
+Net::Net() : peer(nullptr), packetLogger(nullptr), mpLoad(false), mpUseInterp(true), mpInterp(0.05f), wasClient(false)
 {
 }
 
@@ -29,11 +29,11 @@ Net::Net() : peer(nullptr), packet_logger(nullptr), mp_load(false), mp_use_inter
 Net::~Net()
 {
 	DeleteElements(players);
-	DeleteElements(old_players);
+	DeleteElements(oldPlayers);
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
 	delete api;
-	delete packet_logger;
+	delete packetLogger;
 }
 
 //=================================================================================================
@@ -57,8 +57,8 @@ void Net::LoadLanguage()
 //=================================================================================================
 void Net::LoadData()
 {
-	tFastTravel = res_mgr->LoadInstant<Texture>("fast_travel.png");
-	tFastTravelDeny = res_mgr->LoadInstant<Texture>("fast_travel_deny.png");
+	tFastTravel = resMgr->LoadInstant<Texture>("fast_travel.png");
+	tFastTravelDeny = resMgr->LoadInstant<Texture>("fast_travel_deny.png");
 }
 
 //=================================================================================================
@@ -131,22 +131,22 @@ void Net::OpenPeer()
 #ifdef TEST_LAG
 	peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
 #endif
-	if(game->cfg.GetBool("packet_logger"))
+	if(game->cfg.GetBool("packetLogger"))
 	{
-		packet_logger = new PacketLogger;
-		peer->AttachPlugin(packet_logger);
+		packetLogger = new PacketLogger;
+		peer->AttachPlugin(packetLogger);
 	}
 }
 
 //=================================================================================================
-void Net::ClosePeer(bool wait, bool check_was_client)
+void Net::ClosePeer(bool wait, bool checkWasClient)
 {
 	assert(peer);
 
 	Info("Net peer shutdown.");
 	peer->Shutdown(wait ? CLOSE_PEER_TIMER : 0);
-	if(IsClient() && check_was_client)
-		was_client = true;
+	if(IsClient() && checkWasClient)
+		wasClient = true;
 	changes.clear();
 	SetMode(Mode::Singleplayer);
 }
@@ -158,13 +158,14 @@ void Net::StartFastTravel(int who)
 	if(IsServer() || who == 2)
 	{
 		for(PlayerInfo& info : players)
-			info.fast_travel = false;
+			info.fastTravel = false;
+
 		if(who == 0)
-			GetMe().fast_travel = true;
+			GetMe().fastTravel = true;
 		else
-			team->GetLeader()->player->player_info->fast_travel = true;
-		fast_travel = true;
-		fast_travel_timer = 0.f;
+			team->GetLeader()->player->playerInfo->fastTravel = true;
+		fastTravel = true;
+		fastTravelTimer = 0.f;
 	}
 
 	// send to server/players
@@ -179,63 +180,63 @@ void Net::StartFastTravel(int who)
 	// show notification
 	if((who == 0 && IsServer()) || (who == 2 && team->IsLeader()))
 	{
-		if(fast_travel_notif)
-			fast_travel_notif->Close();
-		fast_travel_notif = game_gui->notifications->Add(txFastTravelWaiting, tFastTravel, -1.f);
+		if(fastTravelNotification)
+			fastTravelNotification->Close();
+		fastTravelNotification = gameGui->notifications->Add(txFastTravelWaiting, tFastTravel, -1.f);
 	}
 	else if(who == 1 || (who == 2 && !team->IsLeader()))
 	{
-		if(fast_travel_notif)
-			fast_travel_notif->Close();
-		fast_travel_notif = game_gui->notifications->Add(txFastTravelText, tFastTravel, -1.f);
-		fast_travel_notif->buttons = true;
-		fast_travel_notif->callback = delegate<void(bool)>(this, &Net::OnFastTravel);
+		if(fastTravelNotification)
+			fastTravelNotification->Close();
+		fastTravelNotification = gameGui->notifications->Add(txFastTravelText, tFastTravel, -1.f);
+		fastTravelNotification->buttons = true;
+		fastTravelNotification->callback = delegate<void(bool)>(this, &Net::OnFastTravel);
 	}
 }
 
 //=================================================================================================
 void Net::CancelFastTravel(int mode, int id)
 {
-	fast_travel = false;
+	fastTravel = false;
 
-	if(!fast_travel_notif)
+	if(!fastTravelNotification)
 		return;
 
 	switch(mode)
 	{
 	case FAST_TRAVEL_CANCEL:
-		if(id != team->my_id)
+		if(id != team->myId)
 		{
 			PlayerInfo* info = TryGetPlayer(id);
 			cstring name = info ? info->name.c_str() : nullptr;
-			fast_travel_notif->icon = tFastTravelDeny;
-			fast_travel_notif->text = Format(txFastTravelCancel, name);
-			fast_travel_notif->Close(3.f);
+			fastTravelNotification->icon = tFastTravelDeny;
+			fastTravelNotification->text = Format(txFastTravelCancel, name);
+			fastTravelNotification->Close(3.f);
 		}
 		else
-			fast_travel_notif->Close();
+			fastTravelNotification->Close();
 		break;
 	case FAST_TRAVEL_DENY:
 		{
 			PlayerInfo* info = TryGetPlayer(id);
 			cstring name = info ? info->name.c_str() : nullptr;
-			fast_travel_notif->icon = tFastTravelDeny;
-			fast_travel_notif->text = Format(txFastTravelDeny, name);
-			fast_travel_notif->Close(3.f);
+			fastTravelNotification->icon = tFastTravelDeny;
+			fastTravelNotification->text = Format(txFastTravelDeny, name);
+			fastTravelNotification->Close(3.f);
 		}
 		break;
 	case FAST_TRAVEL_NOT_SAFE:
-		fast_travel_notif->icon = tFastTravelDeny;
-		fast_travel_notif->text = txFastTravelNotSafe;
-		fast_travel_notif->Close(3.f);
+		fastTravelNotification->icon = tFastTravelDeny;
+		fastTravelNotification->text = txFastTravelNotSafe;
+		fastTravelNotification->Close(3.f);
 		break;
 	case FAST_TRAVEL_IN_PROGRESS:
-		fast_travel_notif->Close();
+		fastTravelNotification->Close();
 		break;
 	}
 
-	fast_travel_notif->buttons = false;
-	fast_travel_notif = nullptr;
+	fastTravelNotification->buttons = false;
+	fastTravelNotification = nullptr;
 
 	if(IsServer() || (team->IsLeader() && mode == FAST_TRAVEL_CANCEL))
 	{
@@ -249,12 +250,12 @@ void Net::CancelFastTravel(int mode, int id)
 //=================================================================================================
 void Net::ClearFastTravel()
 {
-	if(fast_travel_notif)
+	if(fastTravelNotification)
 	{
-		fast_travel_notif->Close();
-		fast_travel_notif = nullptr;
+		fastTravelNotification->Close();
+		fastTravelNotification = nullptr;
 	}
-	fast_travel = false;
+	fastTravel = false;
 }
 
 //=================================================================================================
@@ -263,9 +264,9 @@ void Net::OnFastTravel(bool accept)
 	if(accept)
 	{
 		PlayerInfo& me = GetMe();
-		fast_travel_notif->buttons = false;
-		fast_travel_notif->text = txFastTravelWaiting;
-		me.fast_travel = true;
+		fastTravelNotification->buttons = false;
+		fastTravelNotification->text = txFastTravelWaiting;
+		me.fastTravel = true;
 
 		NetChange& c = Add1(changes);
 		if(IsServer())
@@ -281,27 +282,13 @@ void Net::OnFastTravel(bool accept)
 	}
 	else
 	{
-		fast_travel = false;
-		fast_travel_notif->Close();
-		fast_travel_notif = nullptr;
+		fastTravel = false;
+		fastTravelNotification->Close();
+		fastTravelNotification = nullptr;
 
 		NetChange& c = Add1(changes);
 		c.type = NetChange::FAST_TRAVEL;
 		c.id = FAST_TRAVEL_DENY;
-		c.count = team->my_id;
-	}
-}
-
-//=================================================================================================
-void Net::AddServerMsg(cstring msg)
-{
-	assert(msg);
-	cstring s = Format(game->txServer, msg);
-	if(game_gui->server->visible)
-		game_gui->server->AddMsg(s);
-	else
-	{
-		game_gui->messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
-		game_gui->mp_box->Add(s);
+		c.count = team->myId;
 	}
 }

@@ -83,7 +83,7 @@ RoomStrChance tutorial_rooms[] = {
 
 //-----------------------------------------------------------------------------
 // Name is only visible in devmode
-BaseLocation g_base_locations[] = {
+BaseLocation gBaseLocations[] = {
 	//	  NAME				LEVELS			MAP			JOIN		CORRIDOR	CORRIDOR	ROOM		OTHER...
 	//										SIZE		COR	ROOM				LENGTH		SIZE
 	"Human fort",			Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	BLO_DOOR_ENTRY, "stairs", nullptr,
@@ -151,16 +151,16 @@ BaseLocation g_base_locations[] = {
 		crypt_rooms, countof(crypt_rooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, -1,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01b.jpg", "sufit2.jpg")
 };
-const uint n_base_locations = countof(g_base_locations);
+const uint nBaseLocations = countof(gBaseLocations);
 
 //=================================================================================================
 RoomType* BaseLocation::GetRandomRoomType() const
 {
 	assert(rooms);
 
-	int total = 0, choice = Rand() % room_total;
+	int total = 0, choice = Rand() % roomTotal;
 
-	for(uint i = 0; i < room_count; ++i)
+	for(uint i = 0; i < roomCount; ++i)
 	{
 		total += rooms[i].chance;
 		if(choice < total)
@@ -176,16 +176,16 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 {
 	UnitGroup* result;
 	int n = Rand() % 100;
-	if(n < group_chance[0])
+	if(n < groupChance[0])
 		result = group[0].value;
-	else if(n < group_chance[0] + group_chance[1])
+	else if(n < groupChance[0] + groupChance[1])
 		result = group[1].value;
-	else if(n < group_chance[0] + group_chance[1] + group_chance[2])
+	else if(n < groupChance[0] + groupChance[1] + groupChance[2])
 		result = group[2].value;
 	else
 		result = UnitGroup::random;
 
-	if(result->is_list)
+	if(result->isList)
 		result = result->GetRandomGroup();
 
 	return result;
@@ -194,32 +194,32 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 //=================================================================================================
 void BaseLocation::PreloadTextures()
 {
-	for(uint i = 0; i < n_base_locations; ++i)
+	for(uint i = 0; i < nBaseLocations; ++i)
 	{
-		auto& bl = g_base_locations[i];
+		auto& bl = gBaseLocations[i];
 		if(bl.tex.floor.id)
 		{
-			bl.tex.floor.tex = res_mgr->Load<Texture>(bl.tex.floor.id);
-			if(bl.tex.floor.id_normal)
-				bl.tex.floor.tex_normal = res_mgr->Load<Texture>(bl.tex.floor.id_normal);
-			if(bl.tex.floor.id_specular)
-				bl.tex.floor.tex_specular = res_mgr->Load<Texture>(bl.tex.floor.id_specular);
+			bl.tex.floor.tex = resMgr->Load<Texture>(bl.tex.floor.id);
+			if(bl.tex.floor.idNormal)
+				bl.tex.floor.texNormal = resMgr->Load<Texture>(bl.tex.floor.idNormal);
+			if(bl.tex.floor.idSpecular)
+				bl.tex.floor.texSpecular = resMgr->Load<Texture>(bl.tex.floor.idSpecular);
 		}
 		if(bl.tex.wall.id)
 		{
-			bl.tex.wall.tex = res_mgr->Load<Texture>(bl.tex.wall.id);
-			if(bl.tex.wall.id_normal)
-				bl.tex.wall.tex_normal = res_mgr->Load<Texture>(bl.tex.wall.id_normal);
-			if(bl.tex.wall.id_specular)
-				bl.tex.wall.tex_specular = res_mgr->Load<Texture>(bl.tex.wall.id_specular);
+			bl.tex.wall.tex = resMgr->Load<Texture>(bl.tex.wall.id);
+			if(bl.tex.wall.idNormal)
+				bl.tex.wall.texNormal = resMgr->Load<Texture>(bl.tex.wall.idNormal);
+			if(bl.tex.wall.idSpecular)
+				bl.tex.wall.texSpecular = resMgr->Load<Texture>(bl.tex.wall.idSpecular);
 		}
 		if(bl.tex.ceil.id)
 		{
-			bl.tex.ceil.tex = res_mgr->Load<Texture>(bl.tex.ceil.id);
-			if(bl.tex.ceil.id_normal)
-				bl.tex.ceil.tex_normal = res_mgr->Load<Texture>(bl.tex.ceil.id_normal);
-			if(bl.tex.ceil.id_specular)
-				bl.tex.ceil.tex_specular = res_mgr->Load<Texture>(bl.tex.ceil.id_specular);
+			bl.tex.ceil.tex = resMgr->Load<Texture>(bl.tex.ceil.id);
+			if(bl.tex.ceil.idNormal)
+				bl.tex.ceil.texNormal = resMgr->Load<Texture>(bl.tex.ceil.idNormal);
+			if(bl.tex.ceil.idSpecular)
+				bl.tex.ceil.texSpecular = resMgr->Load<Texture>(bl.tex.ceil.idSpecular);
 		}
 	}
 }
@@ -229,9 +229,9 @@ uint BaseLocation::SetRoomPointers()
 {
 	uint errors = 0;
 
-	for(uint i = 0; i < n_base_locations; ++i)
+	for(uint i = 0; i < nBaseLocations; ++i)
 	{
-		BaseLocation& base = g_base_locations[i];
+		BaseLocation& base = gBaseLocations[i];
 
 		if(base.stairs.id)
 			base.stairs.value = RoomType::Get(base.stairs.id);
@@ -257,11 +257,11 @@ uint BaseLocation::SetRoomPointers()
 
 		if(base.rooms)
 		{
-			base.room_total = 0;
-			for(uint j = 0; j < base.room_count; ++j)
+			base.roomTotal = 0;
+			for(uint j = 0; j < base.roomCount; ++j)
 			{
 				base.rooms[j].room = RoomType::Get(base.rooms[j].id);
-				base.room_total += base.rooms[j].chance;
+				base.roomTotal += base.rooms[j].chance;
 			}
 		}
 	}

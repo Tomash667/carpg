@@ -111,14 +111,14 @@ void TeamPanel::LoadLanguage()
 //=================================================================================================
 void TeamPanel::LoadData()
 {
-	tCrown = res_mgr->Load<Texture>("korona.png");
-	tSkull = res_mgr->Load<Texture>("czaszka.png");
-	tFastTravelWait = res_mgr->Load<Texture>("fast_travel_wait.png");
-	tFastTravelOk = res_mgr->Load<Texture>("fast_travel_ok.png");
+	tCrown = resMgr->Load<Texture>("korona.png");
+	tSkull = resMgr->Load<Texture>("czaszka.png");
+	tFastTravelWait = resMgr->Load<Texture>("fast_travel_wait.png");
+	tFastTravelOk = resMgr->Load<Texture>("fast_travel_ok.png");
 }
 
 //=================================================================================================
-void TeamPanel::Draw(ControlDrawData*)
+void TeamPanel::Draw()
 {
 	GamePanel::Draw();
 
@@ -128,21 +128,21 @@ void TeamPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GameGui::font_big, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::fontBig, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
-	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
-	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
+	Int2 offset = globalPos + Int2(15, 48 - scrollbar.offset);
+	rect = Rect::Create(Int2(globalPos.x + 15, globalPos.y + 40), Int2(size.x - 30 - 16 - 5, size.y - 96));
 
 	Vec2 share = team->GetShare();
-	int pc_share = (int)round(share.x * 100);
-	int npc_share = (int)round(share.y * 100);
+	int pcShare = (int)round(share.x * 100);
+	int npcShare = (int)round(share.y * 100);
 	LocalString s;
 
 	if(!picking)
 		picked = -1;
 
 	int n = 0;
-	int hitbox_counter = 0;
+	int hitboxCounter = 0;
 	hitboxes.clear();
 	for(Unit& unit : team->members)
 	{
@@ -150,9 +150,9 @@ void TeamPanel::Draw(ControlDrawData*)
 		if(clas)
 		{
 			Texture* t = clas->icon;
-			Int2 img_size, new_size(32, 32);
+			Int2 imgSize, newSize(32, 32);
 			Vec2 scale;
-			t->ResizeImage(new_size, img_size, scale);
+			t->ResizeImage(newSize, imgSize, scale);
 			const Vec2 pos((float)offset.x, (float)offset.y);
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, &rect, Color::White);
@@ -161,7 +161,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			gui->DrawSprite(tCrown, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		else if(unit.IsPlayer() && net->IsFastTravel())
 		{
-			TexturePtr image = unit.player->player_info->fast_travel ? tFastTravelOk : tFastTravelWait;
+			TexturePtr image = unit.player->playerInfo->fastTravel ? tFastTravelOk : tFastTravelWait;
 			gui->DrawSprite(image, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		}
 		if(!unit.IsAlive())
@@ -174,20 +174,20 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, unit.GetName(), unit.IsPlayer() ? pc_share : (unit.hero->type == HeroType::Normal ? npc_share : 0), unit.GetCredit());
+		s += Format(txCharInTeam, unit.GetName(), unit.IsPlayer() ? pcShare : (unit.hero->type == HeroType::Normal ? npcShare : 0), unit.GetCredit());
 		if(unit.IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())
 			{
 				if(&unit != game->pc->unit)
-					s += Format(txPing, net->peer->GetAveragePing(unit.player->player_info->adr));
+					s += Format(txPing, net->peer->GetAveragePing(unit.player->playerInfo->adr));
 			}
 			else if(&unit == game->pc->unit)
 				s += Format(txPing, net->peer->GetAveragePing(net->server));
-			s += Format(txDays, unit.player->free_days);
+			s += Format(txDays, unit.player->freeDays);
 		}
 		s += ")$h-";
-		if(!gui->DrawText(GameGui::font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitbox_counter))
+		if(!gui->DrawText(GameGui::font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitboxCounter))
 			break;
 
 		offset.y += 32;
@@ -215,16 +215,16 @@ void TeamPanel::Update(float dt)
 
 	if(focus)
 	{
-		if(input->Focus() && IsInside(gui->cursor_pos))
+		if(input->Focus() && IsInside(gui->cursorPos))
 			scrollbar.ApplyMouseWheel();
 
-		scrollbar.mouse_focus = mouse_focus;
+		scrollbar.mouseFocus = mouseFocus;
 		scrollbar.Update(dt);
 
 		if(picking && input->Focus())
 		{
 			picked = -1;
-			gui->Intersect(hitboxes, gui->cursor_pos, &picked);
+			gui->Intersect(hitboxes, gui->cursorPos, &picked);
 
 			if(input->Pressed(Key::LeftButton))
 			{
@@ -251,15 +251,15 @@ void TeamPanel::Update(float dt)
 		}
 
 		// handle icon tooltips
-		Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
+		Int2 offset = globalPos + Int2(8, 40 - scrollbar.offset);
 		for(Unit& unit : team->members)
 		{
-			if(Class* clas = unit.GetClass(); clas && PointInRect(gui->cursor_pos, offset.x, offset.y, offset.x + 32, offset.y + 32))
+			if(Class* clas = unit.GetClass(); clas && Rect::IsInside(gui->cursorPos, offset.x, offset.y, offset.x + 32, offset.y + 32))
 			{
 				group = G_CLASS;
 				break;
 			}
-			if(PointInRect(gui->cursor_pos, offset.x + 32, offset.y, offset.x + 64, offset.y + 32))
+			if(Rect::IsInside(gui->cursorPos, offset.x + 32, offset.y, offset.x + 64, offset.y + 32))
 			{
 				if(&unit == team->leader)
 				{
@@ -268,11 +268,11 @@ void TeamPanel::Update(float dt)
 				}
 				else if(unit.IsPlayer() && net->IsFastTravel())
 				{
-					group = unit.player->player_info->fast_travel ? G_READY : G_WAITING;
+					group = unit.player->playerInfo->fastTravel ? G_READY : G_WAITING;
 					break;
 				}
 			}
-			if(!unit.IsAlive() && PointInRect(gui->cursor_pos, offset.x + 64, offset.y, offset.x + 96, offset.y + 32))
+			if(!unit.IsAlive() && Rect::IsInside(gui->cursorPos, offset.x + 64, offset.y, offset.x + 96, offset.y + 32))
 			{
 				group = G_UNCONSCIOUS;
 				break;
@@ -286,34 +286,34 @@ void TeamPanel::Update(float dt)
 	// enable change leader button if player is leader
 	if(Net::IsClient())
 	{
-		bool was_leader = bt[Bt_Leader].state != Button::DISABLED;
-		bool is_leader = team->IsLeader();
-		if(was_leader != is_leader)
-			bt[Bt_Leader].state = (is_leader ? Button::NONE : Button::DISABLED);
+		bool wasLeader = bt[Bt_Leader].state != Button::DISABLED;
+		bool isLeader = team->IsLeader();
+		if(wasLeader != isLeader)
+			bt[Bt_Leader].state = (isLeader ? Button::NONE : Button::DISABLED);
 	}
 
 	// enable fast travel button
-	bool allow_fast_travel_prev = bt[Bt_FastTravel].state != Button::DISABLED;
+	bool allowFastTravelPrev = bt[Bt_FastTravel].state != Button::DISABLED;
 	if(net->IsFastTravel() && team->IsLeader())
 	{
 		bt[Bt_FastTravel].text = txCancelFastTravel;
-		if(!allow_fast_travel_prev)
+		if(!allowFastTravelPrev)
 			bt[Bt_FastTravel].state = Button::NONE;
 	}
 	else
 	{
 		bt[Bt_FastTravel].text = txFastTravel;
-		bool allow_fast_travel = team->IsLeader() && game_level->CanFastTravel();
-		if(allow_fast_travel != allow_fast_travel_prev)
-			bt[Bt_FastTravel].state = (allow_fast_travel ? Button::NONE : Button::DISABLED);
+		bool allowFastTravel = team->IsLeader() && gameLevel->CanFastTravel();
+		if(allowFastTravel != allowFastTravelPrev)
+			bt[Bt_FastTravel].state = (allowFastTravel ? Button::NONE : Button::DISABLED);
 	}
 
 	const int count = Net::IsOnline() ? 5 : 3;
 	for(int i = 0; i < count; ++i)
 	{
-		bt[i].mouse_focus = focus;
+		bt[i].mouseFocus = focus;
 		bt[i].Update(dt);
-		if(bt[i].state == Button::DISABLED && bt[i].IsInside(gui->cursor_pos))
+		if(bt[i].state == Button::DISABLED && bt[i].IsInside(gui->cursorPos))
 		{
 			group = G_BUTTON;
 			index = i;
@@ -334,17 +334,17 @@ void TeamPanel::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_Moved:
-		scrollbar.global_pos = global_pos + scrollbar.pos;
+		scrollbar.globalPos = globalPos + scrollbar.pos;
 		UpdateButtons();
 		break;
 	case GuiEvent_Resize:
 		{
 			int s = 32 * team->GetTeamSize();
+			scrollbar.pos = Int2(size.x - 16 - 15, 48);
+			scrollbar.globalPos = globalPos + scrollbar.pos;
+			scrollbar.size = Int2(16, size.y - 70 - 48);
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
-			scrollbar.pos = Int2(size.x - 28, 48);
-			scrollbar.global_pos = global_pos + scrollbar.pos;
-			scrollbar.size = Int2(16, size.y - 60 - 48);
 			if(scrollbar.offset + scrollbar.part > scrollbar.total)
 				scrollbar.offset = float(scrollbar.total - scrollbar.part);
 			if(scrollbar.offset < 0)
@@ -365,7 +365,7 @@ void TeamPanel::Event(GuiEvent e)
 		break;
 	case BtEvent_FastTravel:
 		if(net->IsFastTravel())
-			net->CancelFastTravel(FAST_TRAVEL_CANCEL, team->my_id);
+			net->CancelFastTravel(FAST_TRAVEL_CANCEL, team->myId);
 		else if(Net::IsSingleplayer() || (Net::IsServer() && !team->HaveOtherPlayer()))
 			game->ExitToMap();
 		else
@@ -374,7 +374,7 @@ void TeamPanel::Event(GuiEvent e)
 	case BtEvent_GiveGold:
 	case BtEvent_Leader:
 	case BtEvent_Kick:
-		game_gui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
+		gameGui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;
@@ -407,14 +407,14 @@ void TeamPanel::Changed()
 void TeamPanel::UpdateButtons()
 {
 	const int count = Net::IsOnline() ? 5 : 3;
-	const int s = (size.x - 16 - 4 * count) / count;
+	const int s = (size.x - 30 - 4 * (count - 1)) / count;
 
 	for(int i = 0; i < count; ++i)
 	{
 		bt[i].size.x = s;
 		bt[i].size.y = 48;
-		bt[i].pos = Int2(8 + (s + 4) * i, size.y - 58);
-		bt[i].global_pos = bt[i].pos + global_pos;
+		bt[i].pos = Int2(15 + (s + 4) * i, size.y - 48 - 15);
+		bt[i].globalPos = bt[i].pos + globalPos;
 	}
 }
 
@@ -436,7 +436,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, count, game->pc->credit - count));
 		game->pc->unit->gold -= count;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(gameRes->sCoins);
 		if(Net::IsLocal())
 			game->pc->PayCredit(count);
 		else
@@ -457,7 +457,7 @@ void TeamPanel::GiveGold(Unit* target)
 		SimpleDialog(Format(txGiveGoldRefuse, target->GetRealName()));
 	else
 	{
-		target_unit = target;
+		targetUnit = target;
 		counter = 1;
 		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 1, game->pc->unit->gold, &counter);
 	}
@@ -476,12 +476,12 @@ void TeamPanel::ChangeLeader(Unit* target)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
-			c.id = team->my_id;
+			c.id = team->myId;
 
-			team->leader_id = team->my_id;
+			team->leaderId = team->myId;
 			team->leader = game->pc->unit;
 
-			game_gui->mp_box->Add(txYouAreLeader);
+			gameGui->mpBox->Add(txYouAreLeader);
 		}
 		else
 			SimpleDialog(txCantChangeLeader);
@@ -496,10 +496,10 @@ void TeamPanel::ChangeLeader(Unit* target)
 
 		if(Net::IsServer())
 		{
-			team->leader_id = c.id;
+			team->leaderId = c.id;
 			team->leader = target;
 
-			game_gui->mp_box->Add(Format(txPcIsLeader, target->GetName()));
+			gameGui->mpBox->Add(Format(txPcIsLeader, target->GetName()));
 		}
 	}
 	else
@@ -515,11 +515,11 @@ void TeamPanel::Kick(Unit* target)
 		SimpleDialog(txCantKickAi);
 	else
 	{
-		target_unit = target;
+		targetUnit = target;
 		DialogInfo info;
 		info.event = DialogEvent(this, &TeamPanel::OnKick);
 		info.name = "kick";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = this;
 		info.pause = false;
 		info.text = Format(txReallyKick, target->GetName());
@@ -534,7 +534,7 @@ void TeamPanel::OnGiveGold(int id)
 	if(id != BUTTON_OK || counter == 0)
 		return;
 
-	Unit* target = target_unit;
+	Unit* target = targetUnit;
 	if(!target || !team->IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else if(counter > game->pc->unit->gold)
@@ -542,17 +542,17 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game->pc->unit->gold -= counter;
-		sound_mgr->PlaySound2d(game_res->sCoins);
+		soundMgr->PlaySound2d(gameRes->sCoins);
 		if(Net::IsLocal())
 		{
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(target->player->player_info->changes);
+				NetChangePlayer& c = Add1(target->player->playerInfo->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.id = game->pc->id;
 				c.count = counter;
-				target->player->player_info->UpdateGold();
+				target->player->playerInfo->UpdateGold();
 			}
 		}
 		else
@@ -571,11 +571,11 @@ void TeamPanel::OnKick(int id)
 	if(id == BUTTON_NO)
 		return;
 
-	Unit* target = target_unit;
+	Unit* target = targetUnit;
 	if(!target || !team->IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
-		net->KickPlayer(*target->player->player_info);
+		net->KickPlayer(*target->player->playerInfo);
 }
 
 //=================================================================================================
@@ -603,8 +603,8 @@ void TeamPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 	}
 
 	tooltip.anything = true;
-	tooltip.big_text.clear();
-	tooltip.small_text.clear();
+	tooltip.bigText.clear();
+	tooltip.smallText.clear();
 	tooltip.img = nullptr;
 
 	switch(group)

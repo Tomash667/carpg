@@ -54,17 +54,17 @@ struct Ability
 
 	int hash;
 	string id, animation;
-	SoundPtr sound_cast, sound_hit;
-	TexturePtr tex, tex_particle, tex_icon;
-	TexOverride tex_explode;
+	SoundPtr soundCast, soundHit;
+	TexturePtr tex, texParticle, texIcon;
+	TexOverride texExplode;
 	Vec2 cooldown;
 	Type type;
 	Effect effect;
-	int flags, dmg, dmg_bonus, charges, learning_points, skill, level, count;
-	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana, stamina, recharge, width, time, cast_time;
+	int flags, dmg, dmgBonus, charges, learningPoints, skill, level, count;
+	float range, moveRange, size, sizeParticle, speed, explodeRange, soundCastDist, soundHitDist, mana, stamina, recharge, width, time, castTime;
 	btCollisionShape* shape;
 	Mesh* mesh;
-	string name, desc, unit_id;
+	string name, desc, unitId;
 	union
 	{
 		UnitData* unit;
@@ -72,10 +72,10 @@ struct Ability
 	};
 	Color color; // RangedAttack trail color
 
-	Ability() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_icon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
-		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
-		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), effect(None), learning_points(0), skill(999),
-		level(0), count(1), time(1), color(Color::White), cast_time(0) {}
+	Ability() : soundCast(nullptr), soundHit(nullptr), tex(nullptr), texParticle(nullptr), texIcon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
+		cooldown(0, 0), flags(0), dmg(0), dmgBonus(0), range(10.f), moveRange(10.f), size(0.f), sizeParticle(0.f), speed(0.f), explodeRange(0.f),
+		soundCastDist(1.f), soundHitDist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), effect(None), learningPoints(0), skill(999),
+		level(0), count(1), time(1), color(Color::White), castTime(0) {}
 	~Ability()
 	{
 		delete shape;
@@ -86,7 +86,7 @@ struct Ability
 	SkillId GetSkill() const;
 
 	static vector<Ability*> abilities;
-	static std::map<int, Ability*> hash_abilities;
+	static std::map<int, Ability*> hashAbilities;
 	static Ability* Get(int hash);
 	static Ability* Get(Cstring id) { return Get(Hash(id)); }
 	static Ability* GetS(const string& id) { return Get(id); }

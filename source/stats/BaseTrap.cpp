@@ -9,7 +9,7 @@ BaseTrap BaseTrap::traps[] = {
 	BaseTrap("fireball", 150, TRAP_FIREBALL, "runa.qmsh", nullptr, 0.f, nullptr, 0.f, nullptr, 0.f),
 	BaseTrap("bear", 300, TRAP_BEAR, "bear_trap.qmsh", "bear_trap.mp3", 1.5f, nullptr, 0.f, nullptr, 0.f)
 };
-const uint BaseTrap::n_traps = countof(BaseTrap::traps);
+const uint BaseTrap::nTraps = countof(BaseTrap::traps);
 
 //=================================================================================================
 BaseTrap* BaseTrap::Get(const string& id)

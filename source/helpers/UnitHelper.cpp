@@ -9,7 +9,7 @@ namespace UnitHelper
 			lis = &ItemList::Get("base_items");
 	}
 
-	static vector<const Item*> items_to_pick;
+	static vector<const Item*> itemsToPick;
 }
 
 const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
@@ -30,7 +30,7 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 	for(const ItemList::Entry& e : lis->items)
 	{
 		const Item* item = e.item;
-		if(item->ToWeapon().weapon_type == best)
+		if(item->ToWeapon().weaponType == best)
 			return item;
 	}
 
@@ -52,11 +52,11 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 		}
 	}
 
-	ARMOR_TYPE armor_type = unit.GetBestArmorType();
+	ARMOR_TYPE armorType = unit.GetBestArmorType();
 	for(const ItemList::Entry& e : lis->items)
 	{
 		const Item* item = e.item;
-		if(item->type == IT_ARMOR && item->ToArmor().armor_type == armor_type)
+		if(item->type == IT_ARMOR && item->ToArmor().armorType == armorType)
 			return item;
 	}
 
@@ -81,9 +81,9 @@ UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 {
 	static const ItemList& lis = ItemList::Get("amulets");
 	const Item* amulet = unit.GetEquippedItem(SLOT_AMULET);
-	float prev_value = amulet ? unit.GetItemAiValue(amulet) : 0.f;
-	float best_value = prev_value;
-	items_to_pick.clear();
+	float prevValue = amulet ? unit.GetItemAiValue(amulet) : 0.f;
+	float best_value = prevValue;
+	itemsToPick.clear();
 	for(const ItemList::Entry& e : lis.items)
 	{
 		const Item* item = e.item;
@@ -95,14 +95,14 @@ UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 		if(value > best_value)
 		{
 			best_value = value;
-			items_to_pick.clear();
-			items_to_pick.push_back(item);
+			itemsToPick.clear();
+			itemsToPick.push_back(item);
 		}
-		else if(value == best_value && value != 0 && !items_to_pick.empty())
-			items_to_pick.push_back(item);
+		else if(value == best_value && value != 0 && !itemsToPick.empty())
+			itemsToPick.push_back(item);
 	}
-	const Item* best_item = (items_to_pick.empty() ? nullptr : RandomItem(items_to_pick));
-	return { best_item, best_value, prev_value };
+	const Item* best_item = (itemsToPick.empty() ? nullptr : RandomItem(itemsToPick));
+	return { best_item, best_value, prevValue };
 }
 
 array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
@@ -135,12 +135,12 @@ array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
 	return result;
 }
 
-array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit& unit, float min_value)
+array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit& unit, float minValue)
 {
 	static const ItemList& lis = ItemList::Get("rings");
 	const Item* rings[2] = { unit.GetEquippedItem(SLOT_RING1), unit.GetEquippedItem(SLOT_RING2) };
 
-	items_to_pick.clear();
+	itemsToPick.clear();
 	const Item* second_best_item = nullptr;
 	float second_best_value = 0.f;
 	for(const ItemList::Entry& e : lis.items)
@@ -151,21 +151,21 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 		if(item == rings[0] && item == rings[1])
 			continue;
 		float value = unit.GetItemAiValue(item);
-		if(value > min_value)
+		if(value > minValue)
 		{
-			if(!items_to_pick.empty())
+			if(!itemsToPick.empty())
 			{
-				second_best_item = RandomItem(items_to_pick);
-				second_best_value = min_value;
-				items_to_pick.clear();
+				second_best_item = RandomItem(itemsToPick);
+				second_best_value = minValue;
+				itemsToPick.clear();
 			}
-			items_to_pick.push_back(item);
-			min_value = value;
+			itemsToPick.push_back(item);
+			minValue = value;
 		}
-		else if(value != 0 && !items_to_pick.empty())
+		else if(value != 0 && !itemsToPick.empty())
 		{
-			if(value == min_value)
-				items_to_pick.push_back(item);
+			if(value == minValue)
+				itemsToPick.push_back(item);
 			else if(!second_best_item)
 			{
 				second_best_item = item;
@@ -175,14 +175,14 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 	}
 
 	array<pair<const Item*, float>, 2> result;
-	if(items_to_pick.size() >= 2u)
+	if(itemsToPick.size() >= 2u)
 	{
-		result[0] = { RandomItemPop(items_to_pick), min_value };
-		result[1] = { RandomItem(items_to_pick), min_value };
+		result[0] = { RandomItemPop(itemsToPick), minValue };
+		result[1] = { RandomItem(itemsToPick), minValue };
 	}
-	else if(!items_to_pick.empty())
+	else if(!itemsToPick.empty())
 	{
-		result[0] = { items_to_pick.back(), min_value };
+		result[0] = { itemsToPick.back(), minValue };
 		result[1] = { second_best_item, second_best_value };
 	}
 	else

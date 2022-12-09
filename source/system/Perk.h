@@ -104,15 +104,15 @@ struct Perk
 	int hash;
 	string id, name, desc, details;
 	int parent, flags, cost;
-	ValueType value_type;
+	ValueType valueType;
 	vector<Required> required;
 	vector<Effect> effects;
 	bool defined;
 
-	Perk() : parent(0), flags(0), cost(0), value_type(None), defined(false) {}
+	Perk() : parent(0), flags(0), cost(0), valueType(None), defined(false) {}
 
 	static vector<Perk*> perks;
-	static std::map<int, Perk*> hash_perks;
+	static std::map<int, Perk*> hashPerks;
 	static Perk* Get(int hash);
 	static Perk* Get(Cstring id) { return Get(Hash(id)); }
 	static void Validate(uint& err);
@@ -123,10 +123,10 @@ struct PerkContext
 {
 	CreatedCharacter* cc;
 	PlayerController* pc;
-	bool startup, validate, check_remove;
+	bool startup, validate, checkRemove;
 
 	PerkContext(CreatedCharacter* cc, PlayerController* pc, bool startup)
-		: cc(cc), pc(pc), startup(startup), validate(false), check_remove(false) {}
+		: cc(cc), pc(pc), startup(startup), validate(false), checkRemove(false) {}
 	PerkContext(CreatedCharacter* cc) : PerkContext(cc, nullptr, true) {}
 	PerkContext(PlayerController* pc, bool startup) : PerkContext(nullptr, pc, startup) {}
 	bool CanMod(AttributeId a);

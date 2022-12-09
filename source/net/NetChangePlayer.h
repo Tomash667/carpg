@@ -5,7 +5,6 @@ struct NetChangePlayer
 {
 	enum TYPE
 	{
-		PICKUP, // item picked up [int(id)-count, int(count)-team count]
 		LOOT, // response to looting [bool(id)-can loot, if can: items]
 		START_DIALOG, // start dialog with unit or is busy [int(id)-unit]
 		END_DIALOG, // end of dialog []

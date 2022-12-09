@@ -73,7 +73,7 @@ struct Var
 {
 	string name;
 	int index;
-	bool is_const;
+	bool isConst;
 };
 
 //=================================================================================================
@@ -204,7 +204,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 		case BK_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				building->mesh = res_mgr->TryGet<Mesh>(mesh_id);
+				building->mesh = resMgr->TryGet<Mesh>(mesh_id);
 				if(!building->mesh)
 					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 				t.Next();
@@ -213,8 +213,8 @@ void BuildingLoader::ParseBuilding(const string& id)
 		case BK_INSIDE_MESH:
 			{
 				const string& mesh_id = t.MustGetString();
-				building->inside_mesh = res_mgr->TryGet<Mesh>(mesh_id);
-				if(!building->inside_mesh)
+				building->insideMesh = resMgr->TryGet<Mesh>(mesh_id);
+				if(!building->insideMesh)
 					LoadError("Missing mesh '%s'.", mesh_id.c_str());
 				t.Next();
 			}
@@ -375,7 +375,7 @@ void BuildingLoader::ParseBuildingScript(const string& id)
 	Ptr<BuildingScript> script;
 	script->id = id;
 	DeleteElements(script->variants);
-	script->required_offset = (uint)-1;
+	script->requiredOffset = (uint)-1;
 	variant = nullptr;
 	code = nullptr;
 
@@ -460,11 +460,11 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 			case SK_REQUIRED:
 				if(!if_state.empty())
 					t.Throw("Required off can't be used inside if else section.");
-				if(script.required_offset != (uint)-1)
+				if(script.requiredOffset != (uint)-1)
 					t.Throw("Required already turned off.");
 				t.AssertKeyword(SK2_OFF, G_SCRIPT2);
 				code->push_back(BuildingScript::BS_REQUIRED_OFF);
-				script.required_offset = code->size();
+				script.requiredOffset = code->size();
 				t.Next();
 				break;
 			case SK_RANDOM:
@@ -662,7 +662,7 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 		t.Throw("Unclosed if/else block.");
 	else if(script.variants.empty())
 		t.Throw("Empty building script.");
-	else if(script.required_offset == (uint)-1)
+	else if(script.requiredOffset == (uint)-1)
 		t.Throw("Missing not required section.");
 }
 
@@ -684,11 +684,11 @@ void BuildingLoader::StartVariant(BuildingScript& script)
 }
 
 //=================================================================================================
-void BuildingLoader::AddVar(Cstring id, bool is_const)
+void BuildingLoader::AddVar(Cstring id, bool isConst)
 {
 	Var v;
 	v.name = id.s;
-	v.is_const = is_const;
+	v.isConst = isConst;
 	v.index = vars.size();
 	vars.push_back(v);
 }
@@ -705,13 +705,13 @@ BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 }
 
 //=================================================================================================
-BuildingLoader::Var& BuildingLoader::GetVar(bool can_be_const)
+BuildingLoader::Var& BuildingLoader::GetVar(bool canBeConst)
 {
 	const string& id = t.MustGetItem();
 	Var* v = FindVar(id);
 	if(!v)
 		t.Throw("Missing variable '%s'.", id.c_str());
-	if(v->is_const && !can_be_const)
+	if(v->isConst && !canBeConst)
 		t.Throw("Variable '%s' cannot be modified.", id.c_str());
 	t.Next();
 	return *v;
@@ -832,8 +832,8 @@ void BuildingLoader::CalculateCrc()
 		crc.Update(building->shift);
 		crc.Update(building->scheme);
 		crc.Update(building->flags);
-		if(building->inside_mesh)
-			crc.Update(building->inside_mesh->filename);
+		if(building->insideMesh)
+			crc.Update(building->insideMesh->filename);
 		if(building->group)
 			crc.Update(building->group->id);
 		if(building->unit)

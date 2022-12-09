@@ -44,12 +44,12 @@ public:
 	int GetLocationEventHandlerQuestId() override { return id; }
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	void GenerateSawmill(bool in_progress);
+	void GenerateSawmill(bool inProgress);
 	void OnProgress(int days);
 
-	State sawmill_state;
-	BuildState build_state;
+	State sawmillState;
+	BuildState buildState;
 	int days;
-	HumanData hd_lumberjack;
+	HumanData hdLumberjack;
 	Unit* messenger;
 };

@@ -175,36 +175,32 @@ union BeforePlayerPtr
 //-----------------------------------------------------------------------------
 struct LocalPlayerData
 {
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit; // unit marked with 'select' command
-	Entity<Unit> ability_target;
-	GroundItem* picking_item;
-	Vec3 ability_point;
-	int picking_item_state;
-	float rot_buf, ability_rot, grayout, range_ratio;
-	Key wasted_key;
-	Ability* ability_ready;
-	bool autowalk, ability_ok;
+	BeforePlayer beforePlayer;
+	BeforePlayerPtr beforePlayerPtr;
+	Unit* selectedUnit; // unit marked with 'select' command
+	Entity<Unit> abilityTarget;
+	Vec3 abilityPoint;
+	float rotBuf, abilityRot, grayout, rangeRatio;
+	Key wastedKey;
+	Ability* abilityReady;
+	bool autowalk, abilityOk;
 
 	void Reset()
 	{
-		before_player = BP_NONE;
-		before_player_ptr.any = nullptr;
-		selected_unit = nullptr;
-		ability_target = nullptr;
-		picking_item = nullptr;
-		picking_item_state = 0;
-		rot_buf = 0.f;
+		beforePlayer = BP_NONE;
+		beforePlayerPtr.any = nullptr;
+		selectedUnit = nullptr;
+		abilityTarget = nullptr;
+		rotBuf = 0.f;
 		grayout = 0.f;
-		wasted_key = Key::None;
+		wastedKey = Key::None;
 		autowalk = false;
-		ability_ready = nullptr;
+		abilityReady = nullptr;
 	}
 	Unit* GetTargetUnit()
 	{
-		if(before_player == BP_UNIT)
-			return before_player_ptr.unit;
+		if(beforePlayer == BP_UNIT)
+			return beforePlayerPtr.unit;
 		return nullptr;
 	}
 };
@@ -218,14 +214,14 @@ struct PlayerController : public HeroPlayerCommon
 		int next;
 		int train;
 		int apt;
-		float train_part;
+		float trainPart;
 	};
 
-	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
+	PlayerInfo* playerInfo;
+	float moveTick, lastDmg, lastDmgPoison, dmgc, poisonDmgc, idleTimer;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
-	Key action_key;
-	NextAction next_action;
+	Key actionKey;
+	NextAction nextAction;
 	union
 	{
 		ITEM_SLOT slot;
@@ -235,20 +231,20 @@ struct PlayerController : public HeroPlayerCommon
 			const Item* item;
 			int index;
 		};
-	} next_action_data;
-	WeaponType last_weapon;
-	bool godmode, nocd, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
-	int id, free_days, learning_points, exp, exp_need, exp_level;
+	} nextActionData;
+	WeaponType lastWeapon;
+	bool godmode, nocd, noclip, invisible, isLocal, recalculateLevel, leavingEvent, alwaysRun, lastRing;
+	int id, freeDays, learningPoints, exp, expNeed, expLevel;
 	PlayerAction action;
 	union
 	{
-		Unit* action_unit;
-		Chest* action_chest;
-		Usable* action_usable;
+		Unit* actionUnit;
+		Chest* actionChest;
+		Usable* actionUsable;
 	};
-	DialogContext* dialog_ctx;
-	vector<ItemSlot>* chest_trade; // depends on action (can be unit inventory or chest or trader stock)
-	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
+	DialogContext* dialogCtx;
+	vector<ItemSlot>* chestTrade; // depends on action (can be unit inventory or chest or trader stock)
+	int kills, dmgDone, dmgTaken, knocks, arenaFights, statFlags;
 	vector<TakenPerk> perks;
 	Shortcut shortcuts[Shortcut::MAX];
 	vector<PlayerAbility> abilities;
@@ -258,9 +254,9 @@ struct PlayerController : public HeroPlayerCommon
 	//----------------------
 	// Temporary
 	//----------------------
-	int gold_get; // used in AddGold
+	int goldGet; // used in AddGold
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), last_ring(false) {}
+	PlayerController() : dialogCtx(nullptr), statFlags(0), playerInfo(nullptr), isLocal(false), lastRing(false) {}
 	~PlayerController();
 
 	void Rest(int days, bool resting, bool travel = false);
@@ -276,7 +272,7 @@ private:
 public:
 	void TrainMove(float dist);
 	void Train(TrainWhat what, float value, int level);
-	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
+	void Train(bool isSkill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
 	int CalculateLevel();
 	void RecalculateLevel();
@@ -292,7 +288,7 @@ public:
 	bool IsTradingWith(Unit* t) const
 	{
 		if(Any(action, PlayerAction::LootUnit, PlayerAction::Trade, PlayerAction::GiveItems, PlayerAction::ShareItems))
-			return action_unit == t;
+			return actionUnit == t;
 		else
 			return false;
 	}
@@ -303,7 +299,7 @@ public:
 			PlayerAction::ShareItems, PlayerAction::GiveItems, PlayerAction::LootContainer);
 	}
 	bool IsTrading() const { return IsTrade(action); }
-	bool IsLocal() const { return is_local; }
+	bool IsLocal() const { return isLocal; }
 	bool IsLeader() const;
 	int GetNextActionItemIndex() const;
 	void PayCredit(int count);
@@ -312,7 +308,7 @@ public:
 
 	// perks
 	bool HavePerk(Perk* perk, int value = -1);
-	bool HavePerkS(const string& perk_id);
+	bool HavePerkS(const string& perkId);
 	bool AddPerk(Perk* perk, int value);
 	bool RemovePerk(Perk* perk, int value);
 
@@ -336,7 +332,7 @@ public:
 	bool CanUseAbilityCheck() const;
 	void UpdateCooldown(float dt);
 	void RefreshCooldown();
-	void UseAbility(Ability* ability, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
+	void UseAbility(Ability* ability, bool fromServer, const Vec3* pos = nullptr, Unit* target = nullptr);
 	bool IsAbilityPrepared() const;
 
 	// recipes
@@ -350,10 +346,10 @@ public:
 	void Yell();
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
-	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-	void UseUsable(Usable* u, bool after_action);
+	void CheckObjectDistance(const Vec3& pos, void* ptr, float& bestDist, BeforePlayer type);
+	void UseUsable(Usable* u, bool afterAction);
 	void Update(float dt);
-	void UpdateMove(float dt, bool allow_rot);
+	void UpdateMove(float dt, bool allowRot);
 	bool WantExitLevel();
 	void ClearNextAction();
 	Vec3 RaytestTarget(float range);

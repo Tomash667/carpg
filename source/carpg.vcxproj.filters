@@ -248,7 +248,6 @@
     <ClCompile Include="quests\QuestManager.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="helpers\UnitHelper.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -396,9 +395,6 @@
     </ClCompile>
     <ClCompile Include="entity\TerrainTile.cpp">
       <Filter>entity</Filter>
-    </ClCompile>
-    <ClCompile Include="location\LevelArea.cpp">
-      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="generator\TutorialLocationGenerator.cpp">
       <Filter>generator</Filter>
@@ -661,17 +657,20 @@
     <ClCompile Include="entity\Drain.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="helpers\LevelAreaContext.cpp">
-      <Filter>helpers</Filter>
-    </ClCompile>
     <ClCompile Include="entity\UnitList.cpp">
       <Filter>entity</Filter>
     </ClCompile>
-    <ClCompile Include="location\TmpLevelArea.cpp">
-      <Filter>location</Filter>
-    </ClCompile>
     <ClCompile Include="system\MusicListLoader.cpp">
       <Filter>system\music</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\LevelPart.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="location\LocationPart.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\LocationContext.cpp">
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
@@ -846,10 +845,6 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />
-    <ClInclude Include="location\LevelArea.h">
-      <Filter>location</Filter>
-    </ClInclude>
-    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="helpers\UnitHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
@@ -1307,17 +1302,11 @@
     <ClInclude Include="entity\Drain.h">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="helpers\LevelAreaContext.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
     <ClInclude Include="entity\LevelQuad.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\UnitList.h">
       <Filter>entity</Filter>
-    </ClInclude>
-    <ClInclude Include="location\TmpLevelArea.h">
-      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="system\DialogOp.h">
       <Filter>system\dialogs</Filter>
@@ -1327,6 +1316,15 @@
     </ClInclude>
     <ClInclude Include="system\MusicType.h">
       <Filter>system\music</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\LevelPart.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="location\LocationPart.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\LocationContext.h">
+      <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

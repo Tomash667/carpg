@@ -24,6 +24,6 @@ public:
 	void GetConversionData(ConversionData& data) override;
 
 private:
-	int end_loc;
+	int endLoc;
 	OtherItem letter;
 };

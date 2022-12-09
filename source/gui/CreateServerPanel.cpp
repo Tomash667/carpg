@@ -11,45 +11,48 @@
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 {
-	size = Int2(344, 360);
+	size = Int2(240, 376);
 	bts.resize(2);
 
-	const Int2 bt_size(180, 44);
-	const int x = (size.x - bt_size.x) / 2;
+	const Int2 btSize(180, 44);
+	const int x = (size.x - btSize.x) / 2;
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].pos = Int2(x, 260);
-	bts[0].size = bt_size;
+	bts[0].size = btSize;
 
 	bts[1].id = IdCancel;
 	bts[1].parent = this;
 	bts[1].pos = Int2(x, 310);
-	bts[1].size = bt_size;
+	bts[1].size = btSize;
+
+	const Int2 textboxSize = Int2(200, 32);
+	const int textboxX = (size.x - textboxSize.x) / 2;
 
 	textbox[0].limit = 16;
 	textbox[0].parent = this;
-	textbox[0].pos = Int2(60, 70);
-	textbox[0].size = Int2(200, 32);
+	textbox[0].pos = Int2(textboxX, 70);
+	textbox[0].size = textboxSize;
 
 	textbox[1].limit = 16;
 	textbox[1].parent = this;
-	textbox[1].pos = Int2(60, 120);
-	textbox[1].size = Int2(200, 32);
+	textbox[1].pos = Int2(textboxX, 124);
+	textbox[1].size = textboxSize;
 	textbox[1].SetNumeric(true);
-	textbox[1].num_min = MIN_PLAYERS;
-	textbox[1].num_max = MAX_PLAYERS;
+	textbox[1].numMin = MIN_PLAYERS;
+	textbox[1].numMax = MAX_PLAYERS;
 
 	textbox[2].limit = 16;
 	textbox[2].parent = this;
-	textbox[2].pos = Int2(60, 170);
-	textbox[2].size = Int2(200, 32);
+	textbox[2].pos = Int2(textboxX, 178);
+	textbox[2].size = textboxSize;
 
-	checkbox.bt_size = Int2(32, 32);
+	checkbox.btSize = Int2(32, 32);
 	checkbox.checked = false;
 	checkbox.id = IdHidden;
 	checkbox.parent = this;
-	checkbox.pos = Int2(60, 215);
+	checkbox.pos = Int2(textboxX, 215);
 	checkbox.size = Int2(200, 32);
 
 	for(int i = 0; i < 2; ++i)
@@ -80,13 +83,13 @@ void CreateServerPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void CreateServerPanel::Draw(ControlDrawData*)
+void CreateServerPanel::Draw()
 {
 	DrawPanel();
 
 	// tekst
-	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(GameGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();
@@ -113,8 +116,8 @@ void CreateServerPanel::Event(GuiEvent e)
 			cont.GainFocus();
 			visible = true;
 		}
-		global_pos = pos = (gui->wnd_size - size) / 2;
-		cont.Move(global_pos);
+		globalPos = pos = (gui->wndSize - size) / 2;
+		cont.Move(globalPos);
 		break;
 	case GuiEvent_GainFocus:
 		cont.GainFocus();
@@ -135,7 +138,7 @@ void CreateServerPanel::Event(GuiEvent e)
 				DialogInfo dialog = {};
 				dialog.event = [this](int id) { if(id == BUTTON_YES) event(BUTTON_OK); };
 				dialog.name = "confirm_max_players";
-				dialog.order = ORDER_TOP;
+				dialog.order = DialogOrder::Top;
 				dialog.parent = this;
 				dialog.text = txConfirmMaxPlayers;
 				dialog.type = DIALOG_YESNO;
@@ -154,9 +157,9 @@ void CreateServerPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateServerPanel::Show()
 {
-	textbox[0].SetText(net->server_name.c_str());
-	textbox[1].SetText(Format("%d", net->max_players));
+	textbox[0].SetText(net->serverName.c_str());
+	textbox[1].SetText(Format("%d", net->maxPlayers));
 	textbox[2].SetText(net->password.c_str());
-	checkbox.checked = net->server_lan;
+	checkbox.checked = net->serverLan;
 	gui->ShowDialog(this);
 }

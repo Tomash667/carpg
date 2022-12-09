@@ -12,12 +12,12 @@ InfoBox::InfoBox(const DialogInfo& info) : DialogBox(info)
 }
 
 //=================================================================================================
-void InfoBox::Draw(ControlDrawData*)
+void InfoBox::Draw()
 {
-	DrawPanel(!game_gui->load_screen->visible);
+	DrawPanel(!gameGui->loadScreen->visible);
 
 	// text
-	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 }
 
@@ -34,7 +34,7 @@ void InfoBox::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		globalPos = pos = (gui->wndSize - size) / 2;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;
@@ -49,5 +49,5 @@ void InfoBox::Show(cstring text)
 	if(!visible)
 		gui->ShowDialog(this);
 	else
-		global_pos = pos = (gui->wnd_size - size) / 2;
+		globalPos = pos = (gui->wndSize - size) / 2;
 }

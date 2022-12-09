@@ -43,14 +43,14 @@ void HillsGenerator::GenerateUnits()
 	if(loc->group->IsEmpty())
 		return;
 
-	LevelArea& area = *game_level->local_area;
+	LocationPart& locPart = *gameLevel->localPart;
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	const int level = game_level->GetDifficultyLevel();
+	const int level = gameLevel->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
 	static vector<Vec2> poss;
 	poss.clear();
-	poss.push_back(Vec2(team_pos.x, team_pos.z));
+	poss.push_back(Vec2(teamPos.x, teamPos.z));
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
@@ -77,11 +77,11 @@ void HillsGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
-				game_level->SpawnUnitNearLocation(area, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
+				gameLevel->SpawnUnitNearLocation(locPart, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
 			}
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!game_level->SpawnUnitNearLocation(area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
+				if(!gameLevel->SpawnUnitNearLocation(locPart, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
 			}
 		}

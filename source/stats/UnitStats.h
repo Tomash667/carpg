@@ -45,7 +45,7 @@ struct UnitStats
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
 	const float* priorities;
-	const float* tag_priorities;
+	const float* tagPriorities;
 	SubprofileInfo subprofile;
 	bool fixed;
 
@@ -66,5 +66,5 @@ struct UnitStats
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 
-	static std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> shared_stats;
+	static std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> sharedStats;
 };

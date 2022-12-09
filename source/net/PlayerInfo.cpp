@@ -5,7 +5,7 @@
 #include "NetChangePlayer.h"
 
 //=================================================================================================
-PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(nullptr), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
+PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(nullptr), left(LEFT_NO), updateFlags(0), ready(false), loaded(false), warping(false)
 {
 }
 

@@ -59,14 +59,14 @@ struct ItemEffect
 	EffectId effect;
 	float power;
 	int value;
-	bool on_attack;
+	bool onAttack;
 };
 
 //-----------------------------------------------------------------------------
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), aiValue(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
 		state(ResourceState::NotLoaded)
 	{
 	}
@@ -112,7 +112,7 @@ struct Item
 	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
 	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
 	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
-	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
+	bool IsQuest(int questId) const { return IsQuest() && this->questId == questId; }
 
 	const string& GetName() const { return name; }
 	float GetWeight() const { return float(weight) / 10; }
@@ -127,7 +127,7 @@ struct Item
 	void RenameS(const string& name) { Rename(name.c_str()); }
 
 	string id, name, desc;
-	int weight, value, ai_value, flags, quest_id;
+	int weight, value, aiValue, flags, questId;
 	vector<ItemEffect> effects;
 	ITEM_TYPE type;
 	MeshPtr mesh;
@@ -166,7 +166,7 @@ enum WEAPON_TYPE
 struct WeaponTypeInfo
 {
 	cstring name;
-	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
+	float str2dmg, dex2dmg, powerSpeed, baseSpeed, dexSpeed;
 	SkillId skill;
 	float stamina;
 
@@ -209,19 +209,19 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 // Weapon
 struct Weapon : public Item
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), reqStr(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
+	Weapon() : Item(IT_WEAPON), dmg(10), dmgType(DMG_BLUNT), reqStr(10), weaponType(WT_BLUNT), material(MAT_WOOD) {}
 
 	const WeaponTypeInfo& GetInfo() const
 	{
-		return WeaponTypeInfo::info[weapon_type];
+		return WeaponTypeInfo::info[weaponType];
 	}
 	SkillId GetSkill() const
 	{
 		return GetInfo().skill;
 	}
 
-	int dmg, dmg_type, reqStr;
-	WEAPON_TYPE weapon_type;
+	int dmg, dmgType, reqStr;
+	WEAPON_TYPE weaponType;
 	MATERIAL_TYPE material;
 
 	static vector<Weapon*> weapons;
@@ -276,9 +276,9 @@ inline ARMOR_TYPE GetArmorType(SkillId skill)
 	}
 }
 
-inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
+inline SkillId GetArmorTypeSkill(ARMOR_TYPE armorType)
 {
-	switch(armor_type)
+	switch(armorType)
 	{
 	default:
 		assert(0);
@@ -295,22 +295,22 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), reqStr(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), reqStr(10), mobility(100), material(MAT_SKIN), armorType(AT_LIGHT), armorUnitType(ArmorUnitType::HUMAN) {}
 
 	const TexOverride* GetTextureOverride() const
 	{
-		if(tex_override.empty())
+		if(texOverride.empty())
 			return nullptr;
 		else
-			return tex_override.data();
+			return texOverride.data();
 	}
-	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
+	SkillId GetSkill() const { return GetArmorTypeSkill(armorType); }
 
 	int def, reqStr, mobility;
 	MATERIAL_TYPE material;
-	ARMOR_TYPE armor_type;
-	ArmorUnitType armor_unit_type;
-	vector<TexOverride> tex_override;
+	ARMOR_TYPE armorType;
+	ArmorUnitType armorUnitType;
+	vector<TexOverride> texOverride;
 
 	static vector<Armor*> armors;
 };
@@ -414,7 +414,7 @@ struct BookScheme
 	Int2 size, prev, next;
 	vector<Rect> regions;
 
-	static vector<BookScheme*> book_schemes;
+	static vector<BookScheme*> bookSchemes;
 	static BookScheme* TryGet(Cstring id);
 };
 
@@ -453,7 +453,7 @@ struct ItemList
 	string id;
 	vector<Entry> items;
 	int total;
-	bool is_leveled, is_priority;
+	bool isLeveled, isPriority;
 
 	const Item* Get() const;
 	const Item* GetLeveled(int level) const;
@@ -493,14 +493,14 @@ struct StartItem
 
 	StartItem(SkillId skill, const Item* item = nullptr, int value = 0, bool mage = false) : skill(skill), item(item), value(value), mage(mage) {}
 
-	static vector<StartItem> start_items;
+	static vector<StartItem> startItems;
 	static const Item* GetStartItem(SkillId skill, int value, bool mage);
 };
 
 //-----------------------------------------------------------------------------
 struct Recipe : public ContentItem<Recipe>
 {
-	inline static const cstring type_name = "recipe";
+	inline static const cstring typeName = "recipe";
 
 	const Item* result;
 	vector<pair<const Item*, uint>> ingredients;
@@ -532,5 +532,5 @@ inline void operator >> (GameReader& f, const Item*& item)
 }
 
 //-----------------------------------------------------------------------------
-extern std::map<const Item*, Item*> better_items;
-extern std::map<string, Item*> item_aliases;
+extern std::map<const Item*, Item*> betterItems;
+extern std::map<string, Item*> itemAliases;

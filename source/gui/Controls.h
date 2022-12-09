@@ -11,10 +11,10 @@ class Controls : public DialogBox
 public:
 	explicit Controls(const DialogInfo& info);
 	void LoadLanguage();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	cstring GetKeyText(Key key) { return key_text[(int)key]; }
+	cstring GetKeyText(Key key) { return txKey[(int)key]; }
 
 private:
 	void GetCell(int item, int column, Cell& cell);
@@ -23,8 +23,8 @@ private:
 	void OnKey(Key key);
 
 	Grid grid;
-	cstring key_text[255], txResetConfirm, txInfo;
-	int picked, picked_n;
-	float cursor_tick;
+	cstring txKey[255], txResetConfirm, txInfo, txTitle;
+	int pickedKey, pickedIndex;
+	float cursorTick;
 	bool changed;
 };

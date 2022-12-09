@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-class LevelAreaContext
+struct LocationContext
 {
 	friend struct ForLocation;
 
 	struct Entry
 	{
-		LevelArea* area;
+		LocationPart* locPart;
 		int loc, level;
 		bool active;
 	};
@@ -15,11 +15,9 @@ class LevelAreaContext
 	vector<Entry> entries;
 
 public:
-	GroundItem* FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
-	bool FindUnit(Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	bool RemoveQuestGroundItem(int quest_id);
+	bool FindUnit(Unit* unit, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
+	Unit* FindUnit(UnitData* data, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
+	Unit* FindUnit(delegate<bool(Unit*)> clbk, LocationContext::Entry** entry = nullptr, int* unitIndex = nullptr);
 	bool RemoveUnit(Unit* unit);
 };
 
@@ -31,10 +29,10 @@ struct ForLocation
 	ForLocation(const ForLocation& f) = delete;
 	~ForLocation();
 	ForLocation& operator = (const ForLocation& f) = delete;
-	LevelAreaContext* operator -> () { return ctx; }
+	LocationContext* operator -> () { return ctx; }
 
 private:
 	void Setup(Location* loc, int level);
 
-	LevelAreaContext* ctx;
+	LocationContext* ctx;
 };

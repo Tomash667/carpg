@@ -10,40 +10,40 @@
 //=================================================================================================
 MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : DialogBox(info)
 {
-	size = Int2(344, 380);
+	size = Int2(240, 374);
 	bts.resize(5);
 
-	const Int2 bt_size(180, 44);
-	const int x = (size.x - bt_size.x) / 2;
+	const Int2 btSize(180, 44);
+	const int x = (size.x - btSize.x) / 2;
 
 	bts[0].parent = this;
 	bts[0].id = IdJoinLan;
-	bts[0].size = bt_size;
-	bts[0].pos = Int2(x, 100);
+	bts[0].size = btSize;
+	bts[0].pos = Int2(x, 110);
 
 	bts[1].parent = this;
 	bts[1].id = IdJoinIp;
-	bts[1].size = bt_size;
-	bts[1].pos = Int2(x, 150);
+	bts[1].size = btSize;
+	bts[1].pos = Int2(x, 160);
 
 	bts[2].parent = this;
 	bts[2].id = IdCreate;
-	bts[2].size = bt_size;
-	bts[2].pos = Int2(x, 200);
+	bts[2].size = btSize;
+	bts[2].pos = Int2(x, 210);
 
 	bts[3].parent = this;
 	bts[3].id = IdLoad;
-	bts[3].size = bt_size;
-	bts[3].pos = Int2(x, 250);
+	bts[3].size = btSize;
+	bts[3].pos = Int2(x, 260);
 
 	bts[4].parent = this;
 	bts[4].id = IdCancel;
-	bts[4].size = bt_size;
-	bts[4].pos = Int2(x, 300);
+	bts[4].size = btSize;
+	bts[4].pos = Int2(x, 310);
 
 	textbox.limit = 16;
 	textbox.parent = this;
-	textbox.pos = Int2((size.x - 200) / 2, 57);
+	textbox.pos = Int2((size.x - 200) / 2, 70);
 	textbox.size = Int2(200, 32);
 
 	visible = false;
@@ -55,9 +55,10 @@ void MultiplayerPanel::LoadLanguage()
 	Language::Section s = Language::GetSection("MultiplayerPanel");
 
 	txMultiplayerGame = s.Get("multiplayerGame");
-	txNick = s.Get("nick");
 	txNeedEnterNick = s.Get("needEnterNick");
 	txEnterValidNick = s.Get("enterValidNick");
+
+	textbox.label = s.Get("nick");
 
 	bts[0].text = s.Get("join");
 	bts[1].text = s.Get("joinIP");
@@ -67,17 +68,13 @@ void MultiplayerPanel::LoadLanguage()
 }
 
 //=================================================================================================
-void MultiplayerPanel::Draw(ControlDrawData*)
+void MultiplayerPanel::Draw()
 {
 	DrawPanel();
 
 	// tekst
-	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(GameGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
-
-	// tekst nick
-	r.Top() += 60;
-	gui->DrawText(GameGui::font, txNick, 0, Color::Black, r);
+	Rect r = { globalPos.x + 12, globalPos.y + 8, globalPos.x + size.x - 12, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// textbox
 	textbox.Draw();
@@ -92,11 +89,11 @@ void MultiplayerPanel::Update(float dt)
 {
 	for(int i = 0; i < 5; ++i)
 	{
-		bts[i].mouse_focus = focus;
+		bts[i].mouseFocus = focus;
 		bts[i].Update(dt);
 	}
 
-	textbox.mouse_focus = focus;
+	textbox.mouseFocus = focus;
 	textbox.Update(dt);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -116,10 +113,10 @@ void MultiplayerPanel::Event(GuiEvent e)
 			textbox.focus = true;
 			textbox.Event(GuiEvent_GainFocus);
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 5; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		textbox.global_pos = global_pos + textbox.pos;
+			bts[i].globalPos = globalPos + bts[i].pos;
+		textbox.globalPos = globalPos + textbox.pos;
 		break;
 	case GuiEvent_GainFocus:
 		textbox.focus = true;
@@ -147,6 +144,6 @@ void MultiplayerPanel::Event(GuiEvent e)
 //=================================================================================================
 void MultiplayerPanel::Show()
 {
-	textbox.SetText(game->player_name.c_str());
+	textbox.SetText(game->playerName.c_str());
 	gui->ShowDialog(this);
 }

@@ -2,13 +2,13 @@
 #include "MultiInsideLocation.h"
 
 //=================================================================================================
-MultiInsideLocation::MultiInsideLocation(int level_count) : active_level(-1), active(nullptr), generated(0)
+MultiInsideLocation::MultiInsideLocation(int levelCount) : activeLevel(-1), active(nullptr), generated(0)
 {
-	levels.resize(level_count);
-	for(int i = 0; i < level_count; ++i)
+	levels.resize(levelCount);
+	for(int i = 0; i < levelCount; ++i)
 		levels[i] = new InsideLocationLevel(i);
 	LevelInfo li = { -1, false, false, false };
-	infos.resize(level_count, li);
+	infos.resize(levelCount, li);
 }
 
 //=================================================================================================
@@ -18,11 +18,11 @@ MultiInsideLocation::~MultiInsideLocation()
 }
 
 //=================================================================================================
-void MultiInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void MultiInsideLocation::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
 	active->mine = Int2::Zero;
 	active->maxe = Int2(active->w, active->h);
-	areas.push_back(*active);
+	parts.push_back(*active);
 }
 
 //=================================================================================================
@@ -30,20 +30,20 @@ void MultiInsideLocation::Save(GameWriter& f)
 {
 	InsideLocation::Save(f);
 
-	f << active_level;
+	f << activeLevel;
 	f << generated;
 
 	const bool prevIsLocal = f.isLocal;
 	for(int i = 0; i < generated; ++i)
 	{
-		f.isLocal = (prevIsLocal && i == active_level);
+		f.isLocal = (prevIsLocal && i == activeLevel);
 		levels[i]->SaveLevel(f);
 	}
 	f.isLocal = prevIsLocal;
 
 	for(LevelInfo& info : infos)
 	{
-		f << info.last_visit;
+		f << info.lastVisit;
 		f << info.seed;
 		f << info.cleared;
 		f << info.reset;
@@ -55,7 +55,7 @@ void MultiInsideLocation::Load(GameReader& f)
 {
 	InsideLocation::Load(f);
 
-	f >> active_level;
+	f >> activeLevel;
 	f >> generated;
 
 	if(LOAD_VERSION < V_0_11)
@@ -63,24 +63,24 @@ void MultiInsideLocation::Load(GameReader& f)
 	const bool prevIsLocal = f.isLocal;
 	for(int i = 0; i < generated; ++i)
 	{
-		f.isLocal = (prevIsLocal && active_level == i);
+		f.isLocal = (prevIsLocal && activeLevel == i);
 		levels[i]->LoadLevel(f);
 	}
 	f.isLocal = prevIsLocal;
 
-	if(active_level != -1)
-		active = levels[active_level];
+	if(activeLevel != -1)
+		active = levels[activeLevel];
 	else
 		active = nullptr;
 
 	infos.resize(levels.size());
 	for(LevelInfo& info : infos)
 	{
-		f >> info.last_visit;
+		f >> info.lastVisit;
 		f >> info.seed;
 		f >> info.cleared;
 		f >> info.reset;
-		info.loaded_resources = false;
+		info.loadedResources = false;
 	}
 }
 
@@ -140,64 +140,64 @@ int MultiInsideLocation::GetRandomLevel() const
 }
 
 //=================================================================================================
-Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, int* index)
+Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& atLevel, int* index)
 {
-	if(at_level == -1)
+	if(atLevel == -1)
 	{
 		for(int i = 0; i < generated; ++i)
 		{
 			Chest* chest = levels[i]->FindChestWithItem(item, index);
 			if(chest)
 			{
-				at_level = i;
+				atLevel = i;
 				return chest;
 			}
 		}
 	}
-	else if(at_level < generated)
-		return levels[at_level]->FindChestWithItem(item, index);
+	else if(atLevel < generated)
+		return levels[atLevel]->FindChestWithItem(item, index);
 
 	return nullptr;
 }
 
 //=================================================================================================
-Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_id, int& at_level, int* index)
+Chest* MultiInsideLocation::FindChestWithQuestItem(int questId, int& atLevel, int* index)
 {
-	if(at_level == -1)
+	if(atLevel == -1)
 	{
 		for(int i = 0; i < generated; ++i)
 		{
-			Chest* chest = levels[i]->FindChestWithQuestItem(quest_id, index);
+			Chest* chest = levels[i]->FindChestWithQuestItem(questId, index);
 			if(chest)
 			{
-				at_level = i;
+				atLevel = i;
 				return chest;
 			}
 		}
 	}
-	else if(at_level < generated)
-		return levels[at_level]->FindChestWithQuestItem(quest_id, index);
+	else if(atLevel < generated)
+		return levels[atLevel]->FindChestWithQuestItem(questId, index);
 
 	return nullptr;
 }
 
 //=================================================================================================
-bool MultiInsideLocation::CheckUpdate(int& days_passed, int worldtime)
+bool MultiInsideLocation::CheckUpdate(int& daysPassed, int worldtime)
 {
-	bool need_reset = infos[active_level].reset;
-	infos[active_level].reset = false;
-	if(infos[active_level].last_visit == -1)
-		days_passed = -1;
+	bool need_reset = infos[activeLevel].reset;
+	infos[activeLevel].reset = false;
+	if(infos[activeLevel].lastVisit == -1)
+		daysPassed = -1;
 	else
-		days_passed = worldtime - infos[active_level].last_visit;
-	infos[active_level].last_visit = worldtime;
+		daysPassed = worldtime - infos[activeLevel].lastVisit;
+	infos[activeLevel].lastVisit = worldtime;
 	return need_reset;
 }
 
 //=================================================================================================
 bool MultiInsideLocation::LevelCleared()
 {
-	infos[active_level].cleared = true;
+	infos[activeLevel].cleared = true;
 	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
 	{
 		if(!it->cleared)
@@ -217,15 +217,15 @@ void MultiInsideLocation::Reset()
 }
 
 //=================================================================================================
-bool MultiInsideLocation::RequireLoadingResources(bool* to_set)
+bool MultiInsideLocation::RequireLoadingResources(bool* toSet)
 {
-	LevelInfo& info = infos[active_level];
-	if(to_set)
+	LevelInfo& info = infos[activeLevel];
+	if(toSet)
 	{
-		bool result = info.loaded_resources;
-		info.loaded_resources = *to_set;
+		bool result = info.loadedResources;
+		info.loadedResources = *toSet;
 		return result;
 	}
 	else
-		return info.loaded_resources;
+		return info.loadedResources;
 }

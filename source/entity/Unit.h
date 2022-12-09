@@ -149,7 +149,7 @@ enum UnitOrder
 	ORDER_ESCAPE_TO, // escape from enemies moving toward point
 	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
 	ORDER_GOTO_INN,
-	ORDER_GUARD, // stays near target, remove dont_attack when target dont_attack is removed
+	ORDER_GUARD, // stays near target, remove dontAttack when target dontAttack is removed
 	ORDER_AUTO_TALK,
 	ORDER_MAX
 };
@@ -180,14 +180,14 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 		struct
 		{
 			Vec3 pos;
-			MoveType move_type;
+			MoveType moveType;
 			float range;
 		};
 		struct
 		{
-			AutoTalkMode auto_talk;
-			GameDialog* auto_talk_dialog;
-			Quest* auto_talk_quest;
+			AutoTalkMode autoTalk;
+			GameDialog* autoTalkDialog;
+			Quest* autoTalkQuest;
 		};
 	};
 	UnitOrderEntry* next;
@@ -202,7 +202,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 		}
 	}
 	UnitOrderEntry* WithTimer(float timer);
-	UnitOrderEntry* WithMoveType(MoveType move_type);
+	UnitOrderEntry* WithMoveType(MoveType moveType);
 	UnitOrderEntry* WithRange(float range);
 	UnitOrderEntry* ThenWander();
 	UnitOrderEntry* ThenWait();
@@ -285,18 +285,18 @@ struct Unit : public EntityType<Unit>
 	static const float YELL_SOUND_DIST;
 	static const float COUGHS_SOUND_DIST;
 
-	LevelArea* area;
+	LocationPart* locPart;
 	UnitData* data;
 	PlayerController* player;
 	AIController* ai;
 	Hero* hero;
-	Human* human_data;
-	MeshInstance* mesh_inst;
-	Animation animation, current_animation;
-	LiveState live_state;
-	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, last_bash, alcohol, raise_timer, stamina_timer;
-	int refs, animation_state, level, gold, in_arena, quest_id, ai_mode;
+	Human* humanData;
+	MeshInstance* meshInst;
+	Animation animation, currentAnimation;
+	LiveState liveState;
+	Vec3 pos, visualPos, prevPos, targetPos, targetPos2;
+	float rot, prevSpeed, hp, hpmax, mp, mpmax, stamina, staminaMax, speed, hurtTimer, talkTimer, timer, lastBash, alcohol, raiseTimer, staminaTimer;
+	int refs, animationState, level, gold, inArena, questId, aiMode;
 	FROZEN frozen;
 	ACTION action;
 	union ActionData
@@ -326,19 +326,19 @@ struct Unit : public EntityType<Unit>
 		struct UseUsableAction
 		{
 			float rot;
-		} use_usable;
+		} useUsable;
 	} act;
-	WeaponType weapon_taken, weapon_hiding;
-	WeaponState weapon_state;
-	MeshInstance* bow_instance;
-	const Item* used_item;
+	WeaponType weaponTaken, weaponHiding;
+	WeaponState weaponState;
+	MeshInstance* bowInstance;
+	const Item* usedItem;
 	vector<Effect> effects;
-	bool talking, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running, used_item_is_team;
+	bool talking, toRemove, temporary, changed, dontAttack, assist, attackTeam, fakeUnit, moved, mark, running, usedItemIsTeam;
 	btCollisionObject* cobj;
 	Usable* usable;
-	UnitEventHandler* event_handler;
+	UnitEventHandler* eventHandler;
 	SpeechBubble* bubble;
-	Entity<Unit> summoner, look_target;
+	Entity<Unit> summoner, lookTarget;
 	enum Busy
 	{
 		Busy_No,
@@ -350,15 +350,15 @@ struct Unit : public EntityType<Unit>
 	} busy; // not saved, should be Busy_No at saving
 	EntityInterpolator* interp;
 	UnitStats* stats;
-	StaminaAction stamina_action;
+	StaminaAction staminaAction;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
 	vector<Event> events;
 	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
+	Unit() : meshInst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bowInstance(nullptr), fakeUnit(false),
+		humanData(nullptr), staminaAction(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -369,8 +369,8 @@ struct Unit : public EntityType<Unit>
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
 	float CalculateDefense(const Item* armor = nullptr) const;
-	bool IsStanding() const { return live_state == ALIVE; }
-	bool IsAlive() const { return live_state < DYING; }
+	bool IsStanding() const { return liveState == ALIVE; }
+	bool IsAlive() const { return liveState < DYING; }
 	bool IsIdle() const;
 	bool IsAssist() const;
 	bool IsDontAttack() const;
@@ -389,13 +389,13 @@ struct Unit : public EntityType<Unit>
 	{
 		float radius = data->mesh->head.radius * data->scale;
 		if(data->type == UNIT_TYPE::HUMAN)
-			radius *= ((human_data->height - 1) * 0.2f + 1.f);
+			radius *= ((humanData->height - 1) * 0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 0.3f * ((human_data->height - 1) * 0.2f + 1.f);
+			return 0.3f * ((humanData->height - 1) * 0.2f + 1.f);
 		else
 			return data->width;
 	}
@@ -403,15 +403,15 @@ struct Unit : public EntityType<Unit>
 	{
 		if(action != A_USE_USABLE)
 			return pos;
-		else if(animation_state == AS_USE_USABLE_MOVE_TO_ENDPOINT)
-			return target_pos;
+		else if(animationState == AS_USE_USABLE_MOVE_TO_ENDPOINT)
+			return targetPos;
 		else
-			return target_pos2;
+			return targetPos2;
 	}
 	float GetUnitHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
-			return 1.73f * data->scale * ((human_data->height - 1) * 0.2f + 1.f);
+			return 1.73f * data->scale * ((humanData->height - 1) * 0.2f + 1.f);
 		else
 			return data->scale * data->mesh->head.bbox.SizeY();
 	}
@@ -423,13 +423,13 @@ struct Unit : public EntityType<Unit>
 	}
 	Vec3 GetHeadPoint() const
 	{
-		Vec3 pt = visual_pos;
+		Vec3 pt = visualPos;
 		pt.y += GetUnitHeight() * 1.1f;
 		return pt;
 	}
 	Vec3 GetHeadSoundPos() const
 	{
-		Vec3 pt = visual_pos;
+		Vec3 pt = visualPos;
 		pt.y += GetUnitHeight() * 0.9f;
 		return pt;
 	}
@@ -438,7 +438,7 @@ struct Unit : public EntityType<Unit>
 		Vec3 pt;
 		if(IsStanding())
 		{
-			pt = visual_pos;
+			pt = visualPos;
 			pt.y += GetUnitHeight();
 		}
 		else
@@ -455,7 +455,7 @@ struct Unit : public EntityType<Unit>
 	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
 	float GetMpp() const { return mp / mpmax; }
-	float GetStaminap() const { return stamina / stamina_max; }
+	float GetStaminap() const { return stamina / staminaMax; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
 	bool IsNotFighting() const
@@ -463,14 +463,14 @@ struct Unit : public EntityType<Unit>
 		if(data->type == UNIT_TYPE::ANIMAL)
 			return false;
 		else
-			return weapon_state == WeaponState::Hidden;
+			return weaponState == WeaponState::Hidden;
 	}
 	Vec3 GetLootCenter() const;
 
 	float CalculateWeaponPros(const Weapon& weapon) const;
-	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr, int* prev_value = nullptr) const;
-	bool IsBetterArmor(const Armor& armor, int* value = nullptr, int* prev_value = nullptr) const;
-	bool IsBetterItem(const Item* item, int* value = nullptr, int* prev_value = nullptr, ITEM_SLOT* target_slot = nullptr) const;
+	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr, int* prevValue = nullptr) const;
+	bool IsBetterArmor(const Armor& armor, int* value = nullptr, int* prevValue = nullptr) const;
+	bool IsBetterItem(const Item* item, int* value = nullptr, int* prevValue = nullptr, ITEM_SLOT* targetSlot = nullptr) const;
 	float GetItemAiValue(const Item* item) const;
 	bool IsPlayer() const { return (player != nullptr); }
 	bool IsLocalPlayer() const { return IsPlayer() && player->IsLocal(); }
@@ -478,15 +478,15 @@ struct Unit : public EntityType<Unit>
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * GetMobilityMod(false);
+		return data->rotSpeed * GetMobilityMod(false);
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
+		return data->walkSpeed * GetMobilityMod(false) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
+		return data->runSpeed * GetMobilityMod(true) * (1.f - GetEffectMax(EffectId::SlowMove));
 	}
 	bool CanMove() const { return !HaveEffect(EffectId::Rooted); }
 	bool CanRun() const;
@@ -495,18 +495,18 @@ struct Unit : public EntityType<Unit>
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
-		return weapon_state == WeaponState::Taken && weapon_taken == W_ONE_HANDED && HaveShield();
+		return weaponState == WeaponState::Taken && weaponTaken == W_ONE_HANDED && HaveShield();
 	}
 
 	WeaponType GetHoldWeapon() const
 	{
-		switch(weapon_state)
+		switch(weaponState)
 		{
 		case WeaponState::Taken:
 		case WeaponState::Taking:
-			return weapon_taken;
+			return weaponTaken;
 		case WeaponState::Hiding:
-			return weapon_hiding;
+			return weaponHiding;
 		case WeaponState::Hidden:
 		default:
 			return W_NONE;
@@ -552,7 +552,7 @@ struct Unit : public EntityType<Unit>
 	int FindManaPotion() const;
 	float GetAttackRange() const
 	{
-		return data->attack_range;
+		return data->attackRange;
 	}
 	void ReequipItems();
 private:
@@ -566,8 +566,8 @@ public:
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
-	bool HaveQuestItem(int quest_id);
-	void RemoveQuestItem(int quest_id);
+	bool HaveQuestItem(int questId);
+	void RemoveQuestItem(int questId);
 	void RemoveQuestItemS(Quest* quest);
 	bool HaveItem(const Item* item, bool owned = false) const;
 	bool HaveItemEquipped(const Item* item) const;
@@ -586,7 +586,7 @@ public:
 	float GetPowerAttackSpeed() const
 	{
 		if(HaveWeapon())
-			return GetWeapon().GetInfo().power_speed * GetAttackSpeed();
+			return GetWeapon().GetInfo().powerSpeed * GetAttackSpeed();
 		else
 			return 0.33f;
 	}
@@ -602,7 +602,7 @@ public:
 			return 0.75f * float(b.reqStr - str) / (b.reqStr / 2);
 	}
 	bool IsHero() const { return hero != nullptr; }
-	bool IsFollower() const { return hero && hero->team_member; }
+	bool IsFollower() const { return hero && hero->teamMember; }
 	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
@@ -613,17 +613,17 @@ public:
 			return IsSet(data->clas->flags, Class::F_MP_BAR);
 		return IsSet(data->flags2, F2_MP_BAR);
 	}
-	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
+	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && inArena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{
 		if(IsPlayer())
 			return true;
 		else if(IsHero())
-			return hero->team_member;
+			return hero->teamMember;
 		else
 			return false;
 	}
-	void MakeItemsTeam(bool is_team);
+	void MakeItemsTeam(bool isTeam);
 	void Heal(float heal)
 	{
 		hp += heal;
@@ -635,16 +635,16 @@ public:
 		Heal(0.15f * Get(AttributeId::END) * days);
 	}
 	void HealPoison();
-	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
+	// szuka przedmiotu w ekwipunku, zwraca iIndex (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
-	int FindItem(const Item* item, int quest_id = -1) const;
+	int FindItem(const Item* item, int questId = -1) const;
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
-	int FindQuestItem(int quest_id) const;
-	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int quest_id = -1);
+	int FindQuestItem(int questId) const;
+	bool FindQuestItem(cstring id, Quest** quest, int* iIndex, bool notActive = false, int questId = -1);
 	void EquipItem(int index);
 	void EquipItem(const Item* item);
-	void RemoveItem(int iindex, bool active_location = true);
-	uint RemoveItem(int i_index, uint count);
+	void RemoveItem(int iindex, bool activeLocation = true);
+	uint RemoveItem(int iIndex, uint count);
 	uint RemoveItem(const Item* item, uint count);
 	uint RemoveItemS(const string& item_id, uint count);
 	void RemoveEquippedItem(ITEM_SLOT slot);
@@ -654,7 +654,7 @@ public:
 	{
 		if(IsPlayer())
 			return player->name;
-		else if(IsHero() && hero->know_name)
+		else if(IsHero() && hero->knowName)
 			return hero->name;
 		else
 			return data->name;
@@ -691,7 +691,7 @@ public:
 	{
 		return GetRealNameS().c_str();
 	}
-	void RevealName(bool set_name);
+	void RevealName(bool setName);
 	bool GetKnownName() const;
 	void SetKnownName(bool known);
 
@@ -707,12 +707,12 @@ public:
 	void AddEffect(Effect& e, bool send = true);
 	void ApplyConsumableEffect(const Consumable& item);
 	void UpdateEffects(float dt);
-	void EndEffects(int days = 0, float* o_natural_mod = nullptr);
+	void EndEffects(int days = 0, float* outNaturalMod = nullptr);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	void RemoveEffect(EffectId effect);
 	void RemoveEffects(bool send = true);
-	uint RemoveEffects(EffectId effect, EffectSource source, int source_id, int value);
+	uint RemoveEffects(EffectId effect, EffectSource source, int sourceId, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;
 	float GetEffectMulInv(EffectId effect) const;
@@ -729,10 +729,10 @@ private:
 	array<const Item*, SLOT_MAX> slots;
 public:
 	vector<ItemSlot> items;
-	int weight, weight_max;
+	int weight, weightMax;
 	//-----------------------------------------------------------------------------
 	int GetGold() const { return gold; }
-	void ModGold(int gold_change) { SetGold(gold + gold_change); }
+	void ModGold(int goldChange) { SetGold(gold + goldChange); }
 	void SetGold(int gold);
 	array<const Item*, SLOT_MAX>& GetEquippedItems() { return slots; }
 	const Item* GetEquippedItem(ITEM_SLOT slot) const { return slots[slot]; }
@@ -771,61 +771,59 @@ public:
 	}
 	void ReplaceItem(ITEM_SLOT slot, const Item* item);
 	void ReplaceItems(array<const Item*, SLOT_MAX>& items);
-	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
-	bool DropItem(int index);
+	// drop item by index, return if that was last item from stack (count=0 drops all)
+	bool DropItem(int index, uint count = 1);
 	// wyrzuca za³o¿ony przedmiot
 	void DropItem(ITEM_SLOT slot);
-	// wyrzuca kilka przedmiotów o podanym indeksie, zwraca czy to by³ ostatni (count=0 oznacza wszystko)
-	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
-	bool AddItem(const Item* item, uint count, uint team_count);
+	bool AddItem(const Item* item, uint count, uint teamCount);
 	// add item and show game message, send net notification, calls preload, refresh inventory if open
-	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true, bool notify = true);
+	void AddItem2(const Item* item, uint count, uint teamCount, bool showMsg = true, bool notify = true);
 	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0u); }
 	void AddTeamItemS(const Item* item, uint count) { AddItem2(item, count, count); }
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
-	float GetLoad() const { return float(weight) / weight_max; }
+	float GetLoad() const { return float(weight) / weightMax; }
 	void CalculateLoad();
 	bool IsOverloaded() const
 	{
-		return weight > weight_max;
+		return weight > weightMax;
 	}
 	bool IsMaxOverloaded() const
 	{
-		return weight > weight_max * 2;
+		return weight > weightMax * 2;
 	}
 	LoadState GetLoadState() const
 	{
-		if(weight <= weight_max / 4)
+		if(weight <= weightMax / 4)
 			return LS_NONE;
-		else if(weight <= weight_max / 2)
+		else if(weight <= weightMax / 2)
 			return LS_LIGHT;
-		else if(weight <= weight_max * 3 / 4)
+		else if(weight <= weightMax * 3 / 4)
 			return LS_MEDIUM;
-		else if(weight <= weight_max)
+		else if(weight <= weightMax)
 			return LS_HEAVY;
-		else if(weight <= weight_max * 2)
+		else if(weight <= weightMax * 2)
 			return LS_OVERLOADED;
 		else
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
 	float GetWeight() const { return float(weight) / 10; }
-	float GetWeightMax() const { return float(weight_max) / 10; }
+	float GetWeightMax() const { return float(weightMax) / 10; }
 	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
-		return weight + item->weight * (int)count <= weight_max;
+		return weight + item->weight * (int)count <= weightMax;
 	}
-	const Item* GetIIndexItem(int i_index) const;
+	const Item* GetIIndexItem(int iIndex) const;
 
 	Mesh::Animation* GetTakeWeaponAnimation(bool melee) const;
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_USE_USABLE && animation_state == AS_USE_USABLE_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_USE_USABLE && animationState == AS_USE_USABLE_USING && IsSet(usable->base->useFlags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
@@ -850,13 +848,13 @@ public:
 
 	void ApplyHumanData(HumanData& hd)
 	{
-		hd.Set(*human_data);
-		human_data->ApplyScale(mesh_inst);
+		hd.Set(*humanData);
+		humanData->ApplyScale(meshInst);
 	}
 
 	int ItemsToSellWeight() const;
 
-	void SetAnimationAtEnd(cstring anim_name = nullptr);
+	void SetAnimationAtEnd(cstring animName = nullptr);
 
 	float GetArrowSpeed() const
 	{
@@ -865,8 +863,8 @@ public:
 		return s;
 	}
 
-	void SetDontAttack(bool dont_attack);
-	bool GetDontAttack() const { return dont_attack; }
+	void SetDontAttack(bool dontAttack);
+	bool GetDontAttack() const { return dontAttack; }
 
 	int& GetCredit()
 	{
@@ -895,7 +893,7 @@ public:
 		INSTANT,
 		ON_LEAVE
 	};
-	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
+	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allowAnimation = false);
 	void Fall();
 	void TryStandup(float dt);
 	void Standup(bool warp = true, bool leave = false);
@@ -908,17 +906,17 @@ public:
 	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
 	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
-	void SetWeaponStateInstant(WeaponState weapon_state, WeaponType type);
-	void SetTakeHideWeaponAnimationToEnd(bool hide, bool break_action);
+	void SetWeaponStateInstant(WeaponState weaponState, WeaponType type);
+	void SetTakeHideWeaponAnimationToEnd(bool hide, bool breakAction);
 	void UpdateInventory(bool notify = true);
-	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
-	bool IsFriend(Unit& u, bool check_arena_attack = false) const;
+	bool IsEnemy(Unit& u, bool ignoreDontAttack = false) const;
+	bool IsFriend(Unit& u, bool checkArenaAttack = false) const;
 	Color GetRelationColor(Unit& u) const;
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
 	void AddDialog(Quest2* quest, GameDialog* dialog, int priority = 0);
-	void AddDialogS(Quest2* quest, const string& dialog_id, int priority);
+	void AddDialogS(Quest2* quest, const string& dialogId, int priority);
 	void RemoveDialog(Quest2* quest, bool cleanup);
 	void RemoveDialogS(Quest2* quest) { RemoveDialog(quest, false); }
 	void AddEventHandler(Quest2* quest, EventType type);
@@ -948,10 +946,10 @@ public:
 	UnitOrderEntry* OrderGoToInn();
 	UnitOrderEntry* OrderGuard(Unit* target);
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
-	void Talk(cstring text, int play_anim = -1);
-	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
-	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == AS_BASH_ANIMATION); }
-	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, mesh_inst->groups[1].GetBlendT()) : 0.5f; }
+	void Talk(cstring text, int playAnim = -1);
+	void TalkS(const string& text, int playAnim = -1) { Talk(text.c_str(), playAnim); }
+	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animationState == AS_BASH_ANIMATION); }
+	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, meshInst->groups[1].GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);
@@ -964,8 +962,8 @@ public:
 	void Update(float dt);
 	void Moved(bool warped = false, bool dash = false);
 	void MovedToEntry(EntryType type, const Int2& pt, GameDirection dir, bool canWarp, bool isPrev);
-	void ChangeBase(UnitData* ud, bool update_items = false);
-	void MoveToArea(LevelArea* area, const Vec3& pos);
+	void ChangeBase(UnitData* ud, bool updateItems = false);
+	void MoveToLocation(LocationPart* locPart, const Vec3& pos);
 	void MoveOffscreen();
 	void Kill();
 	enum DamageFlags
@@ -973,11 +971,11 @@ public:
 		DMG_NO_BLOOD = 1 << 0,
 		DMG_MAGICAL = 1 << 1
 	};
-	void GiveDmg(float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
+	void GiveDmg(float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmgFlags = 0);
 	void AttackReaction(Unit& attacker);
 	bool DoAttack();
 	bool DoShieldSmash();
-	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmgType, bool bash);
 	void DoRangedAttack(bool prepare, bool notify = true, float speed = -1);
 	void AlertAllies(Unit* target);
 };
@@ -986,37 +984,37 @@ public:
 struct NAMES
 {
 	// points
-	static cstring point_weapon;
-	static cstring point_hidden_weapon;
-	static cstring point_shield;
-	static cstring point_shield_hidden;
-	static cstring point_bow;
-	static cstring point_cast;
+	static cstring pointWeapon;
+	static cstring pointHiddenWeapon;
+	static cstring pointShield;
+	static cstring pointShieldHidden;
+	static cstring pointBow;
+	static cstring pointCast;
 	static cstring points[];
-	static uint n_points;
+	static uint nPoints;
 
 	// animations
-	static cstring ani_take_weapon;
-	static cstring ani_take_weapon_no_shield;
-	static cstring ani_take_bow;
-	static cstring ani_move;
-	static cstring ani_run;
-	static cstring ani_left;
-	static cstring ani_right;
-	static cstring ani_stand;
-	static cstring ani_battle;
-	static cstring ani_battle_bow;
-	static cstring ani_die;
-	static cstring ani_hurt;
-	static cstring ani_shoot;
-	static cstring ani_block;
-	static cstring ani_bash;
-	static cstring ani_base[];
-	static cstring ani_humanoid[];
-	static cstring ani_attacks[];
-	static uint n_ani_base;
-	static uint n_ani_humanoid;
-	static int max_attacks;
+	static cstring aniTakeWeapon;
+	static cstring aniTakeWeaponNoShield;
+	static cstring aniTakeBow;
+	static cstring aniMove;
+	static cstring aniRun;
+	static cstring aniLeft;
+	static cstring aniRight;
+	static cstring aniStand;
+	static cstring aniBattle;
+	static cstring aniBattleBow;
+	static cstring aniDie;
+	static cstring aniHurt;
+	static cstring aniShoot;
+	static cstring aniBlock;
+	static cstring aniBash;
+	static cstring aniBase[];
+	static cstring aniHumanoid[];
+	static cstring aniAttacks[];
+	static uint nAniBase;
+	static uint nAniHumanoid;
+	static int maxAttacks;
 };
 
 //-----------------------------------------------------------------------------

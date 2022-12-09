@@ -13,11 +13,11 @@
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
 
 //-----------------------------------------------------------------------------
-BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_write_pool.Get()), total_size(bitstream.GetNumberOfBytesUsed()), owned(true)
+BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_write_pool.Get()), totalSize(bitstream.GetNumberOfBytesUsed()), owned(true)
 {
 }
 
-BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream), total_size(bitstream.GetNumberOfBytesUsed()), owned(false)
+BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream), totalSize(bitstream.GetNumberOfBytesUsed()), owned(false)
 {
 }
 
@@ -34,8 +34,8 @@ void BitStreamWriter::Write(const void* ptr, uint size)
 {
 	bitstream.Write((const char*)ptr, size);
 	uint new_size = GetPos() + size;
-	if(new_size > total_size)
-		total_size = new_size;
+	if(new_size > totalSize)
+		totalSize = new_size;
 }
 
 uint BitStreamWriter::GetPos() const
@@ -45,7 +45,7 @@ uint BitStreamWriter::GetPos() const
 
 bool BitStreamWriter::SetPos(uint pos)
 {
-	if(pos > total_size)
+	if(pos > totalSize)
 		return false;
 	bitstream.SetWriteOffset(BYTES_TO_BITS(pos));
 	return true;
@@ -65,7 +65,7 @@ void BitStreamWriter::operator << (const Item& item)
 {
 	operator << (item.id);
 	if(item.id[0] == '$')
-		operator << (item.quest_id);
+		operator << (item.questId);
 }
 
 void BitStreamWriter::Reset()
@@ -90,7 +90,7 @@ void BitStreamWriter::WriteItemListTeam(const vector<ItemSlot>& items)
 	{
 		operator << (*slot.item);
 		operator << (slot.count);
-		operator << (slot.team_count);
+		operator << (slot.teamCount);
 	}
 }
 
@@ -179,14 +179,14 @@ int BitStreamReader::ReadItemAndFind(const Item*& item)
 
 	if(item_id[0] == '$')
 	{
-		int quest_id = Read<int>();
+		int questId = Read<int>();
 		if(!IsOk())
 			return -2;
 
-		item = quest_mgr->FindQuestItemClient(item_id.c_str(), quest_id);
+		item = questMgr->FindQuestItemClient(item_id.c_str(), questId);
 		if(!item)
 		{
-			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_id);
+			Warn("Missing quest item '%s' (%d).", item_id.c_str(), questId);
 			return -1;
 		}
 		else
@@ -221,8 +221,8 @@ bool BitStreamReader::ReadItemList(vector<ItemSlot>& items)
 		operator >> (slot.count);
 		if(!IsOk())
 			return false;
-		game_res->PreloadItem(slot.item);
-		slot.team_count = 0;
+		gameRes->PreloadItem(slot.item);
+		slot.teamCount = 0;
 	}
 
 	return true;
@@ -243,11 +243,11 @@ bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
 		if(ReadItemAndFind(slot.item) < 1)
 			return false;
 		operator >> (slot.count);
-		operator >> (slot.team_count);
+		operator >> (slot.teamCount);
 		if(!IsOk())
 			return false;
 		if(!skip)
-			game_res->PreloadItem(slot.item);
+			gameRes->PreloadItem(slot.item);
 	}
 
 	return true;

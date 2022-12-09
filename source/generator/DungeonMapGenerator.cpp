@@ -3,30 +3,30 @@
 
 #include "GameCommon.h"
 
-#define H(_x,_y) map[(_x)+(_y)*map_w].type
-#define HR(_x,_y) map_rooms[(_x)+(_y)*map_w]
+#define H(_x,_y) map[(_x)+(_y)*mapW].type
+#define HR(_x,_y) mapRooms[(_x)+(_y)*mapW]
 
 //=================================================================================================
 void DungeonMapGenerator::Generate(MapSettings& settings, bool recreate)
 {
-	assert(settings.map_w && settings.map_h && settings.room_size.x >= 4 && settings.room_size.y >= settings.room_size.x
-		&& InRange(settings.corridor_chance, 0, 100) && settings.rooms);
-	assert(settings.corridor_chance == 0 || (settings.corridor_size.x >= 3 && settings.corridor_size.y >= settings.corridor_size.x));
+	assert(settings.mapW && settings.mapH && settings.roomSize.x >= 4 && settings.roomSize.y >= settings.roomSize.x
+		&& InRange(settings.corridorChance, 0, 100) && settings.rooms);
+	assert(settings.corridorChance == 0 || (settings.corridorSize.x >= 3 && settings.corridorSize.y >= settings.corridorSize.x));
 
-	map_w = settings.map_w;
-	map_h = settings.map_h;
+	mapW = settings.mapW;
+	mapH = settings.mapH;
 	if(!recreate)
-		map = new Tile[map_w * map_h];
+		map = new Tile[mapW * mapH];
 	this->settings = &settings;
 	empty.clear();
 	joined.clear();
 
 	SetLayout();
 	GenerateRooms();
-	if(settings.remove_dead_end_corridors)
+	if(settings.removeDeadEndCorridors)
 		RemoveDeadEndCorridors();
 	SetRoomIndices();
-	if(settings.corridor_join_chance > 0)
+	if(settings.corridorJoinChance > 0)
 		JoinCorridors();
 	else
 		MarkCorridors();
@@ -41,35 +41,35 @@ void DungeonMapGenerator::Generate(MapSettings& settings, bool recreate)
 //=================================================================================================
 void DungeonMapGenerator::SetLayout()
 {
-	memset(map, 0, sizeof(Tile)*map_w*map_h);
-	map_rooms.resize(map_w*map_h);
-	memset(map_rooms.data(), 0, sizeof(Room*)*map_w*map_h);
+	memset(map, 0, sizeof(Tile) * mapW * mapH);
+	mapRooms.resize(mapW * mapH);
+	memset(mapRooms.data(), 0, sizeof(Room*) * mapW * mapH);
 
 	if(settings->shape == MapSettings::SHAPE_SQUARE)
 	{
-		for(int x = 0; x < map_w; ++x)
+		for(int x = 0; x < mapW; ++x)
 		{
 			H(x, 0) = BLOCKADE;
-			H(x, map_h - 1) = BLOCKADE;
+			H(x, mapH - 1) = BLOCKADE;
 		}
 
-		for(int y = 0; y < map_h; ++y)
+		for(int y = 0; y < mapH; ++y)
 		{
 			H(0, y) = BLOCKADE;
-			H(map_w - 1, y) = BLOCKADE;
+			H(mapW - 1, y) = BLOCKADE;
 		}
 	}
 	else
 	{
-		int w = (map_w - 3) / 2,
-			h = (map_h - 3) / 2;
+		int w = (mapW - 3) / 2,
+			h = (mapH - 3) / 2;
 
-		for(int y = 0; y < map_h; ++y)
+		for(int y = 0; y < mapH; ++y)
 		{
-			for(int x = 0; x < map_w; ++x)
+			for(int x = 0; x < mapW; ++x)
 			{
 				if(Distance(float(x - 1) / w, float(y - 1) / h, 1.f, 1.f) > 1.f)
-					map[x + y * map_w].type = BLOCKADE;
+					map[x + y * mapW].type = BLOCKADE;
 			}
 		}
 	}
@@ -82,9 +82,9 @@ void DungeonMapGenerator::SetLayout()
 	}
 	else
 	{
-		int w = settings->room_size.Random(),
-			h = settings->room_size.Random();
-		AddRoom((map_w - w) / 2, (map_h - h) / 2, w, h, false, nullptr);
+		int w = settings->roomSize.Random(),
+			h = settings->roomSize.Random();
+		AddRoom((mapW - w) / 2, (mapH - h) / 2, w, h, false, nullptr);
 	}
 }
 
@@ -103,13 +103,13 @@ void DungeonMapGenerator::GenerateRooms()
 		if(dir == GDIR_INVALID)
 			continue;
 
-		Int2 pt(entry.first % map_w, entry.first / map_w);
-		if(Rand() % 100 < settings->corridor_chance)
+		Int2 pt(entry.first % mapW, entry.first / mapW);
+		if(Rand() % 100 < settings->corridorChance)
 			AddCorridor(pt, dir, entry.second);
 		else
 		{
-			int w = settings->room_size.Random(),
-				h = settings->room_size.Random();
+			int w = settings->roomSize.Random(),
+				h = settings->roomSize.Random();
 
 			if(dir == GDIR_LEFT)
 			{
@@ -138,9 +138,9 @@ void DungeonMapGenerator::GenerateRooms()
 //=================================================================================================
 GameDirection DungeonMapGenerator::CheckFreePath(int id)
 {
-	int x = id % map_w,
-		y = id / map_w;
-	if(x == 0 || y == 0 || x == map_w - 1 || y == map_h - 1)
+	int x = id % mapW,
+		y = id / mapW;
+	if(x == 0 || y == 0 || x == mapW - 1 || y == mapH - 1)
 		return GDIR_INVALID;
 
 	GameDirection dir = GDIR_INVALID;
@@ -156,12 +156,12 @@ GameDirection DungeonMapGenerator::CheckFreePath(int id)
 		++count;
 		dir = GDIR_RIGHT;
 	}
-	if(map[id + map_w].type == EMPTY)
+	if(map[id + mapW].type == EMPTY)
 	{
 		++count;
 		dir = GDIR_UP;
 	}
-	if(map[id - map_w].type == EMPTY)
+	if(map[id - mapW].type == EMPTY)
 	{
 		++count;
 		dir = GDIR_DOWN;
@@ -172,7 +172,7 @@ GameDirection DungeonMapGenerator::CheckFreePath(int id)
 
 	dir = Reversed(dir);
 	const Int2& od = DirToPos(dir);
-	if(map[id + od.x + od.y*map_w].type != UNUSED)
+	if(map[id + od.x + od.y * mapW].type != UNUSED)
 		return GDIR_INVALID;
 
 	return dir;
@@ -181,7 +181,7 @@ GameDirection DungeonMapGenerator::CheckFreePath(int id)
 //=================================================================================================
 void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool is_corridor, Room* parent)
 {
-	assert(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < map_w && y + h < map_h);
+	assert(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < mapW && y + h < mapH);
 
 	Room* room = Room::Get();
 	room->pos.x = x;
@@ -238,24 +238,24 @@ void DungeonMapGenerator::SetRoom(Room* room)
 
 	for(int i = 1; i < w - 1; ++i)
 	{
-		if(CheckFreePath(x + i + y * map_w) != GDIR_INVALID)
-			empty.push_back({ x + i + y * map_w, room });
-		if(CheckFreePath(x + i + (y + h - 1)*map_w) != GDIR_INVALID)
-			empty.push_back({ x + i + (y + h - 1)*map_w, room });
+		if(CheckFreePath(x + i + y * mapW) != GDIR_INVALID)
+			empty.push_back({ x + i + y * mapW, room });
+		if(CheckFreePath(x + i + (y + h - 1) * mapW) != GDIR_INVALID)
+			empty.push_back({ x + i + (y + h - 1) * mapW, room });
 	}
 	for(int i = 1; i < h - 1; ++i)
 	{
-		if(CheckFreePath(x + (y + i)*map_w) != GDIR_INVALID)
-			empty.push_back({ x + (y + i)*map_w, room });
-		if(CheckFreePath(x + w - 1 + (y + i)*map_w) != GDIR_INVALID)
-			empty.push_back({ x + w - 1 + (y + i)*map_w, room });
+		if(CheckFreePath(x + (y + i) * mapW) != GDIR_INVALID)
+			empty.push_back({ x + (y + i) * mapW, room });
+		if(CheckFreePath(x + w - 1 + (y + i) * mapW) != GDIR_INVALID)
+			empty.push_back({ x + w - 1 + (y + i) * mapW, room });
 	}
 }
 
 //=================================================================================================
 void DungeonMapGenerator::AddCorridor(Int2& pt, GameDirection dir, Room* parent)
 {
-	int len = settings->corridor_size.Random();
+	int len = settings->corridorSize.Random();
 	int w, h;
 	Int2 pos(pt);
 
@@ -296,7 +296,7 @@ void DungeonMapGenerator::AddCorridor(Int2& pt, GameDirection dir, Room* parent)
 //=================================================================================================
 bool DungeonMapGenerator::CheckRoom(int x, int y, int w, int h)
 {
-	if(!(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < map_w && y + h < map_h))
+	if(!(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < mapW && y + h < mapH))
 		return false;
 
 	for(int yy = y + 1; yy < y + h - 1; ++yy)
@@ -407,21 +407,21 @@ void DungeonMapGenerator::RemoveWall(int x, int y, Room* room)
 				ok = false;
 			if(y > 0 && H(x - 1, y - 1) == EMPTY)
 				ok = false;
-			if(y < map_h - 1 && H(x - 1, y + 1) == EMPTY)
+			if(y < mapH - 1 && H(x - 1, y + 1) == EMPTY)
 				ok = false;
 		}
-		if(x < map_w - 1)
+		if(x < mapW - 1)
 		{
 			if(H(x + 1, y) == EMPTY)
 				ok = false;
 			if(y > 0 && H(x + 1, y - 1) == EMPTY)
 				ok = false;
-			if(y < map_h - 1 && H(x + 1, y + 1) == EMPTY)
+			if(y < mapH - 1 && H(x + 1, y + 1) == EMPTY)
 				ok = false;
 		}
 		if(y > 0 && H(x, y - 1) == EMPTY)
 			ok = false;
-		if(y < map_h - 1 && H(x, y + 1) == EMPTY)
+		if(y < mapH - 1 && H(x, y + 1) == EMPTY)
 			ok = false;
 
 		if(ok)
@@ -444,9 +444,9 @@ void DungeonMapGenerator::SetRoomIndices()
 	for(int i = 0, count = (int)settings->rooms->size(); i < count; ++i)
 		settings->rooms->at(i)->index = i;
 
-	for(int i = 0; i < map_w*map_h; ++i)
+	for(int i = 0; i < mapW * mapH; ++i)
 	{
-		Room* room = map_rooms[i];
+		Room* room = mapRooms[i];
 		map[i].room = (room ? room->index : 0);
 	}
 }
@@ -463,7 +463,7 @@ void DungeonMapGenerator::MarkCorridors()
 		{
 			for(int x = 0; x < room->size.x; ++x)
 			{
-				Tile& p = map[x + room->pos.x + (y + room->pos.y)*map_w];
+				Tile& p = map[x + room->pos.x + (y + room->pos.y) * mapW];
 				if(p.type == EMPTY || p.type == DOORS || p.type == BARS_FLOOR)
 					p.flags = Tile::F_LOW_CEILING;
 			}
@@ -481,7 +481,7 @@ void DungeonMapGenerator::JoinCorridors()
 
 		for(Room* room2 : room->connected)
 		{
-			if(!room2->IsCorridor() || Rand() % 100 >= settings->corridor_join_chance)
+			if(!room2->IsCorridor() || Rand() % 100 >= settings->corridorJoinChance)
 				continue;
 
 			int x1 = max(room->pos.x, room2->pos.x),
@@ -494,11 +494,11 @@ void DungeonMapGenerator::JoinCorridors()
 			{
 				for(int x = x1; x < x2; ++x)
 				{
-					int index = x + y * map_w;
+					int index = x + y * mapW;
 					Tile& tile = map[index];
 					if(tile.type == DOORS)
 					{
-						assert(map_rooms[index] == room || map_rooms[index] == room2);
+						assert(mapRooms[index] == room || mapRooms[index] == room2);
 						tile.type = EMPTY;
 						goto removed_doors;
 					}
@@ -513,7 +513,7 @@ void DungeonMapGenerator::JoinCorridors()
 		{
 			for(int x = 0; x < room->size.x; ++x)
 			{
-				Tile& p = map[x + room->pos.x + (y + room->pos.y)*map_w];
+				Tile& p = map[x + room->pos.x + (y + room->pos.y) * mapW];
 				if(p.type == EMPTY || p.type == DOORS || p.type == BARS_FLOOR)
 					p.flags = Tile::F_LOW_CEILING;
 			}
@@ -524,14 +524,14 @@ void DungeonMapGenerator::JoinCorridors()
 //=================================================================================================
 void DungeonMapGenerator::AddHoles()
 {
-	if(settings->bars_chance <= 0)
+	if(settings->barsChance <= 0)
 		return;
-	for(int y = 1; y < map_w - 1; ++y)
+	for(int y = 1; y < mapW - 1; ++y)
 	{
-		for(int x = 1; x < map_h - 1; ++x)
+		for(int x = 1; x < mapH - 1; ++x)
 		{
-			Tile& tile = map[x + y * map_w];
-			if(tile.type == EMPTY && Rand() % 100 < settings->bars_chance)
+			Tile& tile = map[x + y * mapW];
+			if(tile.type == EMPTY && Rand() % 100 < settings->barsChance)
 			{
 				if(!IsSet(tile.flags, Tile::F_LOW_CEILING))
 				{
@@ -553,7 +553,7 @@ void DungeonMapGenerator::AddHoles()
 //=================================================================================================
 void DungeonMapGenerator::Finalize()
 {
-	if(settings->room_join_chance > 0)
+	if(settings->roomJoinChance > 0)
 		JoinRooms();
 
 	if(settings->groups)
@@ -566,10 +566,10 @@ void DungeonMapGenerator::Finalize()
 		GenerateEntry();
 
 	SetRoomGroupTargets();
-	Tile::SetupFlags(map, Int2(map_w, map_h), settings->prevEntryType, settings->nextEntryType);
+	Tile::SetupFlags(map, Int2(mapW, mapH), settings->prevEntryType, settings->nextEntryType);
 
 	if(settings->devmode)
-		Tile::DebugDraw(map, Int2(map_w, map_h));
+		Tile::DebugDraw(map, Int2(mapW, mapH));
 }
 
 //=================================================================================================
@@ -582,7 +582,7 @@ void DungeonMapGenerator::JoinRooms()
 
 		for(Room* room2 : room->connected)
 		{
-			if(!room2->CanJoinRoom() || Rand() % 100 >= settings->room_join_chance)
+			if(!room2->CanJoinRoom() || Rand() % 100 >= settings->roomJoinChance)
 				continue;
 
 			joined.push_back({ room, room2 });
@@ -597,9 +597,9 @@ void DungeonMapGenerator::JoinRooms()
 				++x1;
 			if(y1 == 0)
 				++y1;
-			if(x2 == map_w - 1)
+			if(x2 == mapW - 1)
 				--x2;
-			if(y2 == map_h - 1)
+			if(y2 == mapH - 1)
 				--y2;
 			assert(x1 < x2 && y1 < y2);
 
@@ -609,7 +609,7 @@ void DungeonMapGenerator::JoinRooms()
 				{
 					if(IsConnectingWall(x, y, room, room2))
 					{
-						Tile& tile = map[x + y * map_w];
+						Tile& tile = map[x + y * mapW];
 						if(tile.type == WALL || tile.type == DOORS)
 							tile.type = EMPTY;
 					}
@@ -622,24 +622,24 @@ void DungeonMapGenerator::JoinRooms()
 //=================================================================================================
 bool DungeonMapGenerator::IsConnectingWall(int x, int y, Room* room1, Room* room2)
 {
-	if(map_rooms[x - 1 + y * map_w] == room1 && IsEmpty(map[x - 1 + y * map_w].type))
+	if(mapRooms[x - 1 + y * mapW] == room1 && IsEmpty(map[x - 1 + y * mapW].type))
 	{
-		if(map_rooms[x + 1 + y * map_w] == room2 && IsEmpty(map[x + 1 + y * map_w].type))
+		if(mapRooms[x + 1 + y * mapW] == room2 && IsEmpty(map[x + 1 + y * mapW].type))
 			return true;
 	}
-	else if(map_rooms[x - 1 + y * map_w] == room2 && IsEmpty(map[x - 1 + y * map_w].type))
+	else if(mapRooms[x - 1 + y * mapW] == room2 && IsEmpty(map[x - 1 + y * mapW].type))
 	{
-		if(map_rooms[x + 1 + y * map_w] == room1 && IsEmpty(map[x + 1 + y * map_w].type))
+		if(mapRooms[x + 1 + y * mapW] == room1 && IsEmpty(map[x + 1 + y * mapW].type))
 			return true;
 	}
-	if(map_rooms[x + (y - 1)*map_w] == room1 && IsEmpty(map[x + (y - 1)*map_w].type))
+	if(mapRooms[x + (y - 1) * mapW] == room1 && IsEmpty(map[x + (y - 1) * mapW].type))
 	{
-		if(map_rooms[x + (y + 1)*map_w] == room2 && IsEmpty(map[x + (y + 1)*map_w].type))
+		if(mapRooms[x + (y + 1) * mapW] == room2 && IsEmpty(map[x + (y + 1) * mapW].type))
 			return true;
 	}
-	else if(map_rooms[x + (y - 1)*map_w] == room2 && IsEmpty(map[x + (y - 1)*map_w].type))
+	else if(mapRooms[x + (y - 1) * mapW] == room2 && IsEmpty(map[x + (y - 1) * mapW].type))
 	{
-		if(map_rooms[x + (y + 1)*map_w] == room1 && IsEmpty(map[x + (y + 1)*map_w].type))
+		if(mapRooms[x + (y + 1) * mapW] == room1 && IsEmpty(map[x + (y + 1) * mapW].type))
 			return true;
 	}
 	return false;
@@ -703,8 +703,8 @@ void DungeonMapGenerator::CreateRoomGroups()
 //=================================================================================================
 void DungeonMapGenerator::DrawRoomGroups()
 {
-	char* ce = new char[map_w*map_h];
-	memset(ce, ' ', sizeof(char)*map_w*map_h);
+	char* ce = new char[mapW * mapH];
+	memset(ce, ' ', sizeof(char) * mapW * mapH);
 	for(int i = 0; i < (int)settings->groups->size(); i++)
 	{
 		int tmp = i % 36;
@@ -720,14 +720,14 @@ void DungeonMapGenerator::DrawRoomGroups()
 			for(int x = 0; x < room->size.x; ++x)
 			{
 				for(int y = 0; y < room->size.y; ++y)
-					ce[x + room->pos.x + (y + room->pos.y)*map_w] = s;
+					ce[x + room->pos.x + (y + room->pos.y) * mapW] = s;
 			}
 		}
 	}
-	for(int y = map_h - 1; y >= 0; --y)
+	for(int y = mapH - 1; y >= 0; --y)
 	{
-		for(int x = 0; x < map_w; ++x)
-			putchar(ce[x + y * map_w]);
+		for(int x = 0; x < mapW; ++x)
+			putchar(ce[x + y * mapW]);
 		putchar('\n');
 	}
 	delete[] ce;
@@ -736,26 +736,26 @@ void DungeonMapGenerator::DrawRoomGroups()
 //=================================================================================================
 void DungeonMapGenerator::GenerateEntry()
 {
-	map_rooms.clear();
+	mapRooms.clear();
 	for(Room* room : *settings->rooms)
 	{
 		if(room->target == RoomTarget::None)
-			map_rooms.push_back(room);
+			mapRooms.push_back(room);
 	}
 
 	if(settings->prevEntryLoc != MapSettings::ENTRY_NONE)
 	{
-		GenerateEntry(map_rooms, settings->prevEntryLoc, settings->prevEntryType, settings->prevEntryRoom,
+		GenerateEntry(mapRooms, settings->prevEntryLoc, settings->prevEntryType, settings->prevEntryRoom,
 			settings->prevEntryPt, settings->prevEntryDir, true);
 	}
 
 	if(settings->nextEntryLoc != MapSettings::ENTRY_NONE)
 	{
-		GenerateEntry(map_rooms, settings->nextEntryLoc, settings->nextEntryType, settings->nextEntryRoom,
+		GenerateEntry(mapRooms, settings->nextEntryLoc, settings->nextEntryType, settings->nextEntryRoom,
 			settings->nextEntryPt, settings->nextEntryDir, false);
 	}
 
-	map_rooms.clear();
+	mapRooms.clear();
 }
 
 //=================================================================================================
@@ -786,7 +786,7 @@ void DungeonMapGenerator::GenerateEntry(vector<Room*>& rooms, MapSettings::Entry
 		break;
 	case MapSettings::ENTRY_BORDER:
 		{
-			const Int2 farPt = Int2(map_w / 2, map_h / 2);
+			const Int2 farPt = Int2(mapW / 2, mapH / 2);
 			if(AddEntryFarFromPoint(rooms, farPt, room, type, pt, dir, isPrev))
 				return;
 		}
@@ -794,16 +794,16 @@ void DungeonMapGenerator::GenerateEntry(vector<Room*>& rooms, MapSettings::Entry
 	case MapSettings::ENTRY_FAR_FROM_PREV:
 		{
 			int index = 0;
-			for(int i = 0, count = (int)map_rooms.size(); i < count; ++i)
+			for(int i = 0, count = (int)mapRooms.size(); i < count; ++i)
 			{
-				if(map_rooms[i]->target == RoomTarget::EntryPrev)
+				if(mapRooms[i]->target == RoomTarget::EntryPrev)
 				{
 					index = i;
 					break;
 				}
 			}
 
-			const Int2 farPt = map_rooms[index]->CenterTile();
+			const Int2 farPt = mapRooms[index]->CenterTile();
 			if(AddEntryFarFromPoint(rooms, farPt, room, type, pt, dir, isPrev))
 				return;
 		}
@@ -838,18 +838,18 @@ bool DungeonMapGenerator::AddEntryFarFromPoint(vector<Room*>& rooms, const Int2&
 //=================================================================================================
 bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDirection& dir, bool isPrev)
 {
-#define B(_xx,_yy) (IsBlocking(map[x+_xx+(y+_yy)*map_w].type))
-#define P(_xx,_yy) (!IsBlocking2(map[x+_xx+(y+_yy)*map_w].type))
+#define B(_xx,_yy) (IsBlocking(map[x+_xx+(y+_yy)*mapW].type))
+#define P(_xx,_yy) (!IsBlocking2(map[x+_xx+(y+_yy)*mapW].type))
 
 	struct PosDir
 	{
 		Int2 pt;
 		int dir, prio;
-		bool in_wall;
+		bool inWall;
 
-		PosDir(int x, int y, int dir, bool in_wall, const Room& room) : pt(x, y), dir(dir), prio(0), in_wall(in_wall)
+		PosDir(int x, int y, int dir, bool inWall, const Room& room) : pt(x, y), dir(dir), prio(0), inWall(inWall)
 		{
-			if(in_wall)
+			if(inWall)
 				prio += (room.size.x + room.size.y) * 2;
 			x -= room.pos.x;
 			y -= room.pos.y;
@@ -867,57 +867,51 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 
 	const bool isDoor = (type == ENTRY_DOOR);
 
-	for(int y = max(1, room.pos.y); y < min(map_h - 1, room.size.y + room.pos.y); ++y)
+	for(int y = max(1, room.pos.y); y < min(mapH - 1, room.size.y + room.pos.y); ++y)
 	{
-		for(int x = max(1, room.pos.x); x < min(map_w - 1, room.size.x + room.pos.x); ++x)
+		for(int x = max(1, room.pos.x); x < min(mapW - 1, room.size.x + room.pos.x); ++x)
 		{
-			Tile& p = map[x + y * map_w];
+			Tile& p = map[x + y * mapW];
 			if(p.type == EMPTY)
 			{
 				const bool left = (x > 0);
-				const bool right = (x<int(map_w - 1));
-				const bool top = (y<int(map_h - 1));
+				const bool right = (x<int(mapW - 1));
+				const bool top = (y<int(mapH - 1));
 				const bool bottom = (y > 0);
 
-				if(!isDoor)
+				if(!isDoor && left && right && top && bottom)
 				{
-					if(left && top)
-					{
-						// ##
-						// #>
-						if(B(-1, 1) && B(0, 1) && B(-1, 0))
-							choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_RIGHT), false, room));
-					}
-					if(right && top)
-					{
-						// ##
-						// >#
-						if(B(0, 1) && B(1, 1) && B(1, 0))
-							choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT), false, room));
-					}
-					if(left && bottom)
-					{
-						// #>
-						// ##
-						if(B(-1, 0) && B(-1, -1) && B(0, -1))
-							choice.push_back(PosDir(x, y, Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
-					}
-					if(right && bottom)
-					{
-						// <#
-						// ##
-						if(B(1, 0) && B(0, -1) && B(1, -1))
-							choice.push_back(PosDir(x, y, Bit(GDIR_LEFT) | Bit(GDIR_UP), false, room));
-					}
-					if(left && right && top && bottom)
-					{
-						//  ___
-						//  _<_
-						//  ___
-						if(P(-1, -1) && P(0, -1) && P(1, -1) && P(-1, 0) && P(1, 0) && P(-1, 1) && P(0, 1) && P(1, 1))
-							choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
-					}
+					// ###
+					// #>
+					// #
+					if(B(-1, 1) && B(0, 1) && B(-1, 0) && B(1, 1) && B(-1, -1))
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_RIGHT), false, room));
+
+					// ###
+					//  >#
+					//   #
+					if(B(0, 1) && B(1, 1) && B(1, 0) && B(-1, 1) && B(1, -1))
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT), false, room));
+
+					// #
+					// #>
+					// ###
+					if(B(-1, 0) && B(-1, -1) && B(0, -1) && B(-1, 1) && B(1, -1))
+						choice.push_back(PosDir(x, y, Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
+
+					//   #
+					//  >#
+					// ###
+					if(B(1, 0) && B(0, -1) && B(1, -1) && B(1, 1) && B(-1, -1))
+						choice.push_back(PosDir(x, y, Bit(GDIR_LEFT) | Bit(GDIR_UP), false, room));
+
+					//  ___
+					//  _>_
+					//  ___
+					if(P(-1, -1) && P(0, -1) && P(1, -1) && P(-1, 0) && P(1, 0) && P(-1, 1) && P(0, 1) && P(1, 1))
+						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN) | Bit(GDIR_LEFT) | Bit(GDIR_UP) | Bit(GDIR_RIGHT), false, room));
 				}
+
 				if(left && top && bottom)
 				{
 					// #_
@@ -926,14 +920,16 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 					if(B(-1, 1) && P(0, 1) && B(-1, 0) && B(-1, -1) && P(0, -1))
 						choice.push_back(PosDir(x, y, Bit(GDIR_RIGHT), false, room));
 				}
+
 				if(right && top && bottom)
 				{
 					// _#
-					// <#
+					// >#
 					// _#
 					if(P(0, 1) && B(1, 1) && B(1, 0) && P(0, -1) && B(1, -1))
 						choice.push_back(PosDir(x, y, Bit(GDIR_LEFT), false, room));
 				}
+
 				if(top && left && right)
 				{
 					// ###
@@ -941,6 +937,7 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 					if(B(-1, 1) && B(0, 1) && B(1, 1) && P(-1, 0) && P(1, 0))
 						choice.push_back(PosDir(x, y, Bit(GDIR_DOWN), false, room));
 				}
+
 				if(bottom && left && right)
 				{
 					// _>_
@@ -949,30 +946,30 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 						choice.push_back(PosDir(x, y, Bit(GDIR_UP), false, room));
 				}
 			}
-			else if(!isDoor && (p.type == WALL || p.type == BLOCKADE_WALL) && (x > 0) && (x<int(map_w - 1)) && (y > 0) && (y<int(map_h - 1)))
+			else if(!isDoor && (p.type == WALL || p.type == BLOCKADE_WALL) && (x > 0) && (x<int(mapW - 1)) && (y > 0) && (y<int(mapH - 1)))
 			{
-				// ##
+				// ##_
 				// #>_
-				// ##
-				if(B(-1, 1) && B(0, 1) && B(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1))
+				// ##_
+				if(B(-1, 1) && B(0, 1) && B(-1, 0) && B(-1, -1) && B(0, -1) && P(1, -1) && P(1, 0) && P(1, 1))
 					choice.push_back(PosDir(x, y, Bit(GDIR_RIGHT), true, room));
 
-				//  ##
-				// _<#
-				//  ##
-				if(B(0, 1) && B(1, 1) && P(-1, 0) && B(1, 0) && B(0, -1) && B(1, -1))
+				// _##
+				// _>#
+				// _##
+				if(B(0, 1) && B(1, 1) && B(1, 0) && B(0, -1) && B(1, -1) && P(-1, -1) && P(-1, 0) && P(-1, 1))
 					choice.push_back(PosDir(x, y, Bit(GDIR_LEFT), true, room));
 
 				// ###
 				// #>#
-				//  _
-				if(B(-1, 1) && B(0, 1) && B(1, 1) && B(-1, 0) && B(1, 0) && P(0, -1))
+				// ___
+				if(B(-1, 1) && B(0, 1) && B(1, 1) && B(-1, 0) && B(1, 0) && P(-1, -1) && P(0, -1) && P(1, -1))
 					choice.push_back(PosDir(x, y, Bit(GDIR_DOWN), true, room));
 
-				//  _
-				// #<#
+				// ___
+				// #>#
 				// ###
-				if(P(0, 1) && B(-1, 0) && B(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
+				if(B(-1, 0) && B(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1) && P(-1, 1) && P(0, 1) && P(1, 1))
 					choice.push_back(PosDir(x, y, Bit(GDIR_UP), true, room));
 			}
 		}
@@ -995,18 +992,18 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 
 	PosDir& pd = choice[Rand() % count];
 	pt = pd.pt;
-	map[pd.pt.x + pd.pt.y*map_w].type = (isPrev ? ENTRY_PREV : ENTRY_NEXT);
-	map[pd.pt.x + pd.pt.y*map_w].room = room.index;
+	map[pd.pt.x + pd.pt.y * mapW].type = (isPrev ? ENTRY_PREV : ENTRY_NEXT);
+	map[pd.pt.x + pd.pt.y * mapW].room = room.index;
 	room.target = (isPrev ? RoomTarget::EntryPrev : RoomTarget::EntryNext);
 	room.AddTile(pd.pt);
-	if(type == ENTRY_STAIRS_DOWN && pd.in_wall)
+	if(type == ENTRY_STAIRS_DOWN && pd.inWall)
 		type = ENTRY_STAIRS_DOWN_IN_WALL;
 
-	for(int y = max(0, pd.pt.y - 1); y <= min(map_h, pd.pt.y + 1); ++y)
+	for(int y = max(0, pd.pt.y - 1); y <= min(mapH, pd.pt.y + 1); ++y)
 	{
-		for(int x = max(0, pd.pt.x - 1); x <= min(map_w, pd.pt.x + 1); ++x)
+		for(int x = max(0, pd.pt.x - 1); x <= min(mapW, pd.pt.x + 1); ++x)
 		{
-			TILE_TYPE& p = map[x + y * map_w].type;
+			TILE_TYPE& p = map[x + y * mapW].type;
 			if(p == UNUSED)
 				p = WALL;
 			else if(p == BLOCKADE)
@@ -1165,7 +1162,7 @@ Int2 DungeonMapGenerator::GetConnectingTile(Room* room1, Room* room2)
 	{
 		for(int x = x1; x < x2; ++x)
 		{
-			Tile& tile = map[x + y * map_w];
+			Tile& tile = map[x + y * mapW];
 			if(tile.type == EMPTY || tile.type == DOORS)
 				return Int2(x, y);
 		}

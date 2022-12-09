@@ -3012,7 +3012,7 @@ unit dire_wolf : wolf {
 	attack_range 1.8
 }
 
-unit spider {
+unit spider_base {
 	mesh "pajak.qmsh"
 	mat body
 	flags {fixed_stats poison_attack dont_open poison_res no_power_attack ignore_block dont_eat slight dont_talk}
@@ -3035,23 +3035,30 @@ unit spider {
 	idles {
 		"idle"
 	}
-	attack_range 1
+}
+
+unit spider : spider_base {
+	flags | slight
 	level 2
 	hp 150
 	stamina 300
 	attack 30
 	def 30
 	width 0.3
+	scale 0.5
+	tex {
+		"spider_small.png"
+	}
 }
 
-unit spider_big : spider {
-	mesh "pajak2.qmsh"
+unit spider_big : spider_base {
 	level 3
-	flags | ~slight
 	hp 250
+	stamina 300
 	attack 60
 	def 40
 	width 0.4
+	scale 0.8
 }
 
 unit rat {

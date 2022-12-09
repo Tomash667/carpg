@@ -25,7 +25,7 @@ struct ContentItem
 		T* item = T::TryGet(hash);
 		if(item)
 			return item;
-		throw Format("Missing %s hash %d.", T::type_name, hash);
+		throw Format("Missing %s hash %d.", T::typeName, hash);
 	}
 	static T* TryGet(Cstring id)
 	{
@@ -36,13 +36,13 @@ struct ContentItem
 		T* item = T::TryGet(Hash(id));
 		if(item)
 			return item;
-		throw Format("Missing %s '%s'.", T::type_name, id);
+		throw Format("Missing %s '%s'.", T::typeName, id);
 	}
 	static T* GetS(const string& id)
 	{
 		T* item = T::TryGet(id);
 		if(item)
 			return item;
-		throw ScriptException("Invalid %s '%s'.", T::type_name, id.c_str());
+		throw ScriptException("Invalid %s '%s'.", T::typeName, id.c_str());
 	}
 };

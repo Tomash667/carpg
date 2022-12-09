@@ -9,11 +9,7 @@
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key
 // 0x02 - translated
-// 0 - not pickable, no text
-// 1 - pickable, no text
-// 2 - not pickable, text
-// 3 - pickable, text
-const int in_text[] = {
+const int keyFlags[] = {
 	0,	// 0:VK_NONE
 
 	3,	// 1:VK_LBUTTON
@@ -265,7 +261,7 @@ const int in_text[] = {
 	3,	// 221:VK_OEM_6
 	3	// 222:VK_OEM_7
 };
-const int n_texts = countof(in_text);
+const int keyFlagsCount = countof(keyFlags);
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -275,28 +271,28 @@ enum ButtonId
 };
 
 //=================================================================================================
-Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
+Controls::Controls(const DialogInfo& info) : DialogBox(info), pickedKey(-1)
 {
-	size = Int2(600 + 8 * 2, 400);
+	size = Int2(680, 450);
 	bts.resize(2);
 
 	bts[0].size = Int2(180, 44);
-	bts[0].pos = Int2(50, size.y - 53);
+	bts[0].pos = Int2(50, size.y - 64);
 	bts[0].id = Button_Reset;
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
-	bts[1].pos = Int2(size.x - 180 - 50, size.y - 53);
+	bts[1].pos = Int2(size.x - 180 - 50, size.y - 64);
 	bts[1].id = Button_Ok;
 	bts[1].parent = this;
 
-	grid.size = Int2(600, 300);
-	grid.pos = Int2(8, 8);
+	grid.size = Int2(640, 300);
+	grid.pos = Int2(20, 60);
 	grid.items = GK_MAX;
 	grid.event = GridEvent(this, &Controls::GetCell);
-	grid.select_event = SelectGridEvent(this, &Controls::SelectCell);
-	grid.single_line = true;
-	grid.selection_type = Grid::NONE;
+	grid.selectEvent = SelectGridEvent(this, &Controls::SelectCell);
+	grid.allowSelect = false;
+	grid.singleLine = true;
 }
 
 //=================================================================================================
@@ -307,48 +303,53 @@ void Controls::LoadLanguage()
 	bts[0].text = s.Get("resetKeys");
 	bts[1].text = gui->txOk;
 
-	grid.AddColumn(Grid::TEXT, 200, s.Get("action"));
-	grid.AddColumn(Grid::TEXT, 190, s.Get("key_1"));
-	grid.AddColumn(Grid::TEXT, 190, s.Get("key_2"));
+	grid.AddColumn(Grid::TEXT, 220, s.Get("action"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key_1"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key_2"));
 	grid.Init();
 
 	txResetConfirm = s.Get("resetConfirm");
 	txInfo = s.Get("info");
+	txTitle = s.Get("title");
 
 	InitKeyText();
 }
 
 //=================================================================================================
-void Controls::Draw(ControlDrawData*)
+void Controls::Draw()
 {
 	DrawPanel();
+
+	// title
+	Rect r = { globalPos.x, globalPos.y + 8, globalPos.x + size.x, globalPos.y + size.y };
+	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	for(Button& button : bts)
 		button.Draw();
 
 	grid.Draw();
 
-	Rect r = { global_pos.x, global_pos.y + size.y - 85, global_pos.x + size.x, global_pos.y + size.y };
+	r = { globalPos.x, globalPos.y + size.y - 85, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawText(GameGui::font, txInfo, DTF_CENTER, Color::Black, r);
 }
 
 //=================================================================================================
 void Controls::Update(float dt)
 {
-	cursor_tick += dt * 2;
-	if(cursor_tick >= 1.f)
-		cursor_tick = 0.f;
+	cursorTick += dt * 2;
+	if(cursorTick >= 1.f)
+		cursorTick = 0.f;
 
-	if(picked == -1)
+	if(pickedKey == -1)
 	{
 		for(Button& button : bts)
 		{
-			button.mouse_focus = focus;
+			button.mouseFocus = focus;
 			button.Update(dt);
 		}
 
 		grid.focus = focus;
-		grid.mouse_focus = focus;
+		grid.mouseFocus = focus;
 		grid.Update(dt);
 
 		if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -371,10 +372,10 @@ void Controls::Event(GuiEvent e)
 			visible = true;
 			changed = false;
 		}
-		pos = global_pos = (gui->wnd_size - size) / 2;
+		pos = globalPos = (gui->wndSize - size) / 2;
 		for(int i = 0; i < 2; ++i)
-			bts[i].global_pos = global_pos + bts[i].pos;
-		grid.Move(global_pos);
+			bts[i].globalPos = globalPos + bts[i].pos;
+		grid.Move(globalPos);
 	}
 	else if(e == GuiEvent_LostFocus)
 		grid.LostFocus();
@@ -387,6 +388,7 @@ void Controls::Event(GuiEvent e)
 	{
 		if(changed)
 		{
+			gameGui->ChangeControls();
 			game->settings.SaveGameKeys(game->cfg);
 			game->SaveCfg();
 		}
@@ -404,7 +406,7 @@ void Controls::Event(GuiEvent e)
 			}
 		};
 		info.name = "reset_ctrls";
-		info.order = ORDER_TOP;
+		info.order = DialogOrder::Top;
 		info.parent = this;
 		info.pause = false;
 		info.text = txResetConfirm;
@@ -426,9 +428,9 @@ void Controls::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		if(item == picked && column - 1 == picked_n)
+		if(item == pickedKey && column - 1 == pickedIndex)
 		{
-			if(cursor_tick <= 0.5f)
+			if(cursorTick <= 0.5f)
 				cell.text = "|";
 			else
 				cell.text = "";
@@ -436,11 +438,11 @@ void Controls::GetCell(int item, int column, Cell& cell)
 		else
 		{
 			int n = (int)k[column - 1];
-			if(n > n_texts)
+			if(n > keyFlagsCount)
 				cell.text = "";
 			else
 			{
-				cell.text = key_text[n];
+				cell.text = txKey[n];
 				if(!cell.text)
 					cell.text = "";
 			}
@@ -452,12 +454,12 @@ void Controls::GetCell(int item, int column, Cell& cell)
 void Controls::InitKeyText()
 {
 	Language::Section s = Language::GetSection("Keys");
-	for(int i = 0; i < n_texts; ++i)
+	for(int i = 0; i < keyFlagsCount; ++i)
 	{
-		if(IsSet(in_text[i], 0x02))
-			key_text[i] = s.Get(Format("k%d", i));
+		if(IsSet(keyFlags[i], 0x02))
+			txKey[i] = s.Get(Format("k%d", i));
 		else
-			key_text[i] = nullptr;
+			txKey[i] = nullptr;
 	}
 
 	game->settings.InitGameKeys();
@@ -469,11 +471,11 @@ void Controls::SelectCell(int item, int column, int button)
 	if(button == 0)
 	{
 		input->SetState(Key::LeftButton, Input::IS_UP);
-		picked = item;
-		picked_n = column - 1;
-		cursor_tick = 0.f;
+		pickedKey = item;
+		pickedIndex = column - 1;
+		cursorTick = 0.f;
 		input->SetCallback(Input::Callback(this, &Controls::OnKey));
-		game_gui->cursor_allow_move = false;
+		gameGui->cursorAllowMove = false;
 	}
 	else
 	{
@@ -491,16 +493,16 @@ void Controls::OnKey(Key key)
 {
 	if(key == Key::Escape)
 	{
-		picked = -1;
+		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursor_allow_move = true;
+		gameGui->cursorAllowMove = true;
 	}
-	else if((int)key < n_texts && IsSet(in_text[(int)key], 0x01))
+	else if((int)key < keyFlagsCount && IsSet(keyFlags[(int)key], 0x01))
 	{
-		GKey[picked][picked_n] = key;
-		picked = -1;
+		GKey[pickedKey][pickedIndex] = key;
+		pickedKey = -1;
 		input->SetCallback(nullptr);
-		game_gui->cursor_allow_move = true;
+		gameGui->cursorAllowMove = true;
 		changed = true;
 	}
 }

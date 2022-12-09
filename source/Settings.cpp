@@ -31,6 +31,8 @@ void Settings::InitGameKeys()
 	GKey[GK_JOURNAL].id = "keyGameJournal";
 	GKey[GK_MINIMAP].id = "keyMinimap";
 	GKey[GK_TALK_BOX].id = "keyTalkBox";
+	GKey[GK_ACCEPT_NOTIFICATION].id = "keyAcceptNotification";
+	GKey[GK_DECLINE_NOTIFICATION].id = "keyDeclineNotification";
 	GKey[GK_QUICKSAVE].id = "keyQuicksave";
 	GKey[GK_QUICKLOAD].id = "keyQuickload";
 	GKey[GK_TAKE_ALL].id = "keyTakeAll";
@@ -82,6 +84,8 @@ void Settings::ResetGameKeys()
 	GKey[GK_JOURNAL].Set(Key::J);
 	GKey[GK_MINIMAP].Set(Key::Tab);
 	GKey[GK_TALK_BOX].Set(Key::Quote);
+	GKey[GK_ACCEPT_NOTIFICATION].Set(Key::F1);
+	GKey[GK_DECLINE_NOTIFICATION].Set(Key::F3);
 	GKey[GK_QUICKSAVE].Set(Key::F5);
 	GKey[GK_QUICKLOAD].Set(Key::F9);
 	GKey[GK_TAKE_ALL].Set(Key::F);
@@ -118,6 +122,7 @@ void Settings::SaveGameKeys(Config& cfg)
 //=================================================================================================
 void Settings::LoadGameKeys(Config& cfg)
 {
+	// pre V_0_13 compatibility
 	cfg.Rename("keyActions0", "keyAbility0");
 	cfg.Rename("keyActions1", "keyAbility1");
 
@@ -138,4 +143,10 @@ void Settings::LoadGameKeys(Config& cfg)
 				k[j] = (Key)w;
 		}
 	}
+}
+
+//=================================================================================================
+float Settings::GetMouseSensitivity() const
+{
+	return Lerp(0.5f, 1.5f, float(mouseSensitivity) / 100);
 }

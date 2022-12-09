@@ -51,7 +51,7 @@ struct FrameInfo
 
 	string id;
 	AttackFrameInfo* extra;
-	float t[F_MAX], attack_power[MAX_ATTACKS];
+	float t[F_MAX], attackPower[MAX_ATTACKS];
 	int attacks;
 
 	FrameInfo() : extra(nullptr), attacks(0), t() {}

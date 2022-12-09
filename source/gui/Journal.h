@@ -29,14 +29,14 @@ public:
 	~Journal();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Reset();
 	void Show();
 	void Hide();
 	void AddRumor(cstring text);
-	void NeedUpdate(Mode mode, int quest_index = 0);
+	void NeedUpdate(Mode mode, int questIndex = 0);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	vector<string>& GetNotes() { return notes; }
@@ -50,12 +50,12 @@ private:
 	Mode mode;
 	TexturePtr tBook, tButtonOn, tButtonOff, tPage[3], tArrowL, tArrowR, tIcons[4];
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime, txGoldMonth, txTotal, txNoInvestments;
-	int font_height, page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
+	int fontHeight, page, prevPage, openQuest, x, y, rectW, rectLines;
 	Rect rect, rect2;
 	vector<Text> texts;
 	vector<string> notes;
 	vector<string> rumors;
 	vector<pair<Mode, int>> changes;
-	string input_str;
+	string inputStr;
 	bool details;
 };

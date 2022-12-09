@@ -15,11 +15,12 @@ private:
 	void ParseQuest(const string& id);
 	void ParseQuestList(const string& id);
 	void LoadTexts() override;
+	int LoadQuestTexts(Tokenizer& t);
 	void Finalize() override;
 	void BuildQuest(QuestScheme* scheme);
 
-	string code;
-	DialogLoader* dialog_loader;
+	string code, globalCode;
+	DialogLoader* dialogLoader;
 	asIScriptEngine* engine;
 	asIScriptModule* module;
 };

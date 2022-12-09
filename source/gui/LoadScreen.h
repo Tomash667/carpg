@@ -10,30 +10,30 @@ class LoadScreen : public Control
 public:
 	LoadScreen() : progress(0) {}
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Setup(float min_progress, float max_progress, int steps, cstring str);
+	void Draw() override;
+	void Setup(float minProgress, float maxProgress, int steps, cstring str);
 	void Tick(cstring str);
 
-	void SetProgress(float _progress)
+	void SetProgress(float progress)
 	{
-		assert(_progress >= 0.f && _progress <= 1.f);
-		progress = _progress;
+		assert(progress >= 0.f && progress <= 1.f);
+		this->progress = progress;
 	}
 
-	void SetProgress(float _progress, cstring str)
+	void SetProgress(float progress, cstring str)
 	{
-		assert(_progress >= 0.f && _progress <= 1.f);
-		progress = _progress;
+		assert(progress >= 0.f && progress <= 1.f);
+		this->progress = progress;
 		if(str != nullptr)
 			text = str;
 		else
 			text.clear();
 	}
 
-	void SetProgressOptional(float _progress, cstring str)
+	void SetProgressOptional(float progress, cstring str)
 	{
-		assert(_progress >= 0.f && _progress <= 1.f);
-		progress = _progress;
+		assert(progress >= 0.f && progress <= 1.f);
+		this->progress = progress;
 		if(str)
 			text = str;
 	}
@@ -46,7 +46,7 @@ public:
 
 private:
 	TexturePtr tBackground, tLoadbar, tLoadbarBg;
-	float progress, min_progress, max_progress;
+	float progress, minProgress, maxProgress;
 	string text;
 	int step, steps;
 };

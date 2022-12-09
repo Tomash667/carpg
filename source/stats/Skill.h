@@ -71,7 +71,7 @@ enum class SkillType
 //-----------------------------------------------------------------------------
 struct Skill
 {
-	SkillId skill_id;
+	SkillId skillId;
 	cstring id;
 	string name, desc;
 	SkillGroupId group;
@@ -83,8 +83,8 @@ struct Skill
 	static const int MAX = 255;
 	static const int TAG_BONUS = 10;
 
-	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE, bool locked = false) :
-		skill_id(skill_id), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type), locked(locked)
+	Skill(SkillId skillId, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE, bool locked = false) :
+		skillId(skillId), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type), locked(locked)
 	{
 	}
 

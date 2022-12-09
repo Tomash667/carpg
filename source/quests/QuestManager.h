@@ -45,7 +45,7 @@ class QuestManager
 	{
 		const Item** item;
 		string name;
-		int quest_id;
+		int questId;
 		vector<ItemSlot>* items;
 		Unit* unit;
 	};
@@ -62,7 +62,7 @@ public:
 	Quest* GetMayorQuest();
 	Quest* GetCaptainQuest();
 	Quest* GetAdventurerQuest();
-	void AddQuestItemRequest(const Item** item, cstring name, int quest_id, vector<ItemSlot>* items, Unit* unit = nullptr);
+	void AddQuestItemRequest(const Item** item, cstring name, int questId, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Clear();
 	void Update(int days);
@@ -77,58 +77,58 @@ public:
 	Quest* FindQuest(QUEST_TYPE type);
 	Quest* FindUnacceptedQuest(Location* location, QuestCategory category);
 	Quest* FindUnacceptedQuest(int id);
-	Quest* FindQuestS(const string& quest_id);
-	const Item* FindQuestItem(cstring name, int quest_id);
-	void EndUniqueQuest() { ++unique_quests_completed; }
+	Quest* FindQuestS(const string& questId);
+	const Item* FindQuestItem(cstring name, int questId);
+	void EndUniqueQuest() { ++uniqueQuestsCompleted; }
 	bool SetForcedQuest(const string& name);
 	int GetForcedQuest() const { return force; }
 	const vector<QuestInfo>& GetQuestInfos() const { return infos; }
-	void RegisterSpecialHandler(QuestHandler* handler, cstring msg) { special_handlers[msg] = handler; }
-	void RegisterSpecialIfHandler(QuestHandler* handler, cstring msg) { special_if_handlers[msg] = handler; }
-	void RegisterFormatString(QuestHandler* handler, cstring msg) { format_str_handlers[msg] = handler; }
+	void RegisterSpecialHandler(QuestHandler* handler, cstring msg) { specialHandlers[msg] = handler; }
+	void RegisterSpecialIfHandler(QuestHandler* handler, cstring msg) { specialIfHandlers[msg] = handler; }
+	void RegisterFormatString(QuestHandler* handler, cstring msg) { formatStrHandlers[msg] = handler; }
 	bool HandleSpecial(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleFormatString(const string& str, cstring& result);
-	const Item* FindQuestItemClient(cstring item_id, int quest_id) const;
+	const Item* FindQuestItemClient(cstring item_id, int questId) const;
 	void AddScriptedQuest(QuestScheme* scheme);
 	QuestInfo* FindQuestInfo(QUEST_TYPE type);
 	QuestInfo* FindQuestInfo(const string& id);
-	void AddQuestRequest(int id, Quest** quest, delegate<void()> callback = nullptr) { quest_requests.push_back({ id, quest, callback }); }
-	void AddQuestItem(Item* item) { quest_items.push_back(item); }
-	bool HaveQuestRumors() const { return !quest_rumors.empty(); }
+	void AddQuestRequest(int id, Quest** quest, delegate<void()> callback = nullptr) { questRequests.push_back({ id, quest, callback }); }
+	void AddQuestItem(Item* item) { questItems.push_back(item); }
+	bool HaveQuestRumors() const { return !questRumors.empty(); }
 	int AddQuestRumor(cstring str);
-	void AddQuestRumor(int id, cstring str) { quest_rumors.push_back(pair<int, string>(id, str)); }
+	void AddQuestRumor(int id, cstring str) { questRumors.push_back(pair<int, string>(id, str)); }
 	bool RemoveQuestRumor(int id);
 	string GetRandomQuestRumor();
-	void GenerateQuestUnits(bool on_enter);
-	void RemoveQuestUnits(bool on_leave);
+	void GenerateQuestUnits(bool onEnter);
+	void RemoveQuestUnits(bool onLeave);
 	void HandleQuestEvent(Quest_Event* event);
 	void UpdateQuestsLocal(float dt);
 	void ProcessQuestRequests();
 	void UpgradeQuests();
 	vector<Location*>& GetUsedCities() { return used; }
 
-	vector<Quest*> unaccepted_quests;
+	vector<Quest*> unacceptedQuests;
 	vector<Quest*> quests;
-	vector<Quest_Dungeon*> quests_timeout;
-	vector<Quest*> quests_timeout2;
-	vector<Item*> quest_items;
-	Quest_Sawmill* quest_sawmill;
-	Quest_Mine* quest_mine;
-	Quest_Bandits* quest_bandits;
-	Quest_Mages* quest_mages;
-	Quest_Mages2* quest_mages2;
-	Quest_Orcs* quest_orcs;
-	Quest_Orcs2* quest_orcs2;
-	Quest_Goblins* quest_goblins;
-	Quest_Evil* quest_evil;
-	Quest_Crazies* quest_crazies;
-	Quest_Contest* quest_contest;
-	Quest_Secret* quest_secret;
-	Quest_Tournament* quest_tournament;
-	Quest_Tutorial* quest_tutorial;
-	int unique_quests, unique_quests_completed;
-	bool unique_completed_show;
+	vector<Quest_Dungeon*> questTimeouts;
+	vector<Quest*> questTimeouts2;
+	vector<Item*> questItems;
+	Quest_Sawmill* questSawmill;
+	Quest_Mine* questMine;
+	Quest_Bandits* questBandits;
+	Quest_Mages* questMages;
+	Quest_Mages2* questMages2;
+	Quest_Orcs* questOrcs;
+	Quest_Orcs2* questOrcs2;
+	Quest_Goblins* questGoblins;
+	Quest_Evil* questEvil;
+	Quest_Crazies* questCrazies;
+	Quest_Contest* questContest;
+	Quest_Secret* questSecret;
+	Quest_Tournament* questTournament;
+	Quest_Tutorial* questTutorial;
+	int uniqueQuests, uniqueQuestsCompleted;
+	bool uniqueCompletedShow;
 	cstring txQuest[268], txForMayor, txForSoltys, txRumorQ[9];
 
 private:
@@ -136,13 +136,13 @@ private:
 	QuestInfo* GetRandomQuest(QuestCategory category);
 
 	vector<QuestInfo> infos;
-	vector<QuestItemRequest*> quest_item_requests;
-	vector<QuestRequest> quest_requests;
-	vector<Quest*> upgrade_quests;
-	int quest_counter, force;
-	QuestList* quests_mayor, *quests_captain, *quests_random;
-	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;
-	string tmp_str;
-	vector<pair<int, string>> quest_rumors;
+	vector<QuestItemRequest*> questItemRequests;
+	vector<QuestRequest> questRequests;
+	vector<Quest*> upgradeQuests;
+	int questCounter, force;
+	QuestList* questsMayor, *questsCaptain, *questsRandom;
+	std::map<string, QuestHandler*> specialHandlers, specialIfHandlers, formatStrHandlers;
+	string tmpStr;
+	vector<pair<int, string>> questRumors;
 	vector<Location*> used;
 };

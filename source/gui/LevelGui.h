@@ -42,8 +42,8 @@ struct SpeechBubble
 	Unit* unit;
 	Int2 size;
 	float time, length;
-	int skip_id;
-	Vec3 last_pos;
+	int skipId;
+	Vec3 lastPos;
 	bool visible;
 };
 
@@ -68,7 +68,7 @@ public:
 	~LevelGui();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	bool NeedCursor() const override;
 	void Event(GuiEvent e) override;
@@ -79,25 +79,25 @@ public:
 	void UpdateScrollbar(int choices);
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }
-	void ClosePanels(bool close_mp_box = false);
+	void ClosePanels(bool closeMpBox = false);
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
 	void PositionPanels();
 	void Save(GameWriter& f) const;
 	void Load(GameReader& f);
-	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
+	bool IsMouseInsideDialog() const { return Rect::IsInside(gui->cursorPos, dialogPos, dialogSize); }
 	void RemoveUnitView(Unit* unit);
 	void DrawEndOfGameScreen();
 	void StartDragAndDrop(int type, int value, Texture* tex);
-	bool IsDragAndDrop() const { return drag_and_drop == 2; }
+	bool IsDragAndDrop() const { return dragAndDrop == 2; }
 	void ResetCutscene();
 	void SetCutsceneImage(Texture* tex, float time);
 	void SetCutsceneText(const string& text, float time);
 	void SetBoss(Unit* boss, bool instant);
 
-	Int2 dialog_cursor_pos;
-	bool use_cursor;
+	Int2 dialogCursorPos;
+	bool useCursor;
 
 private:
 	enum CutsceneState
@@ -111,7 +111,7 @@ private:
 	struct UnitView
 	{
 		Unit* unit;
-		Vec3 last_pos;
+		Vec3 lastPos;
 		float time;
 		bool valid;
 	};
@@ -121,7 +121,7 @@ private:
 		Unit* unit;
 		float dist;
 		int alpha;
-		Vec3* last_pos;
+		Vec3* lastPos;
 	};
 
 	struct SortedSpeechBubble
@@ -145,31 +145,30 @@ private:
 	void UpdatePlayerView(float dt);
 	void AddUnitView(Unit* unit);
 	void UpdateCutscene(float dt);
-	void DrawCutscene(int fallback_alpha);
-	int GetAlpha(CutsceneState cs, float timer, int fallback_alpha);
+	void DrawCutscene(int fallbackAlpha);
+	int GetAlpha(CutsceneState cs, float timer, int fallbackAlpha);
 
 	TooltipController tooltip;
-	float buff_scale;
-	vector<BuffImage> buff_images;
+	vector<BuffImage> buffImages;
 	vector<SortedUnitView> sorted_units;
-	float sidebar, cutscene_image_timer, cutscene_text_timer, bossAlpha;
-	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
-	CutsceneState cutscene_image_state, cutscene_text_state;
-	Int2 drag_and_drop_pos;
+	float buffScale, sidebar, cutsceneImageTimer, cutsceneTextTimer, bossAlpha;
+	int sidebarState[(int)SideButtonId::Max], dragAndDrop, dragAndDropType, dragAndDropIndex;
+	CutsceneState cutsceneImageState, cutsceneTextState;
+	Int2 dragAndDropPos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
 		tMinistamina, tMinimp, tCrosshair, tCrosshair2, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tEmerytura,
 		tEquipped, tDialog, tShortcutAction, tRip, tBlack;
-	TexturePtr drag_and_drop_icon, cutscene_image;
-	vector<pair<Texture*, float>> cutscene_next_images;
+	TexturePtr dragAndDropIcon, cutsceneImage;
+	vector<pair<Texture*, float>> cutsceneNextImages;
 	Scrollbar scrollbar;
-	vector<SpeechBubble*> speech_bbs;
-	vector<SortedSpeechBubble> sorted_speech_bbs;
-	string cutscene_text;
-	vector<pair<string, float>> cutscene_next_texts;
+	vector<SpeechBubble*> speechBubbles;
+	vector<SortedSpeechBubble> sortedSpeechBubbles;
+	string cutsceneText;
+	vector<pair<string, float>> cutsceneNextTexts;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
 		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
-	Int2 debug_info_size, dialog_pos, dialog_size;
-	vector<UnitView> unit_views;
-	bool debug_info, debug_info2, bossState;
+	Int2 debugInfoSize, dialogPos, dialogSize;
+	vector<UnitView> unitViews;
+	bool debugInfo, debugInfo2, bossState;
 	Unit* boss;
 };

@@ -22,24 +22,23 @@ struct BaseTrap
 	cstring id;
 	int attack;
 	TRAP_TYPE type;
-	cstring mesh_id;
+	cstring meshId;
 	MeshPtr mesh;
 	float rw, h;
-	cstring sound_id, sound_id2, sound_id3;
+	cstring soundId, soundId2, soundId3;
 	SoundPtr sound, sound2, sound3;
-	float sound_dist, sound_dist2, sound_dist3;
+	float soundDist, soundDist2, soundDist3;
 	ResourceState state;
 
-	BaseTrap(cstring id, int attack, TRAP_TYPE type, cstring mesh_id, cstring sound_id, float sound_dist, cstring sound_id2, float sound_dist2,
-		cstring sound_id3, float sound_dist3) :
-		id(id), attack(attack), type(type), mesh_id(mesh_id), mesh(nullptr), rw(0), h(0), sound_id(sound_id), sound_id2(sound_id2), sound_id3(sound_id3),
-		sound(nullptr), sound2(nullptr), sound3(nullptr), state(ResourceState::NotLoaded), sound_dist(sound_dist), sound_dist2(sound_dist2),
-		sound_dist3(sound_dist3)
+	BaseTrap(cstring id, int attack, TRAP_TYPE type, cstring meshId, cstring soundId, float soundDist, cstring soundId2, float soundDist2, cstring soundId3,
+		float soundDist3) :
+		id(id), attack(attack), type(type), meshId(meshId), mesh(nullptr), rw(0), h(0), soundId(soundId), soundId2(soundId2), soundId3(soundId3),
+		sound(nullptr), sound2(nullptr), sound3(nullptr), state(ResourceState::NotLoaded), soundDist(soundDist), soundDist2(soundDist2), soundDist3(soundDist3)
 	{
 	}
 
 	static BaseTrap* Get(const string& id);
 
 	static BaseTrap traps[];
-	static const uint n_traps;
+	static const uint nTraps;
 };

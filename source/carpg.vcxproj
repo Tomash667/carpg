@@ -144,9 +144,9 @@
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="entity\Electro.h" />
     <ClInclude Include="entity\Explo.h" />
+    <ClInclude Include="entity\LevelPart.h" />
     <ClInclude Include="entity\LevelQuad.h" />
     <ClInclude Include="entity\UnitList.h" />
-    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
     <ClInclude Include="entity\Encounter.h" />
@@ -182,11 +182,10 @@
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\DungeonMeshBuilder.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
-    <ClInclude Include="helpers\LevelAreaContext.h" />
+    <ClInclude Include="helpers\LocationContext.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
     <ClInclude Include="helpers\PhysicCallbacks.h" />
     <ClInclude Include="location\OffscreenLocation.h" />
-    <ClInclude Include="location\TmpLevelArea.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
     <ClInclude Include="net\EntityInterpolator.h" />
     <ClInclude Include="net\GamePacket.h" />
@@ -262,7 +261,7 @@
     <ClInclude Include="location\InsideBuilding.h" />
     <ClInclude Include="location\InsideLocation.h" />
     <ClInclude Include="location\InsideLocationLevel.h" />
-    <ClInclude Include="location\LevelArea.h" />
+    <ClInclude Include="location\LocationPart.h" />
     <ClInclude Include="location\Location.h" />
     <ClInclude Include="location\MultiInsideLocation.h" />
     <ClInclude Include="location\OutsideLocation.h" />
@@ -350,14 +349,14 @@
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="entity\Explo.cpp" />
+    <ClCompile Include="entity\LevelPart.cpp" />
     <ClCompile Include="entity\UnitList.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
-    <ClCompile Include="helpers\LevelAreaContext.cpp" />
+    <ClCompile Include="helpers\LocationContext.cpp" />
     <ClCompile Include="helpers\LocationHelper.cpp" />
     <ClCompile Include="location\OffscreenLocation.cpp" />
-    <ClCompile Include="location\TmpLevelArea.cpp" />
     <ClCompile Include="net\NetClient.cpp" />
     <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="generator\AcademyGenerator.cpp" />
@@ -395,7 +394,6 @@
     <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
     <ClCompile Include="entity\GameCamera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
@@ -421,7 +419,7 @@
     <ClCompile Include="helpers\CombatHelper.cpp" />
     <ClCompile Include="helpers\ItemHelper.cpp" />
     <ClCompile Include="helpers\LoadingHandler.cpp" />
-    <ClCompile Include="location\LevelArea.cpp" />
+    <ClCompile Include="location\LocationPart.cpp" />
     <ClCompile Include="net\BitStreamFunc.cpp" />
     <ClCompile Include="net\EntityInterpolator.cpp" />
     <ClCompile Include="net\LobbyApi.cpp" />

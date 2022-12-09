@@ -3,12 +3,12 @@
 
 #include "Ability.h"
 #include "BitStreamFunc.h"
-#include "LevelArea.h"
+#include "LocationPart.h"
 #include "Net.h"
 #include "Unit.h"
 
 //=================================================================================================
-bool Explo::Update(float dt, LevelArea& area)
+bool Explo::Update(float dt, LocationPart& locPart)
 {
 	// increase size
 	bool delete_me = false;
@@ -24,7 +24,7 @@ bool Explo::Update(float dt, LevelArea& area)
 		// deal damage
 		Unit* owner = this->owner;
 		const float dmg = this->dmg * Lerp(1.f, 0.1f, size / sizemax);
-		for(Unit* unit : area.units)
+		for(Unit* unit : locPart.units)
 		{
 			if(!unit->IsAlive() || (owner && owner->IsFriend(*unit, true)))
 				continue;
@@ -76,7 +76,7 @@ void Explo::Load(GameReader& f)
 		const string& tex = f.ReadString1();
 		for(Ability* ability : Ability::abilities)
 		{
-			if(ability->tex_explode.diffuse && ability->tex_explode.diffuse->filename == tex)
+			if(ability->texExplode.diffuse && ability->texExplode.diffuse->filename == tex)
 			{
 				this->ability = ability;
 				break;

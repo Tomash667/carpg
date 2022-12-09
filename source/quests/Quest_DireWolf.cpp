@@ -26,14 +26,14 @@ void Quest_DireWolf::SetProgress(int p)
 		forest = world->GetClosestLocation(L_OUTSIDE, startLoc->pos, FOREST);
 		forest->AddEventHandler(this, EVENT_ENTER);
 		forest->SetKnown();
-		forest->active_quest = this;
+		forest->activeQuest = this;
 
 		OnStart(GetText(0));
 		msgs.push_back(GetText(1));
 		msgs.push_back(GetText(2));
 		break;
 	case Killed:
-		forest->active_quest = nullptr;
+		forest->activeQuest = nullptr;
 		OnUpdate(GetText(3));
 		break;
 	case Complete:
@@ -55,14 +55,14 @@ void Quest_DireWolf::FireEvent(ScriptEvent& event)
 		{
 			// add dialog to hunters leader
 			UnitData* ud = UnitData::Get("hunter_leader");
-			Unit* unit = game_level->FindUnit(ud);
+			Unit* unit = gameLevel->FindUnit(ud);
 			unit->AddDialog(this, GetDialog("hunter"));
 		}
 		else
 		{
 			// spawn dire wolf
 			UnitData* ud = UnitData::Get("dire_wolf");
-			Unit* unit = game_level->SpawnUnitNearLocation(*game_level->local_area, Vec3(128, 0, 128), *ud);
+			Unit* unit = gameLevel->SpawnUnitNearLocation(*gameLevel->localPart, Vec3(128, 0, 128), *ud);
 			unit->AddEventHandler(this, EVENT_DIE);
 		}
 	}

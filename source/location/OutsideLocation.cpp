@@ -26,7 +26,7 @@ namespace OLD
 }
 
 //=================================================================================================
-OutsideLocation::OutsideLocation() : Location(true), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
+OutsideLocation::OutsideLocation() : Location(true), LocationPart(LocationPart::Type::Outside, LocationPart::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
 {
 	mine = Int2(0, 0);
 	maxe = Int2(size, size);
@@ -40,9 +40,9 @@ OutsideLocation::~OutsideLocation()
 }
 
 //=================================================================================================
-void OutsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void OutsideLocation::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
-	areas.push_back(*this);
+	parts.push_back(*this);
 }
 
 //=================================================================================================
@@ -50,15 +50,15 @@ void OutsideLocation::Save(GameWriter& f)
 {
 	Location::Save(f);
 
-	if(last_visit != -1)
+	if(lastVisit != -1)
 	{
-		LevelArea::Save(f);
+		LocationPart::Save(f);
 
 		// terrain
-		f.Write(tiles, sizeof(TerrainTile)*size*size);
+		f.Write(tiles, sizeof(TerrainTile) * size * size);
 		int size2 = size + 1;
 		size2 *= size2;
-		f.Write(h, sizeof(float)*size2);
+		f.Write(h, sizeof(float) * size2);
 	}
 }
 
@@ -67,31 +67,31 @@ void OutsideLocation::Load(GameReader& f)
 {
 	Location::Load(f);
 
-	if(last_visit != -1)
+	if(lastVisit != -1)
 	{
 		if(LOAD_VERSION >= V_0_11)
-			LevelArea::Load(f);
+			LocationPart::Load(f);
 		else
-			LevelArea::Load(f, old::LoadCompatibility::OutsideLocation);
+			LocationPart::Load(f, old::LoadCompatibility::OutsideLocation);
 
 		// terrain
 		int size2 = size + 1;
 		size2 *= size2;
 		h = new float[size2];
-		tiles = new TerrainTile[size*size];
-		f.Read(tiles, sizeof(TerrainTile)*size*size);
-		f.Read(h, sizeof(float)*size2);
+		tiles = new TerrainTile[size * size];
+		f.Read(tiles, sizeof(TerrainTile) * size * size);
+		f.Read(h, sizeof(float) * size2);
 	}
 }
 
 //=================================================================================================
 void OutsideLocation::Write(BitStreamWriter& f)
 {
-	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
-	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
-	f << game_level->light_angle;
+	f.Write((cstring)tiles, sizeof(TerrainTile) * size * size);
+	f.Write((cstring)h, sizeof(float) * (size + 1) * (size + 1));
+	f << gameLevel->lightAngle;
 
-	LevelArea::Write(f);
+	LocationPart::Write(f);
 
 	WritePortals(f);
 }
@@ -106,20 +106,20 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		tiles = new TerrainTile[size11];
 	if(!h)
 		h = new float[size22];
-	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
-	f.Read((char*)h, sizeof(float)*size22);
-	f >> game_level->light_angle;
+	f.Read((char*)tiles, sizeof(TerrainTile) * size11);
+	f.Read((char*)h, sizeof(float) * size22);
+	f >> gameLevel->lightAngle;
 	if(!f)
 	{
 		Error("Read level: Broken packet for terrain.");
 		return false;
 	}
 
-	if(!LevelArea::Read(f))
+	if(!LocationPart::Read(f))
 		return false;
 
 	// portals
-	if(!ReadPortals(f, game_level->dungeon_level))
+	if(!ReadPortals(f, gameLevel->dungeonLevel))
 	{
 		Error("Read level: Broken portals.");
 		return false;

@@ -76,7 +76,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 		loc_gen = encounter;
 		break;
 	case L_OUTSIDE:
-		if(game_level->location_index == quest_mgr->quest_secret->where2)
+		if(gameLevel->locationIndex == questMgr->questSecret->where2)
 		{
 			loc_gen = secret;
 			break;
@@ -107,7 +107,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 	case L_DUNGEON:
 		{
 			InsideLocation* inside = (InsideLocation*)loc;
-			BaseLocation& base = g_base_locations[inside->target];
+			BaseLocation& base = gBaseLocations[inside->target];
 			if(inside->target == TUTORIAL_FORT)
 				loc_gen = tutorial;
 			else if(IsSet(base.options, BLO_LABYRINTH))
@@ -121,7 +121,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 		break;
 	}
 	loc_gen->loc = loc;
-	loc_gen->dungeon_level = game_level->dungeon_level;
+	loc_gen->dungeonLevel = gameLevel->dungeonLevel;
 	loc_gen->first = first;
 	loc_gen->Init();
 	return loc_gen;

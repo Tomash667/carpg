@@ -17,15 +17,15 @@
 //=================================================================================================
 City::~City()
 {
-	DeleteElements(inside_buildings);
+	DeleteElements(insideBuildings);
 }
 
 //=================================================================================================
-void City::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+void City::Apply(vector<std::reference_wrapper<LocationPart>>& parts)
 {
-	areas.push_back(*this);
-	for(InsideBuilding* ib : inside_buildings)
-		areas.push_back(*ib);
+	parts.push_back(*this);
+	for(InsideBuilding* ib : insideBuildings)
+		parts.push_back(*ib);
 }
 
 //=================================================================================================
@@ -34,11 +34,11 @@ void City::Save(GameWriter& f)
 	OutsideLocation::Save(f);
 
 	f << citizens;
-	f << citizens_world;
+	f << citizensWorld;
 	f << flags;
 	f << variant;
 
-	if(last_visit == -1)
+	if(lastVisit == -1)
 	{
 		// list of buildings in this location is generated
 		f << buildings.size();
@@ -47,7 +47,7 @@ void City::Save(GameWriter& f)
 	}
 	else
 	{
-		f << entry_points;
+		f << entryPoints;
 		f << gates;
 
 		f << buildings.size();
@@ -55,22 +55,22 @@ void City::Save(GameWriter& f)
 		{
 			f << b.building->id;
 			f << b.pt;
-			f << b.unit_pt;
+			f << b.unitPt;
 			f << b.dir;
-			f << b.walk_pt;
+			f << b.walkPt;
 		}
 
-		f << inside_offset;
-		f << inside_buildings.size();
-		for(InsideBuilding* b : inside_buildings)
+		f << insideOffset;
+		f << insideBuildings.size();
+		for(InsideBuilding* b : insideBuildings)
 			b->Save(f);
 
-		f << quest_mayor;
-		f << quest_mayor_time;
-		f << quest_captain;
-		f << quest_captain_time;
-		f << arena_time;
-		f << arena_pos;
+		f << questMayor;
+		f << questMayorTime;
+		f << questCaptain;
+		f << questCaptainTime;
+		f << arenaTime;
+		f << arenaPos;
 	}
 }
 
@@ -80,13 +80,13 @@ void City::Load(GameReader& f)
 	OutsideLocation::Load(f);
 
 	f >> citizens;
-	f >> citizens_world;
+	f >> citizensWorld;
 	if(LOAD_VERSION < V_0_12)
 		f >> target;
 	f >> flags;
 	f >> variant;
 
-	if(last_visit == -1)
+	if(lastVisit == -1)
 	{
 		// list of buildings in this location is generated
 		uint count;
@@ -100,7 +100,7 @@ void City::Load(GameReader& f)
 	}
 	else
 	{
-		f >> entry_points;
+		f >> entryPoints;
 		f >> gates;
 
 		uint count;
@@ -110,9 +110,9 @@ void City::Load(GameReader& f)
 		{
 			b.building = Building::Get(f.ReadString1());
 			f >> b.pt;
-			f >> b.unit_pt;
+			f >> b.unitPt;
 			f >> b.dir;
-			f >> b.walk_pt;
+			f >> b.walkPt;
 			assert(b.building != nullptr);
 			if(LOAD_VERSION < V_0_14 && b.building->id == "mages_tower")
 			{
@@ -127,32 +127,32 @@ void City::Load(GameReader& f)
 				else
 					pos = Vec3::TransformZero(point->mat);
 				pos += Vec3(float(b.pt.x + b.building->shift[b.dir].x) * 2, 0.f, float(b.pt.y + b.building->shift[b.dir].y) * 2);
-				b.walk_pt = pos;
-				game_level->terrain->SetHeightMap(h);
-				game_level->terrain->SetY(b.walk_pt);
-				game_level->terrain->RemoveHeightMap();
+				b.walkPt = pos;
+				gameLevel->terrain->SetHeightMap(h);
+				gameLevel->terrain->SetY(b.walkPt);
+				gameLevel->terrain->RemoveHeightMap();
 			}
 		}
 
-		f >> inside_offset;
+		f >> insideOffset;
 		f >> count;
-		inside_buildings.resize(count);
+		insideBuildings.resize(count);
 		int index = 0;
-		for(InsideBuilding*& b : inside_buildings)
+		for(InsideBuilding*& b : insideBuildings)
 		{
 			b = new InsideBuilding(index);
 			b->Load(f);
-			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+			b->mine = Int2(b->levelShift.x * 256, b->levelShift.y * 256);
 			b->maxe = b->mine + Int2(256, 256);
 			++index;
 		}
 
-		f >> quest_mayor;
-		f >> quest_mayor_time;
-		f >> quest_captain;
-		f >> quest_captain_time;
-		f >> arena_time;
-		f >> arena_pos;
+		f >> questMayor;
+		f >> questMayorTime;
+		f >> questCaptain;
+		f >> questCaptainTime;
+		f >> arenaTime;
+		f >> arenaPos;
 	}
 }
 
@@ -162,11 +162,11 @@ void City::Write(BitStreamWriter& f)
 	OutsideLocation::Write(f);
 
 	f.WriteCasted<byte>(flags);
-	f.WriteCasted<byte>(entry_points.size());
-	for(EntryPoint& entry_point : entry_points)
+	f.WriteCasted<byte>(entryPoints.size());
+	for(EntryPoint& entry_point : entryPoints)
 	{
-		f << entry_point.exit_region;
-		f << entry_point.exit_y;
+		f << entry_point.exitRegion;
+		f << entry_point.exitY;
 	}
 	f.WriteCasted<byte>(buildings.size());
 	for(CityBuilding& building : buildings)
@@ -175,8 +175,8 @@ void City::Write(BitStreamWriter& f)
 		f << building.pt;
 		f.WriteCasted<byte>(building.dir);
 	}
-	f.WriteCasted<byte>(inside_buildings.size());
-	for(InsideBuilding* inside_building : inside_buildings)
+	f.WriteCasted<byte>(insideBuildings.size());
+	for(InsideBuilding* inside_building : insideBuildings)
 		inside_building->Write(f);
 }
 
@@ -196,11 +196,11 @@ bool City::Read(BitStreamReader& f)
 		Error("Read level: Broken packet for city.");
 		return false;
 	}
-	entry_points.resize(count);
-	for(EntryPoint& entry : entry_points)
+	entryPoints.resize(count);
+	for(EntryPoint& entry : entryPoints)
 	{
-		f.Read(entry.exit_region);
-		f.Read(entry.exit_y);
+		f.Read(entry.exitRegion);
+		f.Read(entry.exitY);
 	}
 	if(!f)
 	{
@@ -243,9 +243,9 @@ bool City::Read(BitStreamReader& f)
 		Error("Read level: Broken packet for inside buildings count.");
 		return false;
 	}
-	inside_buildings.resize(count);
+	insideBuildings.resize(count);
 	int index = 0;
-	for(InsideBuilding*& ib : inside_buildings)
+	for(InsideBuilding*& ib : insideBuildings)
 	{
 		ib = new InsideBuilding(index);
 		if(!ib->Read(f))
@@ -263,7 +263,7 @@ bool City::Read(BitStreamReader& f)
 bool City::IsInsideCity(const Vec3& pos)
 {
 	Int2 tile(int(pos.x / 2), int(pos.z / 2));
-	if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
+	if(tile.x <= int(0.15f * size) || tile.y <= int(0.15f * size) || tile.x >= int(0.85f * size) || tile.y >= int(0.85f * size))
 		return false;
 	else
 		return true;
@@ -274,7 +274,7 @@ InsideBuilding* City::FindInsideBuilding(Building* building, int* out_index)
 {
 	assert(building);
 	int index = 0;
-	for(InsideBuilding* i : inside_buildings)
+	for(InsideBuilding* i : insideBuildings)
 	{
 		if(i->building == building)
 		{
@@ -294,7 +294,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int* out_index)
 {
 	assert(group);
 	int index = 0;
-	for(InsideBuilding* i : inside_buildings)
+	for(InsideBuilding* i : insideBuildings)
 	{
 		if(i->building->group == group)
 		{
@@ -378,9 +378,9 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 		script->vars[i] = 0;
 	script->vars[BuildingScript::V_COUNT] = 1;
 	script->vars[BuildingScript::V_CITIZENS] = citizens;
-	script->vars[BuildingScript::V_CITIZENS_WORLD] = citizens_world;
+	script->vars[BuildingScript::V_CITIZENS_WORLD] = citizensWorld;
 	if(!required)
-		code += script->required_offset;
+		code += script->requiredOffset;
 
 	vector<int> stack;
 	int if_level = 0, if_depth = 0;
@@ -424,7 +424,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 				for(int i = 0; i < building_count; ++i)
 				{
 					uint index = Rand() % count;
-					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
+					BuildingScript::Code type = (BuildingScript::Code) * (code + index * 2);
 					if(type == BuildingScript::BS_BUILDING)
 					{
 						Building* b = (Building*)*(code + index * 2 + 1);
@@ -595,16 +595,16 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 
 cleanup:
 	citizens = script->vars[BuildingScript::V_CITIZENS];
-	citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
+	citizensWorld = script->vars[BuildingScript::V_CITIZENS_WORLD];
 }
 
 //=================================================================================================
 void City::GetEntry(Vec3& pos, float& rot)
 {
-	if(entry_points.size() == 1)
+	if(entryPoints.size() == 1)
 	{
-		pos = entry_points[0].spawn_region.Midpoint().XZ();
-		rot = entry_points[0].spawn_rot;
+		pos = entryPoints[0].spawnRegion.Midpoint().XZ();
+		rot = entryPoints[0].spawnRot;
 	}
 	else
 	{
@@ -612,17 +612,17 @@ void City::GetEntry(Vec3& pos, float& rot)
 		float best_dif = 999.f;
 		int best_index = -1, index = 0;
 		float dir = ConvertNewAngleToOld(world->GetTravelDir());
-		for(vector<EntryPoint>::iterator it = entry_points.begin(), end = entry_points.end(); it != end; ++it, ++index)
+		for(vector<EntryPoint>::iterator it = entryPoints.begin(), end = entryPoints.end(); it != end; ++it, ++index)
 		{
-			float dif = AngleDiff(dir, it->spawn_rot);
+			float dif = AngleDiff(dir, it->spawnRot);
 			if(dif < best_dif)
 			{
 				best_dif = dif;
 				best_index = index;
 			}
 		}
-		pos = entry_points[best_index].spawn_region.Midpoint().XZ();
-		rot = entry_points[best_index].spawn_rot;
+		pos = entryPoints[best_index].spawnRegion.Midpoint().XZ();
+		rot = entryPoints[best_index].spawnRot;
 	}
 }
 
@@ -665,7 +665,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 //=================================================================================================
 Vec3 CityBuilding::GetUnitPos()
 {
-	return Vec3(float(unit_pt.x) * 2 + 1, 0, float(unit_pt.y) * 2 + 1);
+	return Vec3(float(unitPt.x) * 2 + 1, 0, float(unitPt.y) * 2 + 1);
 }
 
 //=================================================================================================

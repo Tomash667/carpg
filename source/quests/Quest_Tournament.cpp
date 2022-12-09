@@ -21,17 +21,17 @@
 //=================================================================================================
 void Quest_Tournament::InitOnce()
 {
-	quest_mgr->RegisterSpecialHandler(this, "ironfist_start");
-	quest_mgr->RegisterSpecialHandler(this, "ironfist_join");
-	quest_mgr->RegisterSpecialHandler(this, "ironfist_train");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_can_start");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_done");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_here");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_preparing");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_started");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_joined");
-	quest_mgr->RegisterSpecialIfHandler(this, "ironfist_winner");
-	quest_mgr->RegisterFormatString(this, "ironfist_city");
+	questMgr->RegisterSpecialHandler(this, "ironfist_start");
+	questMgr->RegisterSpecialHandler(this, "ironfist_join");
+	questMgr->RegisterSpecialHandler(this, "ironfist_train");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_can_start");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_done");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_here");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_preparing");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_started");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_joined");
+	questMgr->RegisterSpecialIfHandler(this, "ironfist_winner");
+	questMgr->RegisterFormatString(this, "ironfist_city");
 }
 
 //=================================================================================================
@@ -45,7 +45,7 @@ void Quest_Tournament::LoadLanguage()
 void Quest_Tournament::Init()
 {
 	year = 0;
-	city_year = world->GetDateValue().year;
+	cityYear = world->GetDateValue().year;
 	city = world->GetRandomCity()->index;
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
@@ -67,7 +67,7 @@ void Quest_Tournament::Save(GameWriter& f)
 {
 	f << year;
 	f << city;
-	f << city_year;
+	f << cityYear;
 	f << winner;
 	f << generated;
 }
@@ -77,13 +77,13 @@ void Quest_Tournament::Load(GameReader& f)
 {
 	f >> year;
 	f >> city;
-	f >> city_year;
+	f >> cityYear;
 	f >> winner;
 	f >> generated;
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	if(generated)
-		master = game_level->local_area->FindUnit(UnitData::Get("arena_master"));
+		master = gameLevel->localPart->FindUnit(UnitData::Get("arena_master"));
 	else
 		master = nullptr;
 }
@@ -96,30 +96,30 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 		StartTournament(ctx.talker);
 		units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "ironfist_join") == 0)
 	{
 		units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
+		ctx.pc->leavingEvent = false;
 	}
 	else if(strcmp(msg, "ironfist_train") == 0)
 	{
 		winner = nullptr;
 		ctx.pc->unit->frozen = FROZEN::YES;
-		if(ctx.is_local)
+		if(ctx.isLocal)
 		{
 			// local fallback
-			game->fallback_type = FALLBACK::TRAIN;
-			game->fallback_t = -1.f;
-			game->fallback_1 = 2;
-			game->fallback_2 = 0;
+			game->fallbackType = FALLBACK::TRAIN;
+			game->fallbackTimer = -1.f;
+			game->fallbackValue = 2;
+			game->fallbackValue2 = 0;
 		}
 		else
 		{
 			// send info about training
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
 			c.type = NetChangePlayer::TRAIN;
 			c.id = 2;
 			c.count = 0;
@@ -155,7 +155,7 @@ bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 			// winner can stop dialog and talk
 			if(winner == ctx.pc->unit && state2 == 2 && state3 == 1)
 			{
-				master->look_target = nullptr;
+				master->lookTarget = nullptr;
 				state = TOURNAMENT_NOT_DONE;
 			}
 			else
@@ -190,13 +190,13 @@ cstring Quest_Tournament::FormatString(const string& str)
 void Quest_Tournament::OnProgress()
 {
 	const Date& date = world->GetDateValue();
-	if(date.year != city_year)
+	if(date.year != cityYear)
 	{
-		city_year = date.year;
+		cityYear = date.year;
 		city = world->GetRandomCity(world->GetLocation(city))->index;
 		master = nullptr;
 	}
-	if(date.day == 6 && date.month == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena) && world->GetCurrentLocationIndex() == city && !generated)
+	if(date.day == 6 && date.month == 2 && gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && world->GetCurrentLocationIndex() == city && !generated)
 		GenerateUnits();
 	if(date.month > 2 || (date.month == 2 && date.day > 6))
 		year = date.year;
@@ -210,19 +210,19 @@ UnitData& Quest_Tournament::GetRandomHeroData()
 }
 
 //=================================================================================================
-void Quest_Tournament::StartTournament(Unit* arena_master)
+void Quest_Tournament::StartTournament(Unit* arenaMaster)
 {
 	year = world->GetDateValue().year;
 	state = TOURNAMENT_STARTING;
 	timer = 0.f;
 	state2 = 0;
-	master = arena_master;
+	master = arenaMaster;
 	units.clear();
 	winner = nullptr;
 	pairs.clear();
-	skipped_unit = nullptr;
-	other_fighter = nullptr;
-	arena = game_level->city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA);
+	skippedCount = nullptr;
+	otherFighter = nullptr;
+	arena = gameLevel->cityCtx->FindInsideBuilding(BuildingGroup::BG_ARENA);
 }
 
 //=================================================================================================
@@ -234,7 +234,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 	{
 		if(IsSet(u.data->flags2, F2_TOURNAMENT))
 			return true;
-		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState >= Quest_Mages2::State::MageCured)
 		{
 			// go back to inn
 			if(!u.IsTeamMember())
@@ -248,30 +248,30 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 //=================================================================================================
 void Quest_Tournament::GenerateUnits()
 {
-	LevelArea& area = *game_level->city_ctx;
-	Vec3 pos = game_level->city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
-	master = area.FindUnit(UnitData::Get("arena_master"));
+	LocationPart& locPart = *gameLevel->cityCtx;
+	Vec3 pos = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walkPt;
+	master = locPart.FindUnit(UnitData::Get("arena_master"));
 
 	// warp heroes in front of arena
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			game_level->WarpNearLocation(area, u, pos, 12.f, false);
+			gameLevel->WarpNearLocation(locPart, u, pos, 12.f, false);
 		}
 	}
-	InsideBuilding* inn = game_level->city_ctx->FindInn();
+	InsideBuilding* inn = gameLevel->cityCtx->FindInn();
 	for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end;)
 	{
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			u.area = &area;
-			game_level->WarpNearLocation(area, u, pos, 12.f, false);
-			area.units.push_back(&u);
+			u.locPart = &locPart;
+			gameLevel->WarpNearLocation(locPart, u, pos, 12.f, false);
+			locPart.units.push_back(&u);
 			it = inn->units.erase(it);
 			end = inn->units.end();
 		}
@@ -283,7 +283,7 @@ void Quest_Tournament::GenerateUnits()
 	int count = Random(6, 9);
 	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = game_level->SpawnUnitNearLocation(area, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
+		Unit* u = gameLevel->SpawnUnitNearLocation(locPart, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
 			u->temporary = true;
 	}
@@ -311,8 +311,8 @@ void Quest_Tournament::Update(float dt)
 		VerifyUnit(pair.first);
 		VerifyUnit(pair.second);
 	}
-	VerifyUnit(skipped_unit);
-	VerifyUnit(other_fighter);
+	VerifyUnit(skippedCount);
+	VerifyUnit(otherFighter);
 
 	if(state == TOURNAMENT_STARTING)
 	{
@@ -320,14 +320,14 @@ void Quest_Tournament::Update(float dt)
 			timer += dt;
 
 		// team members joining
-		const Vec3& walk_pt = game_level->city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
+		const Vec3& walkPt = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walkPt;
 		for(Unit& unit : team->members)
 		{
-			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dont_attack && ShouldJoin(unit))
+			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dontAttack && ShouldJoin(unit))
 			{
 				unit.busy = Unit::Busy_Tournament;
 				unit.ai->st.idle.action = AIController::Idle_Move;
-				unit.ai->st.idle.pos = walk_pt;
+				unit.ai->st.idle.pos = walkPt;
 				unit.ai->timer = Random(5.f, 10.f);
 
 				unit.Talk(RandomString(txAiJoinTour));
@@ -357,7 +357,7 @@ void Quest_Tournament::Update(float dt)
 			if(timer >= 60.f)
 			{
 				// gather npc's
-				for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = gameLevel->localPart->units.begin(), end = gameLevel->localPart->units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					if(Vec3::Distance2d(u.pos, master->pos) < 64.f && ShouldJoin(u))
@@ -372,7 +372,7 @@ void Quest_Tournament::Update(float dt)
 				round = 0;
 				master->busy = Unit::Busy_Yes;
 				Talk(txTour[2]);
-				skipped_unit = nullptr;
+				skippedCount = nullptr;
 				StartRound();
 			}
 		}
@@ -384,7 +384,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					// tell how many units joined
 					state2 = 4;
-					Talk(Format(txTour[3], pairs.size() * 2 + (skipped_unit ? 1 : 0)));
+					Talk(Format(txTour[3], pairs.size() * 2 + (skippedCount ? 1 : 0)));
 					game->arena->SpawnArenaViewers(5);
 				}
 				else
@@ -423,7 +423,7 @@ void Quest_Tournament::Update(float dt)
 				cstring text;
 				if(state3 == 0)
 					text = Format(txTour[4], round + 1);
-				else if(pairs.size() == 1u && !skipped_unit)
+				else if(pairs.size() == 1u && !skippedCount)
 				{
 					auto& p = pairs[0];
 					text = Format(txTour[23], p.first->GetRealName(), p.second->GetRealName());
@@ -435,8 +435,8 @@ void Quest_Tournament::Update(float dt)
 				}
 				else if(state3 == (int)pairs.size() + 1)
 				{
-					if(skipped_unit)
-						text = Format(txTour[6], skipped_unit->GetRealName());
+					if(skippedCount)
+						text = Format(txTour[6], skippedCount->GetRealName());
 					else
 						text = txTour[round == 0 ? 7 : 8];
 				}
@@ -449,7 +449,7 @@ void Quest_Tournament::Update(float dt)
 				bool end = false;
 				if(state3 == (int)pairs.size() + 1)
 				{
-					if(!skipped_unit)
+					if(!skippedCount)
 						end = true;
 				}
 				else if(state3 == (int)pairs.size() + 2)
@@ -468,7 +468,7 @@ void Quest_Tournament::Update(float dt)
 			if(state3 == 0)
 			{
 				// tell next fight participants (skip talking at final round)
-				if(pairs.size() == 1u && units.empty() && !skipped_unit)
+				if(pairs.size() == 1u && units.empty() && !skippedCount)
 					state3 = 1;
 				else if(master->CanAct())
 				{
@@ -483,25 +483,25 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct())
 				{
 					auto& p = pairs.back();
-					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->area == arena))
+					if(p.first->toRemove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->locPart == arena))
 					{
 						// first unit left or can't fight, check other
 						state3 = 2;
-						other_fighter = p.second;
+						otherFighter = p.second;
 						Talk(Format(txTour[11], p.first->GetRealName()));
-						if(!p.first->to_remove && p.first->IsPlayer())
-							game_gui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
+						if(!p.first->toRemove && p.first->IsPlayer())
+							gameGui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
-					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->area == arena))
+					else if(p.second->toRemove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->locPart == arena))
 					{
 						// second unit left or can't fight, first automaticaly goes to next round
 						state3 = 3;
 						units.push_back(p.first);
 						Talk(Format(txTour[12], p.second->GetRealName(), p.first->GetRealName()));
-						if(!p.second->to_remove && p.second->IsPlayer())
-							game_gui->messages->AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
+						if(!p.second->toRemove && p.second->IsPlayer())
+							gameGui->messages->AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
@@ -516,16 +516,16 @@ void Quest_Tournament::Update(float dt)
 						p.first->frozen = FROZEN::YES;
 						if(p.first->IsPlayer())
 						{
-							p.first->player->arena_fights++;
-							p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.first->player->arenaFights++;
+							p.first->player->statFlags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == game->pc)
 							{
-								game->fallback_type = FALLBACK::ARENA;
-								game->fallback_t = -1.f;
+								game->fallbackType = FALLBACK::ARENA;
+								game->fallbackTimer = -1.f;
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(p.first->player->player_info->changes);
+								NetChangePlayer& c = Add1(p.first->player->playerInfo->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 							}
 						}
@@ -534,16 +534,16 @@ void Quest_Tournament::Update(float dt)
 						p.second->frozen = FROZEN::YES;
 						if(p.second->IsPlayer())
 						{
-							p.second->player->arena_fights++;
-							p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.second->player->arenaFights++;
+							p.second->player->statFlags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == game->pc)
 							{
-								game->fallback_type = FALLBACK::ARENA;
-								game->fallback_t = -1.f;
+								game->fallbackType = FALLBACK::ARENA;
+								game->fallbackTimer = -1.f;
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(p.second->player->player_info->changes);
+								NetChangePlayer& c = Add1(p.second->player->playerInfo->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 							}
 						}
@@ -556,21 +556,21 @@ void Quest_Tournament::Update(float dt)
 				// check if second unit is here
 				if(master->CanAct())
 				{
-					if(other_fighter->to_remove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f || other_fighter->area == arena))
+					if(otherFighter->toRemove || !otherFighter->IsStanding() || otherFighter->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(otherFighter->pos, master->pos) <= 64.f || otherFighter->locPart == arena))
 					{
 						// second unit left too
-						Talk(Format(txTour[13], other_fighter->GetRealName()));
-						if(!other_fighter->to_remove && other_fighter->IsPlayer())
-							game_gui->messages->AddGameMsg3(other_fighter->player, GMS_LEFT_EVENT);
+						Talk(Format(txTour[13], otherFighter->GetRealName()));
+						if(!otherFighter->toRemove && otherFighter->IsPlayer())
+							gameGui->messages->AddGameMsg3(otherFighter->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
 						// second unit is here, go automaticaly to next round
-						units.push_back(other_fighter);
-						Talk(Format(txTour[14], other_fighter->GetRealName()));
+						units.push_back(otherFighter);
+						Talk(Format(txTour[14], otherFighter->GetRealName()));
 					}
-					other_fighter = nullptr;
+					otherFighter = nullptr;
 					state3 = 3;
 				}
 			}
@@ -583,13 +583,13 @@ void Quest_Tournament::Update(float dt)
 					if(pairs.empty())
 					{
 						// no more fights in this round
-						if(units.size() <= 1 && !skipped_unit)
+						if(units.size() <= 1 && !skippedCount)
 						{
 							// is there a winner?
 							if(!units.empty())
 								winner = units.back();
 							else
-								winner = skipped_unit;
+								winner = skippedCount;
 
 							if(!winner)
 							{
@@ -648,7 +648,7 @@ void Quest_Tournament::Update(float dt)
 						float mhp = u.hpmax - u.hp;
 						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
-							u.ai->have_potion = HavePotion::Yes;
+							u.ai->havePotion = HavePotion::Yes;
 						if(mhp >= p3_power)
 						{
 							int count = (int)floor(mhp / p3_power);
@@ -671,7 +671,7 @@ void Quest_Tournament::Update(float dt)
 							given_items += count;
 						}
 						if(u.IsPlayer() && given_items)
-							game_gui->messages->AddItemMessage(u.player, given_items);
+							gameGui->messages->AddItemMessage(u.player, given_items);
 					}
 
 					// winner goes to next round
@@ -694,11 +694,11 @@ void Quest_Tournament::Update(float dt)
 					const int REWARD = 5000;
 
 					state3 = 1;
-					master->look_target = winner;
+					master->lookTarget = winner;
 					winner->ModGold(REWARD);
 					if(winner->IsHero())
 					{
-						winner->look_target = master;
+						winner->lookTarget = master;
 						winner->hero->AddExp(15000);
 					}
 					else
@@ -713,11 +713,11 @@ void Quest_Tournament::Update(float dt)
 					// end of tournament
 					if(winner && winner->IsHero())
 					{
-						winner->look_target = nullptr;
+						winner->lookTarget = nullptr;
 						winner->ai->st.idle.action = AIController::Idle_None;
 						winner->busy = Unit::Busy_No;
 					}
-					master->look_target = nullptr;
+					master->lookTarget = nullptr;
 					Clean();
 				}
 				else if(state3 == 2)
@@ -734,19 +734,19 @@ void Quest_Tournament::Update(float dt)
 //=================================================================================================
 void Quest_Tournament::VerifyUnit(Unit* unit)
 {
-	if(!unit || !unit->IsPlayer() || unit->to_remove)
+	if(!unit || !unit->IsPlayer() || unit->toRemove)
 		return;
-	bool leaving_event = true;
-	if(unit->area == arena)
-		leaving_event = false;
-	else if(unit->area->area_type == LevelArea::Type::Outside)
-		leaving_event = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
+	bool leavingEvent = true;
+	if(unit->locPart == arena)
+		leavingEvent = false;
+	else if(unit->locPart->partType == LocationPart::Type::Outside)
+		leavingEvent = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
 
-	if(leaving_event != unit->player->leaving_event)
+	if(leavingEvent != unit->player->leavingEvent)
 	{
-		unit->player->leaving_event = leaving_event;
-		if(leaving_event)
-			game_gui->messages->AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
+		unit->player->leavingEvent = leavingEvent;
+		if(leavingEvent)
+			gameGui->messages->AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
 	}
 }
 
@@ -756,7 +756,7 @@ void Quest_Tournament::StartRound()
 	Shuffle(units.begin(), units.end());
 	pairs.clear();
 
-	Unit* first = skipped_unit;
+	Unit* first = skippedCount;
 	for(auto& unit : units)
 	{
 		if(!first)
@@ -768,7 +768,7 @@ void Quest_Tournament::StartRound()
 		}
 	}
 
-	skipped_unit = first;
+	skippedCount = first;
 	units.clear();
 }
 
@@ -776,8 +776,8 @@ void Quest_Tournament::StartRound()
 void Quest_Tournament::Talk(cstring text)
 {
 	master->Talk(text);
-	Vec3 pos = game_level->GetArena()->exit_region.Midpoint().XZ(1.5f);
-	game_gui->level_gui->AddSpeechBubble(pos, text);
+	Vec3 pos = gameLevel->GetArena()->exitRegion.Midpoint().XZ(1.5f);
+	gameGui->levelGui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -785,7 +785,7 @@ void Quest_Tournament::Talk(cstring text)
 		c.pos = pos;
 		c.str = StringPool.Get();
 		*c.str = text;
-		net->net_strs.push_back(c.str);
+		net->netStrs.push_back(c.str);
 	}
 }
 
@@ -808,7 +808,7 @@ void Quest_Tournament::Train(PlayerController& player)
 		player.Train(true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
 		player.Train(true, (int)u.GetArmor().GetSkill());
-	Var* var = script_mgr->GetVars(&u)->Get("ironfist_won");
+	Var* var = scriptMgr->GetVars(&u)->Get("ironfist_won");
 	if(!var->IsBool(true))
 	{
 		u.player->AddLearningPoint();
@@ -831,10 +831,10 @@ void Quest_Tournament::Clean()
 		p.second->busy = Unit::Busy_No;
 	}
 	pairs.clear();
-	if(skipped_unit)
+	if(skippedCount)
 	{
-		skipped_unit->busy = Unit::Busy_No;
-		skipped_unit = nullptr;
+		skippedCount->busy = Unit::Busy_No;
+		skippedCount = nullptr;
 	}
 	master->busy = Unit::Busy_No;
 	master = nullptr;

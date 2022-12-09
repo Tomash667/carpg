@@ -19,7 +19,7 @@
 #include <Scene.h>
 #include <SceneManager.h>
 
-GameResources* game_res;
+GameResources* gameRes;
 
 //=================================================================================================
 GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
@@ -31,9 +31,9 @@ GameResources::~GameResources()
 {
 	delete scene;
 	delete camera;
-	for(auto& item : item_texture_map)
+	for(auto& item : itemTextureMap)
 		delete item.second;
-	for(Texture* tex : over_item_textures)
+	for(Texture* tex : overrideItemTextures)
 		delete tex;
 }
 
@@ -41,7 +41,7 @@ GameResources::~GameResources()
 void GameResources::Init()
 {
 	scene = new Scene;
-	scene->clear_color = Color::None;
+	scene->clearColor = Color::None;
 
 	Light light;
 	light.range = 10.f;
@@ -53,16 +53,16 @@ void GameResources::Init()
 
 	camera = new Camera;
 
-	aHuman = res_mgr->Load<Mesh>("human.qmsh");
-	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
-	missing_item_texture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	aHuman = resMgr->Load<Mesh>("human.qmsh");
+	rtItem = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
+	missingItemTexture = CreatePlaceholderTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 }
 
 //=================================================================================================
 Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 {
 	cstring name = Format("placeholder;%d;%d", size.x, size.y);
-	Texture* tex = res_mgr->TryGet<Texture>(name);
+	Texture* tex = resMgr->TryGet<Texture>(name);
 	if(tex)
 		return tex;
 
@@ -81,7 +81,7 @@ Texture* GameResources::CreatePlaceholderTexture(const Int2& size)
 	tex->filename = tex->path.c_str();
 	tex->tex = t;
 	tex->state = ResourceState::Loaded;
-	res_mgr->AddResource(tex);
+	resMgr->AddResource(tex);
 
 	return tex;
 }
@@ -101,52 +101,52 @@ void GameResources::LoadLanguage()
 void GameResources::LoadData()
 {
 	// gui textures
-	res_mgr->AddTaskCategory(txLoadGuiTextures);
-	tBlack = res_mgr->Load<Texture>("czern.bmp");
-	tWarning = res_mgr->Load<Texture>("warning.png");
-	tError = res_mgr->Load<Texture>("error.png");
-	game_gui->LoadData();
+	resMgr->AddTaskCategory(txLoadGuiTextures);
+	tBlack = resMgr->Load<Texture>("czern.bmp");
+	tWarning = resMgr->Load<Texture>("warning.png");
+	tError = resMgr->Load<Texture>("error.png");
+	gameGui->LoadData();
 	net->LoadData();
 
 	// particles
-	res_mgr->AddTaskCategory(txLoadParticles);
-	tBlood[BLOOD_RED] = res_mgr->Load<Texture>("krew.png");
-	tBlood[BLOOD_GREEN] = res_mgr->Load<Texture>("krew2.png");
-	tBlood[BLOOD_BLACK] = res_mgr->Load<Texture>("krew3.png");
-	tBlood[BLOOD_BONE] = res_mgr->Load<Texture>("iskra.png");
-	tBlood[BLOOD_ROCK] = res_mgr->Load<Texture>("kamien.png");
-	tBlood[BLOOD_IRON] = res_mgr->Load<Texture>("iskra.png");
-	tBlood[BLOOD_SLIME] = res_mgr->Load<Texture>("slime_part.png");
-	tBloodSplat[BLOOD_RED] = res_mgr->Load<Texture>("krew_slad.png");
-	tBloodSplat[BLOOD_GREEN] = res_mgr->Load<Texture>("krew_slad2.png");
-	tBloodSplat[BLOOD_BLACK] = res_mgr->Load<Texture>("krew_slad3.png");
+	resMgr->AddTaskCategory(txLoadParticles);
+	tBlood[BLOOD_RED] = resMgr->Load<Texture>("krew.png");
+	tBlood[BLOOD_GREEN] = resMgr->Load<Texture>("krew2.png");
+	tBlood[BLOOD_BLACK] = resMgr->Load<Texture>("krew3.png");
+	tBlood[BLOOD_BONE] = resMgr->Load<Texture>("iskra.png");
+	tBlood[BLOOD_ROCK] = resMgr->Load<Texture>("kamien.png");
+	tBlood[BLOOD_IRON] = resMgr->Load<Texture>("iskra.png");
+	tBlood[BLOOD_SLIME] = resMgr->Load<Texture>("slime_part.png");
+	tBloodSplat[BLOOD_RED] = resMgr->Load<Texture>("krew_slad.png");
+	tBloodSplat[BLOOD_GREEN] = resMgr->Load<Texture>("krew_slad2.png");
+	tBloodSplat[BLOOD_BLACK] = resMgr->Load<Texture>("krew_slad3.png");
 	tBloodSplat[BLOOD_BONE] = nullptr;
 	tBloodSplat[BLOOD_ROCK] = nullptr;
 	tBloodSplat[BLOOD_IRON] = nullptr;
 	tBloodSplat[BLOOD_SLIME] = nullptr;
-	tSpark = res_mgr->Load<Texture>("iskra.png");
-	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
-	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
-	tFlare = res_mgr->Load<Texture>("flare.png");
-	tFlare2 = res_mgr->Load<Texture>("flare2.png");
-	tWater = res_mgr->Load<Texture>("water.png");
-	tVignette = res_mgr->Load<Texture>("vignette.jpg");
+	tSpark = resMgr->Load<Texture>("iskra.png");
+	tSpawn = resMgr->Load<Texture>("spawn_fog.png");
+	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
+	tFlare = resMgr->Load<Texture>("flare.png");
+	tFlare2 = resMgr->Load<Texture>("flare2.png");
+	tWater = resMgr->Load<Texture>("water.png");
+	tVignette = resMgr->Load<Texture>("vignette.jpg");
 
 	// preload terrain textures
-	res_mgr->AddTaskCategory(txLoadTerrainTextures);
-	tGrass = res_mgr->Load<Texture>("trawa.jpg");
-	tGrass2 = res_mgr->Load<Texture>("Grass0157_5_S.jpg");
-	tGrass3 = res_mgr->Load<Texture>("LeavesDead0045_1_S.jpg");
-	tRoad = res_mgr->Load<Texture>("droga.jpg");
-	tFootpath = res_mgr->Load<Texture>("ziemia.jpg");
-	tField = res_mgr->Load<Texture>("pole.jpg");
-	tFloorBase.diffuse = res_mgr->Load<Texture>("droga.jpg");
+	resMgr->AddTaskCategory(txLoadTerrainTextures);
+	tGrass = resMgr->Load<Texture>("trawa.jpg");
+	tGrass2 = resMgr->Load<Texture>("Grass0157_5_S.jpg");
+	tGrass3 = resMgr->Load<Texture>("LeavesDead0045_1_S.jpg");
+	tRoad = resMgr->Load<Texture>("droga.jpg");
+	tFootpath = resMgr->Load<Texture>("ziemia.jpg");
+	tField = resMgr->Load<Texture>("pole.jpg");
+	tFloorBase.diffuse = resMgr->Load<Texture>("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;
-	tWallBase.diffuse = res_mgr->Load<Texture>("sciana.jpg");
-	tWallBase.normal = res_mgr->Load<Texture>("sciana_nrm.jpg");
-	tWallBase.specular = res_mgr->Load<Texture>("sciana_spec.jpg");
-	tCeilBase.diffuse = res_mgr->Load<Texture>("sufit.jpg");
+	tWallBase.diffuse = resMgr->Load<Texture>("sciana.jpg");
+	tWallBase.normal = resMgr->Load<Texture>("sciana_nrm.jpg");
+	tWallBase.specular = resMgr->Load<Texture>("sciana_spec.jpg");
+	tCeilBase.diffuse = resMgr->Load<Texture>("sufit.jpg");
 	tCeilBase.normal = nullptr;
 	tCeilBase.specular = nullptr;
 	BaseLocation::PreloadTextures();
@@ -155,37 +155,37 @@ void GameResources::LoadData()
 	tWall[1] = tWallBase;
 
 	// meshes
-	res_mgr->AddTaskCategory(txLoadModels);
-	res_mgr->Load(aHuman);
-	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
-	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
-	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");
-	aHair[3] = res_mgr->Load<Mesh>("hair4.qmsh");
-	aHair[4] = res_mgr->Load<Mesh>("hair5.qmsh");
-	aEyebrows = res_mgr->Load<Mesh>("eyebrows.qmsh");
-	aMustache[0] = res_mgr->Load<Mesh>("mustache1.qmsh");
-	aMustache[1] = res_mgr->Load<Mesh>("mustache2.qmsh");
-	aBeard[0] = res_mgr->Load<Mesh>("beard1.qmsh");
-	aBeard[1] = res_mgr->Load<Mesh>("beard2.qmsh");
-	aBeard[2] = res_mgr->Load<Mesh>("beard3.qmsh");
-	aBeard[3] = res_mgr->Load<Mesh>("beard4.qmsh");
-	aBeard[4] = res_mgr->Load<Mesh>("beardm1.qmsh");
-	aArrow = res_mgr->Load<Mesh>("arrow.qmsh");
-	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
-	aBag = res_mgr->Load<Mesh>("worek.qmsh");
-	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
-	aDoorWall = res_mgr->Load<Mesh>("nadrzwi.qmsh");
-	aDoorWall2 = res_mgr->Load<Mesh>("nadrzwi2.qmsh");
-	aStairsDown = res_mgr->Load<Mesh>("schody_dol.qmsh");
-	aStairsDown2 = res_mgr->Load<Mesh>("schody_dol2.qmsh");
-	aStairsUp = res_mgr->Load<Mesh>("schody_gora.qmsh");
-	aSpellball = res_mgr->Load<Mesh>("spellball.qmsh");
-	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
-	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
-	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
-	aPortal = res_mgr->Load<Mesh>("dark_portal.qmsh");
-	aDungeonDoor = res_mgr->Load<Mesh>("dungeon_door.qmsh");
-	mVine = res_mgr->Load<Mesh>("vine.qmsh");
+	resMgr->AddTaskCategory(txLoadModels);
+	resMgr->Load(aHuman);
+	aHair[0] = resMgr->Load<Mesh>("hair1.qmsh");
+	aHair[1] = resMgr->Load<Mesh>("hair2.qmsh");
+	aHair[2] = resMgr->Load<Mesh>("hair3.qmsh");
+	aHair[3] = resMgr->Load<Mesh>("hair4.qmsh");
+	aHair[4] = resMgr->Load<Mesh>("hair5.qmsh");
+	aEyebrows = resMgr->Load<Mesh>("eyebrows.qmsh");
+	aMustache[0] = resMgr->Load<Mesh>("mustache1.qmsh");
+	aMustache[1] = resMgr->Load<Mesh>("mustache2.qmsh");
+	aBeard[0] = resMgr->Load<Mesh>("beard1.qmsh");
+	aBeard[1] = resMgr->Load<Mesh>("beard2.qmsh");
+	aBeard[2] = resMgr->Load<Mesh>("beard3.qmsh");
+	aBeard[3] = resMgr->Load<Mesh>("beard4.qmsh");
+	aBeard[4] = resMgr->Load<Mesh>("beardm1.qmsh");
+	aArrow = resMgr->Load<Mesh>("arrow.qmsh");
+	aSkybox = resMgr->Load<Mesh>("skybox.qmsh");
+	aBag = resMgr->Load<Mesh>("worek.qmsh");
+	aGrating = resMgr->Load<Mesh>("kratka.qmsh");
+	aDoorWall = resMgr->Load<Mesh>("nadrzwi.qmsh");
+	aDoorWall2 = resMgr->Load<Mesh>("nadrzwi2.qmsh");
+	aStairsDown = resMgr->Load<Mesh>("schody_dol.qmsh");
+	aStairsDown2 = resMgr->Load<Mesh>("schody_dol2.qmsh");
+	aStairsUp = resMgr->Load<Mesh>("schody_gora.qmsh");
+	aSpellball = resMgr->Load<Mesh>("spellball.qmsh");
+	aDoor = resMgr->Load<Mesh>("drzwi.qmsh");
+	aDoor2 = resMgr->Load<Mesh>("drzwi2.qmsh");
+	aStun = resMgr->Load<Mesh>("stunned.qmsh");
+	aPortal = resMgr->Load<Mesh>("dark_portal.qmsh");
+	aDungeonDoor = resMgr->Load<Mesh>("dungeon_door.qmsh");
+	mVine = resMgr->Load<Mesh>("vine.qmsh");
 
 	PreloadBuildings();
 	PreloadTraps();
@@ -194,57 +194,57 @@ void GameResources::LoadData()
 	PreloadItem(Item::Get("gold"));
 
 	// physic meshes
-	vdStairsUp = res_mgr->Load<VertexData>("schody_gora.phy");
-	vdStairsDown = res_mgr->Load<VertexData>("schody_dol.phy");
-	vdDoorHole = res_mgr->Load<VertexData>("nadrzwi.phy");
+	vdStairsUp = resMgr->Load<VertexData>("schody_gora.phy");
+	vdStairsDown = resMgr->Load<VertexData>("schody_dol.phy");
+	vdDoorHole = resMgr->Load<VertexData>("nadrzwi.phy");
 
 	// sounds
-	res_mgr->AddTaskCategory(txLoadSounds);
-	sGulp = res_mgr->Load<Sound>("gulp.mp3");
-	sCoins = res_mgr->Load<Sound>("moneta2.mp3");
-	sBow[0] = res_mgr->Load<Sound>("bow1.mp3");
-	sBow[1] = res_mgr->Load<Sound>("bow2.mp3");
-	sDoor[0] = res_mgr->Load<Sound>("drzwi-02.mp3");
-	sDoor[1] = res_mgr->Load<Sound>("drzwi-03.mp3");
-	sDoor[2] = res_mgr->Load<Sound>("drzwi-04.mp3");
-	sDoorClose = res_mgr->Load<Sound>("104528__skyumori__door-close-sqeuak-02.mp3");
-	sDoorClosed[0] = res_mgr->Load<Sound>("wont_budge.mp3");
-	sDoorClosed[1] = res_mgr->Load<Sound>("wont_budge2.mp3");
-	sItem[0] = res_mgr->Load<Sound>("bottle.wav"); // potion
-	sItem[1] = res_mgr->Load<Sound>("armor-light.wav"); // light armor
-	sItem[2] = res_mgr->Load<Sound>("chainmail1.wav"); // heavy armor
-	sItem[3] = res_mgr->Load<Sound>("metal-ringing.wav"); // crystal
-	sItem[4] = res_mgr->Load<Sound>("wood-small.wav"); // bow
-	sItem[5] = res_mgr->Load<Sound>("cloth-heavy.wav"); // shield
-	sItem[6] = res_mgr->Load<Sound>("sword-unsheathe.wav"); // weapon
-	sItem[7] = res_mgr->Load<Sound>("interface3.wav"); // other
-	sItem[8] = res_mgr->Load<Sound>("amulet.mp3"); // amulet
-	sItem[9] = res_mgr->Load<Sound>("ring.mp3"); // ring
-	sChestOpen = res_mgr->Load<Sound>("chest_open.mp3");
-	sChestClose = res_mgr->Load<Sound>("chest_close.mp3");
-	sDoorBudge = res_mgr->Load<Sound>("door_budge.mp3");
-	sRock = res_mgr->Load<Sound>("atak_kamien.mp3");
-	sWood = res_mgr->Load<Sound>("atak_drewno.mp3");
-	sCrystal = res_mgr->Load<Sound>("atak_krysztal.mp3");
-	sMetal = res_mgr->Load<Sound>("atak_metal.mp3");
-	sBody[0] = res_mgr->Load<Sound>("atak_cialo.mp3");
-	sBody[1] = res_mgr->Load<Sound>("atak_cialo2.mp3");
-	sBody[2] = res_mgr->Load<Sound>("atak_cialo3.mp3");
-	sBody[3] = res_mgr->Load<Sound>("atak_cialo4.mp3");
-	sBody[4] = res_mgr->Load<Sound>("atak_cialo5.mp3");
-	sBone = res_mgr->Load<Sound>("atak_kosci.mp3");
-	sSkin = res_mgr->Load<Sound>("atak_skora.mp3");
-	sSlime = res_mgr->Load<Sound>("slime_hit.wav");
-	sArenaFight = res_mgr->Load<Sound>("arena_fight.mp3");
-	sArenaWin = res_mgr->Load<Sound>("arena_wygrana.mp3");
-	sArenaLost = res_mgr->Load<Sound>("arena_porazka.mp3");
-	sUnlock = res_mgr->Load<Sound>("unlock.mp3");
-	sEvil = res_mgr->Load<Sound>("TouchofDeath.mp3");
-	sEat = res_mgr->Load<Sound>("eat.mp3");
-	sSummon = res_mgr->Load<Sound>("whooshy-puff.wav");
-	sZap = res_mgr->Load<Sound>("zap.mp3");
-	sCancel = res_mgr->Load<Sound>("cancel.mp3");
-	sCoughs = res_mgr->Load<Sound>("coughs.mp3");
+	resMgr->AddTaskCategory(txLoadSounds);
+	sGulp = resMgr->Load<Sound>("gulp.mp3");
+	sCoins = resMgr->Load<Sound>("moneta2.mp3");
+	sBow[0] = resMgr->Load<Sound>("bow1.mp3");
+	sBow[1] = resMgr->Load<Sound>("bow2.mp3");
+	sDoor[0] = resMgr->Load<Sound>("drzwi-02.mp3");
+	sDoor[1] = resMgr->Load<Sound>("drzwi-03.mp3");
+	sDoor[2] = resMgr->Load<Sound>("drzwi-04.mp3");
+	sDoorClose = resMgr->Load<Sound>("104528__skyumori__door-close-sqeuak-02.mp3");
+	sDoorClosed[0] = resMgr->Load<Sound>("wont_budge.mp3");
+	sDoorClosed[1] = resMgr->Load<Sound>("wont_budge2.mp3");
+	sItem[0] = resMgr->Load<Sound>("bottle.wav"); // potion
+	sItem[1] = resMgr->Load<Sound>("armor-light.wav"); // light armor
+	sItem[2] = resMgr->Load<Sound>("chainmail1.wav"); // heavy armor
+	sItem[3] = resMgr->Load<Sound>("metal-ringing.wav"); // crystal
+	sItem[4] = resMgr->Load<Sound>("wood-small.wav"); // bow
+	sItem[5] = resMgr->Load<Sound>("cloth-heavy.wav"); // shield
+	sItem[6] = resMgr->Load<Sound>("sword-unsheathe.wav"); // weapon
+	sItem[7] = resMgr->Load<Sound>("interface3.wav"); // other
+	sItem[8] = resMgr->Load<Sound>("amulet.mp3"); // amulet
+	sItem[9] = resMgr->Load<Sound>("ring.mp3"); // ring
+	sChestOpen = resMgr->Load<Sound>("chest_open.mp3");
+	sChestClose = resMgr->Load<Sound>("chest_close.mp3");
+	sDoorBudge = resMgr->Load<Sound>("door_budge.mp3");
+	sRock = resMgr->Load<Sound>("atak_kamien.mp3");
+	sWood = resMgr->Load<Sound>("atak_drewno.mp3");
+	sCrystal = resMgr->Load<Sound>("atak_krysztal.mp3");
+	sMetal = resMgr->Load<Sound>("atak_metal.mp3");
+	sBody[0] = resMgr->Load<Sound>("atak_cialo.mp3");
+	sBody[1] = resMgr->Load<Sound>("atak_cialo2.mp3");
+	sBody[2] = resMgr->Load<Sound>("atak_cialo3.mp3");
+	sBody[3] = resMgr->Load<Sound>("atak_cialo4.mp3");
+	sBody[4] = resMgr->Load<Sound>("atak_cialo5.mp3");
+	sBone = resMgr->Load<Sound>("atak_kosci.mp3");
+	sSkin = resMgr->Load<Sound>("atak_skora.mp3");
+	sSlime = resMgr->Load<Sound>("slime_hit.wav");
+	sArenaFight = resMgr->Load<Sound>("arena_fight.mp3");
+	sArenaWin = resMgr->Load<Sound>("arena_wygrana.mp3");
+	sArenaLost = resMgr->Load<Sound>("arena_porazka.mp3");
+	sUnlock = resMgr->Load<Sound>("unlock.mp3");
+	sEvil = resMgr->Load<Sound>("TouchofDeath.mp3");
+	sEat = resMgr->Load<Sound>("eat.mp3");
+	sSummon = resMgr->Load<Sound>("whooshy-puff.wav");
+	sZap = resMgr->Load<Sound>("zap.mp3");
+	sCancel = resMgr->Load<Sound>("cancel.mp3");
+	sCoughs = resMgr->Load<Sound>("coughs.mp3");
 
 	// music
 	LoadMusic(MusicType::Title);
@@ -257,25 +257,25 @@ void GameResources::PreloadBuildings()
 	{
 		if(b->mesh)
 		{
-			res_mgr->LoadMeshMetadata(b->mesh);
+			resMgr->LoadMeshMetadata(b->mesh);
 			if(!b->mesh->FindPoint("o_s_point"))
 				Warn("Missing building '%s' point.", b->id.c_str());
 		}
-		if(b->inside_mesh)
-			res_mgr->LoadMeshMetadata(b->inside_mesh);
+		if(b->insideMesh)
+			resMgr->LoadMeshMetadata(b->insideMesh);
 	}
 }
 
 //=================================================================================================
 void GameResources::PreloadTraps()
 {
-	for(uint i = 0; i < BaseTrap::n_traps; ++i)
+	for(uint i = 0; i < BaseTrap::nTraps; ++i)
 	{
 		BaseTrap& t = BaseTrap::traps[i];
-		if(t.mesh_id)
+		if(t.meshId)
 		{
-			t.mesh = res_mgr->Get<Mesh>(t.mesh_id);
-			res_mgr->LoadMeshMetadata(t.mesh);
+			t.mesh = resMgr->Get<Mesh>(t.meshId);
+			resMgr->LoadMeshMetadata(t.mesh);
 
 			Mesh::Point* pt = t.mesh->FindPoint("hitbox");
 			assert(pt);
@@ -287,12 +287,12 @@ void GameResources::PreloadTraps()
 			else
 				t.h = t.rw = pt->size.x;
 		}
-		if(t.sound_id)
-			t.sound = res_mgr->Get<Sound>(t.sound_id);
-		if(t.sound_id2)
-			t.sound2 = res_mgr->Get<Sound>(t.sound_id2);
-		if(t.sound_id3)
-			t.sound3 = res_mgr->Get<Sound>(t.sound_id3);
+		if(t.soundId)
+			t.sound = resMgr->Get<Sound>(t.soundId);
+		if(t.soundId2)
+			t.sound2 = resMgr->Get<Sound>(t.soundId2);
+		if(t.soundId3)
+			t.sound3 = resMgr->Get<Sound>(t.soundId3);
 	}
 }
 
@@ -303,20 +303,20 @@ void GameResources::PreloadAbilities()
 	{
 		Ability& ability = *ptr_ability;
 
-		if(ability.sound_cast)
-			res_mgr->Load(ability.sound_cast);
-		if(ability.sound_hit)
-			res_mgr->Load(ability.sound_hit);
+		if(ability.soundCast)
+			resMgr->Load(ability.soundCast);
+		if(ability.soundHit)
+			resMgr->Load(ability.soundHit);
 		if(ability.tex)
-			res_mgr->Load(ability.tex);
-		if(ability.tex_particle)
-			res_mgr->Load(ability.tex_particle);
-		if(ability.tex_explode.diffuse)
-			res_mgr->Load(ability.tex_explode.diffuse);
-		if(ability.tex_icon)
-			res_mgr->Load(ability.tex_icon);
+			resMgr->Load(ability.tex);
+		if(ability.texParticle)
+			resMgr->Load(ability.texParticle);
+		if(ability.texExplode.diffuse)
+			resMgr->Load(ability.texExplode.diffuse);
+		if(ability.texIcon)
+			resMgr->Load(ability.texIcon);
 		if(ability.mesh)
-			res_mgr->Load(ability.mesh);
+			resMgr->Load(ability.mesh);
 
 		if(ability.type == Ability::Ball || ability.type == Ability::Point)
 			ability.shape = new btSphereShape(ability.size);
@@ -341,22 +341,22 @@ void GameResources::PreloadObjects()
 				if(obj.variants)
 				{
 					for(Mesh* mesh : obj.variants->meshes)
-						res_mgr->Load(mesh);
+						resMgr->Load(mesh);
 				}
 				else if(obj.mesh)
-					res_mgr->Load(obj.mesh);
+					resMgr->Load(obj.mesh);
 			}
 
 			if(obj.variants)
 			{
 				assert(!IsSet(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
 				Mesh* mesh = obj.variants->meshes[0];
-				res_mgr->LoadMeshMetadata(mesh);
+				resMgr->LoadMeshMetadata(mesh);
 				point = mesh->FindPoint("hit");
 			}
 			else
 			{
-				res_mgr->LoadMeshMetadata(obj.mesh);
+				resMgr->LoadMeshMetadata(obj.mesh);
 				point = obj.mesh->FindPoint("hit");
 			}
 
@@ -396,10 +396,10 @@ void GameResources::PreloadObjects()
 					}
 
 					assert(points.size() > 1u);
-					obj.next_obj = new BaseObject[points.size() + 1];
+					obj.nextObj = new BaseObject[points.size() + 1];
 					for(uint i = 0, size = points.size(); i < size; ++i)
 					{
-						BaseObject& o2 = obj.next_obj[i];
+						BaseObject& o2 = obj.nextObj[i];
 						o2.shape = new btBoxShape(ToVector3(points[i]->size));
 						if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
 							o2.flags = OBJ_PHY_BLOCKS_CAM;
@@ -407,7 +407,7 @@ void GameResources::PreloadObjects()
 						o2.size = points[i]->size.XZ();
 						o2.type = obj.type;
 					}
-					obj.next_obj[points.size()].shape = nullptr;
+					obj.nextObj[points.size()].shape = nullptr;
 				}
 				else if(IsSet(obj.flags, OBJ_DOUBLE_PHYSICS))
 				{
@@ -415,19 +415,19 @@ void GameResources::PreloadObjects()
 					if(point2 && point2->IsBox())
 					{
 						assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-						obj.next_obj = new BaseObject;
+						obj.nextObj = new BaseObject;
 						if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 						{
 							btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
-							obj.next_obj->shape = shape;
+							obj.nextObj->shape = shape;
 							if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
-								obj.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
+								obj.nextObj->flags = OBJ_PHY_BLOCKS_CAM;
 						}
 						else
-							obj.next_obj->shape = nullptr;
-						obj.next_obj->matrix = &point2->mat;
-						obj.next_obj->size = point2->size.XZ();
-						obj.next_obj->type = obj.type;
+							obj.nextObj->shape = nullptr;
+						obj.nextObj->matrix = &point2->mat;
+						obj.nextObj->size = point2->size.XZ();
+						obj.nextObj->type = obj.type;
 					}
 				}
 			}
@@ -442,33 +442,33 @@ void GameResources::PreloadItem(const Item* p_item)
 	if(item.state == ResourceState::Loaded)
 		return;
 
-	if(res_mgr->IsLoadScreen())
+	if(resMgr->IsLoadScreen())
 	{
 		if(item.state != ResourceState::Loading)
 		{
 			if(item.type == IT_ARMOR)
 			{
 				Armor& armor = item.ToArmor();
-				if(!armor.tex_override.empty())
+				if(!armor.texOverride.empty())
 				{
-					for(TexOverride& tex_o : armor.tex_override)
+					for(TexOverride& tex_o : armor.texOverride)
 					{
 						if(tex_o.diffuse)
-							res_mgr->Load(tex_o.diffuse);
+							resMgr->Load(tex_o.diffuse);
 					}
 				}
 			}
 			else if(item.type == IT_BOOK)
 			{
 				Book& book = item.ToBook();
-				res_mgr->Load(book.scheme->tex);
+				resMgr->Load(book.scheme->tex);
 			}
 
 			if(item.mesh)
-				res_mgr->Load(item.mesh);
+				resMgr->Load(item.mesh);
 			else if(item.tex)
-				res_mgr->Load(item.tex);
-			res_mgr->AddTask(&item, TaskCallback(this, &GameResources::GenerateItemIconTask));
+				resMgr->Load(item.tex);
+			resMgr->AddTask(&item, TaskCallback(this, &GameResources::GenerateItemIconTask));
 
 			item.state = ResourceState::Loading;
 		}
@@ -479,25 +479,25 @@ void GameResources::PreloadItem(const Item* p_item)
 		if(item.type == IT_ARMOR)
 		{
 			Armor& armor = item.ToArmor();
-			if(!armor.tex_override.empty())
+			if(!armor.texOverride.empty())
 			{
-				for(TexOverride& tex_o : armor.tex_override)
+				for(TexOverride& tex_o : armor.texOverride)
 				{
 					if(tex_o.diffuse)
-						res_mgr->Load(tex_o.diffuse);
+						resMgr->Load(tex_o.diffuse);
 				}
 			}
 		}
 		else if(item.type == IT_BOOK)
 		{
 			Book& book = item.ToBook();
-			res_mgr->Load(book.scheme->tex);
+			resMgr->Load(book.scheme->tex);
 		}
 
 		if(item.mesh)
-			res_mgr->Load(item.mesh);
+			resMgr->Load(item.mesh);
 		else if(item.tex)
-			res_mgr->Load(item.tex);
+			resMgr->Load(item.tex);
 		GenerateItemIcon(item);
 
 		item.state = ResourceState::Loaded;
@@ -505,9 +505,9 @@ void GameResources::PreloadItem(const Item* p_item)
 }
 
 //=================================================================================================
-void GameResources::GenerateItemIconTask(TaskData& task_data)
+void GameResources::GenerateItemIconTask(TaskData& taskData)
 {
-	Item& item = *(Item*)task_data.ptr;
+	Item& item = *(Item*)taskData.ptr;
 	GenerateItemIcon(item);
 }
 
@@ -519,7 +519,7 @@ void GameResources::GenerateItemIcon(Item& item)
 	// use missing texture if no mesh/texture
 	if(!item.mesh && !item.tex)
 	{
-		item.icon = missing_item_texture;
+		item.icon = missingItemTexture;
 		item.flags &= ~ITEM_GROUND_MESH;
 		return;
 	}
@@ -534,28 +534,28 @@ void GameResources::GenerateItemIcon(Item& item)
 	// try to find icon using same mesh
 	bool use_tex_override = false;
 	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().tex_override.empty();
+		use_tex_override = !item.ToArmor().texOverride.empty();
 	ItemTextureMap::iterator it;
 	if(!use_tex_override)
 	{
-		it = item_texture_map.lower_bound(item.mesh);
-		if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
+		it = itemTextureMap.lower_bound(item.mesh);
+		if(it != itemTextureMap.end() && !(itemTextureMap.key_comp()(item.mesh, it->first)))
 		{
 			item.icon = it->second;
 			return;
 		}
 	}
 	else
-		it = item_texture_map.end();
+		it = itemTextureMap.end();
 
-	DrawItemIcon(item, rt_item, 0.f);
-	Texture* tex = render->CopyToTexture(rt_item);
+	DrawItemIcon(item, rtItem, 0.f);
+	Texture* tex = render->CopyToTexture(rtItem);
 
 	item.icon = tex;
-	if(it != item_texture_map.end())
-		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, tex));
+	if(it != itemTextureMap.end())
+		itemTextureMap.insert(it, ItemTextureMap::value_type(item.mesh, tex));
 	else
-		over_item_textures.push_back(tex);
+		overrideItemTextures.push_back(tex);
 }
 
 //=================================================================================================
@@ -571,13 +571,13 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		node->mat = Matrix::RotationY(rot);
 	node->SetMesh(&mesh);
 	node->center = Vec3::Zero;
-	node->tex_override = nullptr;
+	node->texOverride = nullptr;
 	if(item.type == IT_ARMOR)
 	{
-		if(const Armor& armor = item.ToArmor(); !armor.tex_override.empty())
+		if(const Armor& armor = item.ToArmor(); !armor.texOverride.empty())
 		{
-			node->tex_override = armor.GetTextureOverride();
-			assert(armor.tex_override.size() == mesh.head.n_subs);
+			node->texOverride = armor.GetTextureOverride();
+			assert(armor.texOverride.size() == mesh.head.n_subs);
 		}
 	}
 
@@ -592,19 +592,19 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 	// setup camera
 	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
-	camera->mat_view_proj = mat_view * mat_proj;
+	camera->matViewProj = mat_view * mat_proj;
 	camera->from = mesh.head.cam_pos;
 	camera->to = mesh.head.cam_target;
 
 	// draw
-	scene_mgr->SetScene(scene, camera);
-	scene_mgr->Draw(target);
+	sceneMgr->SetScene(scene, camera);
+	sceneMgr->Draw(target);
 }
 
 //=================================================================================================
-Sound* GameResources::GetMaterialSound(MATERIAL_TYPE attack_mat, MATERIAL_TYPE hit_mat)
+Sound* GameResources::GetMaterialSound(MATERIAL_TYPE attackMat, MATERIAL_TYPE hitMat)
 {
-	switch(hit_mat)
+	switch(hitMat)
 	{
 	case MAT_BODY:
 		return sBody[Rand() % 5];
@@ -643,7 +643,7 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_SHIELD:
 		return sItem[5];
 	case IT_ARMOR:
-		if(item->ToArmor().armor_type != AT_LIGHT)
+		if(item->ToArmor().armorType != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];
@@ -687,24 +687,24 @@ Mesh* GameResources::GetEntryMesh(EntryType type)
 }
 
 //=================================================================================================
-void GameResources::LoadMusic(MusicType type, bool new_load_screen, bool instant)
+void GameResources::LoadMusic(MusicType type, bool newLoadScreen, bool instant)
 {
-	if(sound_mgr->IsMusicDisabled())
+	if(soundMgr->IsDisabled())
 		return;
 
 	MusicList* list = musicLists[(int)type];
 	if(list->IsLoaded())
 		return;
 
-	if(new_load_screen)
-		res_mgr->AddTaskCategory(txLoadMusic);
+	if(newLoadScreen)
+		resMgr->AddTaskCategory(txLoadMusic);
 
 	for(Music* music : list->musics)
 	{
 		if(instant)
-			res_mgr->LoadInstant(music);
+			resMgr->LoadInstant(music);
 		else
-			res_mgr->Load(music);
+			resMgr->Load(music);
 	}
 }
 
@@ -724,13 +724,13 @@ void GameResources::LoadTrap(BaseTrap* trap)
 		return;
 
 	if(trap->mesh)
-		res_mgr->Load(trap->mesh);
+		resMgr->Load(trap->mesh);
 	if(trap->sound)
-		res_mgr->Load(trap->sound);
+		resMgr->Load(trap->sound);
 	if(trap->sound2)
-		res_mgr->Load(trap->sound2);
+		resMgr->Load(trap->sound2);
 	if(trap->sound3)
-		res_mgr->Load(trap->sound3);
+		resMgr->Load(trap->sound3);
 
 	trap->state = ResourceState::Loaded;
 }

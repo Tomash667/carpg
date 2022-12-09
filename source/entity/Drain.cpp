@@ -10,7 +10,7 @@ bool Drain::Update(float dt)
 {
 	t += dt;
 
-	if(pe->manual_delete == 2)
+	if(pe->manualDelete == 2)
 	{
 		delete pe;
 		return true;
@@ -27,7 +27,7 @@ bool Drain::Update(float dt)
 	else
 	{
 		pe->time = 0.3f;
-		pe->manual_delete = 0;
+		pe->manualDelete = 0;
 		return true;
 	}
 }

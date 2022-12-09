@@ -14,7 +14,7 @@ struct ObjP
 //-----------------------------------------------------------------------------
 struct RegionTarget
 {
-	LevelArea* area;
+	LocationPart* locPart;
 	Vec3 pos;
 	bool exit;
 };
@@ -68,23 +68,23 @@ struct AIController
 	};
 
 	/*
-	trzeba znalezc nowa sciezke (pf_state == PFS_NOT_USING lub
-		target_tile != start_tile && pf_state == PFS_WALKING && last_pf_check < 0 lub
+	trzeba znalezc nowa sciezke (pfState == PFS_NOT_USING lub
+		target_tile != start_tile && pfState == PFS_WALKING && last_pf_check < 0 lub
 		dist(start_tile, target_tile) > 1
 	1. szuka globalna sciezke
-		a. znaleziono (pf_state = PFS_GLOBAL_DONE)
-		b. jesli jest zablokowana to idzie lokalnie (pf_state = PFS_GLOBAL_NOT_USED) lub
-			jesli jest zadaleko to idzie w kierunku (pf_state = PFS_MANUAL_WALK)
+		a. znaleziono (pfState = PFS_GLOBAL_DONE)
+		b. jesli jest zablokowana to idzie lokalnie (pfState = PFS_GLOBAL_NOT_USED) lub
+			jesli jest zadaleko to idzie w kierunku (pfState = PFS_MANUAL_WALK)
 	2. szukanie lokalnej sciezki
 		a. jest
-			ustaw pf_state = PFS_WALKING
-		b. nie ma lub pf_state == PFS_GLOBAL_NOT_USED
-			idz w kierunku pf_state = PFS_MANUAL_WALK
+			ustaw pfState = PFS_WALKING
+		b. nie ma lub pfState == PFS_GLOBAL_NOT_USED
+			idz w kierunku pfState = PFS_MANUAL_WALK
 		c. zablokowana droga
-			pf_state = PFS_LOCAL_TRY_WALK
-			pf_local_try++;
+			pfState = PFS_LOCAL_TRY_WALK
+			pfLocalTry++;
 			w nastêpnym obiektu idŸ do kolejnego
-			jeœli pf_local_try == 4 lub dystans do nastepnego punktu jest za daleki to pf_state = PFS_RETRY i dodanie blokady
+			jeœli pfLocalTry == 4 lub dystans do nastepnego punktu jest za daleki to pfState = PFS_RETRY i dodanie blokady
 	*/
 	enum PathFindingState
 	{
@@ -129,35 +129,35 @@ struct AIController
 			Room* room;
 		} search;
 	} st;
-	Entity<Unit> target, alert_target;
-	Vec3 target_last_pos, alert_target_pos, start_pos;
-	bool in_combat, city_wander;
-	float next_attack, timer, ignore, morale, cooldown[MAX_ABILITIES], start_rot, loc_timer;
-	HavePotion have_potion, have_mp_potion;
+	Entity<Unit> target, alertTarget;
+	Vec3 targetLastPos, alertTargetPos, startPos;
+	bool inCombat, cityWander;
+	float nextAttack, timer, ignore, morale, cooldown[MAX_ABILITIES], startRot, locTimer, scanTimer;
+	HavePotion havePotion, haveMpPotion;
 	int potion; // miksturka do u¿ycia po schowaniu broni
-	bool change_ai_mode; // tymczasowe u serwera
+	bool changeAiMode; // tymczasowe u serwera
 
 	// pathfinding
-	vector<Int2> pf_path, pf_local_path;
-	PathFindingState pf_state;
-	Int2 pf_target_tile, pf_local_target_tile;
-	int pf_local_try;
-	float pf_timer;
+	vector<Int2> pfPath, pfLocalPath;
+	PathFindingState pfState;
+	Int2 pfTargetTile, pfLocalTargetTile;
+	int pfLocalTry;
+	float pfTimer;
 
 	void Init(Unit* unit);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void LoadIdleAction(GameReader& f, StateData::IdleState& idle, bool apply);
-	bool CheckPotion(bool in_combat = true);
+	bool CheckPotion(bool inCombat = true);
 	void Reset();
 	float GetMorale() const;
 	bool CanWander() const;
-	Vec3 PredictTargetPos(const Unit& target, float bullet_speed) const;
+	Vec3 PredictTargetPos(const Unit& target, float bulletSpeed) const;
 	void Shout();
 	void HitReaction(const Vec3& pos);
 	void DoAttack(Unit* target, bool running = false);
 };
 
 //-----------------------------------------------------------------------------
-extern cstring str_ai_state[AIController::State_Max];
-extern cstring str_ai_idle[AIController::Idle_Max];
+extern cstring strAiState[AIController::State_Max];
+extern cstring strAiIdle[AIController::Idle_Max];

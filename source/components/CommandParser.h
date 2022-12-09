@@ -12,19 +12,19 @@ public:
 	typedef delegate<void(cstring)> PrintMsgFunc;
 
 	void AddCommands();
-	void ParseCommand(const string& command_str, PrintMsgFunc print_func, PARSE_SOURCE source = PS_UNKNOWN);
+	void ParseCommand(const string& commandStr, PrintMsgFunc printMsgFunc, PARSE_SOURCE source = PS_UNKNOWN);
 	bool ParseStream(BitStreamReader& f, PlayerInfo& info);
 	void ParseStringCommand(int cmd, const string& s, PlayerInfo& info);
 	const vector<ConsoleCommand>& GetCommands() { return cmds; }
 
 	inline void Msg(cstring msg)
 	{
-		print_msg(msg);
+		printMsgFunc(msg);
 	}
 	template<typename... Args>
 	inline void Msg(cstring msg, const Args&... args)
 	{
-		print_msg(Format(msg, args...));
+		printMsgFunc(Format(msg, args...));
 	}
 
 private:
@@ -34,7 +34,7 @@ private:
 	NetChangeWriter PushGenericCmd(CMD cmd);
 	// commands
 	void HealUnit(Unit& unit);
-	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value);
+	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int sourceId, int value);
 	void ListEffects(Unit* u);
 	void AddPerk(PlayerController* pc, Perk* perk, int value);
 	void RemovePerk(PlayerController* pc, Perk* perk, int value);
@@ -46,5 +46,5 @@ private:
 
 	Tokenizer t;
 	vector<ConsoleCommand> cmds;
-	PrintMsgFunc print_msg;
+	PrintMsgFunc printMsgFunc;
 };

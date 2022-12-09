@@ -26,7 +26,7 @@
 #include <scriptdictionary/scriptdictionary.h>
 #include <scriptstdstring/scriptstdstring.h>
 
-ScriptManager* script_mgr;
+ScriptManager* scriptMgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
 Vars globals;
@@ -34,7 +34,7 @@ Vars* p_globals = &globals;
 
 ScriptException::ScriptException(cstring msg)
 {
-	script_mgr->SetException(msg);
+	scriptMgr->SetException(msg);
 }
 
 void MessageCallback(const asSMessageInfo* msg, void* param)
@@ -53,7 +53,7 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 		level = Logger::L_INFO;
 		break;
 	}
-	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
+	scriptMgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
 
 ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
@@ -66,7 +66,7 @@ ScriptManager::~ScriptManager()
 		p.second->Release();
 	if(engine)
 		engine->ShutDownAndRelease();
-	DeleteElements(unit_vars);
+	DeleteElements(unitVars);
 }
 
 void ScriptManager::Init()
@@ -87,22 +87,22 @@ void ScriptManager::Init()
 	RegisterGame();
 }
 
-asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
+asIScriptFunction* FindToString(asIScriptEngine* engine, int typeId)
 {
 	// find mapped type
-	auto it = tostring_map.find(type_id);
+	auto it = tostring_map.find(typeId);
 	if(it != tostring_map.end())
 		return it->second;
 
 	// get type
-	asITypeInfo* type = engine->GetTypeInfoById(type_id);
+	asITypeInfo* type = engine->GetTypeInfoById(typeId);
 	assert(type);
 
 	// special case - cast to string
 	cstring name = type->GetName();
 	if(strcmp(name, "string") == 0)
 	{
-		tostring_map[type_id] = nullptr;
+		tostring_map[typeId] = nullptr;
 		return nullptr;
 	}
 
@@ -114,14 +114,14 @@ asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
 		throw ScriptException("Missing ToString method for object '%s'.", name);
 
 	// add mapping
-	tostring_map[type_id] = func;
+	tostring_map[typeId] = func;
 	return func;
 }
 
-string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
+string& ToString(asIScriptGeneric* gen, void* adr, int typeId)
 {
 	asIScriptEngine* engine = gen->GetEngine();
-	asIScriptFunction* func = FindToString(engine, type_id);
+	asIScriptFunction* func = FindToString(engine, typeId);
 
 	if(!func)
 	{
@@ -142,7 +142,7 @@ string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
 	}
 	if(r < 0)
 	{
-		asITypeInfo* type = engine->GetTypeInfoById(type_id);
+		asITypeInfo* type = engine->GetTypeInfoById(typeId);
 		cstring name = type->GetName();
 		throw ScriptException("Failed to call ToString on object '%s' (%d).", name, r);
 	}
@@ -155,9 +155,9 @@ string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
 
 static cstring ArgToString(asIScriptGeneric* gen, int index)
 {
-	auto type_id = gen->GetArgTypeId(index);
+	auto typeId = gen->GetArgTypeId(index);
 	void* adr = gen->GetAddressOfArg(index);
-	switch(type_id)
+	switch(typeId)
 	{
 	case asTYPEID_BOOL:
 		{
@@ -216,7 +216,7 @@ static cstring ArgToString(asIScriptGeneric* gen, int index)
 			return Format("%g", value);
 		}
 	default:
-		return ToString(gen, adr, type_id).c_str();
+		return ToString(gen, adr, typeId).c_str();
 	}
 }
 
@@ -276,7 +276,7 @@ static string Upper1(const string& str)
 
 static void ScriptInfo(const string& str)
 {
-	script_mgr->Log(Logger::L_INFO, str.c_str());
+	scriptMgr->Log(Logger::L_INFO, str.c_str());
 }
 static void ScriptDevInfo(const string& str)
 {
@@ -285,11 +285,11 @@ static void ScriptDevInfo(const string& str)
 }
 static void ScriptWarn(const string& str)
 {
-	script_mgr->Log(Logger::L_WARN, str.c_str());
+	scriptMgr->Log(Logger::L_WARN, str.c_str());
 }
 static void ScriptError(const string& str)
 {
-	script_mgr->Log(Logger::L_ERROR, str.c_str());
+	scriptMgr->Log(Logger::L_ERROR, str.c_str());
 }
 
 string Vec2_ToString(const Vec2& v)
@@ -424,7 +424,7 @@ void ScriptManager::RegisterCommon()
 
 Vars* Unit_GetVars(Unit* unit)
 {
-	return script_mgr->GetVars(unit);
+	return scriptMgr->GetVars(unit);
 }
 
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
@@ -466,7 +466,7 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 
 void StockScript_AddItem(const Item* item, uint count)
 {
-	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
+	vector<ItemSlot>* stock = scriptMgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	InsertItemBare(*stock, item, count);
@@ -474,7 +474,7 @@ void StockScript_AddItem(const Item* item, uint count)
 
 void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
 {
-	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
+	vector<ItemSlot>* stock = scriptMgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
@@ -487,8 +487,8 @@ void ScriptManager::RegisterGame()
 	AddType("Unit");
 	AddType("Player");
 	AddType("Hero");
-	AddType("LevelArea");
 	AddType("Location");
+	AddType("LocationPart");
 
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
@@ -619,6 +619,11 @@ void ScriptManager::RegisterGame()
 		{ "ENTRY_FAR_FROM_PREV", MapSettings::ENTRY_FAR_FROM_PREV }
 		});
 
+	AddEnum("GetLocationFlag", {
+		{ "F_ALLOW_ACTIVE", F_ALLOW_ACTIVE },
+		{ "F_EXCLUDED", F_EXCLUDED }
+		});
+
 	AddType("Var")
 		.Method("bool opEquals(bool) const", asMETHODPR(Var, IsBool, (bool) const, bool))
 		.Method("bool opEquals(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
@@ -653,8 +658,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("BuildingGroup@ Get(const string& in)", asFUNCTION(BuildingGroup::GetS));
 
 	AddType("CityBuilding")
-		.Method("Vec3 get_unit_pos() property", asMETHOD(CityBuilding, GetUnitPos))
-		.Method("float get_unit_rot() property", asMETHOD(CityBuilding, GetUnitRot));
+		.Method("Vec3 get_unitPos() property", asMETHOD(CityBuilding, GetUnitPos))
+		.Method("float get_unitRot() property", asMETHOD(CityBuilding, GetUnitRot));
 
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
@@ -674,7 +679,7 @@ void ScriptManager::RegisterGame()
 		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
 		.WithInstance("Quest@ quest", &ctx.quest)
-		.WithNamespace(quest_mgr)
+		.WithNamespace(questMgr)
 		.AddFunction("Quest@ Find(const string& in)", asMETHOD(QuestManager, FindQuestS))
 		.AddFunction("int CalculateReward(int, const Int2& in, const Int2& in)", asFUNCTION(ItemHelper::CalculateReward));
 
@@ -734,18 +739,18 @@ void ScriptManager::RegisterGame()
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
 		.Member("const Hero@ hero", offsetof(Unit, hero))
-		.Member("LevelArea@ area", offsetof(Unit, area))
+		.Member("LocationPart@ locPart", offsetof(Unit, locPart))
 		.Member("bool temporary", offsetof(Unit, temporary))
 		.Method("int get_gold() const property", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int) property", asMETHOD(Unit, SetGold))
 		.Method("Vars@ get_vars() property", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.Method("const string& get_name() property", asMETHOD(Unit, GetNameS))
-		.Method("const string& get_real_name() property", asMETHOD(Unit, GetRealNameS))
+		.Method("const string& get_realName() property", asMETHOD(Unit, GetRealNameS))
 		.Method("void set_name(const string& in) property", asMETHOD(Unit, SetName))
-		.Method("bool get_dont_attack() const property", asMETHOD(Unit, GetDontAttack))
-		.Method("void set_dont_attack(bool) property", asMETHOD(Unit, SetDontAttack))
-		.Method("bool get_known_name() const property", asMETHOD(Unit, GetKnownName))
-		.Method("void set_known_name(bool) property", asMETHOD(Unit, SetKnownName))
+		.Method("bool get_dontAttack() const property", asMETHOD(Unit, GetDontAttack))
+		.Method("void set_dontAttack(bool) property", asMETHOD(Unit, SetDontAttack))
+		.Method("bool get_knownName() const property", asMETHOD(Unit, GetKnownName))
+		.Method("void set_knownName(bool) property", asMETHOD(Unit, SetKnownName))
 		.Method("const string& get_clas() const property", asMETHOD(Unit, GetClassId))
 		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
 		.Method("bool IsFollowing(Unit@)", asMETHOD(Unit, IsFollowing))
@@ -780,7 +785,7 @@ void ScriptManager::RegisterGame()
 		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
 		.Method("void RotateTo(float)", asMETHODPR(Unit, RotateTo, (float), void))
 		.Method("void ChangeBase(UnitData@, bool=false)", asMETHOD(Unit, ChangeBase))
-		.Method("void MoveToArea(LevelArea@, const Vec3& in)", asMETHOD(Unit, MoveToArea))
+		.Method("void MoveToLocation(LocationPart@, const Vec3& in)", asMETHOD(Unit, MoveToLocation))
 		.Method("void MoveOffscreen()", asMETHOD(Unit, MoveOffscreen))
 		.Method("void Kill()", asMETHOD(Unit, Kill))
 		.WithInstance("Unit@ target", &ctx.target)
@@ -799,7 +804,7 @@ void ScriptManager::RegisterGame()
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	ForType("Hero")
-		.Member("bool lost_pvp", offsetof(Hero, lost_pvp))
+		.Member("bool lostPvp", offsetof(Hero, lostPvp))
 		.Member("const int investment", offsetof(Hero, investment))
 		.Method("bool get_otherTeam() const property", asMETHOD(Hero, HaveOtherTeam))
 		.Method("int get_persuasionCheck() const property", asMETHOD(Hero, GetPersuasionCheckValue))
@@ -816,7 +821,7 @@ void ScriptManager::RegisterGame()
 	WithNamespace("Team", team)
 		.AddFunction("Unit@ get_leader() property", asMETHOD(Team, GetLeader))
 		.AddFunction("uint get_size() property", asMETHOD(Team, GetActiveTeamSize))
-		.AddFunction("uint get_max_size() property", asMETHOD(Team, GetMaxSize))
+		.AddFunction("uint get_maxSize() property", asMETHOD(Team, GetMaxSize))
 		.AddFunction("bool get_bandit() property", asMETHOD(Team, IsBandit))
 		.AddFunction("void set_bandit(bool) property", asMETHOD(Team, SetBandit))
 		.AddFunction("bool HaveMember()", asMETHOD(Team, HaveOtherActiveTeamMember))
@@ -859,10 +864,6 @@ void ScriptManager::RegisterGame()
 		.Member("RoomType@ type", offsetof(Room, type))
 		.Method("Vec3 get_center() const property", asMETHOD(Room, Center));
 
-	ForType("LevelArea")
-		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LevelArea, RemoveItemFromChest))
-		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LevelArea, RemoveItemFromUnit));
-
 	ForType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
@@ -870,14 +871,14 @@ void ScriptManager::RegisterGame()
 		.Member("const bool outside", offsetof(Location, outside))
 		.Member("int st", offsetof(Location, st))
 		.Member("bool reset", offsetof(Location, reset))
-		.Member("Quest@ active_quest", offsetof(Location, active_quest))
+		.Member("Quest@ activeQuest", offsetof(Location, activeQuest))
 		.Member("UnitGroup@ group", offsetof(Location, group))
 		.Method("const string& get_name() const property", asMETHOD(Location, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Location, SetNameS))
 		.Method("LOCATION_IMAGE get_image() const property", asMETHOD(Location, GetImage))
 		.Method("void set_image(LOCATION_IMAGE) property", asMETHOD(Location, SetImage))
 		.Method("bool get_visited() const property", asMETHOD(Location, IsVisited))
-		.Method("LevelArea@ get_area() const property", asFUNCTIONPR(LocationHelper::GetArea, (Location*), LevelArea*))
+		.Method("LocationPart@ get_locPart() const property", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*), LocationPart*))
 		.Method("int get_levels() const property", asFUNCTION(LocationHelper::GetLevels))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY)", asMETHOD(Location, RemoveEventHandlerS))
@@ -886,14 +887,19 @@ void ScriptManager::RegisterGame()
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
 		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
 		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain))
-		.Method("LevelArea@ GetArea(int)", asFUNCTIONPR(LocationHelper::GetArea, (Location*, int), LevelArea*))
-		.Method("LevelArea@ GetBuildingArea(const string& in)", asFUNCTION(LocationHelper::GetBuildingArea))
+		.Method("LocationPart@ GetLocationPart(int)", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*, int), LocationPart*))
+		.Method("LocationPart@ GetBuildingLocationPart(const string& in)", asFUNCTION(LocationHelper::GetBuildingLocationPart))
 		.Method("int GetRandomLevel()", asMETHOD(Location, GetRandomLevel))
 		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
 
+	ForType("LocationPart")
+		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LocationPart, RemoveItemFromChest))
+		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LocationPart, RemoveItemFromUnit))
+		.Method("bool RemoveGroundItem(Item@)", asMETHODPR(LocationPart, RemoveGroundItem, (const Item*), bool));
+
 	AddType("Encounter")
 		.Member("Vec2 pos", offsetof(Encounter, pos))
-		.Member("bool dont_attack", offsetof(Encounter, dont_attack))
+		.Member("bool dontAttack", offsetof(Encounter, dontAttack))
 		.Member("Quest@ quest", offsetof(Encounter, quest))
 		.Member("Dialog@ dialog", offsetof(Encounter, dialog))
 		.Member("int st", offsetof(Encounter, st))
@@ -938,9 +944,9 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddNews(const string& in)", asMETHOD(World, AddNews))
 		.AddFunction("Unit@ CreateUnit(UnitData@, int = -1)", asMETHOD(World, CreateUnit));
 
-	WithNamespace("Level", game_level)
+	WithNamespace("Level", gameLevel)
 		.AddFunction("Location@ get_location() property", asMETHOD(Level, GetLocation))
-		.AddFunction("int get_dungeon_level() property", asMETHOD(Level, GetDungeonLevel))
+		.AddFunction("int get_dungeonLevel() property", asMETHOD(Level, GetDungeonLevel))
 		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))
 		.AddFunction("bool IsCity()", asMETHOD(Level, IsCity))
 		.AddFunction("bool IsVillage()", asMETHOD(Level, IsVillage))
@@ -953,12 +959,13 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, const Vec3& in)", asMETHOD(Level, SpawnItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, Object@)", asMETHOD(Level, SpawnItemAtObject))
+		.AddFunction("GroundItem@ SpawnItemInsideAnyRoom(Item@)", asMETHOD(Level, SpawnGroundItemInsideAnyRoom))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Vec3 FindSpawnPos(Room@, Unit@)", asMETHODPR(Level, FindSpawnPos, (Room* room, Unit* unit), Vec3))
-		.AddFunction("Vec3 FindSpawnPos(LevelArea@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LevelArea&, Unit* unit), Vec3))
+		.AddFunction("Vec3 FindSpawnPos(LocationPart@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LocationPart&, Unit* unit), Vec3))
 		.AddFunction("Vec3 GetSpawnCenter()", asMETHOD(Level, GetSpawnCenter))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2, int = -1)", asMETHOD(Level, SpawnUnitNearLocationS))
-		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
+		.AddFunction("Unit@ SpawnUnit(LocationPart@, Spawn)", asMETHOD(Level, SpawnUnit))
 		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@, int = -1)", asMETHOD(Level, SpawnUnitInsideRoomS))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
@@ -977,17 +984,17 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddRandomItem(ITEM_TYPE, int, int, uint = 1)", asFUNCTION(StockScript_AddRandomItem)); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	AddType("MapSettings")
-		.Member("ENTRY_LOCATION prev_entry_loc", offsetof(MapSettings, prevEntryLoc))
-		.Member("ENTRY_LOCATION next_entry_loc", offsetof(MapSettings, nextEntryLoc));
+		.Member("ENTRY_LOCATION prevEntryLoc", offsetof(MapSettings, prevEntryLoc))
+		.Member("ENTRY_LOCATION nextEntryLoc", offsetof(MapSettings, nextEntryLoc));
 
 	AddType("Event")
 		.Member("EVENT event", offsetof(ScriptEvent, type))
 		.Member("bool cancel", offsetof(ScriptEvent, cancel))
-		.Member("Location@ location", offsetof(ScriptEvent, on_generate.location))
-		.Member("MapSettings@ map_settings", offsetof(ScriptEvent, on_generate.map_settings))
-		.Member("int stage", offsetof(ScriptEvent, on_generate.stage))
-		.Member("Unit@ unit", offsetof(ScriptEvent, on_pickup.unit))
-		.Member("GroundItem@ item", offsetof(ScriptEvent, on_pickup.item));
+		.Member("Location@ location", offsetof(ScriptEvent, onGenerate.location))
+		.Member("MapSettings@ mapSettings", offsetof(ScriptEvent, onGenerate.mapSettings))
+		.Member("int stage", offsetof(ScriptEvent, onGenerate.stage))
+		.Member("Unit@ unit", offsetof(ScriptEvent, onPickup.unit))
+		.Member("GroundItem@ item", offsetof(ScriptEvent, onPickup.item));
 
 	WithNamespace("Cutscene", game)
 		.AddFunction("void Start(bool = true)", asMETHOD(Game, CutsceneStart))
@@ -1082,7 +1089,7 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		return;
 	}
 
-	last_exception = nullptr;
+	lastException = nullptr;
 	r = tmp_context->Execute();
 
 	if(r == asEXECUTION_SUSPENDED)
@@ -1097,7 +1104,7 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			cstring msg = lastException ? lastException : tmp_context->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
 				tmp_context->GetExceptionLineNumber()));
 		}
@@ -1110,13 +1117,13 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 
 string& ScriptManager::OpenOutput()
 {
-	gather_output = true;
+	gatherOutput = true;
 	return output;
 }
 
 void ScriptManager::CloseOutput()
 {
-	gather_output = false;
+	gatherOutput = false;
 	output.clear();
 }
 
@@ -1124,7 +1131,7 @@ void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 {
 	if(code)
 		Logger::GetInstance()->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
-	if(gather_output)
+	if(gatherOutput)
 	{
 		if(!output.empty())
 			output += '\n';
@@ -1190,12 +1197,12 @@ NamespaceBuilder ScriptManager::WithNamespace(cstring name, void* auxiliary)
 Vars* ScriptManager::GetVars(Unit* unit)
 {
 	assert(unit);
-	auto it = unit_vars.find(unit->id);
+	auto it = unitVars.find(unit->id);
 	Vars* vars;
-	if(it == unit_vars.end())
+	if(it == unitVars.end())
 	{
 		vars = new Vars;
-		unit_vars.insert(std::unordered_map<int, Vars*>::value_type(unit->id, vars));
+		unitVars.insert(std::unordered_map<int, Vars*>::value_type(unit->id, vars));
 	}
 	else
 		vars = it->second;
@@ -1211,7 +1218,7 @@ Var& ScriptManager::GetVar(cstring name)
 void ScriptManager::Reset()
 {
 	globals.Clear();
-	DeleteElements(unit_vars);
+	DeleteElements(unitVars);
 	ctx.Clear();
 }
 
@@ -1223,7 +1230,7 @@ void ScriptManager::Save(GameWriter& f)
 	// unit vars
 	uint count = 0;
 	uint pos = f.BeginPatch(count);
-	for(auto& e : unit_vars)
+	for(auto& e : unitVars)
 	{
 		if(e.second->IsEmpty())
 			continue;
@@ -1250,56 +1257,56 @@ void ScriptManager::Load(GameReader& f)
 		Vars* vars = new Vars;
 		vars->Load(f);
 		if(unit)
-			unit_vars[id] = vars;
+			unitVars[id] = vars;
 		else
 			delete vars;
 	}
 }
 
-ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool is_ref, const string& name)
+ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool isRef, const string& name)
 {
-	auto it = var_type_map.find(type);
-	if(it == var_type_map.end())
+	auto it = varTypeMap.find(type);
+	if(it == varTypeMap.end())
 		return InvalidType;
-	ScriptTypeInfo info = script_type_infos[it->second];
-	if(info.require_ref != is_ref)
+	ScriptTypeInfo info = scriptTypeInfos[it->second];
+	if(info.requireRef != isRef)
 		return InvalidType;
 	Var* var = globals.TryGet(name);
 	if(var)
 		return AlreadyExists;
 	var = globals.Add(info.type, name, true);
 	var->_int = 0;
-	cstring decl = Format("%s%s %s", type.c_str(), is_ref ? "@" : "", name.c_str());
+	cstring decl = Format("%s%s %s", type.c_str(), isRef ? "@" : "", name.c_str());
 	CHECKED(engine->RegisterGlobalProperty(decl, &var->ptr));
 	return Ok;
 }
 
-void ScriptManager::AddVarType(Var::Type type, cstring name, bool is_ref)
+void ScriptManager::AddVarType(Var::Type type, cstring name, bool isRef)
 {
-	int type_id = engine->GetTypeIdByDecl(name);
-	var_type_map[name] = type_id;
-	script_type_infos[type_id] = ScriptTypeInfo(type, is_ref);
+	int typeId = engine->GetTypeIdByDecl(name);
+	varTypeMap[name] = typeId;
+	scriptTypeInfos[typeId] = ScriptTypeInfo(type, isRef);
 }
 
-Var::Type ScriptManager::GetVarType(int type_id)
+Var::Type ScriptManager::GetVarType(int typeId)
 {
-	if(IsSet(type_id, asTYPEID_OBJHANDLE))
-		ClearBit(type_id, asTYPEID_OBJHANDLE);
-	auto it = script_type_infos.find(type_id);
-	assert(it != script_type_infos.end());
+	if(IsSet(typeId, asTYPEID_OBJHANDLE))
+		ClearBit(typeId, asTYPEID_OBJHANDLE);
+	auto it = scriptTypeInfos.find(typeId);
+	assert(it != scriptTypeInfos.end());
 	return it->second.type;
 }
 
-bool ScriptManager::CheckVarType(int type_id, bool is_ref)
+bool ScriptManager::CheckVarType(int typeId, bool isRef)
 {
-	if(IsSet(type_id, asTYPEID_OBJHANDLE))
+	if(IsSet(typeId, asTYPEID_OBJHANDLE))
 	{
-		is_ref = true;
-		ClearBit(type_id, asTYPEID_OBJHANDLE);
+		isRef = true;
+		ClearBit(typeId, asTYPEID_OBJHANDLE);
 	}
 
-	auto it = script_type_infos.find(type_id);
-	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
+	auto it = scriptTypeInfos.find(typeId);
+	if(it == scriptTypeInfos.end() || it->second.requireRef != isRef)
 		return false;
 	return true;
 }
@@ -1347,7 +1354,7 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 {
 	assert(ctx);
 
-	last_exception = nullptr;
+	lastException = nullptr;
 
 	int r = ctx->Execute();
 	if(r == asEXECUTION_SUSPENDED)
@@ -1356,7 +1363,7 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			cstring msg = last_exception ? last_exception : ctx->GetExceptionString();
+			cstring msg = lastException ? lastException : ctx->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, ctx->GetExceptionFunction()->GetName(),
 				ctx->GetExceptionLineNumber()));
 		}

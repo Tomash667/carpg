@@ -1,8 +1,33 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.18 (???):
+Wersja 0.19 (???):
+! nie można wczytywać już zapisów z wersji 0.8 lub starszej
++ wolniejsze chodzenie podczas strzelania/rzucania czarów
++ lepszy menadżer sceny - przedmioty na ziemi
++ skróty klawiszowe do powiadomienia o szybkiej podróży (F1/F3)
++ konwersja zadania "zagubiony artefakt" na skrypty
++ usunięte niepotrzebne komendy konsoli
++ usprawnienia UI
+- crash po opuszczeniu lokalizacji, zapisaniu na mapie świata i wczytaniu
+- crash po wczytaniu gry w podziemiach gdy jest efekt winorośli
+- popsute opisy umiejętności
+- ai nie zmienia celu w trakcie ataku
+- zabieranie założonego przedmiotu ze zwłok niepoprawnie aktualizowało widok ekwipunku
+- po ukończeniu zadania dla wędrowca następne zadanie w tym samym mieście nigdy się nie przedawniało
+- błąd skryptu gdy minie czas zadania "znajdź artefakt"/"ukradziony artefakt" gdy minie czas zadania w podziemiach z jednym poziomem
+- nieprawidłowy obrazek akceptacji powiadomienia
+- brak ikony aplikacji przy starcie w trybie pełnoekranowym
+- brak celownika podczas rozmowy
+- brak odświeżania czasu zdolności podczas krótkiej podróży
+- czasami generowało schody obok drzwi
+- nie generowanie pułapek pod obiektami
+- naprawione punkty skalowanych jednostek
+
+--------------------------------------------------------------------------------
+Wersja 0.18 (2021-07-02):
 ! nie można wczytywać już zapisów z wersji 0.7.1 lub starszej
++ nowe tekstury gui, wieża magów, pająk, manekin i tarcze - utworzone przez Groszek
 + mała kontynuacja fabuły
 + efekty: zakorzeniony, spowolniony ruch
 + zdolności "oplatająca strzała" / "pułapka na niedźwiedzie" - można nauczyć się w obozie łowców

@@ -66,7 +66,7 @@ static bool SortItemsPred(const ItemSlot& s1, const ItemSlot& s2)
 	{
 		if(s1.item->IsStackable())
 			return false;
-		else if(s1.team_count < s2.team_count)
+		else if(s1.teamCount < s2.teamCount)
 			return true;
 		else
 			return false;
@@ -101,7 +101,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	{
 		cstring id = ReplaceAll(item->id.c_str(), "$", "$$");
 		if(item->IsQuest())
-			str += Format(" (%s,%d)", id, item->quest_id);
+			str += Format(" (%s,%d)", id, item->questId);
 		else
 			str += Format(" (%s)", id);
 	}
@@ -119,32 +119,32 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			*/
 			const Weapon& weapon = item->ToWeapon();
 
-			cstring dmg_type;
-			switch(weapon.dmg_type)
+			cstring dmgType;
+			switch(weapon.dmgType)
 			{
 			case DMG_BLUNT:
-				dmg_type = txDTBlunt;
+				dmgType = txDTBlunt;
 				break;
 			case DMG_PIERCE:
-				dmg_type = txDTPierce;
+				dmgType = txDTPierce;
 				break;
 			case DMG_SLASH:
-				dmg_type = txDTSlash;
+				dmgType = txDTSlash;
 				break;
 			case DMG_BLUNT | DMG_PIERCE:
-				dmg_type = txDTBluntPierce;
+				dmgType = txDTBluntPierce;
 				break;
 			case DMG_BLUNT | DMG_SLASH:
-				dmg_type = txDTBluntSlash;
+				dmgType = txDTBluntSlash;
 				break;
 			case DMG_SLASH | DMG_PIERCE:
-				dmg_type = txDTSlashPierce;
+				dmgType = txDTSlashPierce;
 				break;
 			case DMG_BLUNT | DMG_PIERCE | DMG_SLASH:
-				dmg_type = txDTMagical;
+				dmgType = txDTMagical;
 				break;
 			default:
-				dmg_type = "???";
+				dmgType = "???";
 				break;
 			}
 
@@ -157,11 +157,11 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
 
 			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
-				WeaponTypeInfo::info[weapon.weapon_type].name,
+				WeaponTypeInfo::info[weapon.weaponType].name,
 				txAttack,
 				weapon.dmg,
 				atk_desc,
-				dmg_type,
+				dmgType,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= weapon.reqStr ? '-' : 'r'),
 				weapon.reqStr);
@@ -206,7 +206,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			cstring mob_str, armor_type_text;
 
 			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
-			if(unit->data->armor_type == armor.armor_unit_type)
+			if(unit->data->armorType == armor.armorUnitType)
 				armor_type_text = skill;
 			else
 				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);
@@ -278,7 +278,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	// weight
 	str += Format(txWeight, item->GetWeight());
 	if(count > 1)
-		str += Format(" (%g)\n", item->GetWeight()*count);
+		str += Format(" (%g)\n", item->GetWeight() * count);
 	else
 		str += "\n";
 
@@ -301,7 +301,7 @@ bool InsertItemStackable(vector<ItemSlot>& items, ItemSlot& slot)
 		{
 			// stack up item
 			it->count += slot.count;
-			it->team_count += slot.team_count;
+			it->teamCount += slot.teamCount;
 			return true;
 		}
 		else
@@ -320,13 +320,13 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 	ItemSlot slot2;
 	slot2.item = slot.item;
 	slot2.count = 1;
-	if(slot.team_count)
+	if(slot.teamCount)
 	{
-		slot2.team_count = 1;
-		--slot.team_count;
+		slot2.teamCount = 1;
+		--slot.teamCount;
 	}
 	else
-		slot2.team_count = 0;
+		slot2.teamCount = 0;
 
 	if(it == items.end())
 	{
@@ -337,13 +337,13 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 		while(slot.count)
 		{
 			items.push_back(slot2);
-			if(slot.team_count)
+			if(slot.teamCount)
 			{
-				slot2.team_count = 1;
-				--slot.team_count;
+				slot2.teamCount = 1;
+				--slot.teamCount;
 			}
 			else
-				slot2.team_count = 0;
+				slot2.teamCount = 0;
 			--slot.count;
 		}
 	}
@@ -356,13 +356,13 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 		while(slot.count)
 		{
 			v_copy.push_back(slot2);
-			if(slot.team_count)
+			if(slot.teamCount)
 			{
-				slot2.team_count = 1;
-				--slot.team_count;
+				slot2.teamCount = 1;
+				--slot.teamCount;
 			}
 			else
-				slot2.team_count = 0;
+				slot2.teamCount = 0;
 			--slot.count;
 		}
 
@@ -376,7 +376,7 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 
 bool InsertItem(vector<ItemSlot>& items, ItemSlot& slot)
 {
-	assert(slot.item && slot.count && slot.team_count <= slot.count);
+	assert(slot.item && slot.count && slot.teamCount <= slot.count);
 
 	if(slot.item->IsStackable())
 		return InsertItemStackable(items, slot);
@@ -387,9 +387,9 @@ bool InsertItem(vector<ItemSlot>& items, ItemSlot& slot)
 	}
 }
 
-void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint team_count)
+void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint teamCount)
 {
-	assert(item && count && count >= team_count);
+	assert(item && count && count >= teamCount);
 
 	if(item->IsStackable())
 	{
@@ -398,50 +398,50 @@ void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint 
 			if(it->item == item)
 			{
 				it->count += count;
-				it->team_count += team_count;
+				it->teamCount += teamCount;
 				return;
 			}
 		}
 
 		ItemSlot& slot = Add1(items);
-		slot.Set(item, count, team_count);
+		slot.Set(item, count, teamCount);
 	}
 	else
 	{
 		items.reserve(items.size() + count);
 		ItemSlot slot;
 		slot.Set(item, 1, 0);
-		items.resize(items.size() + count - team_count, slot);
-		slot.team_count = 1;
-		items.resize(items.size() + team_count, slot);
+		items.resize(items.size() + count - teamCount, slot);
+		slot.teamCount = 1;
+		items.resize(items.size() + teamCount, slot);
 	}
 }
 
-bool CompareItemsForIndex(const ItemSlot& slot, const Item* item, bool is_team)
+bool CompareItemsForIndex(const ItemSlot& slot, const Item* item, bool isTeam)
 {
 	if(slot.item != item)
 		return false;
 	if(item->IsStackable())
 		return true;
-	return (slot.team_count > 0) == is_team;
+	return (slot.teamCount > 0) == isTeam;
 }
 
-int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool is_team)
+int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool isTeam)
 {
 	assert(index >= 0 && item);
 
 	if((uint)index < items.size())
 	{
 		const ItemSlot& slot = items[index];
-		if(CompareItemsForIndex(slot, item, is_team))
+		if(CompareItemsForIndex(slot, item, isTeam))
 			return index;
 	}
 
 	ItemSlot slot;
 	slot.item = item;
-	slot.team_count = (is_team && !item->IsStackable()) ? 1 : 0;
+	slot.teamCount = (isTeam && !item->IsStackable()) ? 1 : 0;
 	auto it = std::lower_bound(items.begin(), items.end(), slot, SortItemsPred);
-	if(it == items.end() || it->item != item || !CompareItemsForIndex(*it, item, is_team))
+	if(it == items.end() || it->item != item || !CompareItemsForIndex(*it, item, isTeam))
 		return -1;
 	else
 		return it - items.begin();

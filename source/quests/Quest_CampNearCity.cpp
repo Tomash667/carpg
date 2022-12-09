@@ -19,12 +19,12 @@ Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 void Quest_CampNearCity::GetConversionData(ConversionData& data)
 {
 	data.id = "camp_near_city";
-	data.Add("start_loc", startLoc);
-	data.Add("target_loc", targetLoc);
-	data.Add("start_time", start_time);
+	data.Add("startLoc", startLoc);
+	data.Add("targetLoc", targetLoc);
+	data.Add("startTime", startTime);
 	data.Add("group", group);
 	data.Add("st", st);
 
-	if(game_level->event_handler == this)
-		game_level->event_handler = nullptr;
+	if(gameLevel->eventHandler == this)
+		gameLevel->eventHandler = nullptr;
 }

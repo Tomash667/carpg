@@ -136,19 +136,19 @@ enum Direction
 	DIR_SE,
 	DIR_SW
 };
-extern cstring dir_name[];
-extern cstring dir_name_short[];
+extern cstring dirName[];
+extern cstring dirNameShort[];
 
 //-----------------------------------------------------------------------------
 Direction AngleToDir(float angle);
 Direction GetLocationDir(const Vec2& from, const Vec2& to);
 inline cstring GetLocationDirName(const Vec2& from, const Vec2& to)
 {
-	return dir_name[GetLocationDir(from, to)];
+	return dirName[GetLocationDir(from, to)];
 }
 inline cstring GetLocationDirName(float angle)
 {
-	return dir_name[AngleToDir(angle)];
+	return dirName[AngleToDir(angle)];
 }
 
 //-----------------------------------------------------------------------------
@@ -169,4 +169,4 @@ struct SpawnPoint
 };
 
 //-----------------------------------------------------------------------------
-extern vector<uint> _to_remove;
+extern vector<uint> _toRemove;

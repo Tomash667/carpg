@@ -19,5 +19,5 @@ private:
 	void GenerateDungeonItems();
 	UnitGroup* GetGroup();
 
-	DungeonMapGenerator map_gen;
+	DungeonMapGenerator mapGenerator;
 };

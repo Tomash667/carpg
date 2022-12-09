@@ -281,10 +281,10 @@ void DungeonMeshBuilder::Build()
 
 	int index = 18;
 
-	FillPart(dungeon_part, id, index, 8);
-	FillPart(dungeon_part2, id, index, 28);
-	FillPart(dungeon_part3, id, index, 44);
-	FillPart(dungeon_part4, id, index, 60);
+	FillPart(dungeonPart, id, index, 8);
+	FillPart(dungeonPart2, id, index, 28);
+	FillPart(dungeonPart3, id, index, 44);
+	FillPart(dungeonPart4, id, index, 60);
 
 	// create index buffer
 	desc.ByteWidth = size;
@@ -356,9 +356,9 @@ void DungeonMeshBuilder::FillPart(Int2* _part, word* faces, int& index, word off
 //=================================================================================================
 void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frustum)
 {
-	InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
+	InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
+	BaseLocation& base = gBaseLocations[inside->target];
 	Box box;
 
 	if(!IsSet(base.options, BLO_LABYRINTH))
@@ -396,11 +396,11 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 					if(tile.room != room->index || tile.flags == 0 || tile.flags == Tile::F_REVEALED)
 						continue;
 
-					uint group = batch.dungeon_part_groups.size();
-					DungeonPartGroup& dungeon_group = Add1(batch.dungeon_part_groups);
+					uint group = batch.dungeonPartGroups.size();
+					DungeonPartGroup& dungeon_group = Add1(batch.dungeonPartGroups);
 
 					// find best lights
-					TopN<GameLight*, 3, float, std::less<>> best(nullptr, game_level->camera.zfar);
+					TopN<GameLight*, 3, float, std::less<>> best(nullptr, gameLevel->camera.zfar);
 
 					float dx = 2.f * (room->pos.x + x) + 1.f;
 					float dz = 2.f * (room->pos.y + y) + 1.f;
@@ -416,28 +416,28 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						dungeon_group.lights[i] = best[i];
 
 					// set matrices
-					dungeon_group.mat_world = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
-					dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.mat_view_proj;
+					dungeon_group.matWorld = Matrix::Translation(2.f * (room->pos.x + x), 0, 2.f * (room->pos.y + y));
+					dungeon_group.matCombined = dungeon_group.matWorld * gameLevel->camera.matViewProj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 					// floor
 					if(IsSet(tile.flags, Tile::F_FLOOR))
 					{
-						DungeonPart& dp = Add1(batch.dungeon_parts);
-						dp.tex_o = &game_res->tFloor[tex_id];
-						dp.start_index = 0;
-						dp.primitive_count = 2;
+						DungeonPart& dp = Add1(batch.dungeonParts);
+						dp.texOverride = &gameRes->tFloor[tex_id];
+						dp.startIndex = 0;
+						dp.primitiveCount = 2;
 						dp.group = group;
 					}
 
 					// ceiling
 					if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 					{
-						DungeonPart& dp = Add1(batch.dungeon_parts);
-						dp.tex_o = &game_res->tCeil[tex_id];
-						dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
-						dp.primitive_count = 2;
+						DungeonPart& dp = Add1(batch.dungeonParts);
+						dp.texOverride = &gameRes->tCeil[tex_id];
+						dp.startIndex = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+						dp.primitiveCount = 2;
 						dp.group = group;
 					}
 
@@ -449,10 +449,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						int d2 = (d & 0xF);
 						if(d2 != 0)
 						{
-							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
-							dp.start_index = dungeon_part[d2].x;
-							dp.primitive_count = dungeon_part[d2].y;
+							DungeonPart& dp = Add1(batch.dungeonParts);
+							dp.texOverride = &gameRes->tWall[tex_id];
+							dp.startIndex = dungeonPart[d2].x;
+							dp.primitiveCount = dungeonPart[d2].y;
 							dp.group = group;
 						}
 
@@ -460,10 +460,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						d2 = ((d & 0xF00) >> 8);
 						if(d2 != 0)
 						{
-							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
-							dp.start_index = dungeon_part3[d2].x;
-							dp.primitive_count = dungeon_part3[d2].y;
+							DungeonPart& dp = Add1(batch.dungeonParts);
+							dp.texOverride = &gameRes->tWall[tex_id];
+							dp.startIndex = dungeonPart3[d2].x;
+							dp.primitiveCount = dungeonPart3[d2].y;
 							dp.group = group;
 						}
 
@@ -471,10 +471,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 						d2 = ((d & 0xF000) >> 12);
 						if(d2 != 0)
 						{
-							DungeonPart& dp = Add1(batch.dungeon_parts);
-							dp.tex_o = &game_res->tWall[tex_id];
-							dp.start_index = dungeon_part4[d2].x;
-							dp.primitive_count = dungeon_part4[d2].y;
+							DungeonPart& dp = Add1(batch.dungeonParts);
+							dp.texOverride = &gameRes->tWall[tex_id];
+							dp.startIndex = dungeonPart4[d2].x;
+							dp.primitiveCount = dungeonPart4[d2].y;
 							dp.group = group;
 						}
 					}
@@ -522,11 +522,11 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
-			uint group = batch.dungeon_part_groups.size();
-			DungeonPartGroup& dungeon_group = Add1(batch.dungeon_part_groups);
+			uint group = batch.dungeonPartGroups.size();
+			DungeonPartGroup& dungeon_group = Add1(batch.dungeonPartGroups);
 
 			// find best lights
-			TopN<GameLight*, 3, float, std::less<>> best(nullptr, game_level->camera.zfar);
+			TopN<GameLight*, 3, float, std::less<>> best(nullptr, gameLevel->camera.zfar);
 
 			float dx = 2.f * it->x + 1.f;
 			float dz = 2.f * it->y + 1.f;
@@ -542,28 +542,28 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				dungeon_group.lights[i] = best[i];
 
 			// set matrices
-			dungeon_group.mat_world = Matrix::Translation(2.f * it->x, 0, 2.f * it->y);
-			dungeon_group.mat_combined = dungeon_group.mat_world * game_level->camera.mat_view_proj;
+			dungeon_group.matWorld = Matrix::Translation(2.f * it->x, 0, 2.f * it->y);
+			dungeon_group.matCombined = dungeon_group.matWorld * gameLevel->camera.matViewProj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 			// floor
 			if(IsSet(tile.flags, Tile::F_FLOOR))
 			{
-				DungeonPart& dp = Add1(batch.dungeon_parts);
-				dp.tex_o = &game_res->tFloor[tex_id];
-				dp.start_index = 0;
-				dp.primitive_count = 2;
+				DungeonPart& dp = Add1(batch.dungeonParts);
+				dp.texOverride = &gameRes->tFloor[tex_id];
+				dp.startIndex = 0;
+				dp.primitiveCount = 2;
 				dp.group = group;
 			}
 
 			// ceiling
 			if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 			{
-				DungeonPart& dp = Add1(batch.dungeon_parts);
-				dp.tex_o = &game_res->tCeil[tex_id];
-				dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
-				dp.primitive_count = 2;
+				DungeonPart& dp = Add1(batch.dungeonParts);
+				dp.texOverride = &gameRes->tCeil[tex_id];
+				dp.startIndex = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+				dp.primitiveCount = 2;
 				dp.group = group;
 			}
 
@@ -575,10 +575,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				int d2 = (d & 0xF);
 				if(d2 != 0)
 				{
-					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
-					dp.start_index = dungeon_part[d2].x;
-					dp.primitive_count = dungeon_part[d2].y;
+					DungeonPart& dp = Add1(batch.dungeonParts);
+					dp.texOverride = &gameRes->tWall[tex_id];
+					dp.startIndex = dungeonPart[d2].x;
+					dp.primitiveCount = dungeonPart[d2].y;
 					dp.group = group;
 				}
 
@@ -586,10 +586,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				d2 = ((d & 0xF0) >> 4);
 				if(d2 != 0)
 				{
-					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
-					dp.start_index = dungeon_part2[d2].x;
-					dp.primitive_count = dungeon_part2[d2].y;
+					DungeonPart& dp = Add1(batch.dungeonParts);
+					dp.texOverride = &gameRes->tWall[tex_id];
+					dp.startIndex = dungeonPart2[d2].x;
+					dp.primitiveCount = dungeonPart2[d2].y;
 					dp.group = group;
 				}
 
@@ -597,10 +597,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				d2 = ((d & 0xF00) >> 8);
 				if(d2 != 0)
 				{
-					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
-					dp.start_index = dungeon_part3[d2].x;
-					dp.primitive_count = dungeon_part3[d2].y;
+					DungeonPart& dp = Add1(batch.dungeonParts);
+					dp.texOverride = &gameRes->tWall[tex_id];
+					dp.startIndex = dungeonPart3[d2].x;
+					dp.primitiveCount = dungeonPart3[d2].y;
 					dp.group = group;
 				}
 
@@ -608,10 +608,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 				d2 = ((d & 0xF000) >> 12);
 				if(d2 != 0)
 				{
-					DungeonPart& dp = Add1(batch.dungeon_parts);
-					dp.tex_o = &game_res->tWall[tex_id];
-					dp.start_index = dungeon_part4[d2].x;
-					dp.primitive_count = dungeon_part4[d2].y;
+					DungeonPart& dp = Add1(batch.dungeonParts);
+					dp.texOverride = &gameRes->tWall[tex_id];
+					dp.startIndex = dungeonPart4[d2].x;
+					dp.primitiveCount = dungeonPart4[d2].y;
 					dp.group = group;
 				}
 			}
@@ -620,10 +620,10 @@ void DungeonMeshBuilder::ListVisibleParts(DrawBatch& batch, FrustumPlanes& frust
 		tiles.clear();
 	}
 
-	std::sort(batch.dungeon_parts.begin(), batch.dungeon_parts.end(), [](const DungeonPart& p1, const DungeonPart& p2)
+	std::sort(batch.dungeonParts.begin(), batch.dungeonParts.end(), [](const DungeonPart& p1, const DungeonPart& p2)
 	{
-		if(p1.tex_o != p2.tex_o)
-			return p1.tex_o->GetIndex() < p2.tex_o->GetIndex();
+		if(p1.texOverride != p2.texOverride)
+			return p1.texOverride->GetIndex() < p2.texOverride->GetIndex();
 		else
 			return false;
 	});

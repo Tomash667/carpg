@@ -22,7 +22,7 @@ cstring op_names[] = {
 	"REPORT"
 };
 
-LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), cm(nullptr)
+LobbyApi::LobbyApi() : npClient(nullptr), npAttached(false), cm(nullptr)
 {
 }
 
@@ -34,15 +34,15 @@ LobbyApi::~LobbyApi()
 		curl_global_cleanup();
 	}
 
-	if(np_client)
-		NatPunchthroughClient::DestroyInstance(np_client);
+	if(npClient)
+		NatPunchthroughClient::DestroyInstance(npClient);
 }
 
 void LobbyApi::Init(Config& cfg)
 {
-	lobby_url = cfg.GetString("lobby_url", "carpglobby.westeurope.cloudapp.azure.com");
-	lobby_port = cfg.GetInt("lobby_port", 8080);
-	proxy_port = cfg.GetInt("proxy_port", 60481);
+	lobbyUrl = cfg.GetString("lobbyUrl", "carpglobby.westeurope.cloudapp.azure.com");
+	lobbyPort = cfg.GetInt("lobbyPort", 8080);
+	proxyPort = cfg.GetInt("proxyPort", 60481);
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	cm = curl_multi_init();
@@ -51,7 +51,7 @@ void LobbyApi::Init(Config& cfg)
 
 void LobbyApi::Update()
 {
-	if(active_requests.empty())
+	if(activeRequests.empty())
 		return;
 	UpdateInternal();
 }
@@ -101,11 +101,11 @@ void LobbyApi::UpdateInternal()
 			}
 		}
 
-		for(auto it = active_requests.begin(), end = active_requests.end(); it != end; ++it)
+		for(auto it = activeRequests.begin(), end = activeRequests.end(); it != end; ++it)
 		{
 			if(*it == op)
 			{
-				active_requests.erase(it);
+				activeRequests.erase(it);
 				if(op->status < Status::KEEP_ALIVE)
 					op->Free();
 				break;
@@ -128,7 +128,7 @@ void LobbyApi::SetStatus(Op* op, bool ok)
 	if(op->status == Status::KEEP_ALIVE)
 		op->status = (ok ? Status::DONE : Status::FAILED);
 	if(!ok && (op->o == GET_SERVERS || op->o == GET_CHANGES))
-		game_gui->pick_server->HandleBadRequest();
+		gameGui->pickServer->HandleBadRequest();
 }
 
 void LobbyApi::ParseResponse(Op* op)
@@ -147,11 +147,11 @@ void LobbyApi::ParseResponse(Op* op)
 	switch(op->o)
 	{
 	case GET_SERVERS:
-		if(game_gui->pick_server->HandleGetServers(j))
+		if(gameGui->pickServer->HandleGetServers(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_CHANGES:
-		if(game_gui->pick_server->HandleGetChanges(j))
+		if(gameGui->pickServer->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_VERSION:
@@ -182,7 +182,7 @@ void LobbyApi::Reset()
 		requests = copy;
 	}
 
-	for(Op* op : active_requests)
+	for(Op* op : activeRequests)
 	{
 		if(op->status == Status::NONE)
 			op->status = Status::DISCARD;
@@ -203,7 +203,7 @@ void LobbyApi::AddOperation(Op* op)
 {
 	if(op->o == GET_CHANGES && timestamp == 0)
 		op->o = GET_SERVERS;
-	if(active_requests.size() < MAX_REQUESTS)
+	if(activeRequests.size() < MAX_REQUESTS)
 		DoOperation(op);
 	else
 		requests.push(op);
@@ -251,10 +251,10 @@ void LobbyApi::DoOperation(Op* op)
 			path = Format("/api/version?ver=%d&lang=%s", VERSION, Language::prefix.c_str());
 			break;
 		}
-		if(lobby_port != 80)
-			url = Format("%s:%d%s", lobby_url.c_str(), lobby_port, path);
+		if(lobbyPort != 80)
+			url = Format("%s:%d%s", lobbyUrl.c_str(), lobbyPort, path);
 		else
-			url = Format("%s%s", lobby_url.c_str(), path);
+			url = Format("%s%s", lobbyUrl.c_str(), path);
 	}
 
 	curl_easy_setopt(eh, CURLOPT_URL, url);
@@ -264,7 +264,7 @@ void LobbyApi::DoOperation(Op* op)
 	curl_easy_setopt(eh, CURLOPT_TIMEOUT, 4);
 	curl_easy_setopt(eh, CURLOPT_CONNECTTIMEOUT, 4);
 	curl_multi_add_handle(cm, eh);
-	active_requests.push_back(op);
+	activeRequests.push_back(op);
 }
 
 class NatPunchthroughDebugInterface_InfoLogger : public NatPunchthroughDebugInterface
@@ -278,30 +278,30 @@ public:
 
 void LobbyApi::StartPunchthrough(RakNetGUID* target)
 {
-	assert(!np_attached);
+	assert(!npAttached);
 
-	if(!np_client)
+	if(!npClient)
 	{
 		static NatPunchthroughDebugInterface_InfoLogger logger;
-		np_client = NatPunchthroughClient::GetInstance();
-		np_client->SetDebugInterface(&logger);
+		npClient = NatPunchthroughClient::GetInstance();
+		npClient->SetDebugInterface(&logger);
 	}
 
-	net->peer->AttachPlugin(np_client);
-	np_attached = true;
+	net->peer->AttachPlugin(npClient);
+	npAttached = true;
 
 	if(target)
-		np_client->OpenNAT(*target, net->master_server_adr);
+		npClient->OpenNAT(*target, net->masterServerAdr);
 	else
-		np_client->FindRouterPortStride(net->master_server_adr);
+		npClient->FindRouterPortStride(net->masterServerAdr);
 }
 
 void LobbyApi::EndPunchthrough()
 {
-	if(np_attached)
+	if(npAttached)
 	{
-		net->peer->DetachPlugin(np_client);
-		np_attached = false;
+		net->peer->DetachPlugin(npClient);
+		npAttached = false;
 	}
 }
 

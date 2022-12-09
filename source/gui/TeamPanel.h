@@ -14,7 +14,7 @@ public:
 	TeamPanel();
 	void LoadLanguage();
 	void LoadData();
-	void Draw(ControlDrawData*) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void Show();
@@ -41,6 +41,6 @@ private:
 	int counter, mode, picked;
 	TexturePtr tCrown, tSkull, tFastTravelWait, tFastTravelOk;
 	vector<Hitbox> hitboxes;
-	Entity<Unit> target_unit;
+	Entity<Unit> targetUnit;
 	bool picking;
 };

@@ -33,10 +33,10 @@ Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos)
+Room* InsideLocationLevel::FindEscapeRoom(const Vec3& myPos, const Vec3& enemyPos)
 {
-	Room* my_room = GetNearestRoom(my_pos),
-		*enemy_room = GetNearestRoom(enemy_pos);
+	Room* my_room = GetNearestRoom(myPos),
+		*enemy_room = GetNearestRoom(enemyPos);
 
 	if(!my_room)
 		return nullptr;
@@ -51,7 +51,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_
 			continue;
 
 		Vec3 mid = room->Center();
-		dist = Vec3::Distance(my_pos, mid) - Vec3::Distance(enemy_pos, mid);
+		dist = Vec3::Distance(myPos, mid) - Vec3::Distance(enemyPos, mid);
 		if(dist < best_dist)
 		{
 			best_dist = dist;
@@ -144,7 +144,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				tile.y = room.pos.y + 1;
 
-				if(IsBlocking(map[tile.x + (tile.y - 1)*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y + 1)*w])))
+				if(IsBlocking(map[tile.x + (tile.y - 1) * w]) && !IsBlocking2(map[tile.x + tile.y * w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y + 1) * w])))
 					return true;
 
 				--tries2;
@@ -158,7 +158,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = room.pos.x + room.size.x - 2;
 				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(IsBlocking(map[tile.x + 1 + tile.y*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x - 1 + tile.y*w])))
+				if(IsBlocking(map[tile.x + 1 + tile.y * w]) && !IsBlocking2(map[tile.x + tile.y * w]) && (nocol || !IsBlocking2(map[tile.x - 1 + tile.y * w])))
 					return true;
 
 				--tries2;
@@ -172,7 +172,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				tile.y = room.pos.y + room.size.y - 2;
 
-				if(IsBlocking(map[tile.x + (tile.y + 1)*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y - 1)*w])))
+				if(IsBlocking(map[tile.x + (tile.y + 1) * w]) && !IsBlocking2(map[tile.x + tile.y * w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y - 1) * w])))
 					return true;
 
 				--tries2;
@@ -186,7 +186,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = room.pos.x + 1;
 				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(IsBlocking(map[tile.x - 1 + tile.y*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + 1 + tile.y*w])))
+				if(IsBlocking(map[tile.x - 1 + tile.y * w]) && !IsBlocking2(map[tile.x + tile.y * w]) && (nocol || !IsBlocking2(map[tile.x + 1 + tile.y * w])))
 					return true;
 
 				--tries2;
@@ -208,9 +208,9 @@ void InsideLocationLevel::SaveLevel(GameWriter& f)
 {
 	f << w;
 	f << h;
-	f.Write(map, sizeof(Tile)*w*h);
+	f.Write(map, sizeof(Tile) * w * h);
 
-	LevelArea::Save(f);
+	LocationPart::Save(f);
 
 	// rooms
 	f << rooms.size();
@@ -235,12 +235,12 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 {
 	f >> w;
 	f >> h;
-	map = new Tile[w*h];
-	f.Read(map, sizeof(Tile)*w*h);
+	map = new Tile[w * h];
+	f.Read(map, sizeof(Tile) * w * h);
 
 	if(LOAD_VERSION >= V_0_11)
 	{
-		LevelArea::Load(f);
+		LocationPart::Load(f);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -268,7 +268,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 	}
 	else
 	{
-		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevel);
+		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevel);
 
 		// rooms
 		rooms.resize(f.Read<uint>());
@@ -295,7 +295,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 		}
 		RoomGroup::SetRoomGroupConnections(groups, rooms);
 
-		LevelArea::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
+		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
 	if(LOAD_VERSION >= V_0_16)
@@ -383,10 +383,10 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
-	return map[pt.x - 1 + pt.y*w].IsWall()
-		|| map[pt.x + 1 + pt.y*w].IsWall()
-		|| map[pt.x + (pt.y - 1)*w].IsWall()
-		|| map[pt.x + (pt.y + 1)*w].IsWall();
+	return map[pt.x - 1 + pt.y * w].IsWall()
+		|| map[pt.x + 1 + pt.y * w].IsWall()
+		|| map[pt.x + (pt.y - 1) * w].IsWall()
+		|| map[pt.x + (pt.y + 1) * w].IsWall();
 }
 
 //=================================================================================================
@@ -396,13 +396,13 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 
 	int kierunek = 0;
 
-	if(map[pt.x - 1 + pt.y*w].IsWall())
+	if(map[pt.x - 1 + pt.y * w].IsWall())
 		kierunek |= (1 << GDIR_LEFT);
-	if(map[pt.x + 1 + pt.y*w].IsWall())
+	if(map[pt.x + 1 + pt.y * w].IsWall())
 		kierunek |= (1 << GDIR_RIGHT);
-	if(map[pt.x + (pt.y - 1)*w].IsWall())
+	if(map[pt.x + (pt.y - 1) * w].IsWall())
 		kierunek |= (1 << GDIR_DOWN);
-	if(map[pt.x + (pt.y + 1)*w].IsWall())
+	if(map[pt.x + (pt.y + 1) * w].IsWall())
 		kierunek |= (1 << GDIR_UP);
 
 	if(kierunek == 0)
@@ -470,8 +470,8 @@ pair<Room*, Room*> InsideLocationLevel::GetConnectingRooms(RoomGroup* group1, Ro
 
 	for(RoomGroup::Connection& c : group1->connections)
 	{
-		if(c.group_index == group2->index)
-			return std::make_pair(rooms[c.my_room], rooms[c.other_room]);
+		if(c.groupIndex == group2->index)
+			return std::make_pair(rooms[c.myRoom], rooms[c.otherRoom]);
 	}
 
 	return pair<Room*, Room*>(nullptr, nullptr);

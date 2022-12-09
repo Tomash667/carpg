@@ -11,7 +11,7 @@ class Console : public DialogBox, public OnCharHandler
 public:
 	explicit Console(const DialogInfo& info);
 	void LoadData();
-	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Draw() override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	void AddMsg(cstring str) { itb.Add(str); }

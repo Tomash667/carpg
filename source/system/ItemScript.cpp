@@ -6,18 +6,18 @@
 
 //-----------------------------------------------------------------------------
 vector<ItemScript*> ItemScript::scripts;
-const ItemList* ItemScript::weapon_list[WT_MAX], *ItemScript::armor_list[AT_MAX];
+const ItemList* ItemScript::weaponList[WT_MAX], *ItemScript::armorList[AT_MAX];
 
 //=================================================================================================
 void ItemScript::Init()
 {
-	weapon_list[WT_SHORT_BLADE] = &ItemList::Get("short_blade");
-	weapon_list[WT_LONG_BLADE] = &ItemList::Get("long_blade");
-	weapon_list[WT_AXE] = &ItemList::Get("axe");
-	weapon_list[WT_BLUNT] = &ItemList::Get("blunt");
-	armor_list[AT_LIGHT] = &ItemList::Get("light_armor");
-	armor_list[AT_MEDIUM] = &ItemList::Get("medium_armor");
-	armor_list[AT_HEAVY] = &ItemList::Get("heavy_armor");
+	weaponList[WT_SHORT_BLADE] = &ItemList::Get("short_blade");
+	weaponList[WT_LONG_BLADE] = &ItemList::Get("long_blade");
+	weaponList[WT_AXE] = &ItemList::Get("axe");
+	weaponList[WT_BLUNT] = &ItemList::Get("blunt");
+	armorList[AT_LIGHT] = &ItemList::Get("light_armor");
+	armorList[AT_MEDIUM] = &ItemList::Get("medium_armor");
+	armorList[AT_HEAVY] = &ItemList::Get("heavy_armor");
 }
 
 //=================================================================================================
@@ -26,11 +26,11 @@ const ItemList& ItemScript::GetSpecial(int special, int sub)
 	SubprofileInfo s;
 	s.value = sub;
 	if(special == SPECIAL_WEAPON)
-		return *weapon_list[s.weapon];
+		return *weaponList[s.weapon];
 	else
 	{
 		assert(special == SPECIAL_ARMOR);
-		return *armor_list[s.armor];
+		return *armorList[s.armor];
 	}
 }
 

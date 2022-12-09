@@ -810,10 +810,8 @@ dialog guards_encounter {
 dialog traveler {
 	0 "Witaj!"
 	1 "Witaj ponownie!"
-	2 "" // removed
-	3 "Oddaj zgubiony przedmiot"
-	4 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
-	5 "Koniec rozmowy"
+	2 "Uda³o ci siê coœ znaleŸæ? Nie? Szkoda, nadal czekam na ten przedmiot."
+	3 "Koniec rozmowy"
 }
 
 //==============================================================================
@@ -1314,28 +1312,6 @@ dialog q_goblins_boss {
 	0 "Proszê, proszê. Kogo my tu mamy?"
 	1 "Zakichany poszukiwacz przygód. Przyszed³eœ popatrzeæ jak wygl¹da prawdziwa potêga Anielskiego ³uku?"
 	2 "Wypróbujê go na tobie!"
-}
-
-//==============================================================================
-dialog q_lost_artifact_start {
-	0 "Znalaz³em $przedmiot$ ale niestety go zgubi³em w drodze powrotnej."
-	1 "Czy mo¿esz go dla mnie odnaleŸæ?"
-	2 "Tak"
-	3 "Znalaz³em ten przedmiot na $poziomie$ poziomie $target_loc$ na $target_dir$ st¹d. Musia³em go zgubiæ na tym albo wy¿szym poziomie."
-	4 "Bêdê czeka³ a¿ ktoœ mi go przyniesie ale maksymalnie dwa miesi¹ce. Powodzenia!"
-	5 "Nie"
-}
-
-//==============================================================================
-dialog q_lost_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
-}
-
-//==============================================================================
-dialog q_lost_artifact_timeout {
-	0 "Nie uda³o ci siê znaleŸæ tego artefaktu? Trudno..."
-	1 "Ponoæ niedaleko $random_loc$ znaleziono jakieœ nowe artefakty, tam wyruszê."
-	2 "Powodzenia w przygodach!"
 }
 
 //==============================================================================

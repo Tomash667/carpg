@@ -5,7 +5,7 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-bool g_beard_and_mustache[MAX_BEARD - 1] = {
+bool gBeardAndMustache[MAX_BEARD - 1] = {
 	false,
 	false,
 	false,
@@ -15,7 +15,7 @@ bool g_beard_and_mustache[MAX_BEARD - 1] = {
 
 //-----------------------------------------------------------------------------
 // ze strony http://www.dandwiki.com/wiki/Random_Hair_and_Eye_Color_(DnD_Other)
-const Vec4 g_hair_colors[] = {
+const Vec4 gHairColors[] = {
 	Color::Hex(0x000000), // Black
 	Color::Hex(0x808080), // Gray
 	Color::Hex(0xD3D3D3), // Platinum
@@ -29,17 +29,17 @@ const Vec4 g_hair_colors[] = {
 	Color::Hex(0x8B4513), // Brunette
 	Color::Hex(0xA0522D)  // Auburn
 };
-const uint n_hair_colors = countof(g_hair_colors);
+const uint nHairColors = countof(gHairColors);
 // siwy 0xDED5D0
 
 Vec2 Human::GetScale()
 {
-	float h = (height - 1)*0.2f + 1.f;
+	float h = (height - 1) * 0.2f + 1.f;
 	float w;
 	if(height > 1.f)
-		w = 1.f + (height - 1)*0.4f;
+		w = 1.f + (height - 1) * 0.4f;
 	else if(height < 1.f)
-		w = 1.f - (1.f - height)*0.3f;
+		w = 1.f - (1.f - height) * 0.3f;
 	else
 		w = 1.f;
 
@@ -49,22 +49,22 @@ Vec2 Human::GetScale()
 //=================================================================================================
 // Ustawienie macierzy na podstawie wysokoœci i wagi
 //=================================================================================================
-void Human::ApplyScale(MeshInstance* mesh_inst)
+void Human::ApplyScale(MeshInstance* meshInst)
 {
-	assert(mesh_inst);
+	assert(meshInst);
 
-	mat_scale.resize(mesh_inst->mesh->head.n_bones);
-	mesh_inst->mat_scale = mat_scale.data();
+	matScale.resize(meshInst->mesh->head.n_bones);
+	meshInst->matScale = matScale.data();
 
 	Vec2 scale = GetScale();
 	Matrix m = Matrix::Scale(scale.x, scale.y, scale.x);
-	for(int i = 0; i < mesh_inst->mesh->head.n_bones; ++i)
-		mat_scale[i] = m;
+	for(int i = 0; i < meshInst->mesh->head.n_bones; ++i)
+		matScale[i] = m;
 
 	scale.x = (scale.x + 1) / 2;
 	m = Matrix::Scale(scale.x, scale.y, scale.x);
-	mat_scale[4] = m;
-	mat_scale[5] = m;
+	matScale[4] = m;
+	matScale[5] = m;
 }
 
 //=================================================================================================
@@ -92,20 +92,20 @@ void Human::Init(const HumanData* hd)
 		else
 			height = Random(MIN_HEIGHT, MAX_HEIGHT);
 
-		switch(hd->hair_type)
+		switch(hd->hairType)
 		{
 		default:
 		case HumanData::HairColorType::Default:
-			hair_color = g_hair_colors[Rand() % n_hair_colors];
+			hairColor = gHairColors[Rand() % nHairColors];
 			break;
 		case HumanData::HairColorType::Fixed:
-			hair_color = hd->hair_color;
+			hairColor = hd->hairColor;
 			break;
 		case HumanData::HairColorType::Random:
-			hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
+			hairColor = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
 			break;
 		case HumanData::HairColorType::Grayscale:
-			hair_color = g_hair_colors[Rand() % 4];
+			hairColor = gHairColors[Rand() % 4];
 			break;
 		}
 	}
@@ -115,7 +115,7 @@ void Human::Init(const HumanData* hd)
 		hair = Rand() % MAX_HAIR - 1;
 		mustache = Rand() % MAX_MUSTACHE - 1;
 		height = Random(MIN_HEIGHT, MAX_HEIGHT);
-		hair_color = g_hair_colors[Rand() % n_hair_colors];
+		hairColor = gHairColors[Rand() % nHairColors];
 	}
 }
 
@@ -125,7 +125,7 @@ void Human::Save(GameWriter& f)
 	f << hair;
 	f << beard;
 	f << mustache;
-	f << hair_color;
+	f << hairColor;
 	f << height;
 }
 
@@ -135,7 +135,7 @@ void Human::Load(GameReader& f)
 	f >> hair;
 	f >> beard;
 	f >> mustache;
-	f >> hair_color;
+	f >> hairColor;
 	f >> height;
 }
 
@@ -145,7 +145,7 @@ void HumanData::Get(const Human& h)
 	hair = h.hair;
 	beard = h.beard;
 	mustache = h.mustache;
-	hair_color = h.hair_color;
+	hairColor = h.hairColor;
 	height = h.height;
 }
 
@@ -155,7 +155,7 @@ void HumanData::Set(Human& h) const
 	h.hair = hair;
 	h.beard = beard;
 	h.mustache = mustache;
-	h.hair_color = hair_color;
+	h.hairColor = hairColor;
 	h.height = height;
 }
 
@@ -165,7 +165,7 @@ void HumanData::CopyFrom(HumanData& hd)
 	hair = hd.hair;
 	beard = hd.beard;
 	mustache = hd.mustache;
-	hair_color = hd.hair_color;
+	hairColor = hd.hairColor;
 	height = hd.height;
 }
 
@@ -175,7 +175,7 @@ void HumanData::Save(GameWriter& f) const
 	f << hair;
 	f << beard;
 	f << mustache;
-	f << hair_color;
+	f << hairColor;
 	f << height;
 }
 
@@ -185,7 +185,7 @@ void HumanData::Load(GameReader& f)
 	f >> hair;
 	f >> beard;
 	f >> mustache;
-	f >> hair_color;
+	f >> hairColor;
 	f >> height;
 }
 
@@ -195,9 +195,9 @@ void HumanData::Write(BitStreamWriter& f) const
 	f.WriteCasted<byte>(hair);
 	f.WriteCasted<byte>(beard);
 	f.WriteCasted<byte>(mustache);
-	f << hair_color.x;
-	f << hair_color.y;
-	f << hair_color.z;
+	f << hairColor.x;
+	f << hairColor.y;
+	f << hairColor.z;
 	f << height;
 }
 
@@ -207,14 +207,14 @@ int HumanData::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(hair);
 	f.ReadCasted<byte>(beard);
 	f.ReadCasted<byte>(mustache);
-	f >> hair_color.x;
-	f >> hair_color.y;
-	f >> hair_color.z;
+	f >> hairColor.x;
+	f >> hairColor.y;
+	f >> hairColor.z;
 	f >> height;
 	if(!f)
 		return 1;
 
-	hair_color.w = 1.f;
+	hairColor.w = 1.f;
 	height = Clamp(height, MIN_HEIGHT, MAX_HEIGHT);
 
 	if(hair == 255)
@@ -242,5 +242,5 @@ void HumanData::Random()
 	hair = Rand() % MAX_HAIR - 1;
 	mustache = Rand() % MAX_MUSTACHE - 1;
 	height = ::Random(MIN_HEIGHT, MAX_HEIGHT);
-	hair_color = g_hair_colors[Rand() % n_hair_colors];
+	hairColor = gHairColors[Rand() % nHairColors];
 }
