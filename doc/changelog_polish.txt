@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.19 (???):
+Wersja 0.19 (2022-12-09):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej
 + wolniejsze chodzenie podczas strzelania/rzucania czarów
 + lepszy menadżer sceny - przedmioty na ziemi
