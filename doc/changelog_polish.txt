@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.20 (???):
++ aktualizacja bibliotek: Bullet Physics 3.2.4, DirectXMath 3.17b, FMod 2.02.11, zlib 1.2.13
+
+--------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej
 + wolniejsze chodzenie podczas strzelania/rzucania czarów
