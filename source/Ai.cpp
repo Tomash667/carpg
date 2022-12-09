@@ -466,7 +466,7 @@ void Game::UpdateAi(float dt)
 					look_at = LookAtPoint;
 					look_pos = lookTarget->pos;
 					u.timer = Random(1.f, 2.f);
-					continue;
+					break;
 				}
 
 				if(UnitOrder order = u.GetOrder(); order != ORDER_NONE && order != ORDER_AUTO_TALK && u.order->timer > 0.f)

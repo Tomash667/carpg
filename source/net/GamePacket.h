@@ -75,6 +75,9 @@ enum GamePacket : byte
 	*/
 	ID_WHISPER,
 
+	// removed in V_0_19
+	ID_UNUSED,
+
 	/* Player leaving server
 	*/
 	ID_LEAVE,

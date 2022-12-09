@@ -287,7 +287,7 @@ void LoadConfiguration(char* cmdLine)
 	cfg.Rename("cl_normalmap", "useNormalmap");
 	cfg.Rename("cl_specularmap", "useSpecularmap");
 	cfg.Rename("cl_postfx", "usePostfx");
-	// pre V_DEV compatibility
+	// pre V_0_19 compatibility
 	cfg.Rename("change_title", "changeTitle");
 	cfg.Rename("check_updates", "checkUpdates");
 	cfg.Rename("cl_glow", "useGlow");

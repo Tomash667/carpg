@@ -69,7 +69,10 @@ ActionResult Game::CanSaveGame() const
 	if(!Any(gameState, GS_LEVEL, GS_WORLDMAP))
 		return ActionResult::Ignore;
 
-	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog) { return dialog->name != "console" && dialog->name != "gameMenu"; };
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog)
+	{
+		return dialog->name != "console" && dialog->name != "gameMenu" && dialog->name != "saveload" && dialog->name != "GetTextDialog";
+	};
 	if(gui->HaveDialog(pred))
 		return ActionResult::Ignore;
 
@@ -105,7 +108,10 @@ ActionResult Game::CanLoadGame() const
 	if(!Any(gameState, GS_MAIN_MENU, GS_LEVEL, GS_WORLDMAP))
 		return ActionResult::Ignore;
 
-	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog) { return dialog->name != "console" && dialog->name != "gameMenu"; };
+	delegate<bool(DialogBox*)> pred = [](DialogBox* dialog)
+	{
+		return dialog->name != "console" && dialog->name != "gameMenu" && dialog->name != "saveload" && dialog->name != "GetTextDialog";
+	};
 	if(gui->HaveDialog(pred))
 		return ActionResult::Ignore;
 

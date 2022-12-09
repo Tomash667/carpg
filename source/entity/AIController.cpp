@@ -233,7 +233,7 @@ void AIController::Load(GameReader& f)
 		if(goto_inn)
 			unit->OrderGoToInn();
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_19)
 		f >> scanTimer;
 	else
 		scanTimer = Random(0.f, 0.2f);
