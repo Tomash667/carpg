@@ -711,7 +711,9 @@ public:
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	void RemoveEffect(EffectId effect);
+private:
 	void RemoveEffects(bool send = true);
+public:
 	uint RemoveEffects(EffectId effect, EffectSource source, int sourceId, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;

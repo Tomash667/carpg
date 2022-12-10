@@ -60,6 +60,7 @@ const float Unit::YELL_SOUND_DIST = 2.f;
 const float Unit::COUGHS_SOUND_DIST = 1.f;
 EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
+vector<int> effectsToRemove;
 
 //=================================================================================================
 Unit::~Unit()
@@ -1018,7 +1019,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 				{
 					if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
-						_toRemove.push_back(index);
+						effectsToRemove.push_back(index);
 				}
 
 				RemoveEffects();
@@ -1098,11 +1099,11 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 			&& (value == -1 || e.value == value)
 			&& (source == EffectSource::None || e.source == source)
 			&& (sourceId == -1 || e.sourceId == sourceId))
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 		++index;
 	}
 
-	uint count = _toRemove.size();
+	uint count = effectsToRemove.size();
 	RemoveEffects();
 	return count;
 }
@@ -1110,7 +1111,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
+	float regen = 0.f, tmpRegen = 0.f, poisonDmg = 0.f, alcoSum = 0.f, bestStamina = 0.f, staminaMod = 1.f, foodHeal = 0.f;
 
 	// update effects timer
 	for(uint index = 0, count = effects.size(); index < count; ++index)
@@ -1124,27 +1125,27 @@ void Unit::UpdateEffects(float dt)
 		case EffectId::Regeneration:
 			if(effect.source == EffectSource::Temporary && effect.power > 0.f)
 			{
-				if(effect.power > temp_regen)
-					temp_regen = effect.power;
+				if(effect.power > tmpRegen)
+					tmpRegen = effect.power;
 			}
 			else
 				regen += effect.power;
 			break;
 		case EffectId::Poison:
-			poison_dmg += effect.power;
+			poisonDmg += effect.power;
 			break;
 		case EffectId::Alcohol:
-			alco_sum += effect.power;
+			alcoSum += effect.power;
 			break;
 		case EffectId::FoodRegeneration:
-			food_heal += effect.power;
+			foodHeal += effect.power;
 			break;
 		case EffectId::StaminaRegeneration:
-			if(effect.power > best_stamina)
-				best_stamina = effect.power;
+			if(effect.power > bestStamina)
+				bestStamina = effect.power;
 			break;
 		case EffectId::StaminaRegenerationMod:
-			stamina_mod *= effect.power;
+			staminaMod *= effect.power;
 			break;
 		case EffectId::SlowMove:
 			effect.power = effect.time;
@@ -1155,7 +1156,7 @@ void Unit::UpdateEffects(float dt)
 		{
 			if((effect.time -= dt) <= 0.f)
 			{
-				_toRemove.push_back(index);
+				effectsToRemove.push_back(index);
 				if(Net::IsLocal() && effect.effect == EffectId::Rooted && effect.value == EffectValue_Rooted_Vines)
 				{
 					Effect e;
@@ -1178,10 +1179,10 @@ void Unit::UpdateEffects(float dt)
 		return;
 
 	// healing from food / regeneration
-	if(hp != hpmax && (regen > 0 || temp_regen > 0 || food_heal > 0))
+	if(hp != hpmax && (regen > 0 || tmpRegen > 0 || foodHeal > 0))
 	{
 		float natural = GetEffectMul(EffectId::NaturalHealingMod);
-		hp += ((regen + temp_regen) + natural * food_heal) * dt;
+		hp += ((regen + tmpRegen) + natural * foodHeal) * dt;
 		if(hp > hpmax)
 			hp = hpmax;
 		if(Net::IsOnline())
@@ -1193,9 +1194,9 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// update alcohol value
-	if(alco_sum > 0.f)
+	if(alcoSum > 0.f)
 	{
-		alcohol += alco_sum * dt;
+		alcohol += alcoSum * dt;
 		if(alcohol >= hpmax && liveState == ALIVE)
 			Fall();
 		if(IsPlayer() && !player->isLocal)
@@ -1211,13 +1212,13 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// update poison damage
-	if(poison_dmg != 0.f)
-		GiveDmg(poison_dmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
+	if(poisonDmg != 0.f)
+		GiveDmg(poisonDmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
-		if(Net::IsOnline() && !player->isLocal && player->lastDmgPoison != poison_dmg)
+		if(Net::IsOnline() && !player->isLocal && player->lastDmgPoison != poisonDmg)
 			player->playerInfo->updateFlags |= PlayerInfo::UF_POISON_DAMAGE;
-		player->lastDmgPoison = poison_dmg;
+		player->lastDmgPoison = poisonDmg;
 	}
 
 	// restore mana
@@ -1238,9 +1239,9 @@ void Unit::UpdateEffects(float dt)
 	if(staminaTimer > 0)
 	{
 		staminaTimer -= dt;
-		if(best_stamina > 0.f && stamina != staminaMax)
+		if(bestStamina > 0.f && stamina != staminaMax)
 		{
-			stamina += best_stamina * dt * stamina_mod;
+			stamina += bestStamina * dt * staminaMod;
 			if(stamina > staminaMax)
 				stamina = staminaMax;
 			if(Net::IsServer() && IsTeamMember())
@@ -1251,23 +1252,23 @@ void Unit::UpdateEffects(float dt)
 			}
 		}
 	}
-	else if(stamina != staminaMax && (staminaAction != SA_DONT_RESTORE || best_stamina > 0.f))
+	else if(stamina != staminaMax && (staminaAction != SA_DONT_RESTORE || bestStamina > 0.f))
 	{
-		float stamina_restore;
+		float staminaRestore;
 		switch(staminaAction)
 		{
 		case SA_RESTORE_MORE:
-			stamina_restore = 66.66f;
+			staminaRestore = 66.66f;
 			break;
 		case SA_RESTORE:
 		default:
-			stamina_restore = 33.33f;
+			staminaRestore = 33.33f;
 			break;
 		case SA_RESTORE_SLOW:
-			stamina_restore = 20.f;
+			staminaRestore = 20.f;
 			break;
 		case SA_DONT_RESTORE:
-			stamina_restore = 0.f;
+			staminaRestore = 0.f;
 			break;
 		}
 		switch(GetLoadState())
@@ -1277,18 +1278,18 @@ void Unit::UpdateEffects(float dt)
 		case LS_MEDIUM:
 			break;
 		case LS_HEAVY:
-			stamina_restore -= 1.f;
+			staminaRestore -= 1.f;
 			break;
 		case LS_OVERLOADED:
-			stamina_restore -= 2.5f;
+			staminaRestore -= 2.5f;
 			break;
 		case LS_MAX_OVERLOADED:
-			stamina_restore -= 5.f;
+			staminaRestore -= 5.f;
 			break;
 		}
-		if(stamina_restore < 0)
-			stamina_restore = 0;
-		stamina += ((staminaMax * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
+		if(staminaRestore < 0)
+			staminaRestore = 0;
+		stamina += ((staminaMax * staminaRestore / 100) + bestStamina) * dt * staminaMod;
 		if(stamina > staminaMax)
 			stamina = staminaMax;
 		if(Net::IsServer() && IsTeamMember())
@@ -1316,7 +1317,7 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 	}
 
 	uint index = 0;
-	float best_reg = 0.f, food = 0.f, natural_mod = 1.f, natural_tmp_mod = 1.f;
+	float bestReg = 0.f, food = 0.f, naturalMod = 1.f, naturalTmpMod = 1.f;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		bool remove = true;
@@ -1326,12 +1327,12 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 		{
 		case EffectId::Regeneration:
 			if(it->source == EffectSource::Permanent)
-				best_reg = -1.f;
-			else if(best_reg >= 0.f)
+				bestReg = -1.f;
+			else if(bestReg >= 0.f)
 			{
 				float regen = it->power * it->time;
-				if(regen > best_reg)
-					best_reg = regen;
+				if(regen > bestReg)
+					bestReg = regen;
 			}
 			break;
 		case EffectId::Poison:
@@ -1344,29 +1345,29 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 			if(it->source == EffectSource::Temporary)
 			{
 				float val = it->power * min((float)days, it->time) / days;
-				if(val > natural_tmp_mod)
-					natural_tmp_mod = val;
+				if(val > naturalTmpMod)
+					naturalTmpMod = val;
 			}
 			else
-				natural_mod *= it->power;
+				naturalMod *= it->power;
 			it->time -= days;
 			if(it->time > 0.f)
 				remove = false;
 			break;
 		}
 		if(remove)
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 	}
 
-	natural_mod *= natural_tmp_mod;
+	naturalMod *= naturalTmpMod;
 	if(outNaturalMod)
-		*outNaturalMod = natural_mod;
+		*outNaturalMod = naturalMod;
 
-	if(best_reg < 0.f)
+	if(bestReg < 0.f)
 		hp = hpmax; // hp regen from perk - full heal
 	else
 	{
-		hp += best_reg + food * natural_mod;
+		hp += bestReg + food * naturalMod;
 		if(hp < 1.f)
 			hp = 1.f;
 		else if(hp > hpmax)
@@ -1382,53 +1383,53 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 float Unit::GetEffectSum(EffectId effect) const
 {
 	float value = 0.f,
-		tmp_value = 0.f;
+		tmpValue = 0.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
 		{
 			if(e.source == EffectSource::Temporary && e.power > 0.f)
 			{
-				if(e.power > tmp_value)
-					tmp_value = e.power;
+				if(e.power > tmpValue)
+					tmpValue = e.power;
 			}
 			else
 				value += e.power;
 		}
 	}
-	return value + tmp_value;
+	return value + tmpValue;
 }
 
 //=================================================================================================
 float Unit::GetEffectMul(EffectId effect) const
 {
 	float value = 1.f,
-		tmp_value_low = 1.f,
-		tmp_value_high = 1.f;
+		tmpValueLow = 1.f,
+		tmpValueHigh = 1.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
 		{
 			if(e.source == EffectSource::Temporary)
 			{
-				if(e.power > tmp_value_high)
-					tmp_value_high = e.power;
-				else if(e.power < tmp_value_low)
-					tmp_value_low = e.power;
+				if(e.power > tmpValueHigh)
+					tmpValueHigh = e.power;
+				else if(e.power < tmpValueLow)
+					tmpValueLow = e.power;
 			}
 			else
 				value *= e.power;
 		}
 	}
-	return value * tmp_value_low * tmp_value_high;
+	return value * tmpValueLow * tmpValueHigh;
 }
 
 //=================================================================================================
 float Unit::GetEffectMulInv(EffectId effect) const
 {
 	float value = 1.f,
-		tmp_value_low = 1.f,
-		tmp_value_high = 1.f;
+		tmpValueLow = 1.f,
+		tmpValueHigh = 1.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
@@ -1436,16 +1437,16 @@ float Unit::GetEffectMulInv(EffectId effect) const
 			float power = (1.f - e.power);
 			if(e.source == EffectSource::Temporary)
 			{
-				if(power > tmp_value_high)
-					tmp_value_high = power;
-				else if(power < tmp_value_low)
-					tmp_value_low = power;
+				if(power > tmpValueHigh)
+					tmpValueHigh = power;
+				else if(power < tmpValueLow)
+					tmpValueLow = power;
 			}
 			else
 				value *= power;
 		}
 	}
-	return value * tmp_value_low * tmp_value_high;
+	return value * tmpValueLow * tmpValueHigh;
 }
 
 //=================================================================================================
@@ -1474,14 +1475,14 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 		return;
 	}
 
-	ITEM_SLOT item_slot = ItemTypeToSlot(item->type);
-	if(item_slot == SLOT_RING1 && slots[item_slot])
-		item_slot = SLOT_RING2;
+	ITEM_SLOT itemSlot = ItemTypeToSlot(item->type);
+	if(itemSlot == SLOT_RING1 && slots[itemSlot])
+		itemSlot = SLOT_RING2;
 
-	if(!slots[item_slot])
+	if(!slots[itemSlot])
 	{
-		slots[item_slot] = item;
-		ApplyItemEffects(item, item_slot);
+		slots[itemSlot] = item;
+		ApplyItemEffects(item, itemSlot);
 		--count;
 	}
 
@@ -3135,15 +3136,15 @@ void Unit::ReequipItems()
 	assert(Net::IsLocal());
 	if(net->activePlayers > 1)
 	{
-		const Item* prev_slots[SLOT_MAX];
+		const Item* prevSlots[SLOT_MAX];
 		for(int i = 0; i < SLOT_MAX; ++i)
-			prev_slots[i] = slots[i];
+			prevSlots[i] = slots[i];
 
 		ReequipItemsInternal();
 
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
+			if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_EQUIPMENT;
@@ -3160,38 +3161,38 @@ void Unit::ReequipItems()
 void Unit::ReequipItemsInternal()
 {
 	bool changes = false;
-	for(ItemSlot& item_slot : items)
+	for(ItemSlot& itemSlot : items)
 	{
-		if(!item_slot.item)
+		if(!itemSlot.item)
 			continue;
 
-		if(item_slot.item->type == IT_GOLD)
+		if(itemSlot.item->type == IT_GOLD)
 		{
-			gold += item_slot.count;
-			item_slot.item = nullptr;
+			gold += itemSlot.count;
+			itemSlot.item = nullptr;
 			changes = true;
 		}
-		else if(CanWear(item_slot.item))
+		else if(CanWear(itemSlot.item))
 		{
-			ITEM_SLOT slot = ItemTypeToSlot(item_slot.item->type);
+			ITEM_SLOT slot = ItemTypeToSlot(itemSlot.item->type);
 			assert(slot != SLOT_INVALID);
 
 			if(slots[slot])
 			{
-				if(slots[slot]->value < item_slot.item->value)
+				if(slots[slot]->value < itemSlot.item->value)
 				{
 					const Item* item = slots[slot];
 					RemoveItemEffects(item, slot);
-					ApplyItemEffects(item_slot.item, slot);
-					slots[slot] = item_slot.item;
-					item_slot.item = item;
+					ApplyItemEffects(itemSlot.item, slot);
+					slots[slot] = itemSlot.item;
+					itemSlot.item = item;
 				}
 			}
 			else
 			{
-				ApplyItemEffects(item_slot.item, slot);
-				slots[slot] = item_slot.item;
-				item_slot.item = nullptr;
+				ApplyItemEffects(itemSlot.item, slot);
+				slots[slot] = itemSlot.item;
+				itemSlot.item = nullptr;
 				changes = true;
 			}
 		}
@@ -3419,7 +3420,7 @@ void Unit::HealPoison()
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		if(it->effect == EffectId::Poison)
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 	}
 
 	RemoveEffects();
@@ -3434,7 +3435,7 @@ void Unit::RemoveEffect(EffectId effect)
 	{
 		if(it->effect == effect)
 		{
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 			if(it->IsVisible())
 				visible = true;
 		}
@@ -4187,14 +4188,14 @@ bool Unit::HaveEffect(EffectId e, int value) const
 //=================================================================================================
 void Unit::RemoveEffects(bool send)
 {
-	if(_toRemove.empty())
+	if(effectsToRemove.empty())
 		return;
 
 	send = (send && player && !player->IsLocal() && Net::IsServer());
 
-	while(!_toRemove.empty())
+	while(!effectsToRemove.empty())
 	{
-		uint index = _toRemove.back();
+		uint index = effectsToRemove.back();
 		Effect e = effects[index];
 		if(send)
 		{
@@ -4206,7 +4207,7 @@ void Unit::RemoveEffects(bool send)
 			c.a2 = e.value;
 		}
 
-		_toRemove.pop_back();
+		effectsToRemove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
@@ -5793,9 +5794,9 @@ void Unit::UpdateInventory(bool notify)
 {
 	bool changes = false;
 	int index = 0;
-	const Item* prev_slots[SLOT_MAX];
+	const Item* prevSlots[SLOT_MAX];
 	for(int i = 0; i < SLOT_MAX; ++i)
-		prev_slots[i] = slots[i];
+		prevSlots[i] = slots[i];
 
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
@@ -5830,7 +5831,7 @@ void Unit::UpdateInventory(bool notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
-				if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
+				if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 				{
 					NetChange& c = Add1(Net::changes);
 					c.unit = this;
