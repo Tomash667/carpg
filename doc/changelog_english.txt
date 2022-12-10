@@ -3,7 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.20 (???):
 ! cannot load saves from version 0.9 or older
-+ update libraries: Bullet Physics 3.2.4, DirectXMath 3.17b, FMod 2.02.11, zlib 1.2.13
++ update libraries: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, zlib 1.2.13
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):
