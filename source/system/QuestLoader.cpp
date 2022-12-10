@@ -32,7 +32,8 @@ enum Property
 	P_CODE,
 	P_DIALOG,
 	P_FLAGS,
-	P_PROPERTIES
+	P_PROPERTIES,
+	P_ALIAS
 };
 
 enum QuestKeyword
@@ -73,7 +74,8 @@ void QuestLoader::InitTokenizer()
 		{ "code", P_CODE },
 		{ "dialog", P_DIALOG },
 		{ "flags", P_FLAGS },
-		{ "properties", P_PROPERTIES }
+		{ "properties", P_PROPERTIES },
+		{ "alias", P_ALIAS }
 		});
 
 	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
@@ -137,11 +139,11 @@ void QuestLoader::ParseQuest(const string& id)
 			t.Next();
 			while(!t.IsSymbol('}'))
 			{
-				const string& progress_id = t.MustGetItem();
-				int p = quest->GetProgress(progress_id);
+				const string& progressId = t.MustGetItem();
+				int p = quest->GetProgress(progressId);
 				if(p != -1)
-					t.Throw("Progress %s already set.", progress_id.c_str());
-				quest->progress.push_back(progress_id);
+					t.Throw("Progress %s already set.", progressId.c_str());
+				quest->progress.push_back(progressId);
 				t.Next();
 			}
 			if(quest->progress.empty())
@@ -203,6 +205,20 @@ void QuestLoader::ParseQuest(const string& id)
 				}
 			}
 			break;
+		case P_ALIAS:
+			{
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					uint newHash = Hash(t.MustGetItem());
+					t.Next();
+					uint oldHash = Hash(t.MustGetItem());
+					quest->varAlias.push_back(std::make_pair(newHash, oldHash));
+					t.Next();
+				}
+			}
+			break;
 		}
 		t.Next();
 	}
@@ -231,19 +247,19 @@ void QuestLoader::ParseQuestList(const string& id)
 	while(!t.IsSymbol('}'))
 	{
 		QuestInfo* info;
-		const string& quest_id = t.MustGetItemKeyword();
-		if(quest_id == "none")
+		const string& questId = t.MustGetItemKeyword();
+		if(questId == "none")
 			info = nullptr;
 		else
 		{
-			info = questMgr->FindQuestInfo(quest_id);
+			info = questMgr->FindQuestInfo(questId);
 			if(!info)
-				t.Throw("Missing quest '%s'.", quest_id.c_str());
+				t.Throw("Missing quest '%s'.", questId.c_str());
 		}
 		for(QuestList::Entry& e : list->entries)
 		{
 			if(e.info == info)
-				t.Throw("Quest '%s' is already on list.", quest_id.c_str());
+				t.Throw("Quest '%s' is already on list.", questId.c_str());
 		}
 		t.Next();
 
@@ -323,10 +339,10 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 	int errors = 0;
 	bool skip = false;
 
-	const string& quest_id = t.MustGetItemKeyword();
-	QuestScheme* scheme = QuestScheme::TryGet(quest_id);
+	const string& questId = t.MustGetItemKeyword();
+	QuestScheme* scheme = QuestScheme::TryGet(questId);
 	if(!scheme)
-		t.Throw("Missing quest '%s'.", quest_id.c_str());
+		t.Throw("Missing quest '%s'.", questId.c_str());
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -364,12 +380,12 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 					int prev = -1;
 					while(!t.IsSymbol('}'))
 					{
-						int str_idx = dialog->strs.size();
+						int strIndex = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						if(prev == -1)
 						{
-							dialog->texts[index].index = str_idx;
+							dialog->texts[index].index = strIndex;
 							dialog->texts[index].exists = true;
 							prev = index;
 						}
@@ -377,7 +393,7 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 						{
 							index = dialog->texts.size();
 							dialog->texts[prev].next = index;
-							dialog->texts.push_back(GameDialog::Text(str_idx));
+							dialog->texts.push_back(GameDialog::Text(strIndex));
 							prev = index;
 						}
 						dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
@@ -385,9 +401,9 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 				}
 				else
 				{
-					int str_idx = dialog->strs.size();
+					int strIndex = dialog->strs.size();
 					dialog->strs.push_back(t.MustGetString());
-					dialog->texts[index].index = str_idx;
+					dialog->texts[index].index = strIndex;
 					dialog->texts[index].exists = true;
 					dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
 				}
@@ -492,10 +508,10 @@ void QuestLoader::Finalize()
 		uint props = type->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
-			int type_id;
-			bool is_ref;
-			type->GetProperty(i, nullptr, &type_id, nullptr, nullptr, nullptr, &is_ref);
-			if(!scriptMgr->CheckVarType(type_id, is_ref))
+			int typeId;
+			bool isRef;
+			type->GetProperty(i, nullptr, &typeId, nullptr, nullptr, nullptr, &isRef);
+			if(!scriptMgr->CheckVarType(typeId, isRef))
 			{
 				Error("Quest '%s' invalid property declaration '%s'.", scheme->id.c_str(), type->GetPropertyDeclaration(i));
 				++content.errors;

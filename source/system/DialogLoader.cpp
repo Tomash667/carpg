@@ -1211,12 +1211,14 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 				int prev = -1;
 				while(!t.IsSymbol('}'))
 				{
-					int str_idx = dialog->strs.size();
+					int strIdx = dialog->strs.size();
 					dialog->strs.push_back(t.MustGetString());
 					t.Next();
 					if(prev == -1)
 					{
-						dialog->texts[index].index = str_idx;
+						if(dialog->texts[index].exists)
+							LoadWarning("Duplicate text %d.", index);
+						dialog->texts[index].index = strIdx;
 						dialog->texts[index].exists = true;
 						prev = index;
 					}
@@ -1224,7 +1226,7 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 					{
 						index = dialog->texts.size();
 						dialog->texts[prev].next = index;
-						dialog->texts.push_back(GameDialog::Text(str_idx));
+						dialog->texts.push_back(GameDialog::Text(strIdx));
 						prev = index;
 					}
 					CheckDialogText(dialog, index, scripts);
@@ -1232,9 +1234,11 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 			}
 			else
 			{
-				int str_idx = dialog->strs.size();
+				if(dialog->texts[index].exists)
+					LoadWarning("Duplicate text %d.", index);
+				int strIdx = dialog->strs.size();
 				dialog->strs.push_back(t.MustGetString());
-				dialog->texts[index].index = str_idx;
+				dialog->texts[index].index = strIdx;
 				dialog->texts[index].exists = true;
 				CheckDialogText(dialog, index, scripts);
 			}

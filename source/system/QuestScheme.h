@@ -17,6 +17,7 @@ struct QuestScheme
 	QuestCategory category;
 	vector<GameDialog*> dialogs;
 	vector<string> progress;
+	vector<pair<uint, uint>> varAlias;
 	asITypeInfo* scriptType;
 	asIScriptFunction* fStartup, *fProgress, *fEvent, *fUpgrade;
 	DialogScripts scripts;
@@ -28,6 +29,7 @@ struct QuestScheme
 	~QuestScheme();
 	GameDialog* GetDialog(const string& id);
 	int GetProgress(const string& progressId);
+	int GetPropertyId(uint nameHash);
 
 	static vector<QuestScheme*> schemes;
 	static QuestScheme* TryGet(const string& id);

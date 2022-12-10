@@ -768,7 +768,7 @@ dialog captive {
 	1 "Follow me"
 	2 "I'm coming, I'm coming."
 	3 "Wait here"
-	4 "I can wait a moment ... Just do not forget about me!"
+	4 "I can wait a moment... Just do not forget about me!"
 	5 "Leave"
 	6 "You want to leave me here and just a walk away?!"
 	7 "Yes"
@@ -1010,7 +1010,7 @@ dialog q_bandits_master {
 	36 "Finally, some progress!"
 	37 "Let me see the letter."
 	38 "Oh! Encrypted! Do not expect that from a common bandits."
-	39 "Let's see ... This letter changed this way and that gives you..."
+	39 "Let's see... This letter changed this way and that gives you..."
 	40 "Piece of cake!"
 	41 "It is written here 'Meet the second leader in the camp at $camp_dir$ from $start_loc$, get the loot to vault - D.'"
 	42 "You should go there, bring a few guards. Talk to the captain of the guard."
@@ -1631,7 +1631,7 @@ dialog q_orcs2_gorush {
 	51 "Beware mora! They are strong warriors."
 	52 "And their leader is the most powerful orc I've ever seen."
 	53 "Something about yourself"
-	54 "Well ... As you probably know I'm an orc!"
+	54 "Well... As you probably know I'm an orc!"
 	55 "Not that I'm the hiding it or something."
 	56 "I come from a clan Wild tusk."
 	57 "I grew up in some dungeon."
@@ -1701,7 +1701,7 @@ dialog q_rescue_captive_end {
 
 //==============================================================================
 dialog q_rescue_captive_talk {
-	0 "Ehhh, I can handle it. But first, I need a drink ..."
+	0 "Ehhh, I can handle it. But first, I need a drink..."
 	1 "Thank the gods! Someone dared to rescue me, lazy guards are afraid to stick nose outside the city walls."
 	2 "Please take me to $start_loc$. Can I go after you?"
 	3 "Yes"

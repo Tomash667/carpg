@@ -87,10 +87,10 @@ void Quest_Scripted::Save(GameWriter& f)
 	f << props;
 	for(uint i = 0; i < props; ++i)
 	{
-		int type_id;
+		int typeId;
 		cstring name;
-		scheme->scriptType->GetProperty(i, &name, &type_id);
-		Var::Type varType = scriptMgr->GetVarType(type_id);
+		scheme->scriptType->GetProperty(i, &name, &typeId);
+		Var::Type varType = scriptMgr->GetVarType(typeId);
 		f << Hash(name);
 		void* ptr = instance->GetAddressOfProperty(i);
 		switch(varType)
@@ -190,10 +190,10 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 {
 	Quest::Load(f);
 
-	const string& scheme_id = f.ReadString1();
-	scheme = QuestScheme::TryGet(scheme_id);
+	const string& schemeId = f.ReadString1();
+	scheme = QuestScheme::TryGet(schemeId);
 	if(!scheme)
-		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
+		throw Format("Missing quest scheme '%s'.", schemeId.c_str());
 	f >> timeoutDays;
 	isNew = true;
 
@@ -211,24 +211,22 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	{
 		uint props;
 		f >> props;
-		const uint scheme_props = scheme->scriptType->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
-			uint name_hash;
-			f >> name_hash;
-			for(uint j = 0; j < scheme_props; ++j)
+			uint nameHash;
+			f >> nameHash;
+
+			int propId = scheme->GetPropertyId(nameHash);
+			if(propId != -1)
 			{
-				int type_id;
-				cstring name;
-				scheme->scriptType->GetProperty(j, &name, &type_id);
-				if(name_hash == Hash(name))
-				{
-					Var::Type varType = scriptMgr->GetVarType(type_id);
-					void* ptr = instance->GetAddressOfProperty(j);
-					LoadVar(f, varType, ptr);
-					break;
-				}
+				int typeId;
+				scheme->scriptType->GetProperty(propId, nullptr, &typeId);
+				Var::Type varType = scriptMgr->GetVarType(typeId);
+				void* ptr = instance->GetAddressOfProperty(propId);
+				LoadVar(f, varType, ptr);
 			}
+			else
+				Error("Missing quest %s property %u.", scheme->id.c_str(), nameHash);
 		}
 	}
 	else
@@ -238,12 +236,12 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		{
 			for(uint i = 0; i < props; ++i)
 			{
-				int type_id;
+				int typeId;
 				cstring name;
-				scheme->scriptType->GetProperty(i, &name, &type_id);
+				scheme->scriptType->GetProperty(i, &name, &typeId);
 				if(strcmp(name, "village") == 0 || strcmp(name, "counter") == 0)
 				{
-					Var::Type varType = scriptMgr->GetVarType(type_id);
+					Var::Type varType = scriptMgr->GetVarType(typeId);
 					void* ptr = instance->GetAddressOfProperty(i);
 					LoadVar(f, varType, ptr);
 				}
@@ -253,9 +251,9 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		{
 			for(uint i = 0; i < props; ++i)
 			{
-				int type_id;
-				scheme->scriptType->GetProperty(i, nullptr, &type_id);
-				Var::Type varType = scriptMgr->GetVarType(type_id);
+				int typeId;
+				scheme->scriptType->GetProperty(i, nullptr, &typeId);
+				Var::Type varType = scriptMgr->GetVarType(typeId);
 				void* ptr = instance->GetAddressOfProperty(i);
 				LoadVar(f, varType, ptr);
 			}
@@ -295,15 +293,15 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 		break;
 	case Var::Type::Item:
 		{
-			const string& item_id = f.ReadString1();
-			if(item_id.empty())
+			const string& itemId = f.ReadString1();
+			if(itemId.empty())
 				*(Item**)ptr = nullptr;
-			else if(item_id[0] != '$')
-				*(Item**)ptr = Item::Get(item_id);
+			else if(itemId[0] != '$')
+				*(Item**)ptr = Item::Get(itemId);
 			else
 			{
 				int questId = f.Read<int>();
-				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), questId, nullptr);
+				questMgr->AddQuestItemRequest((const Item**)ptr, itemId.c_str(), questId, nullptr);
 			}
 		}
 		break;
@@ -494,15 +492,15 @@ string Quest_Scripted::GetString(int index)
 	if(!text.formatted)
 		return str;
 
-	static string str_part;
-	static string dialog_s_text;
-	dialog_s_text.clear();
+	static string strPart;
+	static string dialogString;
+	dialogString.clear();
 
 	for(uint i = 0, len = str.length(); i < len; ++i)
 	{
 		if(str[i] == '$')
 		{
-			str_part.clear();
+			strPart.clear();
 			++i;
 			if(str[i] == '(')
 			{
@@ -517,7 +515,7 @@ string Quest_Scripted::GetString(int index)
 					else if(stage == 1)
 					{
 						string* result = (string*)ctx->GetAddressOfReturnValue();
-						dialog_s_text += *result;
+						dialogString += *result;
 					}
 				});
 				i = pos;
@@ -526,17 +524,17 @@ string Quest_Scripted::GetString(int index)
 			{
 				while(str[i] != '$')
 				{
-					str_part.push_back(str[i]);
+					strPart.push_back(str[i]);
 					++i;
 				}
-				dialog_s_text += FormatString(str_part);
+				dialogString += FormatString(strPart);
 			}
 		}
 		else
-			dialog_s_text.push_back(str[i]);
+			dialogString.push_back(str[i]);
 	}
 
-	return dialog_s_text.c_str();
+	return dialogString.c_str();
 }
 
 //=================================================================================================
