@@ -9,18 +9,6 @@
 #include "Team.h"
 #include "Unit.h"
 
-// pre V_0_10 compatibility
-namespace old
-{
-	enum Mode
-	{
-		Wander,
-		Wait,
-		Follow,
-		Leave
-	};
-}
-
 //=================================================================================================
 void Hero::Init(Unit& _unit)
 {
@@ -71,33 +59,6 @@ void Hero::Load(GameReader& f)
 	f >> name;
 	f >> knowName;
 	f >> teamMember;
-	if(LOAD_VERSION < V_0_10)
-	{
-		old::Mode mode;
-		f >> mode;
-		if(teamMember || mode == old::Leave)
-		{
-			UnitOrderEntry* order = UnitOrderEntry::Get();
-			switch(mode)
-			{
-			case old::Wander:
-				order->order = ORDER_WANDER;
-				break;
-			case old::Wait:
-				order->order = ORDER_WAIT;
-				break;
-			case old::Follow:
-				order->order = ORDER_FOLLOW;
-				team->GetLeaderRequest(&order->unit);
-				break;
-			case old::Leave:
-				order->order = ORDER_LEAVE;
-				break;
-			}
-			order->timer = 0.f;
-			unit->order = order;
-		}
-	}
 	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old following
 	f >> credit;

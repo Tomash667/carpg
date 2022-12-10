@@ -45,23 +45,4 @@ enum QUEST_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// pre V_0_10 compatibility
-namespace old
-{
-	enum QUEST_RUMOR
-	{
-		R_SAWMILL,
-		R_MINE,
-		R_CONTEST,
-		R_BANDITS,
-		R_MAGES,
-		R_MAGES2,
-		R_ORCS,
-		R_GOBLINS,
-		R_EVIL,
-		R_MAX
-	};
-}
-
-//-----------------------------------------------------------------------------
 #define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)

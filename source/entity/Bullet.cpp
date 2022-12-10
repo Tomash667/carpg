@@ -489,14 +489,7 @@ void Bullet::Load(GameReader& f)
 	if(LOAD_VERSION < V_0_16)
 		f.Skip<bool>();
 	f >> level;
-	if(LOAD_VERSION >= V_0_10)
-		f >> backstab;
-	else
-	{
-		int backstabValue;
-		f >> backstabValue;
-		backstab = 0.25f * (backstabValue + 1);
-	}
+	f >> backstab;
 	f >> startPos;
 	if(LOAD_VERSION >= V_0_18)
 		f >> isArrow;

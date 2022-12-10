@@ -1982,17 +1982,8 @@ void Unit::Load(GameReader& f)
 	data = UnitData::Get(f.ReadString1());
 
 	// items
-	bool can_sort = true;
-	int max_slots;
-	if(LOAD_VERSION >= V_0_10)
-		max_slots = SLOT_MAX;
-	else
-	{
-		max_slots = 5;
-		slots[SLOT_RING1] = nullptr;
-		slots[SLOT_RING2] = nullptr;
-	}
-	for(int i = 0; i < max_slots; ++i)
+	bool canSort = true;
+	for(int i = 0; i < SLOT_MAX; ++i)
 		f >> slots[i];
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
@@ -2007,7 +1998,7 @@ void Unit::Load(GameReader& f)
 			int quest_item_id = f.Read<int>();
 			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
+			canSort = false;
 		}
 	}
 	if(f.Read0())
@@ -2056,14 +2047,6 @@ void Unit::Load(GameReader& f)
 		stats->fixed = false;
 		stats->subprofile.value = 0;
 		stats->Load(f);
-		if(LOAD_VERSION < V_0_10)
-		{
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-			{
-				if(stats->skill[i] == -1)
-					stats->skill[i] = 0;
-			}
-		}
 	}
 	else
 	{
@@ -2072,9 +2055,6 @@ void Unit::Load(GameReader& f)
 		stats = data->GetStats(sub);
 	}
 	f >> gold;
-	bool old_invisible = false;
-	if(LOAD_VERSION < V_0_10)
-		f >> old_invisible;
 	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old inside_building
 	f >> toRemove;
@@ -2113,10 +2093,10 @@ void Unit::Load(GameReader& f)
 		eventHandler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
 		game->loadUnitHandler.push_back(this);
 	}
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		SortItems(items);
 	f >> weight;
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		RecalculateWeight();
 
 	Entity<Unit> guard_target;
@@ -2241,10 +2221,7 @@ void Unit::Load(GameReader& f)
 				act.shoot.ability = nullptr;
 			break;
 		case A_USE_USABLE:
-			if(LOAD_VERSION >= V_0_10)
-				f >> act.useUsable.rot;
-			else
-				act.useUsable.rot = 0.f;
+			f >> act.useUsable.rot;
 			break;
 		}
 
@@ -2296,33 +2273,16 @@ void Unit::Load(GameReader& f)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_0_10)
+	f.ReadVector4(effects);
+	if(LOAD_VERSION < V_0_14)
 	{
-		f.ReadVector4(effects);
-		if(LOAD_VERSION < V_0_14)
-		{
-			for(Effect& e : effects)
-			{
-				if(e.source == EffectSource::Perk)
-					e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
-			}
-		}
-	}
-	else
-	{
-		effects.resize(f.Read<uint>());
 		for(Effect& e : effects)
 		{
-			f >> e.effect;
-			f >> e.source;
-			f >> e.sourceId;
-			f >> e.time;
-			f >> e.power;
-			e.value = -1;
 			if(e.source == EffectSource::Perk)
 				e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
 		}
 	}
+
 	if(content.requireUpdate)
 	{
 		RemoveEffects(EffectId::None, EffectSource::Item, -1, -1);
@@ -2352,132 +2312,130 @@ void Unit::Load(GameReader& f)
 			dialog.priority = 0;
 	}
 
-	if(LOAD_VERSION >= V_0_10)
+	// events
+	events.resize(f.Read<uint>());
+	for(Event& e : events)
 	{
-		// events
-		events.resize(f.Read<uint>());
-		for(Event& e : events)
+		int questId;
+		f >> e.type;
+		f >> questId;
+		questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
 		{
-			int questId;
-			f >> e.type;
-			f >> questId;
-			questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
-			{
-				EventPtr event;
-				event.source = EventPtr::UNIT;
-				event.type = e.type;
-				event.unit = this;
-				e.quest->AddEventPtr(event);
-			});
-		}
+			EventPtr event;
+			event.source = EventPtr::UNIT;
+			event.type = e.type;
+			event.unit = this;
+			e.quest->AddEventPtr(event);
+		});
+	}
 
-		// orders
-		if(LOAD_VERSION >= V_0_12)
+	// orders
+	if(LOAD_VERSION >= V_0_12)
+	{
+		UnitOrderEntry* current_order = nullptr;
+		while(f.Read1())
 		{
-			UnitOrderEntry* current_order = nullptr;
-			while(f.Read1())
+			if(current_order)
 			{
-				if(current_order)
+				current_order->next = UnitOrderEntry::Get();
+				current_order = current_order->next;
+			}
+			else
+			{
+				order = UnitOrderEntry::Get();
+				current_order = order;
+			}
+
+			f >> current_order->order;
+			f >> current_order->timer;
+			switch(current_order->order)
+			{
+			case ORDER_FOLLOW:
+				f >> current_order->unit;
+				break;
+			case ORDER_LOOK_AT:
+				f >> current_order->pos;
+				break;
+			case ORDER_MOVE:
+				f >> current_order->pos;
+				f >> current_order->moveType;
+				if(LOAD_VERSION >= V_0_14)
+					f >> current_order->range;
+				else
+					current_order->range = 0.1f;
+				break;
+			case ORDER_ESCAPE_TO:
+				f >> current_order->pos;
+				break;
+			case ORDER_ESCAPE_TO_UNIT:
+				f >> current_order->unit;
+				f >> current_order->pos;
+				break;
+			case ORDER_GUARD:
+				f >> current_order->unit;
+				break;
+			case ORDER_AUTO_TALK:
+				f >> current_order->autoTalk;
+				if(const string& dialogId = f.ReadString1(); !dialogId.empty())
 				{
-					current_order->next = UnitOrderEntry::Get();
-					current_order = current_order->next;
+					current_order->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
+					int questId;
+					f >> questId;
+					if(questId != -1)
+						questMgr->AddQuestRequest(questId, &current_order->autoTalkQuest);
+					else
+						current_order->autoTalkQuest = nullptr;
 				}
 				else
 				{
-					order = UnitOrderEntry::Get();
-					current_order = order;
+					current_order->autoTalkDialog = nullptr;
+					current_order->autoTalkQuest = nullptr;
 				}
-
-				f >> current_order->order;
-				f >> current_order->timer;
-				switch(current_order->order)
-				{
-				case ORDER_FOLLOW:
-					f >> current_order->unit;
-					break;
-				case ORDER_LOOK_AT:
-					f >> current_order->pos;
-					break;
-				case ORDER_MOVE:
-					f >> current_order->pos;
-					f >> current_order->moveType;
-					if(LOAD_VERSION >= V_0_14)
-						f >> current_order->range;
-					else
-						current_order->range = 0.1f;
-					break;
-				case ORDER_ESCAPE_TO:
-					f >> current_order->pos;
-					break;
-				case ORDER_ESCAPE_TO_UNIT:
-					f >> current_order->unit;
-					f >> current_order->pos;
-					break;
-				case ORDER_GUARD:
-					f >> current_order->unit;
-					break;
-				case ORDER_AUTO_TALK:
-					f >> current_order->autoTalk;
-					if(const string& dialogId = f.ReadString1(); !dialogId.empty())
-					{
-						current_order->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
-						int questId;
-						f >> questId;
-						if(questId != -1)
-							questMgr->AddQuestRequest(questId, &current_order->autoTalkQuest);
-						else
-							current_order->autoTalkQuest = nullptr;
-					}
-					else
-					{
-						current_order->autoTalkDialog = nullptr;
-						current_order->autoTalkQuest = nullptr;
-					}
-					break;
-				}
-			}
-		}
-		else
-		{
-			UnitOrder unit_order;
-			float timer;
-			f >> unit_order;
-			f >> timer;
-			if(unit_order != ORDER_NONE)
-			{
-				order = UnitOrderEntry::Get();
-				order->order = unit_order;
-				order->timer = timer;
-				switch(order->order)
-				{
-				case ORDER_FOLLOW:
-					if(LOAD_VERSION >= V_0_11)
-						f >> order->unit;
-					else
-						team->GetLeaderRequest(&order->unit);
-					break;
-				case ORDER_LOOK_AT:
-					f >> order->pos;
-					break;
-				case ORDER_MOVE:
-					f >> order->pos;
-					f >> order->moveType;
-					order->range = 0.1f;
-					break;
-				case ORDER_ESCAPE_TO:
-					f >> order->pos;
-					break;
-				case ORDER_ESCAPE_TO_UNIT:
-					f >> order->unit;
-					f >> order->pos;
-					break;
-				case ORDER_GUARD:
-					f >> order->unit;
-					break;
-				}
+				break;
 			}
 		}
 	}
+	else
+	{
+		UnitOrder unit_order;
+		float timer;
+		f >> unit_order;
+		f >> timer;
+		if(unit_order != ORDER_NONE)
+		{
+			order = UnitOrderEntry::Get();
+			order->order = unit_order;
+			order->timer = timer;
+			switch(order->order)
+			{
+			case ORDER_FOLLOW:
+				if(LOAD_VERSION >= V_0_11)
+					f >> order->unit;
+				else
+					team->GetLeaderRequest(&order->unit);
+				break;
+			case ORDER_LOOK_AT:
+				f >> order->pos;
+				break;
+			case ORDER_MOVE:
+				f >> order->pos;
+				f >> order->moveType;
+				order->range = 0.1f;
+				break;
+			case ORDER_ESCAPE_TO:
+				f >> order->pos;
+				break;
+			case ORDER_ESCAPE_TO_UNIT:
+				f >> order->unit;
+				f >> order->pos;
+				break;
+			case ORDER_GUARD:
+				f >> order->unit;
+				break;
+			}
+		}
+	}
+
 	if(guard_target)
 	{
 		if(order)
@@ -2504,8 +2462,6 @@ void Unit::Load(GameReader& f)
 		player = new PlayerController;
 		player->unit = this;
 		player->Load(f);
-		if(LOAD_VERSION < V_0_10)
-			player->invisible = old_invisible;
 	}
 	else
 		player = nullptr;
@@ -2579,7 +2535,7 @@ void Unit::LoadStock(GameReader& f)
 		return;
 	}
 
-	bool can_sort = true;
+	bool canSort = true;
 	cnt.resize(count);
 	for(ItemSlot& slot : cnt)
 	{
@@ -2593,11 +2549,11 @@ void Unit::LoadStock(GameReader& f)
 			f >> questId;
 			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), questId, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
+			canSort = false;
 		}
 	}
 
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		SortItems(cnt);
 }
 

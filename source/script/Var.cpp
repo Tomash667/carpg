@@ -153,8 +153,6 @@ void Vars::Load(GameReader& f)
 		{
 			v = it->second;
 			byte type = f.Read<byte>();
-			if(LOAD_VERSION < V_0_10 && type >= (byte)Var::Type::Int2)
-				type += 4; // added more simple types
 			if(v->registered)
 				assert(v->type == (Var::Type)type);
 			else

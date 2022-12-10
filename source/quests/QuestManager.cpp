@@ -626,79 +626,15 @@ void QuestManager::Load(GameReader& f)
 	f >> questCounter;
 	f >> uniqueQuestsCompleted;
 	f >> uniqueCompletedShow;
-	if(LOAD_VERSION >= V_0_10)
+
+	// quest rumors
+	uint count;
+	f >> count;
+	questRumors.resize(count);
+	for(pair<int, string>& rumor : questRumors)
 	{
-		// quest rumors
-		uint count;
-		f >> count;
-		questRumors.resize(count);
-		for(pair<int, string>& rumor : questRumors)
-		{
-			f >> rumor.first;
-			f >> rumor.second;
-		}
-	}
-	else
-	{
-		f.Skip<int>(); // quest_rumor_counter
-		bool rumors[old::R_MAX];
-		f >> rumors;
-		for(int i = 0; i < old::R_MAX; ++i)
-		{
-			if(rumors[i])
-				continue;
-			cstring text;
-			QUEST_TYPE type;
-			switch((old::QUEST_RUMOR)i)
-			{
-			case old::R_SAWMILL:
-				type = Q_SAWMILL;
-				text = Format(txRumorQ[0], questSawmill->startLoc->name.c_str());
-				break;
-			case old::R_MINE:
-				type = Q_MINE;
-				text = Format(txRumorQ[1], questMine->startLoc->name.c_str());
-				break;
-			case old::R_CONTEST:
-				type = Q_FORCE_NONE;
-				text = txRumorQ[2];
-				break;
-			case old::R_BANDITS:
-				type = Q_BANDITS;
-				text = Format(txRumorQ[3], questBandits->startLoc->name.c_str());
-				break;
-			case old::R_MAGES:
-				type = Q_MAGES;
-				text = Format(txRumorQ[4], questMages->startLoc->name.c_str());
-				break;
-			case old::R_MAGES2:
-				type = Q_MAGES2;
-				text = txRumorQ[5];
-				break;
-			case old::R_ORCS:
-				type = Q_ORCS;
-				text = Format(txRumorQ[6], questOrcs->startLoc->name.c_str());
-				break;
-			case old::R_GOBLINS:
-				type = Q_GOBLINS;
-				text = Format(txRumorQ[7], questGoblins->startLoc->name.c_str());
-				break;
-			case old::R_EVIL:
-				type = Q_EVIL;
-				text = Format(txRumorQ[8], questEvil->startLoc->name.c_str());
-				break;
-			}
-			if(type == Q_FORCE_NONE)
-			{
-				questContest->rumor = questCounter++;
-				questRumors.push_back(pair<int, string>(questContest->rumor, text));
-			}
-			else
-			{
-				Quest* quest = FindQuest(type);
-				questRumors.push_back(pair<int, string>(quest->id, text));
-			}
-		}
+		f >> rumor.first;
+		f >> rumor.second;
 	}
 
 	// force quest

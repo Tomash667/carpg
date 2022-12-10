@@ -2,6 +2,7 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.20 (???):
+! nie można wczytywać już zapisów z wersji 0.9 lub starszej
 + aktualizacja bibliotek: Bullet Physics 3.2.4, DirectXMath 3.17b, FMod 2.02.11, zlib 1.2.13
 
 --------------------------------------------------------------------------------

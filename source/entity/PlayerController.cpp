@@ -530,10 +530,7 @@ void PlayerController::Load(GameReader& f)
 	else
 		nocd = false;
 	f >> noclip;
-	if(LOAD_VERSION >= V_0_10)
-		f >> invisible;
-	else
-		invisible = false;
+	f >> invisible;
 	f >> id;
 	f >> freeDays;
 	f >> kills;
@@ -623,37 +620,30 @@ void PlayerController::Load(GameReader& f)
 	f >> exp;
 	f >> expLevel;
 	expNeed = GetExpNeed();
-	if(LOAD_VERSION >= V_0_10)
-		f >> lastRing;
-	else
-		lastRing = false;
-	if(LOAD_VERSION >= V_0_10)
+	f >> lastRing;
+
+	for(Shortcut& shortcut : shortcuts)
 	{
-		for(Shortcut& shortcut : shortcuts)
+		f >> shortcut.type;
+		switch(shortcut.type)
 		{
-			f >> shortcut.type;
-			switch(shortcut.type)
+		case Shortcut::TYPE_SPECIAL:
+			f >> shortcut.value;
+			if(shortcut.value == Shortcut::SPECIAL_ABILITY_OLD)
 			{
-			case Shortcut::TYPE_SPECIAL:
-				f >> shortcut.value;
-				if(shortcut.value == Shortcut::SPECIAL_ABILITY_OLD)
-				{
-					shortcut.type = Shortcut::TYPE_ABILITY;
-					shortcut.ability = abilities[0].ability;
-				}
-				break;
-			case Shortcut::TYPE_ITEM:
-				shortcut.item = Item::Get(f.ReadString1());
-				break;
-			case Shortcut::TYPE_ABILITY:
-				shortcut.ability = Ability::Get(f.Read<int>());
-				break;
+				shortcut.type = Shortcut::TYPE_ABILITY;
+				shortcut.ability = abilities[0].ability;
 			}
-			shortcut.trigger = false;
+			break;
+		case Shortcut::TYPE_ITEM:
+			shortcut.item = Item::Get(f.ReadString1());
+			break;
+		case Shortcut::TYPE_ABILITY:
+			shortcut.ability = Ability::Get(f.Read<int>());
+			break;
 		}
+		shortcut.trigger = false;
 	}
-	else
-		InitShortcuts();
 
 	action = PlayerAction::None;
 }
