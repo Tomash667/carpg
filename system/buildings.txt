@@ -520,3 +520,36 @@ building_script village {
 	set count = citizens
 	group cottage
 }
+
+building_script village_empty {
+	village_hall
+	set citizens = 5 + random(0,2)
+	shuffle start
+		merchant
+		food_seller
+		village_inn
+		if rand 2
+			blacksmith
+			inc counter
+			inc citizens
+		endif
+		if rand 2
+			training_grounds
+			inc counter
+			inc citizens
+		endif
+		if counter < 2
+			if rand 2
+				alchemist
+				inc citizens
+			endif
+		endif
+	shuffle end
+	barracks
+	windmill
+	set citizens_world = 0
+	required off
+	set count = citizens
+	group cottage
+	set citizens = 0
+}

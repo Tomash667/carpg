@@ -15,10 +15,13 @@ Core library
 ### Core types
 * Int2 - 2d int point x, y.
 * Vec2 - 2d vector x, y. Static methods:
-  * float Distance(const Vec2& in v1, const Vec2& in v2);
+	* float Distance(const Vec2& in v1, const Vec2& in v2);
 * Vec3 - 3d vector x, y, z. Static methods:
-  * float Distance(const Vec3& in v1, const Vec3& in v2);
+	* float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
+* Box2d - 2d area with two Vec2 v1 and v2. Methods:
+	* float SizeX() const - return x size.
+	* float SizeY() const - return y size.
 * string
 	* string Upper() const - return string with first letter uppercase.
 
@@ -65,6 +68,7 @@ Game enums & consts
 * EVENT_DIE - for units, send when unit dies.
 * EVENT_TIMEOUT - for quests, send when quest timeout expired.
 * EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
+* EVENT_USE - for item event handler, currently only works for books.
 
 ### Enum flags ITEM_FLAGS
 * ITEM_NOT_SHOP - not generated in shop.
@@ -108,6 +112,7 @@ Game enums & consts
 * LI_CAPITAL
 * LI_HUNTERS_CAMP
 * LI_HILLS
+* LI_VILLAGE_DESTROYED
 
 ### Enum LOCATION_TARGET
 * FOREST
@@ -132,6 +137,7 @@ Game enums & consts
 * THRONE_VAULT
 * HUNTERS_CAMP
 * HILLS
+* VILLAGE_EMPTY
 
 ### Enum MOVE_TYPE
 * MOVE_RUN - always run.
@@ -315,8 +321,9 @@ Properties:
 
 * EVENT event
 * Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
-* Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE.
-* GroundItem@ item - used for EVENT_PICKUP.
+* Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE.
+* GroundItem@ groundItem - used for EVENT_PICKUP.
+* Item@ item - used for EVENT_USE.
 * MapSettings@ mapSettings - used for EVENT_GENERATE.
 * int stage - used for EVENT_GENERATE, stage 0 is before generating (can use mapSettings), stage 1 is after.
 * bool cancel - set to true to cancel default handling of this event.
@@ -427,6 +434,7 @@ Instance of quest.
 Properties:
 
 * QUEST_STATE state - readonly
+* int progress
 * int timeout - readonly, days until timeout
 
 Methods:
@@ -449,6 +457,8 @@ Static methods:
 
 * Quest@ Find(const string& in id) - return quest with id (only works for unique quests).
 * int CalculateReward(int st, const Int2& in stRange, const Int2& in reward) - calculate reward from value range.
+* void AddItemEventHandler(Quest@, Item@) - add event handler for player using item.
+* void RemoveItemEventHandler(Quest@, Item@) - remove event handler for player using item.
 
 ### Spawn type
 Contains information about unit to spawn (template, level).
@@ -501,8 +511,8 @@ Methods:
 * bool IsFollowing(Unit@) - true if following unit.
 * bool IsEnemy(Unit@) - true if unit is enemy.
 * float GetHpp() - get health percentage 0..1.
-* void Add
-* Item(Item@ item, uint count = 1) - add item, will show message.
+* bool HaveItem(Item@ item) - check if unit have item.
+* void AddItem(Item@ item, uint count = 1) - add item, will show message.
 * void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
 * uint RemoveItem(const string& in itemId, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 * uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
@@ -595,6 +605,7 @@ Static methods:
 * GroundItem@ FindItem(Item@) - finds first item.
 * GroundItem@ FindNearestItem(Item@, const Vec3& in pos) - finds nearest item.
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
+* GroundItem@ SpawnItem(LocationPart@, Item@) - spawn item inside building.
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
 * GroundItem@ SpawnItemInsideAnyRoom(Item@) - spawn item in random room on floor.
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
@@ -662,6 +673,7 @@ Static properties:
 
 Static methods:
 
+* Box2d GetArea() - return world area.
 * uint GetSettlements() - return count of settlements.
 * Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
@@ -669,6 +681,7 @@ Static methods:
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
 * Vec2 FindPlace(const Vec2& in pos, float range, bool allowExact = false) - find place for location inside range.
 * Vec2 FindPlace(const Vec2& in pos, float minRange, float maxRange) - find place for location inside range.
+* Vec2 FindPlace(const Box2d& in box) - find place for location inside region.
 * bool TryFindPlace(Vec2& pos, float range, bool allowExact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
 * Location@ GetRandomCity() - returns random city (not village).

@@ -3873,7 +3873,7 @@ void Game::OnEnterLevelOrLocation()
 		if(e.type == EVENT_ENTER)
 		{
 			ScriptEvent event(EVENT_ENTER);
-			event.onEnter.location = gameLevel->location;
+			event.location = gameLevel->location;
 			e.quest->FireEvent(event);
 		}
 	}

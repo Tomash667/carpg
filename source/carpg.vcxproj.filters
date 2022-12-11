@@ -672,6 +672,9 @@
     <ClCompile Include="helpers\LocationContext.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="script\ScriptContext.cpp">
+      <Filter>script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1324,6 +1327,9 @@
     </ClInclude>
     <ClInclude Include="helpers\LocationContext.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ScriptContext.h">
+      <Filter>script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -307,6 +307,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* Project Divinity
 	* HorrorPen - Winds of Stories
 	* For Originz - Kevin MacLeod (incompetech.com)
+	* Ruined City Theme - Music by Cleyton Kauffman - https://soundcloud.com/cleytonkauffman
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
 	* https://opengameart.org

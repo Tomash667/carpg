@@ -2954,8 +2954,8 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						if(event.type == EVENT_PICKUP)
 						{
 							ScriptEvent e(EVENT_PICKUP);
-							e.onPickup.unit = unit;
-							e.onPickup.item = groundItem;
+							e.unit = unit;
+							e.groundItem = groundItem;
 							event.quest->FireEvent(e);
 						}
 					}
@@ -3440,6 +3440,7 @@ void PlayerController::ReadBook(int index)
 	{
 		if(unit->usable) // can't use when sitting
 			return;
+
 		if(Net::IsLocal())
 		{
 			unit->action = A_USE_ITEM;
@@ -3462,6 +3463,7 @@ void PlayerController::ReadBook(int index)
 	}
 	else
 	{
+		bool useItemSent = false;
 		if(!book.recipes.empty())
 		{
 			int skill = unit->GetBase(SkillId::ALCHEMY);
@@ -3502,11 +3504,22 @@ void PlayerController::ReadBook(int index)
 					c.type = NetChange::USE_ITEM;
 					c.id = index;
 					unit->action = A_PREPARE;
+					useItemSent = true;
 				}
 			}
 		}
 
 		if(!IsSet(book.flags, ITEM_SINGLE_USE))
+		{
+			if(Net::IsLocal())
+				questMgr->CheckItemEventHandler(unit, &book);
+			else if(!useItemSent)
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.id = index;
+			}
 			gameGui->book->Show(&book);
+		}
 	}
 }

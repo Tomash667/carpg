@@ -11,7 +11,8 @@ enum EventType
 	EVENT_ENCOUNTER,
 	EVENT_DIE,
 	EVENT_CLEARED,
-	EVENT_GENERATE
+	EVENT_GENERATE,
+	EVENT_USE
 };
 
 //-----------------------------------------------------------------------------
@@ -53,40 +54,16 @@ struct ScriptEvent
 	EventType type;
 	union
 	{
-		struct OnCleared
-		{
-			Location* location;
-		} onCleared;
-		struct OnDie
-		{
-			Unit* unit;
-		} onDie;
-		struct OnEncounter
-		{
-		} onEncounter;
-		struct OnEnter
-		{
-			Location* location;
-		} onEnter;
-		struct OnGenerate
-		{
-			Location* location;
-			MapSettings* mapSettings;
-			int stage;
-		} onGenerate;
-		struct OnPickup
-		{
-			Unit* unit;
-			GroundItem* item;
-		} onPickup;
-		struct OnTimeout
-		{
-		} onTimeout;
-		struct OnUpdate
-		{
-			Unit* unit;
-		} onUpdate;
+		Location* location; // EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE
+		Unit* unit; // EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE
 	};
+	union
+	{
+		GroundItem* groundItem; // EVENT_PICKUP
+		const Item* item; // EVENT_USE
+		MapSettings* mapSettings; // EVENT_GENERATE
+	};
+	int stage; // EVENT_GENERATE
 	bool cancel;
 
 	ScriptEvent(EventType type) : type(type), cancel(false) {}

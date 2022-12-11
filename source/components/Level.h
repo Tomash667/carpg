@@ -175,6 +175,7 @@ public:
 	MusicType GetLocationMusic();
 	void CleanLevel(int buildingId = -2);
 	GroundItem* SpawnItem(const Item* item, const Vec3& pos);
+	GroundItem* SpawnItemNearLocation(LocationPart& locPart, const Item* item);
 	GroundItem* SpawnItemAtObject(const Item* item, Object* obj);
 	void SpawnItemRandomly(const Item* item, uint count);
 	Unit* GetNearestEnemy(Unit* unit);

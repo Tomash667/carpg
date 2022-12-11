@@ -32,25 +32,28 @@ void Quest2::RemoveEvent(ScriptEvent& event)
 	switch(event.type)
 	{
 	case EVENT_ENTER:
-		event.onEnter.location->RemoveEventHandler(this, EVENT_ENTER, false);
+		event.location->RemoveEventHandler(this, EVENT_ENTER, false);
 		break;
 	case EVENT_PICKUP:
-		event.onPickup.unit->RemoveEventHandler(this, EVENT_PICKUP, false);
+		event.unit->RemoveEventHandler(this, EVENT_PICKUP, false);
 		break;
 	case EVENT_UPDATE:
-		event.onUpdate.unit->RemoveEventHandler(this, EVENT_UPDATE, false);
+		event.unit->RemoveEventHandler(this, EVENT_UPDATE, false);
 		break;
 	case EVENT_TIMEOUT:
 	case EVENT_ENCOUNTER:
 		break;
 	case EVENT_DIE:
-		event.onDie.unit->RemoveEventHandler(this, EVENT_DIE, false);
+		event.unit->RemoveEventHandler(this, EVENT_DIE, false);
 		break;
 	case EVENT_CLEARED:
-		event.onCleared.location->RemoveEventHandler(this, EVENT_CLEARED, false);
+		event.location->RemoveEventHandler(this, EVENT_CLEARED, false);
 		break;
 	case EVENT_GENERATE:
-		event.onGenerate.location->RemoveEventHandler(this, EVENT_GENERATE, false);
+		event.location->RemoveEventHandler(this, EVENT_GENERATE, false);
+		break;
+	case EVENT_USE:
+		questMgr->RemoveItemEventHandler(this, event.item);
 		break;
 	}
 }

@@ -1459,7 +1459,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'c': // unit
-			if(!recreate)
+			if(!recreate && city->citizens > 0)
 			{
 				UnitData* ud = UnitData::TryGet(token.c_str());
 				assert(ud);
@@ -3392,7 +3392,7 @@ void Level::CheckIfLocationCleared()
 			if(e.type == EVENT_CLEARED)
 			{
 				ScriptEvent event(EVENT_CLEARED);
-				event.onCleared.location = location;
+				event.location = location;
 				e.quest->FireEvent(event);
 			}
 		}
@@ -4073,13 +4073,13 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && location->target != VILLAGE;
+	return location->type == L_CITY && static_cast<City*>(location)->IsCity();
 }
 
 //=================================================================================================
 bool Level::IsVillage()
 {
-	return location->type == L_CITY && location->target == VILLAGE;
+	return location->type == L_CITY && static_cast<City*>(location)->IsVillage();
 }
 
 //=================================================================================================
@@ -4174,7 +4174,10 @@ MusicType Level::GetLocationMusic()
 	switch(location->type)
 	{
 	case L_CITY:
-		return MusicType::City;
+		if(location->target == VILLAGE_EMPTY)
+			return MusicType::EmptyCity;
+		else
+			return MusicType::City;
 	case L_DUNGEON:
 	case L_CAVE:
 		if(Any(location->target, HERO_CRYPT, MONSTER_CRYPT))
@@ -4234,6 +4237,27 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	groundItem->pos = pos;
 	groundItem->item = item;
 	localPart->AddGroundItem(groundItem);
+	return groundItem;
+}
+
+//=================================================================================================
+GroundItem* Level::SpawnItemNearLocation(LocationPart& locPart, const Item* item)
+{
+	assert(locPart.partType == LocationPart::Type::Building); // not implemented
+
+	InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
+	Vec3 pos;
+	if(!WarpToRegion(locPart, building.region1, 0.3f, pos))
+		return nullptr;
+
+	GroundItem* groundItem = new GroundItem;
+	groundItem->Register();
+	groundItem->count = 1;
+	groundItem->teamCount = 1;
+	groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+	groundItem->pos = pos;
+	groundItem->item = item;
+	locPart.AddGroundItem(groundItem);
 	return groundItem;
 }
 

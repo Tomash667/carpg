@@ -42,6 +42,6 @@ private:
 
 	asIScriptObject* instance;
 	JournalState journalState;
-	int journalChanges, cellDepth;
+	int journalChanges, callDepth;
 	bool inUpgrade;
 };

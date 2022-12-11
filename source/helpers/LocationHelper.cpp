@@ -75,7 +75,7 @@ Unit* LocationHelper::GetMayor(Location* loc)
 		return nullptr;
 	City* city = static_cast<City*>(loc);
 	cstring unit_id;
-	if(city->target == VILLAGE)
+	if(city->IsVillage())
 		unit_id = "soltys";
 	else
 		unit_id = "mayor";

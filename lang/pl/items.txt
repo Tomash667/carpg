@@ -1146,6 +1146,11 @@ item book_q_cleric {
 	desc "Zawiera opisy i sposoby leczenia wielu chorób. Niestety jest zapisana runami."
 	text "Description\nA disease or medical condition is an unhealthy state where something bad happens to the body or mind.[1] Diseases can cause pain, parts of the body to stop working the right way, or death.\nCauses\nA disease can be caused by many things. Sometimes germs enter our body through food, water or air. A person can be infected by infectious agents like bacteria, viruses or fungus. Disease can also be caused by eating bad or old foods. There are small germs in old foods that can cause diseases. Sometimes the germs produce chemicals or toxins which causes the disease.\nOne of the most common causes of disease is poor sanitation and lack of clean water. Some deadly diseases like malaria in tropical parts of the world are spread by a mosquito. Animals that spread disease are called vectors. There are many vectors, including snails, ticks, and fleas.\nSome people are born with 'genetic diseases'. These are diseases because of an error or mutation in a person's DNA. An example of a mutation is cancer. Living or working in an unhealthy environment can also be a cause for diseases. Diseases are more common in older people."
 }
+item book_q_journal {
+	name "Dziennik so³tysa"
+	desc "Znaleziony w opuszczonej wiosce."
+	text "  Poniedzia³ek - znowu zagin¹³ gdzieœ Dominik, miejscowy pijaczek. Pewnie znowu le¿y zachlany w krzakach.\n\n  Wtorek - kolejny dzieñ nikt nie widzia³ Dominika. Dodatkowo zniknê³o dwóch goœci karczmy. No chyba ¿e wymknêli siê w œrodku nocy bez p³acenia.\n\n  Œroda - piêæ nowych osób zniknê³ bez œladu. Co tu siê dzieje? Rozkaza³em stra¿nikom pilnowaæ drogi do wioski dzieñ i noc.\n\n  Czwartek - gdy rano siê obudzi³em nie spotka³em nikogo w wiosce! Idê przeszukaæ okolicê, mam pewne podejrzenia. Zostawiam tu mój dziennik w razie gdybym nie wróci³. Obym siê myli³..."
+}
 item crypt_note {
 	name "Stara notatka"
 	text "https://youtu.be/LJ5nV9aKthU"

@@ -1743,9 +1743,9 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.item.base is herb)
+				if(e.groundItem.base is herb)
 				{
-					if(lastItem is e.item)
+					if(lastItem is e.groundItem)
 						@lastItem = null;
 					GroundItem@ item = Level::FindItem(herb);
 					if(item is null)
@@ -1848,6 +1848,7 @@ quest main
 		P_MAIN_CLERIC_RETURNED
 		P_MAIN_CLERIC_RETURNED_TALKED
 		P_MAIN_CLERIC_IN_VILLAGE
+		P_MAIN_CLERIC_GO_TO_VILLAGES
 	}
 
 	dialog trainer {
@@ -2000,6 +2001,22 @@ quest main
 		case P_MAIN_CLERIC_IN_VILLAGE
 			talk 11
 			talk 12
+			talk 13
+			set_quest_progress P_MAIN_CLERIC_GO_TO_VILLAGES
+			talk 14
+			talk 15
+		case P_MAIN_CLERIC_GO_TO_VILLAGES
+			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"main_village1\").progress == P_MAIN_V1_READ"
+			{
+				do_once
+				talk 18
+				script "FinishVillageQuest(1);"
+				talk 19
+			}
+			if once
+				talk 16
+			else
+				talk 17
 		}
 		
 		if choices > 0
@@ -2275,7 +2292,24 @@ quest main
 				}
 				quest.AddEntry(TEXT(15));
 				break;
+			case P_MAIN_CLERIC_GO_TO_VILLAGES:
+				{
+					Vars vars;
+					vars["cleric"] = cleric;
+					Quest::Find("main_village1").Start(vars);
+					//Quest::Find("main_village2").Start();
+					//Quest::Find("main_village3").Start();
+					//Quest::Find("main_village4").Start();
+					// TODO: shuffle
+					quest.AddEntry(TEXT(16));
+				}
+				break;
 			}
+		}
+		
+		void FinishVillageQuest(int index)
+		{
+			Quest::Find("main_village1").progress = P_MAIN_V1_DONE;
 		}
 	}
 }
@@ -2347,7 +2381,7 @@ quest side_cleric
 
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_PICKUP && e.item.base is book)
+			if(e.event == EVENT_PICKUP && e.groundItem.base is book)
 			{
 				progress = P_CLERIC_PICKED;
 				Level::location.RemoveEventHandler(quest);
@@ -2395,6 +2429,92 @@ quest dire_wolf
 			end
 		}
 		end
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 1 (empty)
+//=============================================================================
+quest main_village1
+{
+	type unique
+	progress {
+		P_MAIN_V1_NONE
+		P_MAIN_V1_START
+		P_MAIN_V1_ENTER
+		P_MAIN_V1_READ
+		P_MAIN_V1_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			progress = P_MAIN_V1_START;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V1_START:
+				{
+					Box2d area = World::GetArea();
+					area.v2.x = area.SizeX() / 2;
+					area.v2.y = area.SizeY() / 2;
+					Vec2 pos;
+					for(int i=0; i<20; ++i)
+					{
+						pos = World::FindPlace(area);
+						Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
+						if(Vec2::Distance(pos, nearCity.pos) > 100.f)
+							break;
+					}
+					
+					@village = World::CreateLocation(L_CITY, pos, VILLAGE_EMPTY);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V1_ENTER:
+				{
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					quest.AddEntry(TEXT(4));
+					LocationPart@ part = village.GetBuildingLocationPart("hall");
+					Item@ item = Item::Get("book_q_journal");
+					Level::SpawnItem(part, item);
+					Quest::AddItemEventHandler(quest, item);
+				}
+				break;
+			case P_MAIN_V1_READ:
+				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_MAIN_V1_DONE:
+				quest.AddEntry(TEXT(6));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("book_q_journal"));
+				Team::AddReward(1000, 4000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V1_ENTER;
+			else
+				progress = P_MAIN_V1_READ;
+		}
 	}
 }
 

@@ -19,7 +19,7 @@
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), cellDepth(0), inUpgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), callDepth(0), inUpgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -364,20 +364,20 @@ GameDialog* Quest_Scripted::GetDialog(const string& dialog_id)
 //=================================================================================================
 void Quest_Scripted::BeforeCall()
 {
-	if(cellDepth == 0)
+	if(callDepth == 0)
 	{
 		journalState = JournalState::None;
 		journalChanges = 0;
-		scriptMgr->GetContext().quest = this;
+		scriptMgr->GetContext().SetQuest(this);
 	}
-	++cellDepth;
+	++callDepth;
 }
 
 //=================================================================================================
 void Quest_Scripted::AfterCall()
 {
-	--cellDepth;
-	if(cellDepth != 0)
+	--callDepth;
+	if(callDepth != 0)
 		return;
 	if(journalChanges || journalState == JournalState::Changed)
 	{
@@ -391,7 +391,7 @@ void Quest_Scripted::AfterCall()
 			c.count = journalChanges;
 		}
 	}
-	scriptMgr->GetContext().quest = nullptr;
+	scriptMgr->GetContext().SetQuest(nullptr);
 }
 
 //=================================================================================================
@@ -482,7 +482,6 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 //=================================================================================================
 string Quest_Scripted::GetString(int index)
 {
-	assert(scriptMgr->GetContext().quest == this);
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
@@ -492,10 +491,15 @@ string Quest_Scripted::GetString(int index)
 	if(!text.formatted)
 		return str;
 
-	static string strPart;
-	static string dialogString;
-	dialogString.clear();
+	ScriptContext& ctx = scriptMgr->GetContext();
+	bool restoreQuest = false;
+	if(ctx.quest != this)
+	{
+		ctx.SetQuest(this);
+		restoreQuest = true;
+	}
 
+	LocalString strPart, dialogString;
 	for(uint i = 0, len = str.length(); i < len; ++i)
 	{
 		if(str[i] == '$')
@@ -524,15 +528,18 @@ string Quest_Scripted::GetString(int index)
 			{
 				while(str[i] != '$')
 				{
-					strPart.push_back(str[i]);
+					strPart += str[i];
 					++i;
 				}
 				dialogString += FormatString(strPart);
 			}
 		}
 		else
-			dialogString.push_back(str[i]);
+			dialogString += str[i];
 	}
+
+	if(restoreQuest)
+		ctx.SetQuest(nullptr);
 
 	return dialogString.c_str();
 }

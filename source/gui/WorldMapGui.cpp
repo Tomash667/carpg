@@ -96,6 +96,7 @@ void WorldMapGui::LoadData()
 	tMapIcon[LI_CAPITAL] = resMgr->Load<Texture>("capital.png");
 	tMapIcon[LI_HUNTERS_CAMP] = resMgr->Load<Texture>("hunters_camp.png");
 	tMapIcon[LI_HILLS] = resMgr->Load<Texture>("hills.png");
+	tMapIcon[LI_VILLAGE_DESTROYED] = resMgr->Load<Texture>("village_destroyed.png");
 	tWorldMap = resMgr->Load<Texture>("worldmap.jpg");
 	tSelected[0] = resMgr->Load<Texture>("selected.png");
 	tSelected[1] = resMgr->Load<Texture>("selected2.png");

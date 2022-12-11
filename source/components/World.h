@@ -128,6 +128,7 @@ public:
 	bool TryFindPlace(Vec2& pos, float range, bool allowExact = false);
 	Vec2 FindPlace(const Vec2& pos, float range, bool allowExact = false);
 	Vec2 FindPlace(const Vec2& pos, float minRange, float maxRange);
+	Vec2 FindPlace(const Box2d& box);
 	Vec2 GetRandomPlace();
 	Location* GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
 	Location* GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
@@ -137,6 +138,7 @@ public:
 	Vec2 GetSize() const { return Vec2((float)worldSize, (float)worldSize); }
 	Vec2 GetPos() const { return worldPos; }
 	Vec2 GetWorldBounds() const { return worldBounds; }
+	Box2d GetArea() const { return Box2d(worldBounds.x, worldBounds.x, worldBounds.y, worldBounds.y); }
 
 	// travel
 	void Travel(int index, bool order);

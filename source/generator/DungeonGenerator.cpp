@@ -91,9 +91,9 @@ void DungeonGenerator::Generate()
 	if(eventHandler)
 	{
 		ScriptEvent e(EVENT_GENERATE);
-		e.onGenerate.location = inside;
-		e.onGenerate.mapSettings = &settings;
-		e.onGenerate.stage = 0;
+		e.location = inside;
+		e.mapSettings = &settings;
+		e.stage = 0;
 		eventHandler->FireEvent(e);
 		skipNormalHandling = e.cancel;
 	}
@@ -217,9 +217,9 @@ void DungeonGenerator::Generate()
 	if(eventHandler)
 	{
 		ScriptEvent e(EVENT_GENERATE);
-		e.onGenerate.location = inside;
-		e.onGenerate.mapSettings = nullptr;
-		e.onGenerate.stage = 1;
+		e.location = inside;
+		e.mapSettings = nullptr;
+		e.stage = 1;
 		eventHandler->FireEvent(e);
 	}
 

@@ -3254,9 +3254,9 @@ void Unit::RemoveQuestItemS(Quest* quest)
 //=================================================================================================
 bool Unit::HaveItem(const Item* item, bool owned) const
 {
-	for(const Item* slot_item : slots)
+	for(const Item* slotItem : slots)
 	{
-		if(slot_item == item)
+		if(slotItem == item)
 			return true;
 	}
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it)
@@ -5380,7 +5380,7 @@ void Unit::Die(Unit* killer)
 			if(event.type == EVENT_DIE)
 			{
 				ScriptEvent e(EVENT_DIE);
-				e.onDie.unit = this;
+				e.unit = this;
 				event.quest->FireEvent(e);
 			}
 		}

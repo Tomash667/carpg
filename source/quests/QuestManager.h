@@ -107,6 +107,9 @@ public:
 	void ProcessQuestRequests();
 	void UpgradeQuests();
 	vector<Location*>& GetUsedCities() { return used; }
+	void AddItemEventHandler(Quest2* quest, const Item* item) { itemEventHandlers.push_back(std::make_pair(quest, item)); }
+	void RemoveItemEventHandler(Quest2* quest, const Item* item);
+	void CheckItemEventHandler(Unit* unit, const Item* item);
 
 	vector<Quest*> unacceptedQuests;
 	vector<Quest*> quests;
@@ -145,4 +148,5 @@ private:
 	string tmpStr;
 	vector<pair<int, string>> questRumors;
 	vector<Location*> used;
+	vector<pair<Quest2*, const Item*>> itemEventHandlers;
 };

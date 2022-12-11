@@ -338,6 +338,7 @@ void QuestManager::Reset()
 	uniqueQuestsCompleted = 0;
 	uniqueCompletedShow = false;
 	questRumors.clear();
+	itemEventHandlers.clear();
 }
 
 //=================================================================================================
@@ -555,6 +556,13 @@ void QuestManager::Save(GameWriter& f)
 		f << item->name;
 	}
 
+	f << itemEventHandlers.size();
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		f << p.first->id;
+		f << p.second;
+	}
+
 	f << questCounter;
 	f << uniqueQuestsCompleted;
 	f << uniqueCompletedShow;
@@ -606,10 +614,10 @@ void QuestManager::Load(GameReader& f)
 	// quest timeouts
 	questTimeouts.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : questTimeouts)
-		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
+		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<int>(), false));
 	questTimeouts2.resize(f.Read<uint>());
 	for(Quest*& q : questTimeouts2)
-		q = FindQuest(f.Read<uint>(), false);
+		q = FindQuest(f.Read<int>(), false);
 
 	// quest items
 	questItems.resize(f.Read<uint>());
@@ -622,6 +630,19 @@ void QuestManager::Load(GameReader& f)
 		f >> item->questId;
 		f >> item->name;
 	}
+
+	// item event handlers
+	if(LOAD_VERSION >= V_DEV)
+	{
+		itemEventHandlers.resize(f.Read<uint>());
+		for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+		{
+			p.first = static_cast<Quest2*>(FindQuest(f.Read<int>(), false));
+			f >> p.second;
+		}
+	}
+	else
+		itemEventHandlers.clear();
 
 	f >> questCounter;
 	f >> uniqueQuestsCompleted;
@@ -1518,5 +1539,39 @@ void QuestManager::UpgradeQuests()
 		RemoveElementTry(questTimeouts, reinterpret_cast<Quest_Dungeon*>(quest));
 		RemoveElementTry(questTimeouts2, quest);
 		delete quest;
+	}
+}
+
+void QuestManager::RemoveItemEventHandler(Quest2* quest, const Item* item)
+{
+	assert(quest && item);
+
+	int index = 0;
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		if(p.first == quest && p.second == item)
+		{
+			RemoveElementIndex(itemEventHandlers, index);
+			return;
+		}
+		++index;
+	}
+}
+
+void QuestManager::CheckItemEventHandler(Unit* unit, const Item* item)
+{
+	if(itemEventHandlers.empty())
+		return;
+
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		if(p.second == item)
+		{
+			ScriptEvent e(EVENT_USE);
+			e.unit = unit;
+			e.item = item;
+			p.first->FireEvent(e);
+			break;
+		}
 	}
 }

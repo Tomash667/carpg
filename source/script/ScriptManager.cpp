@@ -405,6 +405,13 @@ void ScriptManager::RegisterCommon()
 		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
 		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
 
+	sb.AddStruct<Box2d>("Box2d", asOBJ_POD | asOBJ_APP_CLASS_ALLFLOATS)
+		.Constructor()
+		.Member("Vec2 v1", offsetof(Box2d, v1))
+		.Member("Vec2 v2", offsetof(Box2d, v2))
+		.Method("float SizeX() const", asMETHOD(Box2d, SizeX))
+		.Method("float SizeY() const", asMETHOD(Box2d, SizeY));
+
 	sb.ForType("string")
 		.Method("string Upper() const", asFUNCTION(String_Upper));
 
@@ -489,6 +496,7 @@ void ScriptManager::RegisterGame()
 	AddType("Hero");
 	AddType("Location");
 	AddType("LocationPart");
+	AddType("Item");
 
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
@@ -515,7 +523,8 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_ENCOUNTER", EVENT_ENCOUNTER },
 		{ "EVENT_DIE", EVENT_DIE },
 		{ "EVENT_CLEARED", EVENT_CLEARED },
-		{ "EVENT_GENERATE", EVENT_GENERATE }
+		{ "EVENT_GENERATE", EVENT_GENERATE },
+		{ "EVENT_USE", EVENT_USE }
 		});
 
 	AddEnum("LOCATION", {
@@ -549,7 +558,8 @@ void ScriptManager::RegisterGame()
 		{ "THRONE_FORT", THRONE_FORT },
 		{ "THRONE_VAULT", THRONE_VAULT },
 		{ "HUNTERS_CAMP", HUNTERS_CAMP },
-		{ "HILLS", HILLS }
+		{ "HILLS", HILLS },
+		{ "VILLAGE_EMPTY", VILLAGE_EMPTY }
 		});
 
 	AddEnum("UNIT_ORDER", {
@@ -590,7 +600,8 @@ void ScriptManager::RegisterGame()
 		{ "LI_ACADEMY", LI_ACADEMY },
 		{ "LI_CAPITAL", LI_CAPITAL },
 		{ "LI_HUNTERS_CAMP", LI_HUNTERS_CAMP },
-		{ "LI_HILLS", LI_HILLS }
+		{ "LI_HILLS", LI_HILLS },
+		{ "LI_VILLAGE_DESTROYED", LI_VILLAGE_DESTROYED }
 		});
 
 	AddEnum("QUEST_STATE", {
@@ -666,6 +677,7 @@ void ScriptManager::RegisterGame()
 		.Member("Location@ startLoc", offsetof(Quest_Scripted, startLoc))
 		.Method("int get_timeout() property", asMETHOD(Quest_Scripted, GetTimeout))
 		.Method("int get_progress() property", asMETHOD(Quest_Scripted, GetProgress))
+		.Method("void set_progress(int) property", asMETHOD(Quest_Scripted, SetProgress))
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
 		.Method("void SetStarted(const string& in)", asMETHOD(Quest_Scripted, SetStarted))
 		.Method("void SetCompleted()", asMETHOD(Quest_Scripted, SetCompleted))
@@ -681,9 +693,11 @@ void ScriptManager::RegisterGame()
 		.WithInstance("Quest@ quest", &ctx.quest)
 		.WithNamespace(questMgr)
 		.AddFunction("Quest@ Find(const string& in)", asMETHOD(QuestManager, FindQuestS))
-		.AddFunction("int CalculateReward(int, const Int2& in, const Int2& in)", asFUNCTION(ItemHelper::CalculateReward));
+		.AddFunction("int CalculateReward(int, const Int2& in, const Int2& in)", asFUNCTION(ItemHelper::CalculateReward))
+		.AddFunction("void AddItemEventHandler(Quest@, Item@)", asMETHOD(QuestManager, AddItemEventHandler))
+		.AddFunction("void RemoveItemEventHandler(Quest@, Item@)", asMETHOD(QuestManager, RemoveItemEventHandler));
 
-	AddType("Item")
+	ForType("Item")
 		.Member("const int value", offsetof(Item, value))
 		.Method("const string& get_name() const property", asMETHOD(Item, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Item, RenameS))
@@ -756,6 +770,7 @@ void ScriptManager::RegisterGame()
 		.Method("bool IsFollowing(Unit@)", asMETHOD(Unit, IsFollowing))
 		.Method("bool IsEnemy(Unit@, bool = false)", asMETHOD(Unit, IsEnemy))
 		.Method("float GetHpp()", asMETHOD(Unit, GetHpp))
+		.Method("bool HaveItem(Item@, bool = false)", asMETHOD(Unit, HaveItem))
 		.Method("void AddItem(Item@, uint = 1)", asMETHOD(Unit, AddItemS))
 		.Method("void AddTeamItem(Item@, uint = 1)", asMETHOD(Unit, AddTeamItemS))
 		.Method("uint RemoveItem(const string& in, uint = 1)", asMETHOD(Unit, RemoveItemS))
@@ -918,6 +933,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("const Date& get_date() property", asMETHOD(World, GetDateValue))
 		.AddFunction("const Date& get_startDate() property", asMETHOD(World, GetStartDate))
 		.AddFunction("void set_startDate(const Date& in) property", asMETHOD(World, SetStartDate))
+		.AddFunction("Box2d GetArea()", asMETHOD(World, GetArea))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -925,6 +941,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("float GetTravelDays(float)", asMETHOD(World, GetTravelDays))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, bool = false)", asMETHODPR(World, FindPlace, (const Vec2&, float, bool), Vec2))
 		.AddFunction("Vec2 FindPlace(const Vec2& in, float, float)", asMETHODPR(World, FindPlace, (const Vec2&, float, float), Vec2))
+		.AddFunction("Vec2 FindPlace(const Box2d& in)", asMETHODPR(World, FindPlace, (const Box2d&), Vec2))
 		.AddFunction("bool TryFindPlace(Vec2&, float, bool = false)", asMETHOD(World, TryFindPlace))
 		.AddFunction("Vec2 GetRandomPlace()", asMETHOD(World, GetRandomPlace))
 		.AddFunction("Location@ GetRandomCity()", asMETHOD(World, GetRandomCity))
@@ -959,6 +976,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, const Vec3& in)", asMETHOD(Level, SpawnItem))
 		.AddFunction("GroundItem@ SpawnItem(Item@, Object@)", asMETHOD(Level, SpawnItemAtObject))
+		.AddFunction("GroundItem@ SpawnItem(LocationPart@, Item@)", asMETHOD(Level, SpawnItemNearLocation))
 		.AddFunction("GroundItem@ SpawnItemInsideAnyRoom(Item@)", asMETHOD(Level, SpawnGroundItemInsideAnyRoom))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Vec3 FindSpawnPos(Room@, Unit@)", asMETHODPR(Level, FindSpawnPos, (Room* room, Unit* unit), Vec3))
@@ -989,12 +1007,13 @@ void ScriptManager::RegisterGame()
 
 	AddType("Event")
 		.Member("EVENT event", offsetof(ScriptEvent, type))
-		.Member("bool cancel", offsetof(ScriptEvent, cancel))
-		.Member("Location@ location", offsetof(ScriptEvent, onGenerate.location))
-		.Member("MapSettings@ mapSettings", offsetof(ScriptEvent, onGenerate.mapSettings))
-		.Member("int stage", offsetof(ScriptEvent, onGenerate.stage))
-		.Member("Unit@ unit", offsetof(ScriptEvent, onPickup.unit))
-		.Member("GroundItem@ item", offsetof(ScriptEvent, onPickup.item));
+		.Member("Location@ location", offsetof(ScriptEvent, location))
+		.Member("Unit@ unit", offsetof(ScriptEvent, unit))
+		.Member("GroundItem@ groundItem", offsetof(ScriptEvent, groundItem))
+		.Member("Item@ item", offsetof(ScriptEvent, item))
+		.Member("MapSettings@ mapSettings", offsetof(ScriptEvent, mapSettings))
+		.Member("int stage", offsetof(ScriptEvent, stage))
+		.Member("bool cancel", offsetof(ScriptEvent, cancel));
 
 	WithNamespace("Cutscene", game)
 		.AddFunction("void Start(bool = true)", asMETHOD(Game, CutsceneStart))

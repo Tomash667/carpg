@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Var.h"
-#include "ScriptException.h"
 #include "Event.h"
+#include "ScriptContext.h"
+#include "ScriptException.h"
+#include "Var.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -16,31 +17,6 @@
 class TypeBuilder;
 class NamespaceBuilder;
 struct asSFuncPtr;
-
-//-----------------------------------------------------------------------------
-struct ScriptContext
-{
-	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr), quest(nullptr) {}
-
-	PlayerController* pc;
-	Unit* target;
-	vector<ItemSlot>* stock;
-	Quest2* quest;
-
-	void Clear()
-	{
-		pc = nullptr;
-		target = nullptr;
-		stock = nullptr;
-		quest = nullptr;
-	}
-	Quest2* GetQuest()
-	{
-		if(!quest)
-			throw ScriptException("Method must be called from quest.");
-		return quest;
-	}
-};
 
 //-----------------------------------------------------------------------------
 struct SuspendedScript

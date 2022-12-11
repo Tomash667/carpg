@@ -3088,6 +3088,14 @@ book book_q_cleric {
 	runic 1
 }
 
+book book_q_journal {
+	weight 0.2
+	value 0
+	mesh "book.qmsh"
+	scheme book
+	flags {not_shop not_random ground_mesh important}
+}
+
 book crypt_note {
 	weight 0.1
 	value 0

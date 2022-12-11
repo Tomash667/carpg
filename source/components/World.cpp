@@ -339,8 +339,6 @@ Location* World::CreateLocation(LOCATION type, int levels, int cityTarget)
 //	other - used number
 Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int dungeonLevels)
 {
-	assert(type != L_CITY); // not implemented - many methods currently assume that cities are at start of locations vector
-
 	int levels = -1;
 	if(type == L_DUNGEON)
 	{
@@ -395,7 +393,20 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, int target, int 
 		switch(type)
 		{
 		case L_CITY:
-			loc->group = UnitGroup::empty;
+			{
+				City* city = static_cast<City*>(loc);
+				city->group = UnitGroup::empty;
+				city->st = 1;
+
+				LocalVector<Building*> buildings;
+				city->GenerateCityBuildings(buildings.Get(), true);
+				city->buildings.reserve(buildings.size());
+				for(Building* b : buildings)
+				{
+					CityBuilding& cb = Add1(city->buildings);
+					cb.building = b;
+				}
+			}
 			break;
 		case L_OUTSIDE:
 			loc->group = UnitGroup::Get("forest");
@@ -1012,6 +1023,7 @@ void World::SetLocationImageAndName(Location* l)
 		switch(l->target)
 		{
 		case VILLAGE:
+		case VILLAGE_EMPTY:
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
 			break;
@@ -2026,6 +2038,30 @@ Vec2 World::FindPlace(const Vec2& pos, float minRange, float maxRange)
 			return pt;
 	}
 
+	return pos;
+}
+
+//=================================================================================================
+Vec2 World::FindPlace(const Box2d& box)
+{
+	Vec2 pos;
+	for(int i = 0; i < 20; ++i)
+	{
+		pos = box.GetRandomPoint();
+
+		bool valid = true;
+		for(Location* loc : locations)
+		{
+			if(loc && Vec2::Distance(pos, loc->pos) < 32)
+			{
+				valid = false;
+				break;
+			}
+		}
+
+		if(valid)
+			break;
+	}
 	return pos;
 }
 

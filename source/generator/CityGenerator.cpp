@@ -2585,6 +2585,9 @@ void CityGenerator::SpawnObjects()
 //=================================================================================================
 void CityGenerator::SpawnUnits()
 {
+	if(city->citizens == 0)
+		return;
+
 	LocationPart& locPart = *city;
 
 	for(CityBuilding& b : city->buildings)
@@ -2633,6 +2636,7 @@ void CityGenerator::SpawnUnits()
 	switch(city->target)
 	{
 	case VILLAGE:
+	case VILLAGE_EMPTY:
 		guard_count = 3;
 		break;
 	default:
@@ -2660,6 +2664,9 @@ void CityGenerator::SpawnUnits()
 //=================================================================================================
 void CityGenerator::SpawnTemporaryUnits()
 {
+	if(city->citizens == 0)
+		return;
+
 	InsideBuilding* inn = city->FindInn();
 	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
@@ -2669,6 +2676,7 @@ void CityGenerator::SpawnTemporaryUnits()
 	switch(city->target)
 	{
 	case VILLAGE:
+	case VILLAGE_EMPTY:
 		count = Random(1u, 2u);
 		level = Int2(5, 15);
 		break;
@@ -2756,6 +2764,9 @@ void CityGenerator::RepositionUnits()
 //=================================================================================================
 void CityGenerator::GeneratePickableItems()
 {
+	if(city->citizens == 0)
+		return;
+
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 	vector<ItemSlot> items;
