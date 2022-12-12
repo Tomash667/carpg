@@ -98,9 +98,9 @@
 
 const float LIMIT_DT = 0.3f;
 Game* game;
-CustomCollisionWorld* phyWorld;
+btCollisionWorld* phyWorld;
 GameKeys GKey;
-extern string g_system_dir;
+extern string gSystemDir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
@@ -176,8 +176,8 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
-	phyWorld = engine->GetPhysicsWorld();
 	engine->UnlockCursor(false);
+	phyWorld = physics->GetWorld();
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
@@ -280,7 +280,7 @@ void Game::LoadDatafiles()
 	loadWarnings = 0;
 
 	// content
-	content.systemDir = g_system_dir;
+	content.systemDir = gSystemDir;
 	content.LoadContent([this](Content::Id id)
 	{
 		switch(id)
@@ -2724,20 +2724,20 @@ void Game::ClearGame()
 	EntitySystem::clear = false;
 }
 
-void ApplyTextureOverrideToSubmesh(Mesh::Submesh& sub, TexOverride& tex_o)
+void ApplyTextureOverrideToSubmesh(Mesh::Submesh& sub, TexOverride& texOverride)
 {
-	sub.tex = tex_o.diffuse;
-	sub.tex_normal = tex_o.normal;
-	sub.tex_specular = tex_o.specular;
+	sub.tex = texOverride.diffuse;
+	sub.texNormal = texOverride.normal;
+	sub.texSpecular = texOverride.specular;
 }
 
 void ApplyDungeonLightToMesh(Mesh& mesh)
 {
-	for(int i = 0; i < mesh.head.n_subs; ++i)
+	for(int i = 0; i < mesh.head.nSubs; ++i)
 	{
-		mesh.subs[i].specular_color = Vec3(1, 1, 1);
-		mesh.subs[i].specular_intensity = 0.2f;
-		mesh.subs[i].specular_hardness = 10;
+		mesh.subs[i].specularColor = Vec3(1, 1, 1);
+		mesh.subs[i].specularIntensity = 0.2f;
+		mesh.subs[i].specularHardness = 10;
 	}
 }
 
@@ -3243,10 +3243,10 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(data.tex)
 	{
-		for(TexOverride& tex_o : data.tex->textures)
+		for(TexOverride& texOverride : data.tex->textures)
 		{
-			if(tex_o.diffuse)
-				resMgr->Load(tex_o.diffuse);
+			if(texOverride.diffuse)
+				resMgr->Load(texOverride.diffuse);
 		}
 	}
 
@@ -3309,10 +3309,10 @@ void Game::VerifyUnitResources(Unit* unit)
 	}
 	if(unit->data->tex)
 	{
-		for(TexOverride& tex_o : unit->data->tex->textures)
+		for(TexOverride& texOverride : unit->data->tex->textures)
 		{
-			if(tex_o.diffuse)
-				assert(tex_o.diffuse->IsLoaded());
+			if(texOverride.diffuse)
+				assert(texOverride.diffuse->IsLoaded());
 		}
 	}
 

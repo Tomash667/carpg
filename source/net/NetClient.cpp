@@ -269,7 +269,7 @@ void Net::InterpolateUnits(float dt)
 		{
 			if(!unit->IsLocalPlayer())
 				unit->interp->Update(dt, unit->visualPos, unit->rot);
-			if(unit->meshInst->mesh->head.n_groups == 1)
+			if(unit->meshInst->mesh->head.nGroups == 1)
 			{
 				if(!unit->meshInst->groups[0].anim)
 				{
@@ -639,7 +639,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
-				int group = unit.meshInst->mesh->head.n_groups - 1;
+				int group = unit.meshInst->mesh->head.nGroups - 1;
 
 				bool is_bow = false;
 				switch(type)
@@ -1073,7 +1073,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						else
 							unit->animationState = AS_POSITION_HURT;
 
-						if(unit->meshInst->mesh->head.n_groups == 2)
+						if(unit->meshInst->mesh->head.nGroups == 2)
 							unit->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
@@ -2242,7 +2242,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							unit->animationState = AS_CAST_ANIMATION;
 							if(ability->animation.empty())
 							{
-								if(unit->meshInst->mesh->head.n_groups == 2)
+								if(unit->meshInst->mesh->head.nGroups == 2)
 									unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 								else
 								{

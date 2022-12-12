@@ -164,16 +164,16 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				m += 0.1f;
 
 			// backstab bonus damage
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
-			float backstab_mod = backstab;
+			float angleDif = AngleDiff(rot.y, hitted->rot);
+			float backstabMod = backstab;
 			if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
-				backstab_mod /= 2;
-			m += angle_dif / PI * backstab_mod;
+				backstabMod /= 2;
+			m += angleDif / PI * backstabMod;
 
 			// apply modifiers
 			float attack = this->attack * m;
 
-			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
+			if(hitted->IsBlocking() && angleDif < PI * 2 / 5)
 			{
 				// play sound
 				const MATERIAL_TYPE material = hitted->GetShield().material;
@@ -184,7 +184,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, level);
 
 				// reduce damage
-				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
+				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angleDif / (PI * 2 / 5));
 				float stamina = min(block, attack);
 				attack -= block;
 				hitted->RemoveStaminaBlock(stamina);
@@ -201,7 +201,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 						else
 							hitted->animationState = AS_POSITION_HURT;
 
-						if(hitted->meshInst->mesh->head.n_groups == 2)
+						if(hitted->meshInst->mesh->head.nGroups == 2)
 							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
@@ -266,15 +266,15 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			// apply poison
 			if(poisonAttack > 0.f)
 			{
-				float poison_res = hitted->GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = hitted->GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
 					e.sourceId = -1;
 					e.value = -1;
-					e.power = poisonAttack / 5 * poison_res;
+					e.power = poisonAttack / 5 * poisonRes;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}
@@ -304,12 +304,12 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			float dmg = attack;
 			if(owner)
 				dmg += owner->level * ability->dmgBonus;
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
-			float base_dmg = dmg;
+			float angleDif = AngleDiff(rot.y, hitted->rot);
+			float baseDmg = dmg;
 
-			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
+			if(hitted->IsBlocking() && angleDif < PI * 2 / 5)
 			{
-				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
+				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angleDif / (PI * 2 / 5));
 				float stamina = min(dmg, block);
 				dmg -= block / 2;
 				hitted->RemoveStaminaBlock(stamina);
@@ -317,7 +317,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				if(hitted->IsPlayer())
 				{
 					// player blocked spell, train him
-					hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, level);
+					hitted->player->Train(TrainWhat::BlockBullet, baseDmg / hitted->hpmax, level);
 				}
 
 				if(dmg < 0)
@@ -333,15 +333,15 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			// apply poison
 			if(IsSet(ability->flags, Ability::Poison))
 			{
-				float poison_res = hitted->GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = hitted->GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
 					e.sourceId = -1;
 					e.value = -1;
-					e.power = dmg / 5 * poison_res;
+					e.power = dmg / 5 * poisonRes;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}

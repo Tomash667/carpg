@@ -14,7 +14,7 @@
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
-string g_system_dir;
+string gSystemDir;
 
 //-----------------------------------------------------------------------------
 bool ShowPickLanguageDialog(string& lang);
@@ -266,7 +266,7 @@ void LoadResourcesConfig()
 	Config cfg;
 	cfg.Load("resource.cfg");
 	Language::dir = cfg.GetString("languages", "lang");
-	g_system_dir = cfg.GetString("system", "system");
+	gSystemDir = cfg.GetString("system", "system");
 	render->SetShadersDir(cfg.GetString("shaders", "shaders").c_str());
 }
 

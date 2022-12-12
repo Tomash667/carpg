@@ -93,8 +93,8 @@ void GameCamera::Update(float dt)
 	}
 
 	// calculate new from & to, handle collisions
-	const Vec3 forward_dir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x, 0));
-	const Vec3 backward_dir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x + shift, 0));
+	const Vec3 forwardDir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x, 0));
+	const Vec3 backwardDir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x + shift, 0));
 
 	Vec3 pos = target->pos;
 	pos.y += target->GetUnitHeight() + tmpH;
@@ -102,15 +102,15 @@ void GameCamera::Update(float dt)
 	if(zoom)
 		realTo = zoomPos;
 	else
-		realTo = pos + forward_dir * 20;
+		realTo = pos + forwardDir * 20;
 
 	// camera goes from character head backwards (to => from)
-	float t = HandleCollisions(pos, -tmpDist * backward_dir);
+	float t = HandleCollisions(pos, -tmpDist * backwardDir);
 
-	float real_dist = tmpDist * t - 0.1f;
-	if(real_dist < 0.01f)
-		real_dist = 0.01f;
-	realFrom = pos + backward_dir * -real_dist;
+	float realDist = tmpDist * t - 0.1f;
+	if(realDist < 0.01f)
+		realDist = 0.01f;
+	realFrom = pos + backwardDir * -realDist;
 
 	// update from & to
 	if(reset)
@@ -126,14 +126,11 @@ void GameCamera::Update(float dt)
 	}
 
 	// calculate matrices, frustum
-	float drunk = target->alcohol / target->hpmax;
-	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
-
-	Matrix mat_view = Matrix::CreateLookAt(from, to);
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunkAnim) * (PI / 16) * drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunkAnim) / 10 * drunk_mod), znear, zfar);
-	matViewProj = mat_view * mat_proj;
-	matViewInv = mat_view.Inverse();
+	const float drunk = target->alcohol / target->hpmax;
+	const float drunkMod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
+	fov = PI / 4 + sin(drunkAnim) * (PI / 16) * drunkMod;
+	aspect = engine->GetWindowAspect() * (1.f + sin(drunkAnim) / 10 * drunkMod);
+	UpdateMatrix();
 	frustum.Set(matViewProj);
 
 	// 3d source listener
@@ -164,16 +161,16 @@ void GameCamera::UpdateFreeRot(float dt)
 	if(!Any(GKey.allowInput, GameKeys::ALLOW_INPUT, GameKeys::ALLOW_MOUSE))
 		return;
 
-	const float c_cam_angle_min = PI + 0.1f;
-	const float c_cam_angle_max = PI * 1.8f - 0.1f;
+	const float angleMin = PI + 0.1f;
+	const float angleMax = PI * 1.8f - 0.1f;
 	const float sensitivity = game->settings.GetMouseSensitivity();
 
 	int div = (target->action == A_SHOOT ? 800 : 400);
 	realRot.y += -float(input->GetMouseDif().y) * sensitivity / div;
-	if(realRot.y > c_cam_angle_max)
-		realRot.y = c_cam_angle_max;
-	if(realRot.y < c_cam_angle_min)
-		realRot.y = c_cam_angle_min;
+	if(realRot.y > angleMax)
+		realRot.y = angleMax;
+	if(realRot.y < angleMin)
+		realRot.y = angleMin;
 
 	if(!target->IsStanding())
 	{
@@ -213,14 +210,14 @@ void GameCamera::UpdateDistance()
 //=================================================================================================
 void GameCamera::SetZoom(const Vec3* zoomPos)
 {
-	bool new_zoom = (zoomPos != nullptr);
-	if(zoom == new_zoom)
+	bool newZoom = (zoomPos != nullptr);
+	if(zoom == newZoom)
 	{
 		if(zoomPos)
 			this->zoomPos = *zoomPos;
 		return;
 	}
-	zoom = new_zoom;
+	zoom = newZoom;
 	if(zoom)
 	{
 		h = -0.15f;
@@ -243,7 +240,7 @@ void GameCamera::SetZoom(const Vec3* zoomPos)
 float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 {
 	LocationPart& locPart = *target->locPart;
-	float t, min_t = 2.f;
+	float t, minT = 2.f;
 
 	const int tx = int(target->pos.x / 2),
 		tz = int(target->pos.z / 2);
@@ -256,8 +253,8 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		RaytestTerrainCallback callback;
 		phyWorld->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
 		float t = callback.getFraction();
-		if(t < min_t && t > 0.f)
-			min_t = t;
+		if(t < minT && t > 0.f)
+			minT = t;
 
 		// buildings
 		int minx = max(0, tx - 3),
@@ -271,8 +268,8 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				if(outside->tiles[x + z * OutsideLocation::size].IsBlocking())
 				{
 					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 8.f, float(z + 1) * 2);
-					if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-						min_t = t;
+					if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+						minT = t;
 				}
 			}
 		}
@@ -288,14 +285,14 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			maxz = min(lvl.h - 1, tz + 3);
 
 		// ceil
-		const Plane sufit(0, -1, 0, 4);
-		if(RayToPlane(pos, dir, sufit, &t) && t < min_t && t > 0.f)
-			min_t = t;
+		const Plane ceil(0, -1, 0, 4);
+		if(RayToPlane(pos, dir, ceil, &t) && t < minT && t > 0.f)
+			minT = t;
 
 		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(pos, dir, podloga, &t) && t < min_t && t > 0.f)
-			min_t = t;
+		const Plane floor(0, 1, 0, 0);
+		if(RayToPlane(pos, dir, floor, &t) && t < minT && t > 0.f)
+			minT = t;
 
 		// dungeon
 		for(int z = minz; z <= maxz; ++z)
@@ -306,14 +303,14 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				if(IsBlocking(p.type))
 				{
 					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-						min_t = t;
+					if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+						minT = t;
 				}
 				else if(IsSet(p.flags, Tile::F_LOW_CEILING))
 				{
 					const Box box(float(x) * 2, 3.f, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
-					if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-						min_t = t;
+					if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+						minT = t;
 				}
 
 				if(p.type == ENTRY_PREV || p.type == ENTRY_NEXT)
@@ -336,13 +333,13 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 					if(type == ENTRY_STAIRS_UP)
 					{
-						if(gameRes->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
-							min_t = t;
+						if(gameRes->vdStairsUp->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < minT)
+							minT = t;
 					}
 					else if(type == ENTRY_STAIRS_DOWN)
 					{
-						if(gameRes->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < min_t)
-							min_t = t;
+						if(gameRes->vdStairsDown->RayToMesh(pos, dir, PtToPos(pt), DirToRot(entryDir), t) && t < minT)
+							minT = t;
 					}
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
@@ -377,8 +374,8 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 							door_pos.x -= 0.8229f;
 					}
 
-					if(gameRes->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < min_t)
-						min_t = t;
+					if(gameRes->vdDoorHole->RayToMesh(pos, dir, door_pos, rot, t) && t < minT)
+						minT = t;
 
 					Door* door = locPart.FindDoor(Int2(x, z));
 					if(door && door->IsBlocking())
@@ -400,8 +397,8 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 							box.v2.x += Door::THICKNESS;
 						}
 
-						if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-							min_t = t;
+						if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+							minT = t;
 					}
 				}
 			}
@@ -415,15 +412,15 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		// ceil
 		if(building.top > 0.f)
 		{
-			const Plane sufit(0, -1, 0, 4);
-			if(RayToPlane(pos, dir, sufit, &t) && t < min_t && t > 0.f)
-				min_t = t;
+			const Plane ceil(0, -1, 0, 4);
+			if(RayToPlane(pos, dir, ceil, &t) && t < minT && t > 0.f)
+				minT = t;
 		}
 
 		// floor
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(pos, dir, podloga, &t) && t < min_t && t > 0.f)
-			min_t = t;
+		const Plane floor(0, 1, 0, 0);
+		if(RayToPlane(pos, dir, floor, &t) && t < minT && t > 0.f)
+			minT = t;
 
 		// xsphere
 		if(building.xsphereRadius > 0.f)
@@ -432,8 +429,8 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			if(RayToSphere(from, -dir, building.xspherePos, building.xsphereRadius, t) && t > 0.f)
 			{
 				t = 1.f - t;
-				if(t < min_t)
-					min_t = t;
+				if(t < minT)
+					minT = t;
 			}
 		}
 
@@ -460,12 +457,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 					box.v2.x += Door::THICKNESS;
 				}
 
-				if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-					min_t = t;
+				if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+					minT = t;
 			}
 
-			if(gameRes->vdDoorHole->RayToMesh(pos, dir, door.pos, door.rot, t) && t < min_t)
-				min_t = t;
+			if(gameRes->vdDoorHole->RayToMesh(pos, dir, door.pos, door.rot, t) && t < minT)
+				minT = t;
 		}
 	}
 
@@ -477,14 +474,14 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 		if(it->type == CollisionObject::SPHERE)
 		{
-			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, 0, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < min_t && t > 0.f)
-				min_t = t;
+			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, 0, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < minT && t > 0.f)
+				minT = t;
 		}
 		else if(it->type == CollisionObject::RECTANGLE)
 		{
 			Box box(it->pos.x - it->w, 0.f, it->pos.z - it->h, it->pos.x + it->w, 32.f, it->pos.z + it->h);
-			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-				min_t = t;
+			if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+				minT = t;
 		}
 		else
 		{
@@ -501,23 +498,23 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			}
 
 			Box box(it->pos.x - w, 0.f, it->pos.z - h, it->pos.x + w, 32.f, it->pos.z + h);
-			if(RayToBox(pos, dir, box, &t) && t < min_t && t > 0.f)
-				min_t = t;
+			if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
+				minT = t;
 		}
 	}
 
 	// camera colliders
 	for(vector<CameraCollider>::iterator it = gameLevel->camColliders.begin(), end = gameLevel->camColliders.end(); it != end; ++it)
 	{
-		if(RayToBox(pos, dir, it->box, &t) && t < min_t && t > 0.f)
-			min_t = t;
+		if(RayToBox(pos, dir, it->box, &t) && t < minT && t > 0.f)
+			minT = t;
 	}
 
-	// uwzglêdnienie znear
-	if(min_t > 1.f || target->player->noclip)
-		min_t = 1.f;
-	else if(min_t < 0.1f)
-		min_t = 0.1f;
+	// handle znear
+	if(minT > 1.f || target->player->noclip)
+		minT = 1.f;
+	else if(minT < 0.1f)
+		minT = 0.1f;
 
-	return min_t;
+	return minT;
 }

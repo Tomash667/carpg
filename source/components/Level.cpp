@@ -3605,8 +3605,7 @@ void Level::SpawnDungeonCollider(const Vec3& pos)
 //=================================================================================================
 void Level::RemoveColliders()
 {
-	if(phyWorld)
-		phyWorld->Reset();
+	physics->Reset();
 
 	DeleteElements(shapes);
 	camColliders.clear();

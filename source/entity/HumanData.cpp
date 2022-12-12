@@ -53,12 +53,12 @@ void Human::ApplyScale(MeshInstance* meshInst)
 {
 	assert(meshInst);
 
-	matScale.resize(meshInst->mesh->head.n_bones);
+	matScale.resize(meshInst->mesh->head.nBones);
 	meshInst->matScale = matScale.data();
 
 	Vec2 scale = GetScale();
 	Matrix m = Matrix::Scale(scale.x, scale.y, scale.x);
-	for(int i = 0; i < meshInst->mesh->head.n_bones; ++i)
+	for(int i = 0; i < meshInst->mesh->head.nBones; ++i)
 		matScale[i] = m;
 
 	scale.x = (scale.x + 1) / 2;

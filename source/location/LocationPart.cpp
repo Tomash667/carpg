@@ -1025,7 +1025,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.meshInst->mesh->head.n_groups > 1)
+	if(unit.meshInst->mesh->head.nGroups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)

@@ -4818,7 +4818,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 			}
 
-			if(meshInst->mesh->head.n_groups > 1)
+			if(meshInst->mesh->head.nGroups > 1)
 				meshInst->groups[1].state = 0;
 			if(humanData)
 				humanData->ApplyScale(meshInst);
@@ -5592,7 +5592,7 @@ void Unit::UpdatePhysics(const Vec3* targetPos)
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
-	phyWorld->UpdateAabb(cobj);
+	physics->UpdateAabb(cobj);
 }
 
 //=================================================================================================
@@ -7302,7 +7302,7 @@ void Unit::Update(float dt)
 		}
 	}
 
-	const int group_index = meshInst->mesh->head.n_groups - 1;
+	const int group_index = meshInst->mesh->head.nGroups - 1;
 
 	// aktualizuj akcjê
 	switch(action)
@@ -7782,7 +7782,7 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_PAIN:
-		if(meshInst->mesh->head.n_groups == 2)
+		if(meshInst->mesh->head.nGroups == 2)
 		{
 			if(meshInst->IsEnded(1))
 			{
@@ -8035,7 +8035,7 @@ void Unit::Update(float dt)
 		if(animationState == AS_POSITION_HURT)
 		{
 			// obs³uga animacji cierpienia
-			if(meshInst->mesh->head.n_groups == 2)
+			if(meshInst->mesh->head.nGroups == 2)
 			{
 				if(meshInst->IsEnded(1) || timer >= 0.5f)
 				{
@@ -8971,7 +8971,7 @@ bool Unit::DoShieldSmash()
 		else
 			hitted->animationState = AS_POSITION_HURT;
 
-		if(hitted->meshInst->mesh->head.n_groups == 2)
+		if(hitted->meshInst->mesh->head.nGroups == 2)
 			hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 		else
 		{
@@ -9061,7 +9061,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 				else
 					hitted.animationState = AS_POSITION_HURT;
 
-				if(hitted.meshInst->mesh->head.n_groups == 2)
+				if(hitted.meshInst->mesh->head.nGroups == 2)
 					hitted.meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				else
 				{

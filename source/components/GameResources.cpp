@@ -52,6 +52,9 @@ void GameResources::Init()
 	scene->Add(node);
 
 	camera = new Camera;
+	camera->aspect = 1.f;
+	camera->znear = 0.1f;
+	camera->zfar = 25.f;
 
 	aHuman = resMgr->Load<Mesh>("human.qmsh");
 	rtItem = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
@@ -577,24 +580,23 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		if(const Armor& armor = item.ToArmor(); !armor.texOverride.empty())
 		{
 			node->texOverride = armor.GetTextureOverride();
-			assert(armor.texOverride.size() == mesh.head.n_subs);
+			assert(armor.texOverride.size() == mesh.head.nSubs);
 		}
 	}
 
 	// light
-	Vec3& light_pos = scene->lights.back().pos;
+	Vec3& lightPos = scene->lights.back().pos;
 	point = mesh.FindPoint("light");
 	if(point)
-		light_pos = Vec3::TransformZero(point->mat);
+		lightPos = Vec3::TransformZero(point->mat);
 	else
-		light_pos = mesh.head.cam_pos;
+		lightPos = mesh.head.camPos;
 
 	// setup camera
-	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
-		mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
-	camera->matViewProj = mat_view * mat_proj;
-	camera->from = mesh.head.cam_pos;
-	camera->to = mesh.head.cam_target;
+	camera->from = mesh.head.camPos;
+	camera->to = mesh.head.camTarget;
+	camera->up = mesh.head.camUp;
+	camera->UpdateMatrix();
 
 	// draw
 	sceneMgr->SetScene(scene, camera);

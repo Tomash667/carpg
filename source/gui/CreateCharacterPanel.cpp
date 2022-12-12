@@ -264,6 +264,12 @@ void CreateCharacterPanel::LoadData()
 	scene->useLightDir = true;
 
 	camera = new Camera;
+	camera->from = Vec3(0, 2, -2.5f);
+	camera->to = Vec3(0, 1, 0);
+	camera->aspect = 0.5f;
+	camera->znear = 1.f;
+	camera->zfar = 5.f;
+	camera->UpdateMatrix();
 }
 
 //=================================================================================================
@@ -511,7 +517,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		{
 			visible = true;
 			unit->rot = 0;
-			dist = -2.5f;
 		}
 		pos = globalPos = (gui->wndSize - size) / 2;
 		btCancel.globalPos = globalPos + btCancel.pos;
@@ -664,12 +669,6 @@ void CreateCharacterPanel::RenderUnit()
 	render->SetRenderTarget(rtChar);
 	render->Clear(Color::None);
 
-	Vec3 from = Vec3(0.f, 2.f, dist);
-	Matrix mat_view = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
-	Matrix mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	camera->matViewProj = mat_view * mat_proj;
-	camera->from = from;
-	camera->matViewInv = mat_view.Inverse();
 	FrustumPlanes frustum(camera->matViewProj);
 
 	sceneMgr->SetScene(scene, camera);
@@ -1251,17 +1250,17 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 void CreateCharacterPanel::RebuildSkillsFlow()
 {
 	flowSkills.Clear();
-	SkillGroupId last_group = SkillGroupId::NONE;
+	SkillGroupId lastGroup = SkillGroupId::NONE;
 
 	for(Skill& si : Skill::skills)
 	{
 		int i = (int)si.skillId;
 		if(cc.s[i].value >= 0)
 		{
-			if(si.group != last_group)
+			if(si.group != lastGroup)
 			{
 				flowSkills.Add()->Set(SkillGroup::groups[(int)si.group].name.c_str());
-				last_group = si.group;
+				lastGroup = si.group;
 			}
 			bool plus = !cc.s[i].add;
 			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), plus && cc.sp <= 0);
@@ -1372,16 +1371,16 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk* perk)
 	params.parent = this;
 	params.text = text;
 
-	SkillGroupId last_group = SkillGroupId::NONE;
+	SkillGroupId lastGroup = SkillGroupId::NONE;
 	for(Skill& info : Skill::skills)
 	{
 		int i = (int)info.skillId;
 		if(cc.s[i].value > 0)
 		{
-			if(info.group != last_group)
+			if(info.group != lastGroup)
 			{
 				params.AddSeparator(SkillGroup::groups[(int)info.group].name.c_str());
-				last_group = info.group;
+				lastGroup = info.group;
 			}
 			params.AddItem(Format("%s: %d", Skill::skills[i].name.c_str(), cc.s[i].value), (int)Group::Skill, i, cc.s[i].mod);
 		}

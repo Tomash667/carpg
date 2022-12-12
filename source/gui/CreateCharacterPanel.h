@@ -121,7 +121,7 @@ private:
 	bool enterName;
 	// unit
 	DOLL_ANIM anim, anim2;
-	float t, dist;
+	float t;
 	// controls
 	CustomButton customClose, customBt[2];
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;

@@ -998,7 +998,7 @@ void Game::AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o)
 			node->flags |= SceneNode::F_HAVE_TANGENTS;
 
 		// for simplicity original node in unused and freed at end
-		for(int i = 0; i < mesh.head.n_subs; ++i)
+		for(int i = 0; i < mesh.head.nSubs; ++i)
 		{
 			const Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
 			const float radius = mesh.splits[i].radius * o.scale;

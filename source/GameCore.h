@@ -260,7 +260,7 @@ extern Level* gameLevel;
 extern Messenger* messenger;
 extern Net* net;
 extern Pathfinding* pathfinding;
-extern CustomCollisionWorld* phyWorld;
+extern btCollisionWorld* phyWorld;
 extern QuestManager* questMgr;
 extern ScriptManager* scriptMgr;
 extern Team* team;
