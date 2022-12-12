@@ -33,6 +33,7 @@ public:
 	ScriptManager();
 	~ScriptManager();
 	void Init();
+	void RegisterExtensions();
 	void RegisterCommon();
 	void RegisterGame();
 	void SetException(cstring ex) { lastException = ex; }

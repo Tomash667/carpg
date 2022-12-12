@@ -5,5 +5,6 @@
 //	+ recalculate units stats
 //	+ upgrade units
 //	+ reapply all item effects
+//	+ create missing quests
 
-version 5
+version 6

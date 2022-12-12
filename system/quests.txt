@@ -2039,6 +2039,7 @@ quest main
 		Location@ dungeon;
 		int counter;
 		Unit@ cleric;
+		array<Location@> villages;
 
 		void Startup()
 		{
@@ -2296,11 +2297,21 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
+					array<int>@ index = { 0, 1, 2, 3 };
+					index.shuffle();
+					villages.resize(2);
+					
+					vars["index"] = index[0];
 					Quest::Find("main_village1").Start(vars);
-					//Quest::Find("main_village2").Start();
+					@villages[0] = vars["village"];
+					
+					vars["index"] = index[1];
+					Quest::Find("main_village2").Start(vars);
+					@villages[1] = vars["village"];
 					//Quest::Find("main_village3").Start();
 					//Quest::Find("main_village4").Start();
-					// TODO: shuffle
+					
+					villages.shuffle();
 					quest.AddEntry(TEXT(16));
 				}
 				break;
@@ -2438,6 +2449,7 @@ quest dire_wolf
 quest main_village1
 {
 	type unique
+	flags recreate
 	progress {
 		P_MAIN_V1_NONE
 		P_MAIN_V1_START
@@ -2454,6 +2466,7 @@ quest main_village1
 		{
 			@cleric = vars["cleric"];
 			progress = P_MAIN_V1_START;
+			vars["village"] = village;
 		}
 		
 		void SetProgress()
@@ -2461,6 +2474,95 @@ quest main_village1
 			switch(progress)
 			{
 			case P_MAIN_V1_START:
+				{
+					// TODO: pos from index
+					Box2d area = World::GetArea();
+					area.v2.x = area.SizeX() / 2;
+					area.v2.y = area.SizeY() / 2;
+					Vec2 pos;
+					for(int i=0; i<20; ++i)
+					{
+						pos = World::FindPlace(area);
+						Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
+						if(Vec2::Distance(pos, nearCity.pos) > 100.f)
+							break;
+					}
+					
+					@village = World::CreateLocation(L_CITY, pos, VILLAGE_EMPTY);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V1_ENTER:
+				{
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					quest.AddEntry(TEXT(3));
+					LocationPart@ part = village.GetBuildingLocationPart("hall");
+					Item@ item = Item::Get("book_q_journal");
+					Level::SpawnItem(part, item);
+					Quest::AddItemEventHandler(quest, item);
+				}
+				break;
+			case P_MAIN_V1_READ:
+				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_MAIN_V1_DONE:
+				quest.AddEntry(TEXT(5));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("book_q_journal"));
+				Team::AddReward(1000, 4000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V1_ENTER;
+			else
+				progress = P_MAIN_V1_READ;
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 2 (enemies)
+//=============================================================================
+quest main_village2
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V2_NONE
+		P_MAIN_V2_START
+		P_MAIN_V2_ENTER
+		P_MAIN_V2_READ
+		P_MAIN_V2_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			progress = P_MAIN_V2_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V2_START:
 				{
 					Box2d area = World::GetArea();
 					area.v2.x = area.SizeX() / 2;
@@ -2479,23 +2581,19 @@ quest main_village1
 					village.SetKnown();
 					village.AddEventHandler(quest, EVENT_ENTER);
 					
-					quest.SetStarted(TEXT(1));
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
 					quest.AddEntry(TEXT(2));
-					quest.AddEntry(TEXT(3));
 				}
 				break;
-			case P_MAIN_V1_ENTER:
+			case P_MAIN_V2_ENTER:
 				{
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);
-					quest.AddEntry(TEXT(4));
-					LocationPart@ part = village.GetBuildingLocationPart("hall");
-					Item@ item = Item::Get("book_q_journal");
-					Level::SpawnItem(part, item);
-					Quest::AddItemEventHandler(quest, item);
+					quest.AddEntry(TEXT(3));
 				}
 				break;
-			case P_MAIN_V1_READ:
+			/*case P_MAIN_V1_READ:
 				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
 				quest.AddEntry(TEXT(5));
 				break;
@@ -2504,16 +2602,16 @@ quest main_village1
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("book_q_journal"));
 				Team::AddReward(1000, 4000);
-				break;
+				break;*/
 			}
 		}
 		
 		void OnEvent(Event@ e)
 		{
 			if(e.event == EVENT_ENTER)
-				progress = P_MAIN_V1_ENTER;
-			else
-				progress = P_MAIN_V1_READ;
+				progress = P_MAIN_V2_ENTER;
+			//else
+			//	progress = P_MAIN_V1_READ;
 		}
 	}
 }

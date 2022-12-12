@@ -10,7 +10,8 @@ struct QuestScheme
 	enum Flags
 	{
 		DONT_COUNT = 1 << 0,
-		NOT_SCRIPTED = 1 << 1
+		NOT_SCRIPTED = 1 << 1,
+		RECREATE = 1 << 2
 	};
 
 	string id;

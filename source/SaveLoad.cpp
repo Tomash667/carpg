@@ -664,9 +664,9 @@ void Game::LoadGame(GameReader& f)
 	f >> startVersion;
 
 	// content version
-	uint content_version;
-	f >> content_version;
-	content.requireUpdate = (content.version != content_version);
+	uint contentVersion;
+	f >> contentVersion;
+	content.requireUpdate = (content.version != contentVersion);
 	if(content.requireUpdate)
 		Info("Loading old system version. Content update required.");
 

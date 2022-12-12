@@ -12,7 +12,6 @@
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
 #include "UnitGroup.h"
-#include "Var.h"
 #include "World.h"
 
 #include <Perlin.h>

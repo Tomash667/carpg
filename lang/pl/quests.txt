@@ -434,7 +434,7 @@ quest main {
 		11 "Dobrze ¿e jesteœ. Musimy porozmawiaæ o zarazie..."
 		12 "Zbada³em ludzi ale jeszcze nic nie uda³o mi siê ustaliæ... Potrzebujê wiêcej informacji ¿eby znaleŸæ Ÿród³o tej zarazy."
 		13 "Mam informacje o czterech wioskach w których te¿ wybuch³a zaraza. Ktoœ musi siê tam udaæ i potwierdziæ te plotki. So³tys stwierdzi³ ¿e to zadanie dla ciebie."
-		14 "Udaj siê w dowolnej kolejnoœci do $(Quest::Find(\"main_village1\").GetString(0)), x, y i z." // TODO: losowa kolejnoœæ
+		14 "Udaj siê w dowolnej kolejnoœci do $(villages[0].name), $(villages[1].name), y i z."
 		15 "Ja w tym czasie wracam do badañ. Liczymy na ciebie!"
 		16 "Wróæ do mnie gdy uda ci siê zdobyæ jakieœ informacje."
 		17 "Dobra robota! Wróæ gdy zdobêdziesz wiêcej informacji."
@@ -461,7 +461,7 @@ quest main {
 		13 "Odnalaz³em $(cleric.realName) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrineLoc.name), wtedy mi pomo¿e."
 		14 "Przyprowadzi³em $(cleric.realName) do kapliczki. Potrzebuje czasu, $(Str(quest.timeout)) dni. Po tym czasie powinienem go znaleŸæ w $(village.name)."
 		15 "Kleryk powinien byæ ju¿ w $(village.name)."
-		16 "Po rozmowie z klerykiem wys³a³ mnie by sprawdziæ plotki o zarazie w czterech wioskach. S¹ to: $(Quest::Find(\"main_village1\").GetString(0)), x, y i z." // TODO: losowa kolejnoœæ
+		16 "Po rozmowie z klerykiem wys³a³ mnie by sprawdziæ plotki o zarazie w czterech wioskach. S¹ to: $(villages[0].name), $(villages[1].name), y i z."
 	}
 }
 
@@ -504,12 +504,23 @@ quest dire_wolf {
 //=============================================================================
 quest main_village1 {
 	texts {
-		0 "$(village.name)"
-		1 "ród³o zarazy w $(village.name)"
-		2 "Rozpoczêto dnia $date$."
-		3 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
-		4 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
-		5 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
-		6 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
+		0 "ród³o zarazy w $(village.name)"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
+		3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
+		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
+		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
+	}
+}
+
+//=============================================================================
+quest main_village2 {
+	texts {
+		0 "ród³o zarazy w $(village.name)"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
+		//3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
+		//4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
+		//5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
 	}
 }

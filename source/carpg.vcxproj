@@ -209,6 +209,7 @@
     <ClInclude Include="quests\Quest_Tutorial.h" />
     <ClInclude Include="script\ScriptContext.h" />
     <ClInclude Include="script\ScriptException.h" />
+    <ClInclude Include="script\ScriptExtensions.h" />
     <ClInclude Include="script\TypeBuilder.h" />
     <ClInclude Include="script\ScriptManager.h" />
     <ClInclude Include="script\Var.h" />
@@ -365,6 +366,7 @@
     <ClCompile Include="quests\Quest2.cpp" />
     <ClCompile Include="quests\Quest_DireWolf.cpp" />
     <ClCompile Include="script\ScriptContext.cpp" />
+    <ClCompile Include="script\ScriptExtensions.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />

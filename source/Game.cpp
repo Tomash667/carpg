@@ -70,7 +70,6 @@
 #include "Team.h"
 #include "TeamPanel.h"
 #include "UnitGroup.h"
-#include "Var.h"
 #include "Version.h"
 #include "World.h"
 #include "WorldMapGui.h"

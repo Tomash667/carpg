@@ -16,6 +16,7 @@
 #include "QuestManager.h"
 #include "Quest_Scripted.h"
 #include "RoomType.h"
+#include "ScriptExtensions.h"
 #include "Team.h"
 #include "TypeBuilder.h"
 #include "UnitGroup.h"
@@ -27,10 +28,10 @@
 #include <scriptstdstring/scriptstdstring.h>
 
 ScriptManager* scriptMgr;
-static std::map<int, asIScriptFunction*> tostring_map;
-static string tmp_str_result;
+static std::map<int, asIScriptFunction*> tostringMap;
+static string tmpStrResult;
 Vars globals;
-Vars* p_globals = &globals;
+Vars* ptrGlobals = &globals;
 
 ScriptException::ScriptException(cstring msg)
 {
@@ -80,6 +81,7 @@ void ScriptManager::Init()
 	CHECKED(engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL));
 
 	RegisterScriptArray(engine, true);
+	RegisterExtensions();
 	RegisterStdString(engine);
 	RegisterStdStringUtils(engine);
 	RegisterScriptDictionary(engine);
@@ -90,8 +92,8 @@ void ScriptManager::Init()
 asIScriptFunction* FindToString(asIScriptEngine* engine, int typeId)
 {
 	// find mapped type
-	auto it = tostring_map.find(typeId);
-	if(it != tostring_map.end())
+	auto it = tostringMap.find(typeId);
+	if(it != tostringMap.end())
 		return it->second;
 
 	// get type
@@ -102,7 +104,7 @@ asIScriptFunction* FindToString(asIScriptEngine* engine, int typeId)
 	cstring name = type->GetName();
 	if(strcmp(name, "string") == 0)
 	{
-		tostring_map[typeId] = nullptr;
+		tostringMap[typeId] = nullptr;
 		return nullptr;
 	}
 
@@ -114,7 +116,7 @@ asIScriptFunction* FindToString(asIScriptEngine* engine, int typeId)
 		throw ScriptException("Missing ToString method for object '%s'.", name);
 
 	// add mapping
-	tostring_map[typeId] = func;
+	tostringMap[typeId] = func;
 	return func;
 }
 
@@ -148,9 +150,9 @@ string& ToString(asIScriptGeneric* gen, void* adr, int typeId)
 	}
 
 	void* ret_adr = ctx->GetReturnAddress();
-	tmp_str_result = *(string*)ret_adr;
+	tmpStrResult = *(string*)ret_adr;
 	engine->ReturnContext(ctx);
-	return tmp_str_result;
+	return tmpStrResult;
 }
 
 static cstring ArgToString(asIScriptGeneric* gen, int index)
@@ -302,6 +304,12 @@ string String_Upper(string& str)
 	string s = str;
 	s[0] = toupper(s[0]);
 	return s;
+}
+
+void ScriptManager::RegisterExtensions()
+{
+	ForType("array<T>")
+		.Method("void shuffle()", asFUNCTION(CScriptArray_Shuffle));
 }
 
 void ScriptManager::RegisterCommon()
@@ -655,7 +663,7 @@ void ScriptManager::RegisterGame()
 		.ReferenceCounting(asMETHOD(Vars, AddRef), asMETHOD(Vars, Release))
 		.Method("Var@ opIndex(const string& in)", asMETHOD(Vars, Get))
 		.Method("bool IsSet(const string& in)", asMETHOD(Vars, IsSet))
-		.WithInstance("Vars@ globals", &p_globals);
+		.WithInstance("Vars@ globals", &ptrGlobals);
 
 	AddType("Dialog")
 		.WithNamespace()
@@ -1326,7 +1334,16 @@ bool ScriptManager::CheckVarType(int typeId, bool isRef)
 
 	auto it = scriptTypeInfos.find(typeId);
 	if(it == scriptTypeInfos.end() || it->second.requireRef != isRef)
+	{
+		asITypeInfo* typeInfo = engine->GetTypeInfoById(typeId);
+		if(typeInfo && strcmp(typeInfo->GetName(), "array") == 0)
+		{
+			scriptTypeInfos[typeId] = ScriptTypeInfo(Var::Type::Array, false);
+			return true;
+		}
 		return false;
+	}
+
 	return true;
 }
 

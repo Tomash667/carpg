@@ -13,6 +13,9 @@ Core library
 * void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialogIf. Console output don't work after sleep!
 
 ### Core types
+* string - angelscript type.
+* array - angelscript type. Extra methods:
+	* void shuffle() - randomly shuffle items.
 * Int2 - 2d int point x, y.
 * Vec2 - 2d vector x, y. Static methods:
 	* float Distance(const Vec2& in v1, const Vec2& in v2);

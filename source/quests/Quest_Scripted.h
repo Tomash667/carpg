@@ -21,8 +21,7 @@ public:
 	void Start(Vars* vars);
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
-	GameDialog* GetDialog(const string& dialog_id);
+	GameDialog* GetDialog(const string& dialogId);
 	void SetProgress(int prog2) override;
 	int GetProgress() const { return prog; }
 	void AddEntry(const string& str);
@@ -39,6 +38,8 @@ public:
 private:
 	void BeforeCall();
 	void AfterCall();
+	void SaveVar(GameWriter& f, Var::Type varType, void* ptr);
+	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
 
 	asIScriptObject* instance;
 	JournalState journalState;

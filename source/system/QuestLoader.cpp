@@ -87,7 +87,8 @@ void QuestLoader::InitTokenizer()
 
 	t.AddKeywords(G_FLAGS, {
 		{ "dont_count", QuestScheme::DONT_COUNT },
-		{ "not_scripted", QuestScheme::NOT_SCRIPTED }
+		{ "not_scripted", QuestScheme::NOT_SCRIPTED },
+		{ "recreate", QuestScheme::RECREATE }
 		});
 }
 

@@ -127,6 +127,7 @@ void Vars::Save(GameWriter& f)
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Magic:
+		case Var::Type::Array:
 			assert(0); // TODO
 			break;
 		}
@@ -223,6 +224,7 @@ void Vars::Load(GameReader& f)
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Magic:
+		case Var::Type::Array:
 			assert(0); // TODO
 			break;
 		}

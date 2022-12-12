@@ -6,7 +6,6 @@
 #include "QuestManager.h"
 #include "QuestScheme.h"
 #include "ScriptManager.h"
-#include "Var.h"
 #include "World.h"
 
 #include <angelscript.h>

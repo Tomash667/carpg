@@ -21,7 +21,6 @@
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
 #include "Team.h"
-#include "Var.h"
 #include "WorldMapGui.h"
 
 #include <scriptarray/scriptarray.h>

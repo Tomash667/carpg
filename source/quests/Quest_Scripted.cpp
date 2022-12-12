@@ -11,10 +11,12 @@
 #include "Net.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
+#include "ScriptExtensions.h"
 #include "ScriptManager.h"
 #include "World.h"
 
 #include <angelscript.h>
+#include <scriptarray\scriptarray.h>
 #include <scriptdictionary\scriptdictionary.h>
 #pragma warning(error: 4062)
 
@@ -92,96 +94,116 @@ void Quest_Scripted::Save(GameWriter& f)
 		scheme->scriptType->GetProperty(i, &name, &typeId);
 		Var::Type varType = scriptMgr->GetVarType(typeId);
 		f << Hash(name);
-		void* ptr = instance->GetAddressOfProperty(i);
-		switch(varType)
+		SaveVar(f, varType, instance->GetAddressOfProperty(i));
+	}
+}
+
+//=================================================================================================
+void Quest_Scripted::SaveVar(GameWriter& f, Var::Type varType, void* ptr)
+{
+	switch(varType)
+	{
+	case Var::Type::None:
+		break;
+	case Var::Type::Bool:
+		f << *(bool*)ptr;
+		break;
+	case Var::Type::Int:
+		f << *(int*)ptr;
+		break;
+	case Var::Type::Float:
+		f << *(float*)ptr;
+		break;
+	case Var::Type::Int2:
+		f << *(Int2*)ptr;
+		break;
+	case Var::Type::Vec2:
+		f << *(Vec2*)ptr;
+		break;
+	case Var::Type::Vec3:
+		f << *(Vec3*)ptr;
+		break;
+	case Var::Type::Vec4:
+		f << *(Vec4*)ptr;
+		break;
+	case Var::Type::Item:
 		{
-		case Var::Type::None:
-			break;
-		case Var::Type::Bool:
-			f << *(bool*)ptr;
-			break;
-		case Var::Type::Int:
-			f << *(int*)ptr;
-			break;
-		case Var::Type::Float:
-			f << *(float*)ptr;
-			break;
-		case Var::Type::Int2:
-			f << *(Int2*)ptr;
-			break;
-		case Var::Type::Vec2:
-			f << *(Vec2*)ptr;
-			break;
-		case Var::Type::Vec3:
-			f << *(Vec3*)ptr;
-			break;
-		case Var::Type::Vec4:
-			f << *(Vec4*)ptr;
-			break;
-		case Var::Type::Item:
+			Item* item = *(Item**)ptr;
+			if(item)
 			{
-				Item* item = *(Item**)ptr;
-				if(item)
-				{
-					f << item->id;
-					if(item->id[0] == '$')
-						f << item->questId;
-				}
-				else
-					f.Write0();
+				f << item->id;
+				if(item->id[0] == '$')
+					f << item->questId;
 			}
-			break;
-		case Var::Type::Location:
-			{
-				Location* loc = *(Location**)ptr;
-				if(loc)
-					f << loc->index;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::Encounter:
-			{
-				Encounter* enc = *(Encounter**)ptr;
-				if(enc)
-					f << enc->index;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::GroundItem:
-			{
-				GroundItem* item = *(GroundItem**)ptr;
-				if(item)
-					f << item->id;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::String:
-			f.WriteString4(*(string*)ptr);
-			break;
-		case Var::Type::Unit:
-			{
-				Unit* unit = *(Unit**)ptr;
-				if(unit)
-					f << unit->id;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::UnitGroup:
-			{
-				UnitGroup* group = *(UnitGroup**)ptr;
-				if(group)
-					f << group->id;
-				else
-					f.Write0();
-			}
-			break;
-		case Var::Type::Magic:
-			break;
+			else
+				f.Write0();
 		}
+		break;
+	case Var::Type::Location:
+		{
+			Location* loc = *(Location**)ptr;
+			if(loc)
+				f << loc->index;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::Encounter:
+		{
+			Encounter* enc = *(Encounter**)ptr;
+			if(enc)
+				f << enc->index;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::GroundItem:
+		{
+			GroundItem* item = *(GroundItem**)ptr;
+			if(item)
+				f << item->id;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::String:
+		f.WriteString4(*(string*)ptr);
+		break;
+	case Var::Type::Unit:
+		{
+			Unit* unit = *(Unit**)ptr;
+			if(unit)
+				f << unit->id;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::UnitGroup:
+		{
+			UnitGroup* group = *(UnitGroup**)ptr;
+			if(group)
+				f << group->id;
+			else
+				f.Write0();
+		}
+		break;
+	case Var::Type::Magic:
+		break;
+	case Var::Type::Array:
+		{
+			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
+			const uint size = arr->GetSize();
+			const int elementSize = CScriptArray_GetElementSize(*arr);
+			const Var::Type varType = scriptMgr->GetVarType(arr->GetElementTypeId());
+			byte* buf = static_cast<byte*>(arr->GetBuffer());
+			f << size;
+			for(uint i = 0; i < size; ++i)
+			{
+				SaveVar(f, varType, buf);
+				buf += elementSize;
+			}
+		}
+		break;
 	}
 }
 
@@ -215,7 +237,6 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		{
 			uint nameHash;
 			f >> nameHash;
-
 			int propId = scheme->GetPropertyId(nameHash);
 			if(propId != -1)
 			{
@@ -349,15 +370,30 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 		break;
 	case Var::Type::Magic:
 		break;
+	case Var::Type::Array:
+		{
+			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
+			const uint size = f.Read<uint>();
+			const int elementSize = CScriptArray_GetElementSize(*arr);
+			const Var::Type varType = scriptMgr->GetVarType(arr->GetElementTypeId());
+			arr->Resize(size);
+			byte* buf = static_cast<byte*>(arr->GetBuffer());
+			for(uint i = 0; i < size; ++i)
+			{
+				LoadVar(f, varType, buf);
+				buf += elementSize;
+			}
+		}
+		break;
 	}
 }
 
 //=================================================================================================
-GameDialog* Quest_Scripted::GetDialog(const string& dialog_id)
+GameDialog* Quest_Scripted::GetDialog(const string& dialogId)
 {
-	GameDialog* dialog = scheme->GetDialog(dialog_id);
+	GameDialog* dialog = scheme->GetDialog(dialogId);
 	if(!dialog)
-		throw new ScriptException("Missing quest dialog '%s'.", dialog_id.c_str());
+		throw new ScriptException("Missing quest dialog '%s'.", dialogId.c_str());
 	return dialog;
 }
 
