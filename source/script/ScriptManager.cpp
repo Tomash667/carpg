@@ -149,8 +149,8 @@ string& ToString(asIScriptGeneric* gen, void* adr, int typeId)
 		throw ScriptException("Failed to call ToString on object '%s' (%d).", name, r);
 	}
 
-	void* ret_adr = ctx->GetReturnAddress();
-	tmpStrResult = *(string*)ret_adr;
+	void* retAdr = ctx->GetReturnAddress();
+	tmpStrResult = *(string*)retAdr;
 	engine->ReturnContext(ctx);
 	return tmpStrResult;
 }
@@ -321,12 +321,12 @@ void ScriptManager::RegisterCommon()
 	AddFunction("void Warn(const string& in)", asFUNCTION(ScriptWarn));
 	AddFunction("void Error(const string& in)", asFUNCTION(ScriptError));
 
-	string func_sign = "string Format(const string& in)";
+	string funcSign = "string Format(const string& in)";
 	for(int i = 1; i <= 9; ++i)
 	{
-		CHECKED(engine->RegisterGlobalFunction(func_sign.c_str(), asFUNCTION(FormatStrGeneric), asCALL_GENERIC));
-		func_sign.pop_back();
-		func_sign += ", ?& in)";
+		CHECKED(engine->RegisterGlobalFunction(funcSign.c_str(), asFUNCTION(FormatStrGeneric), asCALL_GENERIC));
+		funcSign.pop_back();
+		funcSign += ", ?& in)";
 	}
 
 	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
@@ -1050,10 +1050,10 @@ void ScriptManager::RunScript(cstring code)
 	assert(code);
 
 	// compile
-	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
-	cstring packed_code = Format("void f() { %s; }", code);
+	asIScriptModule* tmpModule = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	cstring packedCode = Format("void f() { %s; }", code);
 	asIScriptFunction* func;
-	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
+	int r = tmpModule->CompileFunction("RunScript", packedCode, -1, 0, &func);
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
@@ -1061,16 +1061,16 @@ void ScriptManager::RunScript(cstring code)
 	}
 
 	// run
-	asIScriptContext* tmp_context = engine->RequestContext();
-	r = tmp_context->Prepare(func);
+	asIScriptContext* tmpContext = engine->RequestContext();
+	r = tmpContext->Prepare(func);
 	func->Release();
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
-		engine->ReturnContext(tmp_context);
+		engine->ReturnContext(tmpContext);
 	}
 	else
-		ExecuteScript(tmp_context);
+		ExecuteScript(tmpContext);
 }
 
 asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
@@ -1078,12 +1078,12 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 	assert(code);
 
 	// compile
-	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmpModule = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	if(!name)
 		name = "f";
-	cstring packed_code = Format("void %s() { %s; }", name, code);
+	cstring packedCode = Format("void %s() { %s; }", name, code);
 	asIScriptFunction* func;
-	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
+	int r = tmpModule->CompileFunction("RunScript", packedCode, -1, 0, &func);
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to compile script (%d).", r), code);
@@ -1096,28 +1096,28 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
 {
 	// run
-	asIScriptContext* tmp_context = engine->RequestContext();
-	int r = tmp_context->Prepare(func);
+	asIScriptContext* tmpContext = engine->RequestContext();
+	int r = tmpContext->Prepare(func);
 	if(r >= 0)
 	{
 		if(instance)
-			r = tmp_context->SetObject(instance);
+			r = tmpContext->SetObject(instance);
 		if(r >= 0)
 		{
 			if(clbk)
-				clbk(tmp_context, 0);
+				clbk(tmpContext, 0);
 		}
 	}
 
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
-		engine->ReturnContext(tmp_context);
+		engine->ReturnContext(tmpContext);
 		return;
 	}
 
 	lastException = nullptr;
-	r = tmp_context->Execute();
+	r = tmpContext->Execute();
 
 	if(r == asEXECUTION_SUSPENDED)
 		return;
@@ -1125,21 +1125,21 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 	if(r == asEXECUTION_FINISHED)
 	{
 		if(clbk)
-			clbk(tmp_context, 1);
+			clbk(tmpContext, 1);
 	}
 	else
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			cstring msg = lastException ? lastException : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionLineNumber()));
+			cstring msg = lastException ? lastException : tmpContext->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmpContext->GetExceptionFunction()->GetName(),
+				tmpContext->GetExceptionLineNumber()));
 		}
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
 	}
 
-	engine->ReturnContext(tmp_context);
+	engine->ReturnContext(tmpContext);
 }
 
 string& ScriptManager::OpenOutput()

@@ -1,4 +1,48 @@
 //=============================================================================
+// Functions
+//=============================================================================
+code
+{
+	// Find place for village in quadrant
+	Vec2 GetVillagePos(int locQuadrant)
+	{
+		Box2d area = World::GetArea();
+		switch(locQuadrant)
+		{
+		case 1:
+			area.v2.x = area.v1.x + area.SizeX() / 2;
+			area.v2.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 2:
+			area.v1.x = area.v1.x + area.SizeX() / 2;
+			area.v2.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 3:
+			area.v2.x = area.v1.x + area.SizeX() / 2;
+			area.v1.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 4:
+			area.v1.x = area.v1.x + area.SizeX() / 2;
+			area.v1.y = area.v1.y + area.SizeY() / 2;
+			break;
+		}
+		
+		Info(Format("{0} - ({1},{2})x({3}x{4})", locQuadrant, area.v1.x, area.v1.y, area.v2.x, area.v2.y));
+		
+		Vec2 pos;
+		for(int i=0; i<20; ++i)
+		{
+			pos = World::FindPlace(area);
+			Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
+			if(Vec2::Distance(pos, nearCity.pos) > 100.f)
+				break;
+		}
+		
+		return pos;
+	}
+}
+
+//=============================================================================
 // Global initializer - not real quest
 // 1. set start date
 // 2. generate corner dungeon with gladiator armor
@@ -2297,9 +2341,9 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					array<int>@ index = { 0, 1, 2, 3 };
+					array<int>@ index = { 1, 2, 3, 4 };
 					index.shuffle();
-					villages.resize(2);
+					villages.resize(2); // TODO 4
 					
 					vars["index"] = index[0];
 					Quest::Find("main_village1").Start(vars);
@@ -2308,8 +2352,14 @@ quest main
 					vars["index"] = index[1];
 					Quest::Find("main_village2").Start(vars);
 					@villages[1] = vars["village"];
-					//Quest::Find("main_village3").Start();
-					//Quest::Find("main_village4").Start();
+					
+					//vars["index"] = index[2];
+					//Quest::Find("main_village3").Start(vars);
+					//@villages[2] = vars["village"];
+					
+					//vars["index"] = index[3];
+					//Quest::Find("main_village4").Start(vars);
+					//@villages[3] = vars["village"];
 					
 					villages.shuffle();
 					quest.AddEntry(TEXT(16));
@@ -2461,10 +2511,12 @@ quest main_village1
 	code {
 		Unit@ cleric;
 		Location@ village;
+		int locQuadrant;
 		
 		void Startup(Vars@ vars)
 		{
 			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
 			progress = P_MAIN_V1_START;
 			vars["village"] = village;
 		}
@@ -2475,20 +2527,7 @@ quest main_village1
 			{
 			case P_MAIN_V1_START:
 				{
-					// TODO: pos from index
-					Box2d area = World::GetArea();
-					area.v2.x = area.SizeX() / 2;
-					area.v2.y = area.SizeY() / 2;
-					Vec2 pos;
-					for(int i=0; i<20; ++i)
-					{
-						pos = World::FindPlace(area);
-						Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
-						if(Vec2::Distance(pos, nearCity.pos) > 100.f)
-							break;
-					}
-					
-					@village = World::CreateLocation(L_CITY, pos, VILLAGE_EMPTY);
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_EMPTY);
 					@village.activeQuest = quest;
 					village.SetKnown();
 					village.AddEventHandler(quest, EVENT_ENTER);
@@ -2550,10 +2589,12 @@ quest main_village2
 	code {
 		Unit@ cleric;
 		Location@ village;
+		int locQuadrant;
 		
 		void Startup(Vars@ vars)
 		{
 			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
 			progress = P_MAIN_V2_START;
 			vars["village"] = village;
 		}
@@ -2564,19 +2605,7 @@ quest main_village2
 			{
 			case P_MAIN_V2_START:
 				{
-					Box2d area = World::GetArea();
-					area.v2.x = area.SizeX() / 2;
-					area.v2.y = area.SizeY() / 2;
-					Vec2 pos;
-					for(int i=0; i<20; ++i)
-					{
-						pos = World::FindPlace(area);
-						Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
-						if(Vec2::Distance(pos, nearCity.pos) > 100.f)
-							break;
-					}
-					
-					@village = World::CreateLocation(L_CITY, pos, VILLAGE_EMPTY);
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_EMPTY);
 					@village.activeQuest = quest;
 					village.SetKnown();
 					village.AddEventHandler(quest, EVENT_ENTER);

@@ -3433,6 +3433,18 @@ unit q_main_ill_villager_attack : q_main_ill_villager {
 	group undead
 }
 
+unit q_main_plague_villager : q_main_ill_villager_attack {
+	blood yellow
+	tex {
+		null
+		"head_plague.jpg"
+		null
+	}
+	appearance {
+		hair_color {255 216 0}
+	}
+}
+
 //------------------------------------------------------------------------------
 // Unit groups
 //------------------------------------------------------------------------------

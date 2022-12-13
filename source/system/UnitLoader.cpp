@@ -371,7 +371,8 @@ void UnitLoader::InitTokenizer()
 		{ "bone", BLOOD_BONE },
 		{ "rock", BLOOD_ROCK },
 		{ "iron", BLOOD_IRON },
-		{ "slime", BLOOD_SLIME }
+		{ "slime", BLOOD_SLIME },
+		{ "yellow", BLOOD_YELLOW }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -1173,6 +1174,21 @@ void UnitLoader::ParseUnit(const string& id)
 						{
 							human->hairType = HumanData::HairColorType::Random;
 							crc.Update(human->hairType);
+						}
+						else if(t.IsSymbol('{'))
+						{
+							t.Next();
+							int r = t.MustGetInt();
+							t.Next();
+							int g = t.MustGetInt();
+							t.Next();
+							int b = t.MustGetInt();
+							t.Next();
+							t.AssertSymbol('}');
+							human->hairColor = Color(r, g, b);
+							human->hairType = HumanData::HairColorType::Fixed;
+							crc.Update(human->hairType);
+							crc.Update(human->hairColor);
 						}
 						else
 						{

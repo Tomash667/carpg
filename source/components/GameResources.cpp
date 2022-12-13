@@ -120,6 +120,7 @@ void GameResources::LoadData()
 	tBlood[BLOOD_ROCK] = resMgr->Load<Texture>("kamien.png");
 	tBlood[BLOOD_IRON] = resMgr->Load<Texture>("iskra.png");
 	tBlood[BLOOD_SLIME] = resMgr->Load<Texture>("slime_part.png");
+	tBlood[BLOOD_YELLOW] = resMgr->Load<Texture>("krew4.png");
 	tBloodSplat[BLOOD_RED] = resMgr->Load<Texture>("krew_slad.png");
 	tBloodSplat[BLOOD_GREEN] = resMgr->Load<Texture>("krew_slad2.png");
 	tBloodSplat[BLOOD_BLACK] = resMgr->Load<Texture>("krew_slad3.png");
@@ -127,6 +128,7 @@ void GameResources::LoadData()
 	tBloodSplat[BLOOD_ROCK] = nullptr;
 	tBloodSplat[BLOOD_IRON] = nullptr;
 	tBloodSplat[BLOOD_SLIME] = nullptr;
+	tBloodSplat[BLOOD_YELLOW] = resMgr->Load<Texture>("krew_slad4.png");
 	tSpark = resMgr->Load<Texture>("iskra.png");
 	tSpawn = resMgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
