@@ -373,6 +373,7 @@
     <ClCompile Include="system\Content.cpp" />
     <ClCompile Include="system\LocationLoader.cpp" />
     <ClCompile Include="system\MusicListLoader.cpp" />
+    <ClCompile Include="system\ParticleLoader.cpp" />
     <ClCompile Include="system\Perk.cpp" />
     <ClCompile Include="system\PerkLoader.cpp" />
     <ClCompile Include="system\QuestList.cpp" />
@@ -380,6 +381,8 @@
     <ClInclude Include="system\MusicType.h" />
     <ClInclude Include="system\MusicListLoader.h" />
     <ClInclude Include="system\ObjectLoader.h" />
+    <ClInclude Include="system\ParticleEffect.h" />
+    <ClInclude Include="system\ParticleLoader.h" />
     <ClInclude Include="system\Perk.h" />
     <ClInclude Include="system\PerkLoader.h" />
     <ClInclude Include="system\QuestList.h" />
