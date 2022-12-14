@@ -923,8 +923,8 @@ void Game::LoadGame(GameReader& f)
 	else
 		gameLevel->eventHandler = nullptr;
 
-	questMgr->UpgradeQuests();
 	questMgr->ProcessQuestRequests();
+	questMgr->UpgradeQuests();
 
 	dialogContext.dialogMode = false;
 	team->Clear(false);

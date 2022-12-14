@@ -44,17 +44,17 @@ void Location::Save(GameWriter& f)
 	f << name;
 	f << state;
 	f << target;
-	int quest_id;
+	int questId;
 	if(activeQuest)
 	{
 		if(activeQuest == ACTIVE_QUEST_HOLDER)
-			quest_id = (int)ACTIVE_QUEST_HOLDER;
+			questId = (int)ACTIVE_QUEST_HOLDER;
 		else
-			quest_id = activeQuest->id;
+			questId = activeQuest->id;
 	}
 	else
-		quest_id = -1;
-	f << quest_id;
+		questId = -1;
+	f << questId;
 	f << lastVisit;
 	f << st;
 	f << outside;
@@ -128,15 +128,15 @@ void Location::Load(GameReader& f)
 	f >> state;
 	if(LOAD_VERSION >= V_0_12)
 		f >> target;
-	int quest_id = f.Read<int>();
-	if(quest_id == -1)
+	int questId = f.Read<int>();
+	if(questId == -1)
 		activeQuest = nullptr;
-	else if(quest_id == (int)ACTIVE_QUEST_HOLDER)
+	else if(questId == (int)ACTIVE_QUEST_HOLDER)
 		activeQuest = ACTIVE_QUEST_HOLDER;
 	else
 	{
 		game->loadLocationQuest.push_back(this);
-		activeQuest = (Quest_Dungeon*)quest_id;
+		activeQuest = (Quest_Dungeon*)questId;
 	}
 	f >> lastVisit;
 	f >> st;
@@ -175,10 +175,10 @@ void Location::Load(GameReader& f)
 	events.resize(f.Read<uint>());
 	for(Event& e : events)
 	{
-		int quest_id;
+		int questId;
 		f >> e.type;
-		f >> quest_id;
-		questMgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
+		f >> questId;
+		questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
 		{
 			EventPtr event;
 			event.source = EventPtr::LOCATION;

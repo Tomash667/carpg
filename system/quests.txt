@@ -913,8 +913,6 @@ quest camp_near_city
 quest kill_animals
 {
 	type captain
-	flags not_scripted
-
 	progress {
 		P_KILLANI_NONE
 		P_KILLANI_STARTED
@@ -923,11 +921,7 @@ quest kill_animals
 		P_KILLANI_TIMEOUT
 		P_KILLANI_ON_TIMEOUT
 	}
-
-	properties {
-		Location@ targetLoc;
-	}
-
+	
 	dialog start
 	{
 		talk 0
@@ -960,6 +954,108 @@ quest kill_animals
 			talk 2
 		}
 		end
+	}
+	
+	code {
+		Location@ startLoc;
+		Location@ targetLoc;
+		int st;
+
+		void Startup()
+		{
+			@startLoc = Level::location;
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_KILLANI_STARTED:
+				{
+					if(Rand() % 2 == 0)
+						@targetLoc = World::GetClosestLocation(L_CAVE, startLoc.pos);
+					else
+						@targetLoc = World::GetClosestLocation(L_OUTSIDE, startLoc.pos, { FOREST, HILLS });
+					@targetLoc.activeQuest = quest;
+					targetLoc.SetKnown();
+					targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+					if(targetLoc.st < 5)
+						targetLoc.st = 5;
+					st = targetLoc.st;
+					
+					target.AddDialog(quest, "captain");
+
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(30);
+				}
+				break;
+			case P_KILLANI_CLEARED:
+				targetLoc.RemoveEventHandler(quest);
+				@targetLoc.activeQuest = null;
+				quest.AddEntry(TEXT(3));
+				break;
+			case P_KILLANI_FINISHED:
+				{
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+					quest.AddEntry(TEXT(4));
+					quest.SetCompleted();
+				}
+				break;
+			case P_KILLANI_ON_TIMEOUT:
+				quest.AddEntry(TEXT(5));
+				targetLoc.RemoveEventHandler(quest);
+				@targetLoc.activeQuest = null;
+				break;
+			case P_KILLANI_TIMEOUT:
+				quest.AddEntry(TEXT(6));
+				quest.SetFailed();
+				break;
+			}
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_CLEARED)
+				progress = P_KILLANI_CLEARED;
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(progress == P_KILLANI_STARTED)
+					progress = P_KILLANI_ON_TIMEOUT;
+			}
+		}
+
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 10), Int2(2500, 4000));
+		}
+
+		void OnUpgrade(Vars@ vars)
+		{
+			@startLoc = vars["startLoc"];
+			@targetLoc = vars["targetLoc"];
+			int startTime = vars["startTime"];
+			st = vars["st"];
+
+			if(quest.state != Q_STARTED)
+				return;
+
+			startLoc.GetCaptain().AddDialog(quest, "captain");
+
+			int days = 30 + startTime - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_KILLANI_STARTED)
+				progress = P_KILLANI_ON_TIMEOUT;
+
+			if(progress == P_KILLANI_STARTED)
+			{
+				@targetLoc.activeQuest = quest;
+				targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+			}
+		}
 	}
 }
 

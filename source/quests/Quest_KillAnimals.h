@@ -4,8 +4,8 @@
 #include "Quest2.h"
 
 //-----------------------------------------------------------------------------
-// Go to forest/cave and kill all animals.
-class Quest_KillAnimals final : public Quest2
+// Converted to script in V_DEV
+class Quest_KillAnimals final : public Quest2, public LocationEventHandler
 {
 public:
 	enum Progress
@@ -18,17 +18,15 @@ public:
 		OnTimeout
 	};
 
-	void Start() override;
-	void SetProgress(int p) override;
-	void FireEvent(ScriptEvent& event) override;
-	cstring FormatString(const string& str) override;
-	void SaveDetails(GameWriter& f) override;
+	void Start() override {}
+	void SetProgress(int p) override {}
 	LoadResult Load(GameReader& f) override;
 	void LoadDetails(GameReader& f) override;
+	void GetConversionData(ConversionData& data) override;
+	bool HandleLocationEvent(Event event) override { return false; }
+	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
-	int GetReward() const;
-
 	Location* targetLoc;
 	int st;
 };

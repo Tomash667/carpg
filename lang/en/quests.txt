@@ -184,7 +184,7 @@ quest kill_animals {
 	
 	dialog captain {
 		0 "Excellent work, these creatures often troubled travelers."
-		1 "Here you got $reward$ gold pieces as reward."
+		1 "Here you got $(Str(GetReward())) gold pieces as reward."
 		2 "No time for clearing $(targetLoc.name)? Through you, travelers cannot easily wander around."
 	}
 	

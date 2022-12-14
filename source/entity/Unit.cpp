@@ -2063,20 +2063,20 @@ void Unit::Load(GameReader& f)
 	f >> questId;
 	f >> assist;
 
-	AutoTalkMode old_auto_talk = AutoTalkMode::No;
-	GameDialog* old_auto_talk_dialog = nullptr;
-	float old_auto_talk_timer = 0;
+	AutoTalkMode oldAutoTalk = AutoTalkMode::No;
+	GameDialog* oldAutoTalkDialog = nullptr;
+	float oldAutoTalkTimer = 0;
 	if(LOAD_VERSION < V_0_12)
 	{
 		// old auto talk
-		f >> old_auto_talk;
-		if(old_auto_talk != AutoTalkMode::No)
+		f >> oldAutoTalk;
+		if(oldAutoTalk != AutoTalkMode::No)
 		{
 			if(const string& dialogId = f.ReadString1(); !dialogId.empty())
-				old_auto_talk_dialog = GameDialog::TryGet(dialogId.c_str());
+				oldAutoTalkDialog = GameDialog::TryGet(dialogId.c_str());
 			else
-				old_auto_talk_dialog = nullptr;
-			f >> old_auto_talk_timer;
+				oldAutoTalkDialog = nullptr;
+			f >> oldAutoTalkTimer;
 		}
 	}
 
@@ -2084,14 +2084,14 @@ void Unit::Load(GameReader& f)
 	f >> attackTeam;
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
-	int unit_event_handler_quest_id = f.Read<int>();
-	if(unit_event_handler_quest_id == -2)
+	int unitEventHandlerQuestId = f.Read<int>();
+	if(unitEventHandlerQuestId == -2)
 		eventHandler = questMgr->questContest;
-	else if(unit_event_handler_quest_id == -1)
+	else if(unitEventHandlerQuestId == -1)
 		eventHandler = nullptr;
 	else
 	{
-		eventHandler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
+		eventHandler = reinterpret_cast<UnitEventHandler*>(unitEventHandlerQuestId);
 		game->loadUnitHandler.push_back(this);
 	}
 	if(canSort && content.requireUpdate)
@@ -2100,9 +2100,9 @@ void Unit::Load(GameReader& f)
 	if(canSort && content.requireUpdate)
 		RecalculateWeight();
 
-	Entity<Unit> guard_target;
+	Entity<Unit> guardTarget;
 	if(LOAD_VERSION < V_0_12)
-		f >> guard_target;
+		f >> guardTarget;
 	f >> summoner;
 
 	if(liveState >= DYING)
@@ -2126,8 +2126,8 @@ void Unit::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		float old_attack_power = 1.f;
-		bool old_run_attack = false, old_hitted = false;
+		float oldAttackPower = 1.f;
+		bool oldRunAttack = false, oldHitted = false;
 
 		CreateMesh(CREATE_MESH::LOAD);
 		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
@@ -2145,7 +2145,7 @@ void Unit::Load(GameReader& f)
 		f >> weaponHiding;
 		f >> weaponState;
 		if(LOAD_VERSION < V_0_13)
-			f >> old_hitted;
+			f >> oldHitted;
 		f >> hurtTimer;
 		f >> targetPos;
 		f >> targetPos2;
@@ -2153,8 +2153,8 @@ void Unit::Load(GameReader& f)
 		f >> talkTimer;
 		if(LOAD_VERSION < V_0_13)
 		{
-			f >> old_attack_power;
-			f >> old_run_attack;
+			f >> oldAttackPower;
+			f >> oldRunAttack;
 		}
 		f >> timer;
 		f >> alcohol;
@@ -2173,9 +2173,9 @@ void Unit::Load(GameReader& f)
 			else
 			{
 				act.attack.index = aiMode;
-				act.attack.power = old_attack_power;
-				act.attack.run = old_run_attack;
-				act.attack.hitted = old_hitted;
+				act.attack.power = oldAttackPower;
+				act.attack.run = oldRunAttack;
+				act.attack.hitted = oldHitted;
 			}
 			break;
 		case A_CAST:
@@ -2235,11 +2235,11 @@ void Unit::Load(GameReader& f)
 		else
 			usedItem = nullptr;
 
-		int usable_id = f.Read<int>();
-		if(usable_id == -1)
+		int usableId = f.Read<int>();
+		if(usableId == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_id);
+			Usable::AddRequest(&usable, usableId);
 
 		if(action == A_SHOOT)
 		{
@@ -2437,24 +2437,24 @@ void Unit::Load(GameReader& f)
 		}
 	}
 
-	if(guard_target)
+	if(guardTarget)
 	{
 		if(order)
 			order->Free();
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_GUARD;
-		order->unit = guard_target;
+		order->unit = guardTarget;
 		order->timer = 0.f;
 	}
-	if(old_auto_talk != AutoTalkMode::No)
+	if(oldAutoTalk != AutoTalkMode::No)
 	{
 		if(order)
 			order->Free();
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_AUTO_TALK;
-		order->timer = old_auto_talk_timer;
-		order->autoTalk = old_auto_talk;
-		order->autoTalkDialog = old_auto_talk_dialog;
+		order->timer = oldAutoTalkTimer;
+		order->autoTalk = oldAutoTalk;
+		order->autoTalkDialog = oldAutoTalkDialog;
 		order->autoTalkQuest = nullptr;
 	}
 
@@ -2925,7 +2925,7 @@ bool Unit::Read(BitStreamReader& f)
 		f >> targetPos2;
 		f >> timer;
 		const string& used_item_id = f.ReadString1();
-		int usable_id = f.Read<int>();
+		int usableId = f.Read<int>();
 
 		// used item
 		if(!used_item_id.empty())
@@ -2941,10 +2941,10 @@ bool Unit::Read(BitStreamReader& f)
 			usedItem = nullptr;
 
 		// usable
-		if(usable_id == -1)
+		if(usableId == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_id);
+			Usable::AddRequest(&usable, usableId);
 
 		// action
 		switch(action)

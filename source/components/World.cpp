@@ -1875,8 +1875,8 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, 
 {
 	Location* best = nullptr;
 	int index = 0;
-	float dist, best_dist;
-	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
+	float dist, bestDist;
+	const bool allowActive = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
 
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
@@ -1884,7 +1884,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, 
 		Location* loc = *it;
 		if(!loc || loc->type != type)
 			continue;
-		if(!allow_active && loc->activeQuest)
+		if(!allowActive && loc->activeQuest)
 			continue;
 		if(target != ANY_TARGET)
 		{
@@ -1893,10 +1893,10 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, int target, 
 				continue;
 		}
 		dist = Vec2::Distance(loc->pos, pos);
-		if(!best || dist < best_dist)
+		if(!best || dist < bestDist)
 		{
 			best = loc;
-			best_dist = dist;
+			bestDist = dist;
 		}
 	}
 
@@ -1908,8 +1908,8 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* t
 {
 	Location* best = nullptr;
 	int index = 0;
-	float dist, best_dist;
-	const bool allow_active = IsSet(flags, F_ALLOW_ACTIVE);
+	float dist, bestDist;
+	const bool allowActive = IsSet(flags, F_ALLOW_ACTIVE);
 	const bool excluded = IsSet(flags, F_EXCLUDED);
 
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
@@ -1917,7 +1917,7 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* t
 		Location* loc = *it;
 		if(!loc || loc->type != type)
 			continue;
-		if(!allow_active && loc->activeQuest)
+		if(!allowActive && loc->activeQuest)
 			continue;
 		bool ok = false;
 		for(int i = 0; i < targetsCount; ++i)
@@ -1931,10 +1931,10 @@ Location* World::GetClosestLocation(LOCATION type, const Vec2& pos, const int* t
 		if(ok == excluded)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
-		if(!best || dist < best_dist)
+		if(!best || dist < bestDist)
 		{
 			best = loc;
-			best_dist = dist;
+			bestDist = dist;
 		}
 	}
 
@@ -2773,32 +2773,32 @@ void World::SetTravelDir(const Vec3& pos)
 		// not inside exit border, find closest line segment
 		const float mini = 32.f;
 		const float maxi = 256 - 32.f;
-		float best_dist = 999.f, dist;
+		float bestDist = 999.f, dist;
 		Vec2 pt, close_pt;
 		// check right
 		dist = GetClosestPointOnLineSegment(Vec2(maxi, mini), Vec2(maxi, maxi), unit_pos, pt);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			close_pt = pt;
 		}
 		// check left
 		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(mini, maxi), unit_pos, pt);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			close_pt = pt;
 		}
 		// check bottom
 		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(maxi, mini), unit_pos, pt);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			close_pt = pt;
 		}
 		// check top
 		dist = GetClosestPointOnLineSegment(Vec2(mini, maxi), Vec2(maxi, maxi), unit_pos, pt);
-		if(dist < best_dist)
+		if(dist < bestDist)
 			close_pt = pt;
 		unit_pos = close_pt;
 	}

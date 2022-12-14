@@ -190,14 +190,27 @@ void Quest2::Save(GameWriter& f)
 //=================================================================================================
 Quest::LoadResult Quest2::Load(GameReader& f)
 {
+	LoadQuest2(f, nullptr);
+	return LoadResult::Ok;
+}
+
+//=================================================================================================
+void Quest2::LoadQuest2(GameReader& f, cstring schemeId)
+{
 	Quest::Load(f);
-	SetScheme(questMgr->FindQuestInfo(type)->scheme);
+
+	QuestScheme* scheme;
+	if(schemeId)
+		scheme = questMgr->FindQuestInfo(schemeId)->scheme;
+	else
+		scheme = questMgr->FindQuestInfo(type)->scheme;
+
+	SetScheme(scheme);
 	if(IsActive())
 	{
 		f >> timeoutDays;
 		LoadDetails(f);
 	}
-	return LoadResult::Ok;
 }
 
 //=================================================================================================
