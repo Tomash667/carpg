@@ -22,7 +22,8 @@ enum Group
 enum TopKeyword
 {
 	TK_QUEST,
-	TK_QUEST_LIST
+	TK_QUEST_LIST,
+	TK_CODE
 };
 
 enum Property
@@ -50,7 +51,8 @@ void QuestLoader::DoLoading()
 	engine = scriptMgr->GetEngine();
 	module = engine->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 
-	Load("quests.txt", G_TOP);
+	bool requireId[]{ true, true, false };
+	Load("quests.txt", G_TOP, requireId);
 }
 
 //=================================================================================================
@@ -63,9 +65,12 @@ void QuestLoader::Cleanup()
 //=================================================================================================
 void QuestLoader::InitTokenizer()
 {
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
+
 	t.AddKeywords(G_TOP, {
 		{ "quest", TK_QUEST },
-		{ "quest_list", TK_QUEST_LIST }
+		{ "quest_list", TK_QUEST_LIST },
+		{ "code", TK_CODE }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -102,6 +107,9 @@ void QuestLoader::LoadEntity(int top, const string& id)
 		break;
 	case TK_QUEST_LIST:
 		ParseQuestList(id);
+		break;
+	case TK_CODE:
+		ParseCode();
 		break;
 	}
 }
@@ -279,6 +287,12 @@ void QuestLoader::ParseQuestList(const string& id)
 		t.Throw("Quest list can't be empty.");
 
 	QuestList::lists.push_back(list.Pin());
+}
+
+//=================================================================================================
+void QuestLoader::ParseCode()
+{
+	globalCode += t.GetBlock('{', '}', false);
 }
 
 //=================================================================================================

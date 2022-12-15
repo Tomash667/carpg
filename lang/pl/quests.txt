@@ -198,7 +198,7 @@ quest kill_animals {
 	
 	dialog captain {
 		0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-		1 "Masz tu $reward$ sztuk z³ota nagrody."
+		1 "Masz tu $(Str(GetReward())) sztuk z³ota nagrody."
 		2 "Nie oczyœci³eœ na czas $(targetLoc.name). Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
 	}
 	

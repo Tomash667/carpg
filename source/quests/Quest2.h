@@ -25,6 +25,7 @@ struct Quest2 : public Quest
 	void Save(GameWriter& f) override;
 	virtual void SaveDetails(GameWriter& f) {};
 	LoadResult Load(GameReader& f) override;
+	void LoadQuest2(GameReader& f, cstring schemeId);
 	virtual void LoadDetails(GameReader& f) {};
 	void SetState(State state);
 	void SetTimeout(int days);

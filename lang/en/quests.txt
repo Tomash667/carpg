@@ -184,7 +184,7 @@ quest kill_animals {
 	
 	dialog captain {
 		0 "Excellent work, these creatures often troubled travelers."
-		1 "Here you got $reward$ gold pieces as reward."
+		1 "Here you got $(Str(GetReward())) gold pieces as reward."
 		2 "No time for clearing $(targetLoc.name)? Through you, travelers cannot easily wander around."
 	}
 	
@@ -420,7 +420,7 @@ quest main {
 		11 "It's good that you are here. We need to talk about the plague..."
 		12 "I've examined the people but haven't been able to determine anything yet... I need more information to find the source of this plague."
 		13 "I have information about four villages where the plague also broke out. Someone has to go there and confirm these rumors. The soltys said it was a job for you."
-		14 "Go in any order to $(villages[0].name), $(villages[1].name), y i z."
+		14 "Go in any order to $(villages[0].name), $(villages[1].name), y and z."
 		15 "Now I'm back to research. We count on you!"
 		16 "Get back to me when you get some information."
 		17 "Good job! Come back when you get more information."
@@ -447,7 +447,7 @@ quest main {
 		13 "I found $(cleric.realName) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrineLoc.name), then he will help me."
 		14 "I brought $(cleric.realName) to the shrine. He needs time, $(Str(quest.timeout)) days. After that, I should find him in $(village.name)."
 		15 "The cleric should already be in $(village.name)."
-		16 "After talking to the cleric, he sent me to investigate rumors of plague in four villages. They are: $(villages[0].name), $(villages[1].name), y i z."
+		16 "After talking to the cleric, he sent me to investigate rumors of plague in four villages. They are: $(villages[0].name), $(villages[1].name), y and z."
 	}
 }
 

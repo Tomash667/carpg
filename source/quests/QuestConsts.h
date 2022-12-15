@@ -32,7 +32,7 @@ enum QUEST_TYPE
 	Q_BANDITS_COLLECT_TOLL, // removed in V_0_13
 	Q_CAMP_NEAR_CITY, // removed in V_0_16
 	Q_RETRIEVE_PACKAGE,
-	Q_KILL_ANIMALS,
+	Q_KILL_ANIMALS, // removed in V_DEV
 	Q_LOST_ARTIFACT, // removed in V_0_19
 	Q_STOLEN_ARTIFACT, // removed in V_0_18
 	Q_FIND_ARTIFACT, // removed in V_0_15
