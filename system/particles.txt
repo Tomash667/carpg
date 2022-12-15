@@ -1,28 +1,200 @@
 /*defaults:
 	posMin = Vec3(0, 0, 0);
 	posMax = Vec3(0, 0, 0);
-	mode = 0*/
+	mode = 0
+	emissions = -1
+	life = -1
+	
+	
+/*
+arrowHit tSpark
+spell ability->texParticle
+electroHit ability->texParticle
+torch tFlare (0.5)
+campfire tFlare (0.7)
+magicTorch tFlare2
+blood gameRes->tBlood[BLOOD_RED]
+water tWater
+magicFire tFlare2 (1.0)
+spawnUnit tSpawn
+CreateSpellParticleEffect ability->texParticle
+spellHit ability.texParticle
+hitMelee tSpark
+bloodAltar tBlood[BLOOD_RED] (0.5)
+*/
 
-effect arrowHit {
+effect hit {
 	tex "iskra.png"
+	emissions 1
 	emissionInterval 0.01
 	life 5
 	particleLife 0.5
-	emissions 1
 	spawnMin 10
 	spawnMax 15
 	maxParticles 15
-	speedMin { -1 0 -1 }
-	speedMax { 1 1 1 }
-	posMin { -0.1 -0.1 -0.1 }
-	posMax { 0.1 0.1 0.1 }
+	speedMin {-1 0 -1}
+	speedMax {1 1 1}
+	posMin {-0.1 -0.1 -0.1}
+	posMax {0.1 0.1 0.1}
 	size 0.3
 	alpha 0.9
 	opSize linearShrink
 	opAlpha linearShrink
 }
+
+effect torch {
+	tex "flare.png"
+	emissionInterval 0.1
+	particleLife 0.5
+	spawnMin 1
+	spawnMax 3
+	maxParticles 50
+	speedMin {-1 3 -1}
+	speedMax {1 4 1}
+	size 0.5
+	alpha 0.8
+	opSize linearShrink
+	opAlpha linearShrink
+	mode addOne
+}
+
+effect torchMagic : torch {
+	tex "flare2.png"
+}
+
+effect campfire : torch {
+	size 0.7
+}
+
+effect altarBlood {
+	tex "krew.png"
+	emissionInterval 0.1
+	particleLife 0.5
+	spawnMin 1
+	spawnMax 3
+	maxParticles 50
+	speedMin {-1 4 -1}
+	speedMax {1 6 1}
+	alpha 0.8
+	size 0.5
+	opAlpha linearShrink
+	opSize linearShrink
+}
+
+effect water {
+	tex "water.png"
+	emissionInterval 0.1
+	particleLife 3
+	spawnMin 4
+	spawnMax 8
+	maxParticles 500
+	speedMin {-0.6 4 -0.6}
+	speedMax {0.6 7 0.6}
+	alpha 0.8
+	size 0.05
+	opAlpha linearShrink
+	opSize linearShrink
+}
+
+effect magicFire {
+	tex "flare2.png"
+	emissionInterval 0.1
+	particleLife 0.5
+	spawnMin 2
+	spawnMax 4
+	maxParticles 50
+	speedMin {-1 3 -1}
+	speedMax {1 4 1}
+	alpha 1
+	size 1
+	opAlpha linearShrink
+	opSize linearShrink
+	mode addOne
+}
+
+effect spawnUnit {
+	tex "spawn_fog.png"
+	emissions 5
+	emissionInterval 0.1
+	life 5
+	particleLife 0.5
+	spawnMin 10
+	spawnMax 15
+	maxParticles 75
+	speedMin {-1 0 -1}
+	speedMax {1 1 1}
+	posMin {-0.75 0 -0.75}
+	posMax {0.75 1 0.75}
+	size 0.3
+	alpha 0.5
+	opAlpha linearShrink
+	opSize linearShrink
+}
+
+effect raise {
+	tex "czarna_iskra.png"
+	emissions 1
+	emissionInterval 0.01
+	life 0
+	particleLife 0.5
+	spawnMin 16
+	spawnMax 25
+	maxParticles 25
+	speedMin {-1.5 -1.5 -1.5}
+	speedMax {1.5 1.5 1.5}
+	// TODO
+	//posMin = Vec3(-ability->size, -ability->size, -ability->size);
+	//posMax = Vec3(ability->size, ability->size, ability->size);
+	size 0.1
+	alpha 1
+	opSize linearShrink
+	opAlpha linearShrink
+	mode addOne
+}
+
+/* bullet effect1
+			pe = new ParticleEmitter;
+			pe->tex = ability->texParticle;
+			pe->emissionInterval = 0.1f;
+			pe->life = -1;
+			pe->particleLife = 0.5f;
+			pe->emissions = -1;
+			pe->spawnMin = 3;
+			pe->spawnMax = 4;
+			pe->maxParticles = 50;
+			pe->pos = pos;
+			pe->speedMin = Vec3(-1, -1, -1);
+			pe->speedMax = Vec3(1, 1, 1);
+			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+			pe->posMax = Vec3(ability->size, ability->size, ability->size);
+			pe->size = ability->sizeParticle;
+			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->alpha = 1.f;
+			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->mode = 1;
 			
-/*abilityHit
+electro effect1
+ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = ability->texParticle;
+				pe->emissionInterval = 0.01f;
+				pe->life = 0.f;
+				pe->particleLife = 0.5f;
+				pe->emissions = 1;
+				pe->spawnMin = 8;
+				pe->spawnMax = 12;
+				pe->maxParticles = 12;
+				pe->pos = target_pos;
+				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+				pe->posMax = Vec3(ability->size, ability->size, ability->size);
+				pe->size = ability->sizeParticle;
+				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->mode = 1;
+			
+abilityHit
 pe = new ParticleEmitter;
 			pe->tex = ability->texParticle;
 			pe->emissionInterval = 0.1f;
@@ -119,22 +291,7 @@ ParticleEmitter* pe = new ParticleEmitter;
 			pe->size = 0.5f;
 			pe->Init();*/
 			
-effect water {
-	alpha 0.8
-	emissionInterval 0.1
-	emissions -1
-	life -1
-	maxParticles 500
-	opAlpha linearShrink
-	opSize linearShrink
-	particleLife 3
-	spawnMin 4
-	spawnMax 8
-	speedMin { -0.6 4 -0.6 }
-	speedMax { 0.6 7 0.6 }
-	tex "water.png"
-	size 0.05
-}
+
 			
 /*magicfire
 ParticleEmitter* pe = new ParticleEmitter;

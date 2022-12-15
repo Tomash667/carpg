@@ -46,7 +46,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 		if(trail)
 			trail->destroy = true;
 		if(pe)
-			pe->destroy = true;
+			pe->Destroy();
 		delete this;
 		return true;
 	}
@@ -79,7 +79,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 	if(trail)
 		trail->destroy = true;
 	if(pe)
-		pe->destroy = true;
+		pe->Destroy();
 
 	OnHit(locPart, hitted, hitpoint, callback);
 
@@ -359,25 +359,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = gameRes->tSpark;
-			pe->emissionInterval = 0.01f;
-			pe->life = 5.f;
-			pe->particleLife = 0.5f;
-			pe->emissions = 1;
-			pe->spawnMin = 10;
-			pe->spawnMax = 15;
-			pe->maxParticles = 15;
-			pe->pos = hitpoint;
-			pe->speedMin = Vec3(-1, 0, -1);
-			pe->speedMax = Vec3(1, 1, 1);
-			pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-			pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-			pe->size = 0.3f;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 0.9f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->mode = 0;
-			pe->Init();
+			pe->Init(ParticleEffect::Get("hit"), hitpoint);
 			locPart.lvlPart->pes.push_back(pe);
 
 			if(owner && owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
@@ -577,28 +559,10 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		trail = nullptr;
 		pe = nullptr;
 
-		if(ability->texParticle)
+		if(ability->effect1)
 		{
 			pe = new ParticleEmitter;
-			pe->tex = ability->texParticle;
-			pe->emissionInterval = 0.1f;
-			pe->life = -1;
-			pe->particleLife = 0.5f;
-			pe->emissions = -1;
-			pe->spawnMin = 3;
-			pe->spawnMax = 4;
-			pe->maxParticles = 50;
-			pe->pos = pos;
-			pe->speedMin = Vec3(-1, -1, -1);
-			pe->speedMax = Vec3(1, 1, 1);
-			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->sizeParticle;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 1.f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->mode = 1;
-			pe->Init();
+			pe->Init(ability->effect1, pos);
 			lvlPart.pes.push_back(pe);
 		}
 	}

@@ -798,47 +798,30 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 {
 	assert(obj);
 
-	// ogieñ pochodni
 	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
 		if(IsSet(obj->flags, OBJ_LIGHT))
 		{
-			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particleLife = 0.5f;
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
-			pe->speedMin = Vec3(-1, 3, -1);
-			pe->speedMax = Vec3(1, 4, 1);
-			pe->mode = 1;
-			pe->Init();
-			locPart.lvlPart->pes.push_back(pe);
-
-			pe->tex = gameRes->tFlare;
+			// torch
+			// particle effect
+			cstring effectName;
 			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				pe->size = 0.7f;
+				effectName = "campfire";
+			else if(IsSet(flags, SOE_MAGIC_LIGHT))
+				effectName = "torchMagic";
 			else
-			{
-				pe->size = 0.5f;
-				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					pe->tex = gameRes->tFlare2;
-			}
+				effectName = "torch";
 
-			// œwiat³o
+			ParticleEmitter* pe = new ParticleEmitter;
+			Vec3 effectPos = pos;
+			effectPos.y += obj->centery;
+			pe->Init(ParticleEffect::Get(effectName), effectPos);
+
+			// light
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
 				GameLight& light = Add1(locPart.lights);
-				light.startPos = pe->pos;
+				light.startPos = effectPos;
 				light.range = 5;
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					light.startColor = Vec3(0.8f, 0.8f, 1.f);
@@ -848,54 +831,20 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
 		{
-			// krew
+			// blood
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particleLife = 0.5f;
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
-			pe->speedMin = Vec3(-1, 4, -1);
-			pe->speedMax = Vec3(1, 6, 1);
-			pe->mode = 0;
-			pe->tex = gameRes->tBlood[BLOOD_RED];
-			pe->size = 0.5f;
-			pe->Init();
+			Vec3 effectPos = pos;
+			effectPos.y += obj->centery;
+			pe->Init(ParticleEffect::Get("altarBlood"), effectPos);
 			locPart.lvlPart->pes.push_back(pe);
 		}
 		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
 		{
-			// krew
+			// water
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 500;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particleLife = 3.f;
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 4;
-			pe->spawnMax = 8;
-			pe->speedMin = Vec3(-0.6f, 4, -0.6f);
-			pe->speedMax = Vec3(0.6f, 7, 0.6f);
-			pe->mode = 0;
-			pe->tex = gameRes->tWater;
-			pe->size = 0.05f;
-			pe->Init();
+			Vec3 effectPos = pos;
+			effectPos.y += obj->centery;
+			pe->Init(ParticleEffect::Get("water"), effectPos);
 			locPart.lvlPart->pes.push_back(pe);
 		}
 	}
@@ -1487,27 +1436,10 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				if(!game->inLoad)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tFlare2;
-					pe->alpha = 1.0f;
-					pe->size = 1.0f;
-					pe->emissionInterval = 0.1f;
-					pe->emissions = -1;
-					pe->life = -1;
-					pe->maxParticles = 50;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->particleLife = 0.5f;
-					pe->pos = pos;
+					Vec3 effectPos = pos;
 					if(locPart.partType == LocationPart::Type::Outside)
-						pe->pos.y += terrain->GetH(pos);
-					pe->posMin = Vec3(0, 0, 0);
-					pe->posMax = Vec3(0, 0, 0);
-					pe->spawnMin = 2;
-					pe->spawnMax = 4;
-					pe->speedMin = Vec3(-1, 3, -1);
-					pe->speedMax = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
+						effectPos.y += terrain->GetH(effectPos);
+					pe->Init(ParticleEffect::Get("magicFire"), effectPos);
 					locPart.lvlPart->pes.push_back(pe);
 				}
 			}
@@ -4610,30 +4542,12 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 //=================================================================================================
 void Level::SpawnUnitEffect(Unit& unit)
 {
-	Vec3 real_pos = unit.pos;
-	real_pos.y += 1.f;
-	soundMgr->PlaySound3d(gameRes->sSummon, real_pos, SPAWN_SOUND_DIST);
+	Vec3 realPos = unit.pos;
+	realPos.y += 1.f;
+	soundMgr->PlaySound3d(gameRes->sSummon, realPos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = gameRes->tSpawn;
-	pe->emissionInterval = 0.1f;
-	pe->life = 5.f;
-	pe->particleLife = 0.5f;
-	pe->emissions = 5;
-	pe->spawnMin = 10;
-	pe->spawnMax = 15;
-	pe->maxParticles = 15 * 5;
-	pe->pos = unit.pos;
-	pe->speedMin = Vec3(-1, 0, -1);
-	pe->speedMax = Vec3(1, 1, 1);
-	pe->posMin = Vec3(-0.75f, 0, -0.75f);
-	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
-	pe->size = 0.3f;
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->alpha = 0.5f;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->mode = 0;
-	pe->Init();
+	pe->Init(ParticleEffect::Get("spawnUnit"), unit.pos);
 	unit.locPart->lvlPart->pes.push_back(pe);
 }
 

@@ -118,7 +118,7 @@ bool Electro::Update(float dt)
 				return false;
 			}
 
-			const Vec3 target_pos = lines.back().to;
+			const Vec3 targetPos = lines.back().to;
 
 			// deal damage
 			if(!owner->IsFriend(*target, true))
@@ -130,31 +130,13 @@ bool Electro::Update(float dt)
 
 			// play sound
 			if(ability->soundHit)
-				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
+				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// add particles
-			if(ability->texParticle)
+			if(ability->effect1)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
-				pe->maxParticles = 12;
-				pe->pos = target_pos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
+				pe->Init(ability->effect1, targetPos);
 				locPart->lvlPart->pes.push_back(pe);
 			}
 
@@ -162,7 +144,7 @@ bool Electro::Update(float dt)
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::ELECTRO_HIT;
-				c.pos = target_pos;
+				c.pos = targetPos;
 			}
 
 			Unit* newTarget = FindNextTarget();
@@ -197,35 +179,17 @@ bool Electro::Update(float dt)
 	{
 		if(hitsome && lines.back().t >= 0.25f)
 		{
-			const Vec3 target_pos = lines.back().to;
+			const Vec3 targetPos = lines.back().to;
 			hitsome = false;
 
 			if(ability->soundHit)
-				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
+				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
-			// particles
-			if(ability->texParticle)
+			// add particles
+			if(ability->effect1)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
-				pe->maxParticles = 12;
-				pe->pos = target_pos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
+				pe->Init(ability->effect1, targetPos);
 				locPart->lvlPart->pes.push_back(pe);
 			}
 
@@ -233,7 +197,7 @@ bool Electro::Update(float dt)
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::ELECTRO_HIT;
-				c.pos = target_pos;
+				c.pos = targetPos;
 			}
 		}
 		if(lines.back().t >= 0.5f)
@@ -298,13 +262,13 @@ Unit* Electro::FindNextTarget()
 		});
 	}
 
-	const Vec3 target_pos = lines.back().to;
+	const Vec3 targetPos = lines.back().to;
 	Unit* newTarget = nullptr;
 	for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 	{
 		Vec3 hitpoint;
 		Unit* new_hitted;
-		if(gameLevel->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+		if(gameLevel->RayTest(targetPos, it2->first->GetCenter(), target, hitpoint, new_hitted))
 		{
 			if(new_hitted == it2->first)
 			{

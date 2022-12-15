@@ -56,6 +56,7 @@ struct Ability
 	string id, animation;
 	SoundPtr soundCast, soundHit;
 	TexturePtr tex, texParticle, texIcon;
+	ParticleEffect* effect1; FIXME; // better name
 	TexOverride texExplode;
 	Vec2 cooldown;
 	Type type;

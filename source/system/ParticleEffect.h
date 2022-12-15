@@ -1,6 +1,6 @@
 #pragma once
 
-enum PARTICLE_OP
+/*enum PARTICLE_OP
 {
 	POP_CONST,
 	POP_LINEAR_SHRINK
@@ -18,4 +18,4 @@ struct ParticleEffect
 	static vector<ParticleEffect*> effects;
 	static std::map<int, ParticleEffect*> hashEffects;
 	static ParticleEffect* Get(int hash);
-};
+};*/
