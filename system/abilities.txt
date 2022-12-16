@@ -65,7 +65,7 @@ ability raise {
 	cooldown {10 15}
 	range 2.5
 	move_range 15
-	tex_particle "czarna_iskra.png" 0.1
+	tex_particle "czarna_iskra.png" 0.2
 	sound_cast "Darkness3.mp3" 1
 }
 

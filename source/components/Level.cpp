@@ -99,12 +99,12 @@ void Level::LoadLanguage()
 void Level::Init()
 {
 	terrain = new Terrain;
-	Terrain::Options terrain_options;
-	terrain_options.nParts = 8;
-	terrain_options.texSize = 256;
-	terrain_options.tileSize = 2.f;
-	terrain_options.tilesPerPart = 16;
-	terrain->Init(terrain_options);
+	Terrain::Options terrainOptions;
+	terrainOptions.nParts = 8;
+	terrainOptions.texSize = 256;
+	terrainOptions.tileSize = 2.f;
+	terrainOptions.tilesPerPart = 16;
+	terrain->Init(terrainOptions);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -152,7 +152,7 @@ void Level::Reset()
 //=================================================================================================
 void Level::ProcessUnitWarps()
 {
-	bool warped_to_arena = false;
+	bool warpedToArena = false;
 
 	for(UnitWarpData& warp : unitWarpData)
 	{
@@ -203,7 +203,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->rot = (warp.unit->inArena == 0 ? PI : 0);
 				WarpUnit(*warp.unit, pos);
 				building.units.push_back(warp.unit);
-				warped_to_arena = true;
+				warpedToArena = true;
 			}
 		}
 		else
@@ -237,7 +237,7 @@ void Level::ProcessUnitWarps()
 
 	unitWarpData.clear();
 
-	if(warped_to_arena)
+	if(warpedToArena)
 	{
 		Vec3 pt1(0, 0, 0), pt2(0, 0, 0);
 		int count1 = 0, count2 = 0;
@@ -704,15 +704,15 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 	else if(IsSet(base->flags, OBJ_USABLE))
 	{
 		// usable object
-		BaseUsable* base_use = (BaseUsable*)base;
+		BaseUsable* baseUsable = (BaseUsable*)base;
 
 		Usable* u = new Usable;
 		u->Register();
-		u->base = base_use;
+		u->base = baseUsable;
 		u->pos = pos;
 		u->rot = rot;
 
-		if(IsSet(base_use->useFlags, BaseUsable::CONTAINER))
+		if(IsSet(baseUsable->useFlags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
 			const Item* item = Book::GetRandom();
@@ -735,7 +735,7 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 			if(base->variants)
 			{
 				// extra code for bench
-				if(IsSet(base_use->useFlags, BaseUsable::IS_BENCH))
+				if(IsSet(baseUsable->useFlags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -5014,12 +5014,14 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->spawnMin = 16;
 		pe->spawnMax = 25;
 		pe->maxParticles = 25;
-		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-		pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-		pe->posMax = Vec3(ability->size, ability->size, ability->size);
+		pe->speedMin = Vec3(0, 4, 0);
+		pe->speedMax = Vec3(0, 5, 0);
+		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = ability->sizeParticle;
+		pe->particleLife = 1.f;
 		pe->alpha = 1.f;
+		pe->mode = 0;
 		break;
 	case Ability::Heal:
 		pe->spawnMin = 16;
@@ -5031,6 +5033,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = ability->sizeParticle;
 		pe->alpha = 0.9f;
+		pe->mode = 1;
 		break;
 	default:
 		pe->spawnMin = 12;
@@ -5042,11 +5045,11 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->posMax = Vec3(0.5f, 0, 0.5f);
 		pe->size = ability->sizeParticle / 2;
 		pe->alpha = 1.f;
+		pe->mode = 1;
 		break;
 	}
 	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->mode = 1;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
 

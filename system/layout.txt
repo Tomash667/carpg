@@ -109,8 +109,7 @@ control "CheckBoxGroup" {
 
 control "DialogBox" {
 	background {
-		mode IMAGE
-		image "background.bmp"
+		mode COLOR
 		color {255 255 255 128}
 	}
 	box {
@@ -285,8 +284,7 @@ control "Notifications" {
 
 control "Overlay" {
 	background {
-		mode IMAGE
-		image "background.bmp"
+		mode COLOR
 		color {255 255 255 128}
 	}
 }
@@ -326,8 +324,7 @@ control "PickItemDialog" {
 		image "close_disabled.png"
 	}
 	background {
-		mode IMAGE
-		image "background.bmp"
+		mode COLOR
 		color {255 255 255 128}
 	}
 	box {

@@ -734,8 +734,8 @@ void Game::UpdateAi(float dt)
 					else if(IsSet(u.data->flags2, F2_XAR))
 					{
 						// search for altar
-						BaseObject* base_obj = BaseObject::Get("bloody_altar");
-						Object* obj = locPart.FindObject(base_obj);
+						BaseObject* baseObj = BaseObject::Get("bloody_altar");
+						Object* obj = locPart.FindObject(baseObj);
 
 						if(obj)
 						{
@@ -899,8 +899,8 @@ void Game::UpdateAi(float dt)
 					else if(IsSet(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 					{
 						// check if unit have required item
-						const Item* req_item = ironVein->item;
-						if(req_item && !u.HaveItem(req_item) && u.GetEquippedItem(SLOT_WEAPON) != req_item)
+						const Item* reqItem = ironVein->item;
+						if(reqItem && !u.HaveItem(reqItem) && u.GetEquippedItem(SLOT_WEAPON) != reqItem)
 							goto normal_idle_action;
 						// find closest ore vein
 						Usable* usable = nullptr;
@@ -973,8 +973,8 @@ void Game::UpdateAi(float dt)
 								if(IsSet(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 								{
 									static vector<Object*> trainTargets;
-									BaseObject* meleeTarget = BaseObject::Get("meleeTarget"),
-										*bowTarget = BaseObject::Get("bowTarget");
+									BaseObject* meleeTarget = BaseObject::Get("melee_target"),
+										*bowTarget = BaseObject::Get("bow_target");
 
 									for(vector<Object*>::iterator it2 = locPart.objects.begin(), end2 = locPart.objects.end(); it2 != end2; ++it2)
 									{
@@ -1740,8 +1740,8 @@ void Game::UpdateAi(float dt)
 				else if(u.action == A_SHOOT)
 				{
 					// bowshot
-					float arrow_speed = u.GetArrowSpeed();
-					lookPos = ai.PredictTargetPos(*enemy, arrow_speed);
+					float arrowSpeed = u.GetArrowSpeed();
+					lookPos = ai.PredictTargetPos(*enemy, arrowSpeed);
 					lookAt = LookAtPoint;
 					u.targetPos = lookPos;
 				}
@@ -2348,7 +2348,7 @@ void Game::UpdateAi(float dt)
 					moveType = MovePoint;
 					runType = WalkIfNear;
 					lookAt = LookAtPoint;
-					targetPos = lookPos = target->pos;
+					targetPos = lookPos = target->IsStanding() ? target->pos : target->GetLootCenter();
 
 					if(Vec3::Distance(u.pos, targetPos) <= ability.range)
 						moveType = DontMove;
@@ -2372,11 +2372,12 @@ void Game::UpdateAi(float dt)
 							break;
 						}
 					}
+
 					u.action = A_CAST;
 					u.animationState = AS_CAST_ANIMATION;
 					u.act.cast.ability = &ability;
 					u.act.cast.target = target;
-					u.targetPos = target->pos;
+					u.targetPos = targetPos;
 
 					if(ability.mana > 0.f)
 						u.RemoveMana(ability.mana);
