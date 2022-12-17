@@ -9,19 +9,19 @@ code
 		Box2d area = World::GetArea();
 		switch(locQuadrant)
 		{
-		case 1:
+		case 0:
 			area.v2.x = area.v1.x + area.SizeX() / 2;
 			area.v2.y = area.v1.y + area.SizeY() / 2;
 			break;
-		case 2:
+		case 1:
 			area.v1.x = area.v1.x + area.SizeX() / 2;
 			area.v2.y = area.v1.y + area.SizeY() / 2;
 			break;
-		case 3:
+		case 2:
 			area.v2.x = area.v1.x + area.SizeX() / 2;
 			area.v1.y = area.v1.y + area.SizeY() / 2;
 			break;
-		case 4:
+		case 3:
 			area.v1.x = area.v1.x + area.SizeX() / 2;
 			area.v1.y = area.v1.y + area.SizeY() / 2;
 			break;
@@ -493,7 +493,7 @@ quest deliver_resources
 			case P_DELIVER_FINISHED:
 				quest.AddEntry(TEXT(4));
 				quest.SetCompleted();
-				Team::AddReward(1500, 3000);
+				Team::AddReward(1500, 4500);
 				pc.unit.RemoveQuestItem(quest);
 				@targetLoc.activeQuest = null;
 				break;
@@ -1952,7 +1952,7 @@ quest alchemist_apprentice
 					quest.AddEntry(TEXT(7));
 					quest.SetCompleted();
 					uint count = Team::RemoveItem(herb, 0);
-					Team::AddReward(500*count, 7500);
+					Team::AddReward(500 * count, 7500);
 					@forest.activeQuest = null;
 				}
 				break;
@@ -2146,15 +2146,45 @@ quest main
 		case P_MAIN_CLERIC_GO_TO_VILLAGES
 			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"main_village1\").progress == P_MAIN_V1_READ"
 			{
-				do_once
-				talk 18
-				script "FinishVillageQuest(1);"
-				talk 19
+				choice 19
+				{
+					do_once
+					talk 20
+					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE;"
+					talk 21
+					restart
+				}
+			}
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_crystal\")) && Quest::Find(\"main_village2\").progress == P_MAIN_V2_CLEARED_PICKED"
+			{
+				choice 22
+				{
+					do_once
+					talk 23
+					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE;"
+					talk 21
+					restart
+				}
+			}
+			if have_item q_infected_organ
+			{
+				choice 24
+				{
+					do_once
+					script "int count = pc.unit.RemoveItem(Item::Get(\"q_infected_organ\"), 0); Team::AddExp(count * 100);"
+					talk 25
+					restart
+				}
 			}
 			if once
-				talk 16
-			else
-				talk 17
+			{
+				if choices == 0
+					talk 16
+				else
+					talk 17
+			}
+			else if choices == 0
+				talk 18
 		}
 		
 		if choices > 0
@@ -2435,36 +2465,21 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					array<int>@ index = { 1, 2, 3, 4 };
-					index.shuffle();
-					villages.resize(2); // TODO 4
+					array<int>@ quests = { 1, 2 /*, 3, 4*/ };
+					quests.shuffle();
+					villages.resize(2);
 					
-					vars["index"] = index[0];
-					Quest::Find("main_village1").Start(vars);
-					@villages[0] = vars["village"];
+					for(int i = 0; i < 2; ++i)
+					{
+						vars["index"] = i;
+						Quest::Find("main_village" + quests[i]).Start(vars);
+						@villages[i] = vars["village"];
+					}
 					
-					vars["index"] = index[1];
-					Quest::Find("main_village2").Start(vars);
-					@villages[1] = vars["village"];
-					
-					//vars["index"] = index[2];
-					//Quest::Find("main_village3").Start(vars);
-					//@villages[2] = vars["village"];
-					
-					//vars["index"] = index[3];
-					//Quest::Find("main_village4").Start(vars);
-					//@villages[3] = vars["village"];
-					
-					villages.shuffle();
 					quest.AddEntry(TEXT(16));
 				}
 				break;
 			}
-		}
-		
-		void FinishVillageQuest(int index)
-		{
-			Quest::Find("main_village1").progress = P_MAIN_V1_DONE;
 		}
 	}
 }
@@ -2650,7 +2665,7 @@ quest main_village1
 				quest.AddEntry(TEXT(5));
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("book_q_journal"));
-				Team::AddReward(1000, 4000);
+				Team::AddReward(1000, 3000);
 				break;
 			}
 		}
@@ -2736,12 +2751,12 @@ quest main_village2
 			case P_MAIN_V2_CLEARED_PICKED:
 				quest.AddEntry(TEXT(6));
 				break;
-			/*case P_MAIN_V2_DONE:
-				quest.AddEntry(TEXT(6));
+			case P_MAIN_V2_DONE:
+				quest.AddEntry(TEXT(7));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("book_q_journal"));
-				Team::AddReward(1000, 4000);
-				break;*/
+				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
+				Team::AddReward(5000, 15000);
+				break;
 			}
 		}
 		

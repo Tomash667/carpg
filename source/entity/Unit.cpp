@@ -3651,18 +3651,18 @@ void Unit::EquipItem(const Item* item)
 
 //=================================================================================================
 // currently using this on pc, looted units is not written
-void Unit::RemoveItem(int iindex, bool activeLocation)
+void Unit::RemoveItem(int iIndex, bool activeLocation)
 {
 	assert(!player);
 	assert(Net::IsLocal());
-	if(iindex >= 0)
+	if(iIndex >= 0)
 	{
-		assert(iindex < (int)items.size());
-		RemoveElementIndex(items, iindex);
+		assert(iIndex < (int)items.size());
+		RemoveElementIndex(items, iIndex);
 	}
 	else
 	{
-		ITEM_SLOT s = IIndexToSlot(iindex);
+		ITEM_SLOT s = IIndexToSlot(iIndex);
 		assert(slots[s]);
 		slots[s] = nullptr;
 		if(activeLocation && IsVisible(s))
@@ -3718,7 +3718,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = iIndex;
-				c.count = count;
+				c.count = removed;
 			}
 		}
 		else
@@ -3739,7 +3739,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 				NetChangePlayer& c = Add1(t->player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = id;
-				c.count = count;
+				c.count = removed;
 				c.a = iIndex;
 			}
 		}
