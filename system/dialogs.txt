@@ -4531,3 +4531,17 @@ dialog ill_idle
 	talk 0
 	end
 }
+
+
+//==============================================================================
+dialog plague_idle
+{
+	if rand 2
+	{
+		special "coughs"
+		talk 0
+	}
+	else
+		talk 1
+	end
+}

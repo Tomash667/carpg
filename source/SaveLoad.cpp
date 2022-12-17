@@ -502,7 +502,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	aiMgr->Save(f);
 	world->Save(f);
 
-	byte check_id = 0;
+	byte checkId = 0;
 
 	if(gameState == GS_LEVEL)
 		f << (gameLevel->eventHandler ? gameLevel->eventHandler->GetLocationEventHandlerQuestId() : -1);
@@ -540,8 +540,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 
 	gameGui->Save(f);
 
-	check_id = (byte)world->GetLocations().size();
-	f << check_id++;
+	checkId = (byte)world->GetLocations().size();
+	f << checkId++;
 
 	// save team
 	team->Save(f);
@@ -550,13 +550,13 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	questMgr->Save(f);
 	scriptMgr->Save(f);
 
-	f << check_id++;
+	f << checkId++;
 
 	if(Net::IsOnline())
 	{
 		net->Save(f);
 
-		f << check_id++;
+		f << checkId++;
 
 		Net::PushChange(NetChange::GAME_SAVED);
 		gameGui->mpBox->Add(txGameSaved);
@@ -633,7 +633,7 @@ void Game::LoadGame(GameReader& f)
 	unitsMeshLoad.clear();
 	gameLevel->ready = false;
 
-	byte check_id = 0, read_id;
+	byte checkId = 0, readId;
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -819,11 +819,11 @@ void Game::LoadGame(GameReader& f)
 
 	gameGui->Load(f);
 
-	check_id = (byte)world->GetLocations().size();
+	checkId = (byte)world->GetLocations().size();
 	if(LOAD_VERSION < V_0_14)
-		--check_id; // added offscreen location to old saves
-	f >> read_id;
-	if(read_id != check_id++)
+		--checkId; // added offscreen location to old saves
+	f >> readId;
+	if(readId != checkId++)
 		throw "Error reading data before team.";
 
 	// load team
@@ -835,23 +835,23 @@ void Game::LoadGame(GameReader& f)
 
 	scriptMgr->Load(f);
 
-	f >> read_id;
-	if(read_id != check_id++)
+	f >> readId;
+	if(readId != checkId++)
 		throw "Error reading data after news.";
 
 	LoadingStep(txLoadingLevel);
 
 	if(game_state2 == GS_LEVEL)
 	{
-		LocationGenerator* loc_gen = locGenFactory->Get(gameLevel->location);
-		loc_gen->OnLoad();
+		LocationGenerator* locGen = locGenFactory->Get(gameLevel->location);
+		locGen->OnLoad();
 
 		if(LOAD_VERSION < V_0_11)
 		{
 			gameLevel->localPart->lvlPart->Load(f);
 
-			f >> read_id;
-			if(read_id != check_id++)
+			f >> readId;
+			if(readId != checkId++)
 				throw "Failed to read level data.";
 		}
 
@@ -941,8 +941,8 @@ void Game::LoadGame(GameReader& f)
 	{
 		net->Load(f);
 
-		f >> read_id;
-		if(read_id != check_id++)
+		f >> readId;
+		if(readId != checkId++)
 			throw "Failed to read multiplayer data.";
 	}
 	else

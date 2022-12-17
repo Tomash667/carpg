@@ -1094,6 +1094,13 @@ item wanted_letter {
 item q_resources {
 	name "Resources"
 }
+item q_infected_organ {
+	name "Infected organ"
+}
+item q_yellow_crystal {
+	name "Weird crystal"
+	desc "Found in infected village."
+}
 
 //------------------------------------------------------------------------------
 item book_history {

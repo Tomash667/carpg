@@ -2108,3 +2108,9 @@ dialog hunter_leader {
 dialog ill_idle {
 	0 "(kaszle)"
 }
+
+//==============================================================================
+dialog plague_idle {
+	0 "(kaszle)"
+	1 "(mamrotanie)"
+}

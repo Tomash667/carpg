@@ -505,8 +505,10 @@ quest main_village2 {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
 		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
-		//3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
-		//4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
+		3 "Upon reaching the village, you can already see from afar that something is wrong. Unfortunately, I have to kill all the villagers who have gone mad, it's too late for them. I also need to find some information on the source of the plague."
+		4 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		5 "I found some strange crystal on the soltys's body. Maybe it is responsible for this plague?"
+		6 "I did all I could. Time to go back to $(cleric.realName)."
 		//5 "I returned the diary to $(cleric.realName) and got rewarded for it."
 	}
 }

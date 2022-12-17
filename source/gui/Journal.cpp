@@ -7,8 +7,9 @@
 #include "GameMessages.h"
 #include "Language.h"
 #include "Net.h"
-#include "Quest.h"
+#include "Quest2.h"
 #include "QuestManager.h"
+#include "QuestScheme.h"
 #include "Team.h"
 #include "World.h"
 
@@ -141,14 +142,14 @@ void Journal::Update(float dt)
 	if(!focus || !input->Focus())
 		return;
 
-	Mode new_mode = Invalid;
+	Mode newMode = Invalid;
 
 	// ----- handle keyboard
 	// change mode
 	for(int i = 0; i < Max; ++i)
 	{
 		if(input->PressedRelease(Key::N1 + i))
-			new_mode = (Mode)i;
+			newMode = (Mode)i;
 	}
 
 	// change page
@@ -218,14 +219,14 @@ void Journal::Update(float dt)
 		{
 			gui->SetCursorMode(CURSOR_HOVER);
 			if(input->PressedRelease(Key::LeftButton))
-				new_mode = (Mode)i;
+				newMode = (Mode)i;
 		}
 	}
 
-	if(new_mode != Invalid)
+	if(newMode != Invalid)
 	{
 		// change mode
-		if(new_mode == mode)
+		if(newMode == mode)
 		{
 			if(mode == Quests && details)
 			{
@@ -241,7 +242,7 @@ void Journal::Update(float dt)
 		}
 		else
 		{
-			mode = new_mode;
+			mode = newMode;
 			details = false;
 			page = 0;
 			Build();
@@ -291,11 +292,11 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Notes)
 	{
-		Text& last_text = texts.back();
-		if(last_text.x == page * 2 || last_text.y == page * 2 + 1)
+		Text& lastText = texts.back();
+		if(lastText.x == page * 2 || lastText.y == page * 2 + 1)
 		{
 			bool ok = false;
-			if(last_text.x % 2 == 0)
+			if(lastText.x % 2 == 0)
 			{
 				if(gui->cursorPos.x >= rect.Left() && gui->cursorPos.x <= rect.Right())
 					ok = true;
@@ -306,7 +307,7 @@ void Journal::Update(float dt)
 					ok = true;
 			}
 
-			if(ok && gui->cursorPos.y >= rect.Top() + last_text.y * fontHeight && gui->cursorPos.y <= rect.Top() + (last_text.y + 1) * fontHeight)
+			if(ok && gui->cursorPos.y >= rect.Top() + lastText.y * fontHeight && gui->cursorPos.y <= rect.Top() + (lastText.y + 1) * fontHeight)
 			{
 				gui->SetCursorMode(CURSOR_HOVER);
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -328,7 +329,7 @@ void Journal::Update(float dt)
 		}
 	}
 
-	if(new_mode == Invalid)
+	if(newMode == Invalid)
 	{
 		if(page != 0)
 		{
@@ -431,7 +432,17 @@ void Journal::Build()
 						color = 2;
 
 					if(devmode)
-						AddEntry(Format("%s (%p)", quest->name.c_str(), quest), color, false, true);
+					{
+						cstring text;
+						if(quest->isNew)
+						{
+							Quest2* quest2 = static_cast<Quest2*>(quest);
+							text = Format("%s (%s,%d)", quest->name.c_str(), quest2->GetScheme()->id.c_str(), quest->id);
+						}
+						else
+							text = Format("%s (%d)", quest->name.c_str(), quest->id);
+						AddEntry(text, color, false, true);
+					}
 					else
 						AddEntry(quest->name.c_str(), color, false);
 				}

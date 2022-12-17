@@ -2147,21 +2147,21 @@ Unit* Level::SpawnUnitNearLocation(LocationPart& locPart, const Vec3& pos, UnitD
 	globalCol.clear();
 	GatherCollisionObjects(locPart, globalCol, pos, extraRadius + radius, nullptr);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 
 	for(int i = 0; i < 10; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, radius))
+		if(!Collide(globalCol, tmpPos, radius))
 		{
 			float rot;
 			if(lookAt)
-				rot = Vec3::LookAtAngle(tmp_pos, *lookAt);
+				rot = Vec3::LookAtAngle(tmpPos, *lookAt);
 			else
 				rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(locPart, unit, level, &tmp_pos, &rot);
+			return CreateUnitWithAI(locPart, unit, level, &tmpPos, &rot);
 		}
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 	}
 
 	return nullptr;
@@ -2227,15 +2227,28 @@ void Level::SpawnUnitsGroup(LocationPart& locPart, const Vec3& pos, const Vec3* 
 //=================================================================================================
 Unit* Level::SpawnUnit(LocationPart& locPart, TmpSpawn spawn)
 {
+	return SpawnUnit(locPart, *spawn.first, spawn.second);
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnit(LocationPart& locPart, UnitData& data, int level)
+{
 	assert(locPart.partType == LocationPart::Type::Building); // not implemented
 
 	InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
 	Vec3 pos;
-	if(!WarpToRegion(locPart, building.region1, spawn.first->GetRadius(), pos))
+	if(!WarpToRegion(locPart, building.region1, data.GetRadius(), pos))
 		return nullptr;
 
 	float rot = Random(MAX_ANGLE);
-	return CreateUnitWithAI(locPart, *spawn.first, spawn.second, &pos, &rot);
+	return CreateUnitWithAI(locPart, data, level, &pos, &rot);
+}
+
+//=================================================================================================
+void Level::SpawnUnits(UnitGroup* group, int level)
+{
+	LocationGenerator* locGen = game->locGenFactory->Get(location);
+	locGen->SpawnUnits(group, level);
 }
 
 //=================================================================================================
@@ -2888,20 +2901,20 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	ignore.ignoredUnits = ignoreUnits;
 	GatherCollisionObjects(locPart, globalCol, pos, 2.f + unit_radius, &ignore);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 	bool ok = false;
 	float radius = unit_radius;
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, unit_radius))
+		if(!Collide(globalCol, tmpPos, unit_radius))
 		{
-			unit.pos = tmp_pos;
+			unit.pos = tmpPos;
 			ok = true;
 			break;
 		}
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.25f;
@@ -2957,19 +2970,19 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 	ignore.ignoredUnits = ignoreUnits;
 	GatherCollisionObjects(locPart, globalCol, pos, extraRadius + radius, &ignore);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 	if(!allowExact)
-		tmp_pos += Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos += Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 
 	for(int i = 0; i < tries; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, radius))
+		if(!Collide(globalCol, tmpPos, radius))
 			break;
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 	}
 
-	unit.pos = tmp_pos;
+	unit.pos = tmpPos;
 	unit.Moved(true);
 	unit.visualPos = unit.pos;
 
@@ -3354,29 +3367,49 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(cityCtx || location->state == LS_CLEARED)
+	if(location->state == LS_CLEARED)
 		return;
 
+	Unit& playerUnit = *game->pc->unit;
+
 	// is current level cleared?
-	bool is_clear = true;
-	for(vector<Unit*>::iterator it = localPart->units.begin(), end = localPart->units.end(); it != end; ++it)
+	bool isClear = true;
+	for(Unit* unit : localPart->units)
 	{
-		if((*it)->IsAlive() && game->pc->unit->IsEnemy(**it, true))
+		if(unit->IsAlive() && playerUnit.IsEnemy(*unit, true))
 		{
-			is_clear = false;
+			isClear = false;
 			break;
 		}
 	}
 
-	// is all level cleared?
-	if(is_clear && !location->outside)
+	// is all levels cleared?
+	if(isClear)
 	{
-		InsideLocation* inside = static_cast<InsideLocation*>(location);
-		if(inside->IsMultilevel())
-			is_clear = static_cast<MultiInsideLocation*>(inside)->LevelCleared();
+		if(cityCtx)
+		{
+			for(InsideBuilding* insideBuilding : cityCtx->insideBuildings)
+			{
+				for(Unit* unit : insideBuilding->units)
+				{
+					if(unit->IsAlive() && playerUnit.IsEnemy(*unit, true))
+					{
+						isClear = false;
+						goto superbreak;
+					}
+				}
+			}
+		superbreak:;
+		}
+		else if(!location->outside)
+		{
+			InsideLocation* inside = static_cast<InsideLocation*>(location);
+			if(inside->IsMultilevel())
+				isClear = static_cast<MultiInsideLocation*>(inside)->LevelCleared();
+		}
 	}
 
-	if(is_clear)
+	if(isClear)
 	{
 		if(location->state != LS_HIDDEN)
 			location->state = LS_CLEARED;

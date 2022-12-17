@@ -6003,12 +6003,14 @@ void Unit::AddDialogS(Quest2* quest, const string& dialogId, int priority)
 void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 {
 	assert(quest);
+
 	LoopAndRemove(dialogs, [quest](QuestDialog& dialog)
 	{
 		if(dialog.quest == quest)
 			return true;
 		return false;
 	});
+
 	if(!cleanup)
 	{
 		quest->RemoveDialogPtr(this);
@@ -6024,7 +6026,7 @@ void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 //=================================================================================================
 void Unit::AddEventHandler(Quest2* quest, EventType type)
 {
-	assert(type == EVENT_UPDATE || type == EVENT_DIE);
+	assert(Any(type, EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE));
 
 	Event e;
 	e.quest = quest;
@@ -9199,3 +9201,32 @@ void Unit::AlertAllies(Unit* target)
 	}
 }
 
+//=================================================================================================
+void Unit::FireEvent(ScriptEvent& e)
+{
+	if(events.empty())
+		return;
+
+	e.unit = this;
+
+	for(Event& event : events)
+	{
+		if(event.type == e.type)
+			event.quest->FireEvent(e);
+	}
+}
+
+//=================================================================================================
+bool Unit::HaveEventHandler(EventType eventType) const
+{
+	if(!events.empty())
+	{
+		for(const Event& event : events)
+		{
+			if(event.type == eventType)
+				return true;
+		}
+	}
+
+	return false;
+}

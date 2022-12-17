@@ -23,16 +23,16 @@ bool UnitGroup::HaveLeader() const
 //=================================================================================================
 UnitData* UnitGroup::GetLeader(int level) const
 {
-	int best = -1, best_dif, index = 0;
+	int best = -1, bestDif, index = 0;
 	for(const UnitGroup::Entry& entry : entries)
 	{
 		if(entry.isLeader)
 		{
 			int dif = entry.ud->GetLevelDif(level);
-			if(best == -1 || best_dif > dif)
+			if(best == -1 || bestDif > dif)
 			{
 				best = index;
-				best_dif = dif;
+				bestDif = dif;
 			}
 		}
 		++index;
@@ -56,15 +56,15 @@ UnitData* UnitGroup::GetRandomUnit() const
 //=================================================================================================
 Int2 UnitGroup::GetLevelRange() const
 {
-	Int2 level_range(99, -99);
+	Int2 levelRange(99, -99);
 	for(const Entry& entry : entries)
 	{
-		if(entry.ud->level.x < level_range.x)
-			level_range.x = entry.ud->level.x;
-		if(entry.ud->level.y > level_range.y)
-			level_range.y = entry.ud->level.y;
+		if(entry.ud->level.x < levelRange.x)
+			levelRange.x = entry.ud->level.x;
+		if(entry.ud->level.y > levelRange.y)
+			levelRange.y = entry.ud->level.y;
 	}
-	return level_range;
+	return levelRange;
 }
 
 //=================================================================================================
@@ -119,18 +119,18 @@ void TmpUnitGroup::Fill(UnitGroup* group, int minLevel, int maxLevel, bool requi
 	{
 		// if level is too low pick lowest possible in this unit group
 		// if level is too high pick highest possible in this unit group
-		Int2 level_range = group->GetLevelRange();
-		if(level_range.y > minLevel)
+		Int2 levelRange = group->GetLevelRange();
+		if(levelRange.y > minLevel)
 		{
 			// too low location level
-			this->minLevel = level_range.x;
-			this->maxLevel = level_range.x + 1;
+			this->minLevel = levelRange.x;
+			this->maxLevel = levelRange.x + 1;
 		}
 		else
 		{
 			// too high location level
-			this->minLevel = level_range.y - 1;
-			this->maxLevel = level_range.y;
+			this->minLevel = levelRange.y - 1;
+			this->maxLevel = levelRange.y;
 		}
 
 		FillInternal(group);
@@ -155,10 +155,10 @@ void TmpUnitGroup::FillInternal(UnitGroup* group)
 	{
 		if(entry.ud->level.y >= minLevel && entry.ud->level.x <= maxLevel)
 		{
-			UnitGroup::Entry& new_entry = Add1(entries);
-			new_entry.ud = entry.ud;
-			new_entry.weight = entry.weight;
-			totalWeight += new_entry.weight;
+			UnitGroup::Entry& newEntry = Add1(entries);
+			newEntry.ud = entry.ud;
+			newEntry.weight = entry.weight;
+			totalWeight += newEntry.weight;
 		}
 	}
 }
@@ -172,13 +172,13 @@ TmpUnitGroup::Spawn TmpUnitGroup::Get()
 		y += entry.weight;
 		if(x < y)
 		{
-			int unit_lvl = entry.ud->level.Random();
-			if(unit_lvl < minLevel)
-				unit_lvl = minLevel;
-			else if(unit_lvl > maxLevel)
-				unit_lvl = maxLevel;
+			int unitLvl = entry.ud->level.Random();
+			if(unitLvl < minLevel)
+				unitLvl = minLevel;
+			else if(unitLvl > maxLevel)
+				unitLvl = maxLevel;
 
-			return std::make_pair(entry.ud, unit_lvl);
+			return std::make_pair(entry.ud, unitLvl);
 		}
 	}
 	return Spawn(nullptr, 0);
@@ -201,25 +201,25 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 			if(x < y)
 			{
 				// chose unit level
-				int unit_lvl = entry.ud->level.Random();
-				if(unit_lvl < minLevel)
-					unit_lvl = minLevel;
+				int unitLvl = entry.ud->level.Random();
+				if(unitLvl < minLevel)
+					unitLvl = minLevel;
 				else
 				{
-					if(unit_lvl > maxLevel)
-						unit_lvl = maxLevel;
-					if(unit_lvl > points)
-						unit_lvl = Max(points, entry.ud->level.x);
+					if(unitLvl > maxLevel)
+						unitLvl = maxLevel;
+					if(unitLvl > points)
+						unitLvl = Max(points, entry.ud->level.x);
 				}
 
-				if(unit_lvl >= points)
+				if(unitLvl >= points)
 				{
 					// lower other units level if possible to spawn last unit
-					int points_required = unit_lvl - points;
-					int points_available = 0;
+					int pointsRequired = unitLvl - points;
+					int pointAvailable = 0;
 					for(Spawn& s : spawn)
-						points_available += s.second - Max(minLevel, s.first->level.x);
-					if(points_available < points_required)
+						pointAvailable += s.second - Max(minLevel, s.first->level.x);
+					if(pointAvailable < pointsRequired)
 					{
 						points = 0;
 						break;
@@ -229,17 +229,17 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 						int p = s.second - Max(minLevel, s.first->level.x);
 						if(p > 0)
 						{
-							int r = Min(p, points_required);
+							int r = Min(p, pointsRequired);
 							s.second -= r;
-							points_required -= r;
-							if(points_required == 0)
+							pointsRequired -= r;
+							if(pointsRequired == 0)
 								break;
 						}
 					}
 				}
 
-				spawn.push_back(std::make_pair(entry.ud, unit_lvl));
-				points -= unit_lvl;
+				spawn.push_back(std::make_pair(entry.ud, unitLvl));
+				points -= unitLvl;
 				break;
 			}
 		}
@@ -248,17 +248,17 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	if(spawn.empty())
 	{
 		// add anything with lowest level
-		int minLevel = 99, min_index = -1, index = 0;
+		int minLevel = 99, minIndex = -1, index = 0;
 		for(UnitGroup::Entry& entry : entries)
 		{
 			if(entry.ud->level.x < minLevel)
 			{
 				minLevel = entry.ud->level.x;
-				min_index = index;
+				minIndex = index;
 			}
 			++index;
 		}
-		UnitGroup::Entry& entry = entries[min_index];
+		UnitGroup::Entry& entry = entries[minIndex];
 		spawn.push_back(std::make_pair(entry.ud, Max(level, entry.ud->level.x)));
 	}
 
@@ -299,18 +299,18 @@ void TmpUnitGroupList::Fill(UnitGroup* group, int level)
 	if(groups.empty())
 	{
 		UnitGroup* best = nullptr;
-		int best_dif = -1;
+		int bestDif = -1;
 		for(UnitGroup::Entry& entry : group->entries)
 		{
-			Int2 level_range = entry.group->GetLevelRange();
+			Int2 levelRange = entry.group->GetLevelRange();
 			int dif;
-			if(level < level_range.x)
-				dif = level_range.x - level;
+			if(level < levelRange.x)
+				dif = levelRange.x - level;
 			else
-				dif = level - level_range.y;
-			if(best_dif == -1 || dif < best_dif)
+				dif = level - levelRange.y;
+			if(bestDif == -1 || dif < bestDif)
 			{
-				best_dif = dif;
+				bestDif = dif;
 				best = entry.group;
 			}
 		}
@@ -375,6 +375,3 @@ UnitGroup* old::OldToNew(SPAWN_GROUP spawn)
 	}
 	return UnitGroup::Get(id);
 }
-
-//=================================================================================================
-

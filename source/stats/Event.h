@@ -18,6 +18,10 @@ enum EventType
 //-----------------------------------------------------------------------------
 struct Event
 {
+	Event() {}
+	Event(nullptr_t) : quest(nullptr) {}
+	operator bool() const { return quest != nullptr; }
+
 	EventType type;
 	Quest2* quest;
 };
@@ -60,9 +64,9 @@ struct ScriptEvent
 	union
 	{
 		GroundItem* groundItem; // EVENT_PICKUP
-		const Item* item; // EVENT_USE
 		MapSettings* mapSettings; // EVENT_GENERATE
 	};
+	const Item* item; // EVENT_PICKUP, EVENT_USE
 	int stage; // EVENT_GENERATE
 	bool cancel;
 

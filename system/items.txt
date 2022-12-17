@@ -2980,6 +2980,21 @@ other q_resources {
 	flags {quest not_shop not_random important dont_drop ground_mesh}
 }
 
+other q_infected_organ {
+	weight 0.3
+	value 0
+	tex "infectedOrgan.png"
+	flags {not_shop not_random}
+}
+
+other q_yellow_crystal {
+	weight 0.1
+	value 100
+	tex "yellowCrystal.png"
+	type valuable
+	flags {not_shop not_random crystal_sound}
+}
+
 //------------------------------------------------------------------------------
 // BOOKS
 //------------------------------------------------------------------------------

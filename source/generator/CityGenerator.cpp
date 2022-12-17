@@ -348,7 +348,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 		}
 		else
 		{
-			static const int mod[6][3] = {
+			constexpr int mod[6][3] = {
 				{2, 1, 0},
 				{2, 0, 1},
 				{1, 2, 0},
@@ -493,7 +493,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 			for(int x = -5; x <= 5; ++x)
 			{
 				Int2 pt = Int2(center.x - x, center.y - y);
-				if(Vec3::Distance(PtToPos(pt), PtToPos(center)) <= 10.f)
+				if(Vec3::DistanceSquared(PtToPos(pt), PtToPos(center)) <= Pow2(10.f))
 					tiles[pt(w)].Set(rocky_roads > 0 ? TT_ROAD : TT_SAND, TT_GRASS, 0, TM_ROAD);
 			}
 		}
@@ -751,10 +751,10 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		else
 		{
 			const Int2 centrum(w / 2, w / 2);
-			int best_range = INT_MAX;
+			int bestRange = INT_MAX;
 			for(vector<BuildPt>::iterator it = points.begin(), end = points.end(); it != end; ++it)
 			{
-				int best_length = 999;
+				int bestLength = 999;
 				GameDirection dir = GDIR_INVALID;
 
 				// calculate distance to closest road
@@ -783,9 +783,9 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 						++length;
 					}
 
-					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < bestLength)
 					{
-						best_length = length;
+						bestLength = length;
 						dir = GDIR_DOWN;
 					}
 
@@ -812,9 +812,9 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 						++length;
 					}
 
-					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < bestLength)
 					{
-						best_length = length;
+						bestLength = length;
 						dir = GDIR_UP;
 					}
 				}
@@ -843,9 +843,9 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 						++length;
 					}
 
-					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < bestLength)
 					{
-						best_length = length;
+						bestLength = length;
 						dir = GDIR_LEFT;
 					}
 
@@ -872,9 +872,9 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 						++length;
 					}
 
-					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < best_length)
+					if(tiles[pt.x + pt.y * w].mode == TM_ROAD && length < bestLength)
 					{
-						best_length = length;
+						bestLength = length;
 						dir = GDIR_RIGHT;
 					}
 				}
@@ -905,16 +905,16 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				else
 					range = 0;
 				if(IsSet(building.flags, Building::FAVOR_ROAD))
-					range += max(0, best_length - 1);
+					range += max(0, bestLength - 1);
 				else
-					range += max(0, best_length - 5);
+					range += max(0, bestLength - 5);
 
-				if(range <= best_range)
+				if(range <= bestRange)
 				{
-					if(range < best_range)
+					if(range < bestRange)
 					{
 						validPts.clear();
-						best_range = range;
+						bestRange = range;
 					}
 					validPts.push_back(std::make_pair(it->pt, dir));
 				}
@@ -2959,5 +2959,49 @@ void CityGenerator::SetBuildingsParams()
 			scene->useLightDir = true;
 		}
 		insideBuilding->lvlPart->drawRange = 80.f;
+	}
+}
+
+//=================================================================================================
+void CityGenerator::SpawnUnits(UnitGroup* group, int level)
+{
+	const int a = int(0.15f * OutsideLocation::size) + 3;
+	const int b = int(0.85f * OutsideLocation::size) - 3;
+	LocalVector3<Vec3> usedPositions;
+	usedPositions.push_back(teamPos);
+	Pooled<TmpUnitGroup> tmpGroup;
+	tmpGroup->Fill(group, level);
+
+	for(int i = 0; i < 8; ++i)
+	{
+		for(int j = 0; j < 50; ++j)
+		{
+			const Int2 pt(Random(a, b), Random(a, b));
+			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
+			{
+				bool ok = true;
+				const Vec3 pos = PtToPos(pt);
+
+				for(const Vec3& usedPos : usedPositions)
+				{
+					if(Vec3::DistanceSquared(pos, usedPos) < Pow2(24.f))
+					{
+						ok = false;
+						break;
+					}
+				}
+
+				if(ok)
+				{
+					usedPositions.push_back(pos);
+					for(TmpUnitGroup::Spawn& spawn : tmpGroup->Roll(level, 2))
+					{
+						if(!gameLevel->SpawnUnitNearLocation(*city, pos, *spawn.first, nullptr, spawn.second, 6.f))
+							break;
+					}
+					break;
+				}
+			}
+		}
 	}
 }

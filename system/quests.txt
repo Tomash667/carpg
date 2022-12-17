@@ -27,8 +27,6 @@ code
 			break;
 		}
 		
-		Info(Format("{0} - ({1},{2})x({3}x{4})", locQuadrant, area.v1.x, area.v1.y, area.v2.x, area.v2.y));
-		
 		Vec2 pos;
 		for(int i=0; i<20; ++i)
 		{
@@ -2678,7 +2676,9 @@ quest main_village2
 		P_MAIN_V2_NONE
 		P_MAIN_V2_START
 		P_MAIN_V2_ENTER
-		P_MAIN_V2_READ
+		P_MAIN_V2_CLEARED
+		P_MAIN_V2_PICKED
+		P_MAIN_V2_CLEARED_PICKED
 		P_MAIN_V2_DONE
 	}
 	
@@ -2713,16 +2713,30 @@ quest main_village2
 				break;
 			case P_MAIN_V2_ENTER:
 				{
+					// enemies
+					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					
+					// soltys
+					LocationPart@ locPart = village.GetBuildingLocationPart("hall");
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_plague_soltys"));
+					unit.AddEventHandler(quest, EVENT_PICKUP);
+					
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
 					quest.AddEntry(TEXT(3));
 				}
 				break;
-			/*case P_MAIN_V1_READ:
-				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
+			case P_MAIN_V2_CLEARED:
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_MAIN_V2_PICKED:
 				quest.AddEntry(TEXT(5));
 				break;
-			case P_MAIN_V1_DONE:
+			case P_MAIN_V2_CLEARED_PICKED:
+				quest.AddEntry(TEXT(6));
+				break;
+			/*case P_MAIN_V2_DONE:
 				quest.AddEntry(TEXT(6));
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("book_q_journal"));
@@ -2735,8 +2749,25 @@ quest main_village2
 		{
 			if(e.event == EVENT_ENTER)
 				progress = P_MAIN_V2_ENTER;
-			//else
-			//	progress = P_MAIN_V1_READ;
+			else if(e.event == EVENT_CLEARED)
+			{
+				if(progress == P_MAIN_V2_ENTER)
+					progress = P_MAIN_V2_CLEARED;
+				else if(progress == P_MAIN_V2_PICKED)
+					progress = P_MAIN_V2_CLEARED_PICKED;
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
+			}
+			else if(e.event == EVENT_PICKUP)
+			{
+				if(e.item.id == "q_yellow_crystal")
+				{
+					if(progress == P_MAIN_V2_ENTER)
+						progress = P_MAIN_V2_PICKED;
+					else if(progress == P_MAIN_V2_CLEARED)
+						progress = P_MAIN_V2_CLEARED_PICKED;
+					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+				}
+			}
 		}
 	}
 }

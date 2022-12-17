@@ -164,6 +164,9 @@ unit q_main_academy = "Academy teacher"
 unit q_main_messenger = "Messenger"
 unit q_main_ill_villager = "Ill villager"
 unit q_main_ill_villager_attack {}
+unit q_main_plague_villager = "Infected villager"
+unit q_main_plague_soltys = "Infected soltys"
+unit q_main_plague_guard = "Infected guard"
 
 unit_group orcs {
 	name "orcs"

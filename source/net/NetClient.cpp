@@ -3370,24 +3370,24 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// remove items from inventory
 		case NetChangePlayer::REMOVE_ITEMS:
 			{
-				int i_index, count;
-				f >> i_index;
+				int iIndex, count;
+				f >> iIndex;
 				f >> count;
 				if(!f)
 					Error("Update single client: Broken REMOVE_ITEMS.");
 				else if(count <= 0)
 					Error("Update single client: REMOVE_ITEMS, invalid count %d.", count);
 				else if(game->gameState == GS_LEVEL)
-					pc.unit->RemoveItem(i_index, (uint)count);
+					pc.unit->RemoveItem(iIndex, (uint)count);
 			}
 			break;
 		// remove items from traded inventory which is trading with player
 		case NetChangePlayer::REMOVE_ITEMS_TRADER:
 			{
-				int id, i_index, count;
+				int id, iIndex, count;
 				f >> id;
 				f >> count;
-				f >> i_index;
+				f >> iIndex;
 				if(!f)
 					Error("Update single client: Broken REMOVE_ITEMS_TRADER.");
 				else if(count <= 0)
@@ -3400,7 +3400,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(!pc.IsTradingWith(unit))
 						Error("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", id, unit->data->id.c_str());
 					else
-						unit->RemoveItem(i_index, (uint)count);
+						unit->RemoveItem(iIndex, (uint)count);
 				}
 			}
 			break;

@@ -68,7 +68,7 @@ void Quest_DireWolf::FireEvent(ScriptEvent& event)
 	}
 	else if(event.type == EVENT_DIE)
 		SetProgress(Killed);
-	RemoveEvent(event);
+	RemoveEvent(event); // remove function with DireWolf quest
 }
 
 //=================================================================================================

@@ -1467,11 +1467,10 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	else
 		EnterLevel(locGen);
 
-	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
+	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	l.lastVisit = world->GetWorldtime();
-	gameLevel->CheckIfLocationCleared();
 	gameLevel->camera.Reset();
 	pc->data.rotBuf = 0.f;
 	SetMusic();
@@ -1488,6 +1487,8 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 		OnEnterLocation();
 	}
 
+	gameLevel->CheckIfLocationCleared();
+
 	if(Net::IsOnline())
 	{
 		netMode = NM_SERVER_SEND;
@@ -1496,7 +1497,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 		{
 			preparedStream.Reset();
 			BitStreamWriter f(preparedStream);
-			net->WriteLevelData(f, loaded_resources);
+			net->WriteLevelData(f, loadedResources);
 			Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
 		}
 		else
@@ -2506,7 +2507,7 @@ void Game::ChangeLevel(int where)
 
 	gameLevel->location->lastVisit = world->GetWorldtime();
 	gameLevel->CheckIfLocationCleared();
-	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
+	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
@@ -2517,7 +2518,7 @@ void Game::ChangeLevel(int where)
 		netState = NetState::Server_Send;
 		preparedStream.Reset();
 		BitStreamWriter f(preparedStream);
-		net->WriteLevelData(f, loaded_resources);
+		net->WriteLevelData(f, loadedResources);
 		Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
 		gameGui->infoBox->Show(txWaitingForPlayers);
 	}

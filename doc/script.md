@@ -64,7 +64,7 @@ Game enums & consts
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
 * EVENT_ENTER - for locations, send when player enter location.
-* EVENT_PICKUP - for locations, send when someone pickups ground item.
+* EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
 * EVENT_CLEARED - for locations, send when location is cleared from enemies.
 * EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
 * EVENT_UPDATE - for units, send every frame.
@@ -221,6 +221,7 @@ Item template, can be dynamicaly created for quest items.
 
 Properties:
 
+* string id - readonly
 * string name - can be changed, mostly changed for quest items.
 * int value - readonly
 
@@ -326,7 +327,7 @@ Properties:
 * Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
 * Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE.
 * GroundItem@ groundItem - used for EVENT_PICKUP.
-* Item@ item - used for EVENT_USE.
+* Item@ item - used for: EVENT_PICKUP, EVENT_USE.
 * MapSettings@ mapSettings - used for EVENT_GENERATE.
 * int stage - used for EVENT_GENERATE, stage 0 is before generating (can use mapSettings), stage 1 is after.
 * bool cancel - set to true to cancel default handling of this event.
@@ -616,7 +617,9 @@ Static methods:
 * Vec3 FindSpawnPos(LocationPart@, Unit@) - return position for unit spawn/warp in building location part.
 * Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2, int level = -1) - spawns unit near position.
 * Unit@ SpawnUnit(LocationPart@, Spawn) - spawns unit inside location part.
+* Unit@ SpawnUnit(LocationPart@, UnitData@, int level = -1) - spawns unit inside location part.
 * Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.
+* void SpawnUnits(UnitGroup@, int level) - spawn units all around location.
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
