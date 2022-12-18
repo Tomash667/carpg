@@ -532,3 +532,17 @@ quest main_village2 {
 		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }
+
+//=============================================================================
+quest main_village3 {
+	texts {
+		0 "ród³o zarazy w $(village.name)"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
+		3 "Po dotarciu do wioski ju¿ z daleka widaæ ¿e coœ jest nie tak. Niestety muszê zabiæ wszystkich mieszkañców wioski którzy oszaleli, dla nich jest ju¿ za póŸno. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
+		4 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
+		5 "Znalaz³em jakiœ dziwny kryszta³ przy ciele so³tysa. Mo¿e to on odpowiada za t¹ zarazê?"
+		6 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
+		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+	}
+}

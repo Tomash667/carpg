@@ -1101,6 +1101,10 @@ item q_yellow_crystal {
 	name "Dziwny kryszta³"
 	desc "Znalezione w zara¿onej wiosce."
 }
+item q_yellow_herbs {
+	name "Dziwne zio³a"
+	desc "Znalezione w zara¿onej wiosce."
+}
 
 //------------------------------------------------------------------------------
 item book_history {

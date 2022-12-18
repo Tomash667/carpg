@@ -798,26 +798,23 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 {
 	assert(obj);
 
-	// ogieñ pochodni
 	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
 		if(IsSet(obj->flags, OBJ_LIGHT))
 		{
+			// flame
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
+			pe->spawn = Int2(1, 3);
 			pe->speedMin = Vec3(-1, 3, -1);
 			pe->speedMax = Vec3(1, 4, 1);
 			pe->mode = 1;
@@ -826,15 +823,15 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 
 			pe->tex = gameRes->tFlare;
 			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				pe->size = 0.7f;
+				pe->size = Vec2(0.7f, 0.f);
 			else
 			{
-				pe->size = 0.5f;
+				pe->size = Vec2(0.5f, 0.f);
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					pe->tex = gameRes->tFlare2;
 			}
 
-			// œwiat³o
+			// light
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
 				GameLight& light = Add1(locPart.lights);
@@ -848,53 +845,47 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
 		{
-			// krew
+			// blood
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
+			pe->spawn = Int2(1, 3);
 			pe->speedMin = Vec3(-1, 4, -1);
 			pe->speedMax = Vec3(1, 6, 1);
 			pe->mode = 0;
 			pe->tex = gameRes->tBlood[BLOOD_RED];
-			pe->size = 0.5f;
+			pe->size = Vec2(0.5f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
 		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
 		{
-			// krew
+			// water
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 500;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 4;
-			pe->spawnMax = 8;
+			pe->spawn = Int2(4, 8);
 			pe->speedMin = Vec3(-0.6f, 4, -0.6f);
 			pe->speedMax = Vec3(0.6f, 7, 0.6f);
 			pe->mode = 0;
 			pe->tex = gameRes->tWater;
-			pe->size = 0.05f;
+			pe->size = Vec2(0.05f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
@@ -1482,34 +1473,53 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'e': // effect
+			if(game->inLoad)
+				break;
 			if(token == "magicfire")
 			{
-				if(!game->inLoad)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tFlare2;
-					pe->alpha = 1.0f;
-					pe->size = 1.0f;
-					pe->emissionInterval = 0.1f;
-					pe->emissions = -1;
-					pe->life = -1;
-					pe->maxParticles = 50;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->particleLife = 0.5f;
-					pe->pos = pos;
-					if(locPart.partType == LocationPart::Type::Outside)
-						pe->pos.y += terrain->GetH(pos);
-					pe->posMin = Vec3(0, 0, 0);
-					pe->posMax = Vec3(0, 0, 0);
-					pe->spawnMin = 2;
-					pe->spawnMax = 4;
-					pe->speedMin = Vec3(-1, 3, -1);
-					pe->speedMax = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
-					locPart.lvlPart->pes.push_back(pe);
-				}
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tFlare2;
+				pe->alpha = Vec2(1.0f, 0.f);
+				pe->size = Vec2(1.0f, 0.f);
+				pe->emissionInterval = 0.1f;
+				pe->emissions = -1;
+				pe->life = -1;
+				pe->maxParticles = 50;
+				pe->particleLife = 0.5f;
+				pe->pos = pos;
+				if(locPart.partType == LocationPart::Type::Outside)
+					pe->pos.y += terrain->GetH(pos);
+				pe->posMin = Vec3(0, 0, 0);
+				pe->posMax = Vec3(0, 0, 0);
+				pe->spawn = Int2(2, 4);
+				pe->speedMin = Vec3(-1, 3, -1);
+				pe->speedMax = Vec3(1, 4, 1);
+				pe->mode = 1;
+				pe->Init();
+				locPart.lvlPart->pes.push_back(pe);
+			}
+			else if(token == "smoke")
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tFlare2;
+				pe->alpha = Vec2(1.0f, 0.f);
+				pe->size = Vec2(1.0f, 0.f);
+				pe->emissionInterval = 0.1f;
+				pe->emissions = -1;
+				pe->life = -1;
+				pe->maxParticles = 50;
+				pe->particleLife = 0.5f;
+				pe->pos = pos;
+				if(locPart.partType == LocationPart::Type::Outside)
+					pe->pos.y += terrain->GetH(pos);
+				pe->posMin = Vec3(0, 0, 0);
+				pe->posMax = Vec3(0, 0, 0);
+				pe->spawn = Int2(2, 4);
+				pe->speedMin = Vec3(-1, 3, -1);
+				pe->speedMax = Vec3(1, 4, 1);
+				pe->mode = 1;
+				pe->Init();
+				locPart.lvlPart->pes.push_back(pe);
 			}
 			else
 				assert(0);
@@ -4213,7 +4223,7 @@ MusicType Level::GetLocationMusic()
 	switch(location->type)
 	{
 	case L_CITY:
-		if(location->target == VILLAGE_EMPTY)
+		if(Any(location->target, VILLAGE_EMPTY, VILLAGE_DESTROYED, VILLAGE_DESTROYED2))
 			return MusicType::EmptyCity;
 		else
 			return MusicType::City;
@@ -4661,18 +4671,15 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->life = 5.f;
 	pe->particleLife = 0.5f;
 	pe->emissions = 5;
-	pe->spawnMin = 10;
-	pe->spawnMax = 15;
+	pe->spawn = Int2(10, 15);
 	pe->maxParticles = 15 * 5;
 	pe->pos = unit.pos;
 	pe->speedMin = Vec3(-1, 0, -1);
 	pe->speedMax = Vec3(1, 1, 1);
 	pe->posMin = Vec3(-0.75f, 0, -0.75f);
 	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
-	pe->size = 0.3f;
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->alpha = 0.5f;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->size = Vec2(0.3f, 0.f);
+	pe->alpha = Vec2(0.5f, 0.f);
 	pe->mode = 0;
 	pe->Init();
 	unit.locPart->lvlPart->pes.push_back(pe);
@@ -5052,45 +5059,40 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 	switch(ability->effect)
 	{
 	case Ability::Raise:
-		pe->spawnMin = 16;
-		pe->spawnMax = 25;
+		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
 		pe->speedMin = Vec3(0, 4, 0);
 		pe->speedMax = Vec3(0, 5, 0);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = ability->sizeParticle;
+		pe->size = Vec2(ability->sizeParticle, 0.f);
 		pe->particleLife = 1.f;
-		pe->alpha = 1.f;
+		pe->alpha = Vec2(1.f, 0.f);
 		pe->mode = 0;
 		break;
 	case Ability::Heal:
-		pe->spawnMin = 16;
-		pe->spawnMax = 25;
+		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
 		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = ability->sizeParticle;
-		pe->alpha = 0.9f;
+		pe->size = Vec2(ability->sizeParticle, 0.f);
+		pe->alpha = Vec2(0.9f, 0.f);
 		pe->mode = 1;
 		break;
 	default:
-		pe->spawnMin = 12;
-		pe->spawnMax = 12;
+		pe->spawn = Int2(12);
 		pe->maxParticles = 12;
 		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
 		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
 		pe->posMin = Vec3(-0.5f, 0, -0.5f);
 		pe->posMax = Vec3(0.5f, 0, 0.5f);
-		pe->size = ability->sizeParticle / 2;
-		pe->alpha = 1.f;
+		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
+		pe->alpha = Vec2(1.f, 0.f);
 		pe->mode = 1;
 		break;
 	}
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
 

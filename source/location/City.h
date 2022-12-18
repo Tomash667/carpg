@@ -13,7 +13,9 @@ enum CityTarget
 	VILLAGE,
 	CITY,
 	CAPITAL,
-	VILLAGE_EMPTY
+	VILLAGE_EMPTY,
+	VILLAGE_DESTROYED,
+	VILLAGE_DESTROYED2
 };
 
 //-----------------------------------------------------------------------------
@@ -86,7 +88,7 @@ struct City : public OutsideLocation
 	InsideBuilding* FindInn(int* index = nullptr) { return FindInsideBuilding(BuildingGroup::BG_INN, index); }
 	CityBuilding* FindBuilding(BuildingGroup* group, int* index = nullptr);
 	CityBuilding* FindBuilding(Building* building, int* index = nullptr);
-	bool IsVillage() const { return Any(target, VILLAGE, VILLAGE_EMPTY); }
+	bool IsVillage() const { return Any(target, VILLAGE, VILLAGE_EMPTY, VILLAGE_DESTROYED, VILLAGE_DESTROYED2); }
 	bool IsCity() const { return Any(target, CITY, CAPITAL); }
 	void GetEntry(Vec3& pos, float& rot);
 };

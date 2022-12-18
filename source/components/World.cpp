@@ -1023,6 +1023,8 @@ void World::SetLocationImageAndName(Location* l)
 		{
 		case VILLAGE:
 		case VILLAGE_EMPTY:
+		case VILLAGE_DESTROYED:
+		case VILLAGE_DESTROYED2:
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
 			break;

@@ -166,6 +166,7 @@ unit q_main_ill_villager = "Chory mieszkaniec wioski"
 unit q_main_ill_villager_attack {}
 unit q_main_plague_villager = "Zara¿ony wieœniak"
 unit q_main_plague_soltys = "Zara¿ony so³tys"
+unit q_main_plague_alchemist = "Zara¿ony alchemik"
 unit q_main_plague_guard = "Zara¿ony stra¿nik"
 
 unit_group orcs {

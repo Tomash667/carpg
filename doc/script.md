@@ -141,6 +141,8 @@ Game enums & consts
 * HUNTERS_CAMP
 * HILLS
 * VILLAGE_EMPTY
+* VILLAGE_DESTROYED
+* VILLAGE_DESTROYED2
 
 ### Enum MOVE_TYPE
 * MOVE_RUN - always run.

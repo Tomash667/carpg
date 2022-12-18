@@ -12,6 +12,7 @@ building_group house
 building_group inn
 building_group merchant
 building_group training_grounds
+building_group destroyed_cottage
 
 //================================================================================
 // Building
@@ -440,6 +441,62 @@ building windmill {
 	shift {1 1}
 }
 
+building destroyed_cottage {
+	mesh "chata_zniszczona.qmsh"
+	flags favor_road
+	scheme {
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"    @+     "
+	}
+	group destroyed_cottage
+	shift {
+		bottom {0 2}
+		left {0 0}
+		top {1 0}
+		right {2 1}
+	}
+}
+
+/*
+building destroyed_cottage2 {
+	mesh "chata2.qmsh"
+	flags favor_road
+	scheme {
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"   +@   "
+	}
+	group destroyed_cottage
+	shift {
+		bottom {0 2}
+		left {0 0}
+		top {2 0}
+		right {2 2}
+	}
+}
+
+building destroyed_cottage3 {
+	mesh "chata3.qmsh"
+	flags favor_road
+	scheme {
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		"@+    "
+	}
+	group destroyed_cottage
+	shift {1 1}
+}*/
+
 //================================================================================
 // Building script
 //================================================================================
@@ -551,5 +608,67 @@ building_script village_empty {
 	required off
 	set count = citizens
 	group cottage
+	set citizens = 0
+}
+
+building_script village_destroyed {
+	village_hall
+	set citizens = 5 + random(0,2)
+	shuffle start
+		merchant
+		food_seller
+		village_inn
+		if rand 2
+			blacksmith
+			inc counter
+			inc citizens
+		endif
+		if rand 2
+			training_grounds
+			inc counter
+			inc citizens
+		endif
+		if counter < 2
+			if rand 2
+				alchemist
+				inc citizens
+			endif
+		endif
+	shuffle end
+	barracks
+	windmill
+	set citizens_world = 0
+	required off
+	set count = citizens
+	group destroyed_cottage
+	set citizens = 0
+}
+
+building_script village_destroyed2 {
+	village_hall
+	set citizens = 6 + random(0,2)
+	shuffle start
+		merchant
+		food_seller
+		village_inn
+		alchemist
+		if rand 2
+			blacksmith
+			inc counter
+			inc citizens
+		endif
+		if counter < 1
+			if rand 2
+				training_grounds
+				inc citizens
+			endif
+		endif
+	shuffle end
+	barracks
+	windmill
+	set citizens_world = 0
+	required off
+	set count = citizens
+	group destroyed_cottage
 	set citizens = 0
 }

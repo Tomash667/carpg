@@ -2632,22 +2632,24 @@ void CityGenerator::SpawnUnits()
 
 	// stra¿nicy
 	UnitData* guard = UnitData::Get("guard_move");
-	uint guard_count;
+	uint guardCount;
 	switch(city->target)
 	{
 	case VILLAGE:
 	case VILLAGE_EMPTY:
-		guard_count = 3;
+	case VILLAGE_DESTROYED:
+	case VILLAGE_DESTROYED2:
+		guardCount = 3;
 		break;
 	default:
 	case CITY:
-		guard_count = 6;
+		guardCount = 6;
 		break;
 	case CAPITAL:
-		guard_count = 9;
+		guardCount = 9;
 		break;
 	}
-	for(uint i = 0; i < guard_count; ++i)
+	for(uint i = 0; i < guardCount; ++i)
 	{
 		for(int j = 0; j < 50; ++j)
 		{
@@ -2668,7 +2670,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		return;
 
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
+	CityBuilding* trainingGrounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
 	// heroes
 	uint count;
@@ -2677,6 +2679,8 @@ void CityGenerator::SpawnTemporaryUnits()
 	{
 	case VILLAGE:
 	case VILLAGE_EMPTY:
+	case VILLAGE_DESTROYED:
+	case VILLAGE_DESTROYED2:
 		count = Random(1u, 2u);
 		level = Int2(5, 15);
 		break;
@@ -2694,7 +2698,7 @@ void CityGenerator::SpawnTemporaryUnits()
 	{
 		UnitData& ud = *Class::GetRandomHeroData();
 
-		if(Rand() % 2 == 0 || !training_grounds)
+		if(Rand() % 2 == 0 || !trainingGrounds)
 		{
 			// inside inn
 			gameLevel->SpawnUnitInsideInn(ud, level.Random(), inn, true);
@@ -2702,7 +2706,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		else
 		{
 			// on training grounds
-			Unit* u = gameLevel->SpawnUnitNearLocation(*city, Vec3(2.f * training_grounds->unitPt.x + 1, 0, 2.f * training_grounds->unitPt.y + 1), ud, nullptr,
+			Unit* u = gameLevel->SpawnUnitNearLocation(*city, Vec3(2.f * trainingGrounds->unitPt.x + 1, 0, 2.f * trainingGrounds->unitPt.y + 1), ud, nullptr,
 				level.Random(), 8.f);
 			if(u)
 				u->temporary = true;

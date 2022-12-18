@@ -3468,6 +3468,18 @@ unit q_main_plague_soltys : q_main_plague_villager {
 	gold {125 250}
 }
 
+unit q_main_plague_alchemist : q_main_plague_villager {
+	gold {500 1000}
+	items {
+		random {al_clothes2 al_clothes2b}
+		dagger_short
+		p_hp
+		ladle
+		q_infected_organ
+		q_yellow_herbs
+	}
+}
+
 unit q_main_plague_guard : q_main_plague_villager {
 	level 7
 	gold {60 120}

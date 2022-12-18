@@ -1101,6 +1101,10 @@ item q_yellow_crystal {
 	name "Weird crystal"
 	desc "Found in infected village."
 }
+item q_yellow_herbs {
+	name "Weird herbs"
+	desc "Found in infected village."
+}
 
 //------------------------------------------------------------------------------
 item book_history {

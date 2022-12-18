@@ -3657,6 +3657,8 @@ void Game::OnEnterLocation()
 					text = RandomString(txAiCity);
 					break;
 				case VILLAGE_EMPTY:
+				case VILLAGE_DESTROYED:
+				case VILLAGE_DESTROYED2:
 					text = txAiVillageEmpty;
 					break;
 				}

@@ -6793,18 +6793,15 @@ void Unit::CastSpell()
 					pe->life = -1;
 					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawnMin = 3;
-					pe->spawnMax = 4;
+					pe->spawn = Int2(3, 4);
 					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
 					pe->speedMin = Vec3(-1, -1, -1);
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.sizeParticle;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->size = Vec2(ability.sizeParticle, 0.f);
+					pe->alpha = Vec2(1.f, 0.f);
 					pe->mode = 1;
 					pe->Init();
 					locPart->lvlPart->pes.push_back(pe);
@@ -8787,8 +8784,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		pe->life = 5.f;
 		pe->particleLife = 0.5f;
 		pe->emissions = 1;
-		pe->spawnMin = 10;
-		pe->spawnMax = 15;
+		pe->spawn = Int2(10, 15);
 		pe->maxParticles = 15;
 		if(hitpoint)
 			pe->pos = *hitpoint;
@@ -8801,10 +8797,8 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		pe->speedMax = Vec3(1, 1, 1);
 		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = 0.3f;
-		pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 0.9f;
-		pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->size = Vec2(0.3f, 0.f);
+		pe->alpha = Vec2(0.9f, 0.f);
 		pe->mode = 0;
 		pe->Init();
 		locPart->lvlPart->pes.push_back(pe);

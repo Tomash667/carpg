@@ -2995,6 +2995,13 @@ other q_yellow_crystal {
 	flags {not_shop not_random crystal_sound}
 }
 
+other q_yellow_herbs {
+	weight 0.1
+	value 100
+	tex "yellowHerbs.png"
+	flags {not_shop not_random}
+}
+
 //------------------------------------------------------------------------------
 // BOOKS
 //------------------------------------------------------------------------------

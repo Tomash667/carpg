@@ -2465,11 +2465,11 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					array<int>@ quests = { 1, 2 /*, 3, 4*/ };
+					array<int>@ quests = { 1, 2, 3 /*, 4*/ };
 					quests.shuffle();
-					villages.resize(2);
+					villages.resize(3);
 					
-					for(int i = 0; i < 2; ++i)
+					for(int i = 0; i < 3; ++i)
 					{
 						vars["index"] = i;
 						Quest::Find("main_village" + quests[i]).Start(vars);
@@ -2716,7 +2716,7 @@ quest main_village2
 			{
 			case P_MAIN_V2_START:
 				{
-					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_EMPTY);
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED);
 					@village.activeQuest = quest;
 					village.SetKnown();
 					village.AddEventHandler(quest, EVENT_ENTER);
@@ -2780,6 +2780,114 @@ quest main_village2
 						progress = P_MAIN_V2_PICKED;
 					else if(progress == P_MAIN_V2_CLEARED)
 						progress = P_MAIN_V2_CLEARED_PICKED;
+					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+				}
+			}
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 3 (enemies + citizens)
+//=============================================================================
+quest main_village3
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V3_NONE
+		P_MAIN_V3_START
+		P_MAIN_V3_ENTER
+		P_MAIN_V3_CLEARED
+		P_MAIN_V3_PICKED
+		P_MAIN_V3_CLEARED_PICKED
+		P_MAIN_V3_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		int locQuadrant;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V3_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V3_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED2);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V3_ENTER:
+				{
+					// enemies
+					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					
+					// alchemist
+					CityBuilding@ building = Level::GetRandomBuilding(BuildingGroup::Get("alchemist"));
+					Unit@ unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
+					unit.RotateTo(building.unitRot);
+					unit.AddEventHandler(quest, EVENT_PICKUP);
+					
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V3_CLEARED:
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_MAIN_V3_PICKED:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_MAIN_V3_CLEARED_PICKED:
+				quest.AddEntry(TEXT(6));
+				break;
+			case P_MAIN_V3_DONE:
+				quest.AddEntry(TEXT(7));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
+				Team::AddReward(5000, 15000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V3_ENTER;
+			else if(e.event == EVENT_CLEARED)
+			{
+				if(progress == P_MAIN_V3_ENTER)
+					progress = P_MAIN_V3_CLEARED;
+				else if(progress == P_MAIN_V3_PICKED)
+					progress = P_MAIN_V3_CLEARED_PICKED;
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
+			}
+			else if(e.event == EVENT_PICKUP)
+			{
+				if(e.item.id == "q_yellow_crystal")
+				{
+					if(progress == P_MAIN_V3_ENTER)
+						progress = P_MAIN_V3_PICKED;
+					else if(progress == P_MAIN_V3_CLEARED)
+						progress = P_MAIN_V3_CLEARED_PICKED;
 					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
