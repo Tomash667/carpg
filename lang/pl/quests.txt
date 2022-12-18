@@ -515,7 +515,7 @@ quest main_village1 {
 		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
 		3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
 		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
-		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
+		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }
 
@@ -529,6 +529,6 @@ quest main_village2 {
 		4 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
 		5 "Znalaz³em jakiœ dziwny kryszta³ przy ciele so³tysa. Mo¿e to on odpowiada za t¹ zarazê?"
 		6 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
-		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê."
+		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }

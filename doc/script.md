@@ -599,6 +599,7 @@ Static properties:
 Static methods:
 
 * bool IsSettlement() - true when inside city/village.
+* bool IsSafeSettlement() - true when inside safe settlement.
 * bool IsCity() - true when inside city.
 * bool IsVillage() - true when inside village.
 * bool IsTutorial() - true when inside tutorial.

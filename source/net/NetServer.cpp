@@ -1540,23 +1540,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player wants to enter building
 		case NetChange::ENTER_BUILDING:
 			{
-				byte building_index;
-				f >> building_index;
+				byte buildingIndex;
+				f >> buildingIndex;
 				if(!f)
 					Error("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					if(gameLevel->cityCtx && building_index < gameLevel->cityCtx->insideBuildings.size())
+					if(gameLevel->cityCtx && buildingIndex < gameLevel->cityCtx->insideBuildings.size())
 					{
 						WarpData& warp = Add1(warps);
 						warp.u = &unit;
-						warp.where = building_index;
+						warp.where = buildingIndex;
 						warp.building = -1;
 						warp.timer = 1.f;
 						unit.frozen = FROZEN::YES;
 					}
 					else
-						Error("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), building_index);
+						Error("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), buildingIndex);
 				}
 			}
 			break;

@@ -283,7 +283,7 @@ void Quest_Sawmill::OnProgress(int d)
 	if(sawmillState == State::InBuild)
 	{
 		days += d;
-		if(days >= 30 && gameLevel->cityCtx && game->gameState == GS_LEVEL)
+		if(days >= 30 && gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 		{
 			days = 29;
 			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);

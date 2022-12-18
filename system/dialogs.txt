@@ -1820,7 +1820,7 @@ dialog captive
 			talk 6
 			choice 7
 			{
-				if script "Level::IsSettlement()"
+				if script "Level::IsSafeSettlement()"
 				{
 					do_quest "captive"
 					talk 8
@@ -1850,7 +1850,7 @@ dialog captive
 		}
 		else
 		{
-			if script "Level::IsSettlement()"
+			if script "Level::IsSafeSettlement()"
 			{
 				talk 13
 				end

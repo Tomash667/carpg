@@ -167,6 +167,7 @@ public:
 	void UpdateDungeonMinimap(bool inLevel);
 	void RevealMinimap();
 	bool IsSettlement() { return cityCtx != nullptr; }
+	bool IsSafeSettlement();
 	bool IsCity();
 	bool IsVillage();
 	bool IsTutorial();

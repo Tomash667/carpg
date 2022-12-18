@@ -48,9 +48,9 @@ private:
 	void OnAddNote(int id);
 
 	Mode mode;
-	TexturePtr tBook, tButtonOn, tButtonOff, tPage[3], tArrowL, tArrowR, tIcons[4];
+	TexturePtr tBook, tButtonOn, tButtonHover, tButtonOff, tPage[3], tArrowL, tArrowR, tIcons[4];
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime, txGoldMonth, txTotal, txNoInvestments;
-	int fontHeight, page, prevPage, openQuest, x, y, rectW, rectLines;
+	int fontHeight, page, prevPage, openQuest, x, y, rectW, rectLines, hover;
 	Rect rect, rect2;
 	vector<Text> texts;
 	vector<string> notes;

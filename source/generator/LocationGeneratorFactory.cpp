@@ -64,65 +64,65 @@ void LocationGeneratorFactory::Init()
 //=================================================================================================
 LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first)
 {
-	LocationGenerator* loc_gen;
+	LocationGenerator* locGen;
 	switch(loc->type)
 	{
 	default:
 		assert(0);
 	case L_CITY:
-		loc_gen = city;
+		locGen = city;
 		break;
 	case L_ENCOUNTER:
-		loc_gen = encounter;
+		locGen = encounter;
 		break;
 	case L_OUTSIDE:
 		if(gameLevel->locationIndex == questMgr->questSecret->where2)
 		{
-			loc_gen = secret;
+			locGen = secret;
 			break;
 		}
 		switch(loc->target)
 		{
 		default:
 		case FOREST:
-			loc_gen = forest;
+			locGen = forest;
 			break;
 		case HILLS:
-			loc_gen = hills;
+			locGen = hills;
 			break;
 		case MOONWELL:
-			loc_gen = moonwell;
+			locGen = moonwell;
 			break;
 		case ACADEMY:
-			loc_gen = academy;
+			locGen = academy;
 			break;
 		case HUNTERS_CAMP:
-			loc_gen = camp;
+			locGen = camp;
 			break;
 		}
 		break;
 	case L_CAMP:
-		loc_gen = camp;
+		locGen = camp;
 		break;
 	case L_DUNGEON:
 		{
 			InsideLocation* inside = (InsideLocation*)loc;
 			BaseLocation& base = gBaseLocations[inside->target];
 			if(inside->target == TUTORIAL_FORT)
-				loc_gen = tutorial;
+				locGen = tutorial;
 			else if(IsSet(base.options, BLO_LABYRINTH))
-				loc_gen = labyrinth;
+				locGen = labyrinth;
 			else
-				loc_gen = dungeon;
+				locGen = dungeon;
 		}
 		break;
 	case L_CAVE:
-		loc_gen = cave;
+		locGen = cave;
 		break;
 	}
-	loc_gen->loc = loc;
-	loc_gen->dungeonLevel = gameLevel->dungeonLevel;
-	loc_gen->first = first;
-	loc_gen->Init();
-	return loc_gen;
+	locGen->loc = loc;
+	locGen->dungeonLevel = gameLevel->dungeonLevel;
+	locGen->first = first;
+	locGen->Init();
+	return locGen;
 }

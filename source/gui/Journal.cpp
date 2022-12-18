@@ -64,6 +64,7 @@ void Journal::LoadData()
 {
 	tBook = resMgr->Load<Texture>("book.png");
 	tButtonOn = resMgr->Load<Texture>("journal_bt_on.png");
+	tButtonHover = resMgr->Load<Texture>("journal_bt_hover.png");
 	tButtonOff = resMgr->Load<Texture>("journal_bt_off.png");
 	tArrowL = resMgr->Load<Texture>("page_prev.png");
 	tArrowR = resMgr->Load<Texture>("page_next.png");
@@ -83,7 +84,15 @@ void Journal::Draw()
 	// buttons
 	for(int i = 0; i < Max; ++i)
 	{
-		gui->DrawSprite(mode == i ? tButtonOn : tButtonOff, globalPos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
+		Texture* tex;
+		if(mode == i)
+			tex = tButtonOn;
+		else if(hover == i)
+			tex = tButtonHover;
+		else
+			tex = tButtonOff;
+
+		gui->DrawSprite(tex, globalPos + Int2(ButtonShift.x, ButtonShift.y + ButtonDist * i));
 		Int2 pos = globalPos + Int2(IconShift.x + (ButtonSize.x - IconSize.x) / 2, IconShift.y + ButtonDist * i + (ButtonSize.y - IconSize.y) / 2);
 		if(mode == i)
 			pos.x += 5;
@@ -103,7 +112,7 @@ void Journal::Draw()
 				r = rect2;
 			r.Top() += it->y * fontHeight;
 
-			const Color color[3] = { Color::Black, Color::Red, Color::Green };
+			const Color color[3] = { Color::Black, Color(100, 0, 0), Color(0, 100, 0) };
 
 			gui->DrawText(GameGui::font, it->text, 0, color[it->color], r);
 		}
@@ -117,14 +126,16 @@ void Journal::Draw()
 
 	// prev/next page arrows
 	if(page != 0)
-		gui->DrawSprite(tArrowL, Int2(rect.Left() + 5, rect.Bottom() - 16));
+		gui->DrawSprite(tArrowL, Int2(rect.Left() + (hover == -2 ? 3 : 5), rect.Bottom() - 16));
 	if(texts.back().x > x2)
-		gui->DrawSprite(tArrowR, Int2(rect2.Right() - 21, rect.Bottom() - 16));
+		gui->DrawSprite(tArrowR, Int2(rect2.Right() - (hover == -3 ? 19 : 21), rect.Bottom() - 16));
 }
 
 //=================================================================================================
 void Journal::Update(float dt)
 {
+	hover = -1;
+
 	for(pair<Mode, int>& change : changes)
 	{
 		if(mode == change.first)
@@ -217,6 +228,7 @@ void Journal::Update(float dt)
 		const Int2 pos(globalPos.x + ButtonShift.x, globalPos.y + ButtonShift.y + ButtonDist * i);
 		if(Rect::IsInside(gui->cursorPos, pos, ButtonSize))
 		{
+			hover = i;
 			gui->SetCursorMode(CURSOR_HOVER);
 			if(input->PressedRelease(Key::LeftButton))
 				newMode = (Mode)i;
@@ -293,7 +305,7 @@ void Journal::Update(float dt)
 	else if(mode == Notes)
 	{
 		Text& lastText = texts.back();
-		if(lastText.x == page * 2 || lastText.y == page * 2 + 1)
+		if(lastText.x == page * 2 || lastText.x == page * 2 + 1)
 		{
 			bool ok = false;
 			if(lastText.x % 2 == 0)
@@ -336,6 +348,7 @@ void Journal::Update(float dt)
 			if(Rect::IsInside(gui->cursorPos, rect.LeftBottom() + Int2(5, -16), Int2(16, 16)))
 			{
 				gui->SetCursorMode(CURSOR_HOVER);
+				hover = -2;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					--page;
 			}
@@ -345,6 +358,7 @@ void Journal::Update(float dt)
 			if(Rect::IsInside(gui->cursorPos, rect2.RightBottom() + Int2(-21, -16), Int2(16, 16)))
 			{
 				gui->SetCursorMode(CURSOR_HOVER);
+				hover = -3;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					++page;
 			}
@@ -360,8 +374,8 @@ void Journal::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize || e == GuiEvent_Resize || e == GuiEvent_Moved)
 	{
-		rect = Rect(32, 16, 238, 432);
-		rect2 = Rect(270, 16, 476, 432);
+		rect = Rect(32, 16, 236, 432);
+		rect2 = Rect(268, 16, 472, 432);
 
 		Vec2 scale = Vec2(size) / 512;
 		rect = rect * scale + globalPos;
@@ -369,6 +383,7 @@ void Journal::Event(GuiEvent e)
 
 		rectW = rect.SizeX();
 		rectLines = rect.SizeY() / fontHeight;
+		hover = -1;
 
 		if(e == GuiEvent_Resize)
 			Build();
@@ -441,10 +456,10 @@ void Journal::Build()
 						}
 						else
 							text = Format("%s (%d)", quest->name.c_str(), quest->id);
-						AddEntry(text, color, false, true);
+						AddEntry(text, color, true, true);
 					}
 					else
-						AddEntry(quest->name.c_str(), color, false);
+						AddEntry(quest->name.c_str(), color);
 				}
 			}
 		}

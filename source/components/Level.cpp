@@ -945,17 +945,17 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 		else
 		{
-			const Matrix m_rot = Matrix::RotationY(rot);
-			const Matrix m_pos = Matrix::Translation(pos);
+			const Matrix mRot = Matrix::RotationY(rot);
+			const Matrix mPos = Matrix::Translation(pos);
 			// skalowanie jakimœ sposobem przechodzi do btWorldTransform i przy rysowaniu jest z³a skala (dwukrotnie u¿yta)
-			const Matrix m_scale = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
-			const Matrix m = m_scale * *obj->matrix * m_rot * m_pos;
+			const Matrix mScale = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
+			const Matrix m = mScale * *obj->matrix * mRot * mPos;
 			cobj->getWorldTransform().setFromOpenGLMatrix(&m._11);
-			Vec3 out_pos = Vec3::TransformZero(m);
+			Vec3 outPos = Vec3::TransformZero(m);
 			Quat q = Quat::CreateFromRotationMatrix(m);
 
 			float yaw = asin(-2 * (q.x * q.z - q.w * q.y));
-			c.pos = out_pos;
+			c.pos = outPos;
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(yaw))
@@ -1088,9 +1088,9 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
 	// N - wariant (tylko obiekty)
 	string token;
-	bool have_exit = false, have_spawn = false;
-	bool is_inside = (inside != nullptr);
-	Vec3 spawn_point;
+	bool haveExit = false, haveSpawn = false;
+	bool isInside = (inside != nullptr);
+	Vec3 spawnPoint;
 	static vector<const Mesh::Point*> details;
 
 	for(vector<Mesh::Point>::const_iterator it2 = mesh->attachPoints.begin(), end2 = mesh->attachPoints.end(); it2 != end2; ++it2)
@@ -1121,7 +1121,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		{
 			if(!recreate)
 			{
-				assert(!is_inside);
+				assert(!isInside);
 				details.push_back(&pt);
 			}
 			continue;
@@ -1189,14 +1189,14 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		case 'p': // physics
 			if(token == "circle" || token == "circlev")
 			{
-				bool is_wall = (token == "circle");
+				bool isWall = (token == "circle");
 
 				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::SPHERE;
 				cobj.radius = pt.size.x;
 				cobj.pos = pos;
 				cobj.owner = nullptr;
-				cobj.camCollider = is_wall;
+				cobj.camCollider = isWall;
 
 				if(locPart.partType == LocationPart::Type::Outside)
 				{
@@ -1208,15 +1208,15 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
 				phyWorld->addCollisionObject(co, group);
 			}
 			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
 			{
-				bool is_wall = (token == "square" || token == "squarevn");
-				bool block_camera = (token == "square");
+				bool isWall = (token == "square" || token == "squarevn");
+				bool blockCamera = (token == "square");
 
 				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::RECTANGLE;
@@ -1224,7 +1224,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
 				cobj.owner = nullptr;
-				cobj.camCollider = block_camera;
+				cobj.camCollider = blockCamera;
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -1247,7 +1247,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
 				phyWorld->addCollisionObject(co, group);
@@ -1360,12 +1360,12 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 					if(insideMesh)
 					{
-						Vec3 o_pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
+						Vec3 oPos = Vec3(inside->offset.x, 0.f, inside->offset.y);
 
 						Object* o = new Object;
 						o->base = nullptr;
 						o->mesh = insideMesh;
-						o->pos = o_pos;
+						o->pos = oPos;
 						o->rot = Vec3(0, 0, 0);
 						o->scale = 1.f;
 						o->requireSplit = true;
@@ -1374,7 +1374,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 						ProcessBuildingObjects(*inside, city, inside, insideMesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr);
 					}
 
-					have_exit = true;
+					haveExit = true;
 				}
 				else if(token == "exit")
 				{
@@ -1385,23 +1385,23 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					inside->exitRegion.v2.x = pos.x + pt.size.x;
 					inside->exitRegion.v2.y = pos.z + pt.size.z;
 
-					have_exit = true;
+					haveExit = true;
 				}
 				else if(token == "spawn")
 				{
-					if(is_inside)
+					if(isInside)
 						inside->insideSpawn = pos;
 					else
 					{
-						spawn_point = pos;
-						terrain->SetY(spawn_point);
+						spawnPoint = pos;
+						terrain->SetY(spawnPoint);
 					}
 
-					have_spawn = true;
+					haveSpawn = true;
 				}
 				else if(token == "top")
 				{
-					assert(is_inside);
+					assert(isInside);
 					inside->top = pos.y;
 				}
 				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
@@ -1517,7 +1517,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		}
 	}
 
-	if(is_inside)
+	if(isInside)
 	{
 		// floor
 		btCollisionObject* co = new btCollisionObject;
@@ -1534,7 +1534,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		phyWorld->addCollisionObject(co, CG_COLLIDER);
 	}
 
-	if(!details.empty() && !is_inside)
+	if(!details.empty() && !isInside)
 	{
 		int c = Rand() % 80 + details.size() * 2, count;
 		if(c < 10)
@@ -1608,11 +1608,11 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 	if(!recreate)
 	{
-		if(is_inside || inside)
-			assert(have_exit && have_spawn);
+		if(isInside || inside)
+			assert(haveExit && haveSpawn);
 
-		if(!is_inside && inside)
-			inside->outsideSpawn = spawn_point;
+		if(!isInside && inside)
+			inside->outsideSpawn = spawnPoint;
 	}
 }
 
@@ -1639,19 +1639,19 @@ void Level::RecreateObjects(bool spawnParticles)
 		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;
-			BaseObject* base_obj = obj.base;
+			BaseObject* baseObj = obj.base;
 
-			if(!base_obj)
+			if(!baseObj)
 				continue;
 
-			if(IsSet(base_obj->flags, OBJ_BUILDING))
+			if(IsSet(baseObj->flags, OBJ_BUILDING))
 			{
 				const float rot = obj.rot.y;
 				const GameDirection dir = RotToDir(rot);
-				ProcessBuildingObjects(locPart, nullptr, nullptr, base_obj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
+				ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
 			}
 			else
-				SpawnObjectExtras(locPart, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+				SpawnObjectExtras(locPart, baseObj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
 		}
 
 		for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
@@ -2890,7 +2890,7 @@ void Level::SpawnBlood()
 //=================================================================================================
 void Level::WarpUnit(Unit& unit, const Vec3& pos)
 {
-	const float unit_radius = unit.GetUnitRadius();
+	const float unitRadius = unit.GetUnitRadius();
 
 	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
@@ -2899,15 +2899,15 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignoreUnits[2] = { &unit, nullptr };
 	ignore.ignoredUnits = ignoreUnits;
-	GatherCollisionObjects(locPart, globalCol, pos, 2.f + unit_radius, &ignore);
+	GatherCollisionObjects(locPart, globalCol, pos, 2.f + unitRadius, &ignore);
 
 	Vec3 tmpPos = pos;
 	bool ok = false;
-	float radius = unit_radius;
+	float radius = unitRadius;
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!Collide(globalCol, tmpPos, unit_radius))
+		if(!Collide(globalCol, tmpPos, unitRadius))
 		{
 			unit.pos = tmpPos;
 			ok = true;
@@ -3283,10 +3283,10 @@ int Level::GetDifficultyLevel() const
 		InsideLocation* inside = static_cast<InsideLocation*>(location);
 		if(inside->IsMultilevel())
 		{
-			float max_st = (float)inside->st;
-			float min_st = max(3.f, max_st * 2 / 3);
+			float maxSt = (float)inside->st;
+			float minSt = max(3.f, maxSt * 2 / 3);
 			uint levels = static_cast<MultiInsideLocation*>(inside)->levels.size() - 1;
-			return (int)Lerp(min_st, max_st, float(dungeonLevel) / levels);
+			return (int)Lerp(minSt, maxSt, float(dungeonLevel) / levels);
 		}
 		else
 			return inside->st;
@@ -3668,57 +3668,57 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 			return static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 		else if(cityCtx && !forceBorder)
 		{
-			float best_dist, dist;
-			int best_index = -1, index = 0;
+			float bestDist, dist;
+			int bestIndex = -1, index = 0;
 
 			for(vector<EntryPoint>::const_iterator it = cityCtx->entryPoints.begin(), end = cityCtx->entryPoints.end(); it != end; ++it, ++index)
 			{
 				if(it->exitRegion.IsInside(u.pos))
 				{
 					// unit is already inside exitable location part, go to outside exit
-					best_index = -1;
+					bestIndex = -1;
 					break;
 				}
 				else
 				{
 					dist = Vec2::Distance(Vec2(u.pos.x, u.pos.z), it->exitRegion.Midpoint());
-					if(best_index == -1 || dist < best_dist)
+					if(bestIndex == -1 || dist < bestDist)
 					{
-						best_dist = dist;
-						best_index = index;
+						bestDist = dist;
+						bestIndex = index;
 					}
 				}
 			}
 
-			if(best_index != -1)
-				return cityCtx->entryPoints[best_index].exitRegion.Midpoint().XZ();
+			if(bestIndex != -1)
+				return cityCtx->entryPoints[bestIndex].exitRegion.Midpoint().XZ();
 		}
 
 		int best = 0;
-		float dist, best_dist;
+		float dist, bestDist;
 
 		// lewa krawêdŸ
-		best_dist = abs(pos.x - 32.f);
+		bestDist = abs(pos.x - 32.f);
 
 		// prawa krawêdŸ
 		dist = abs(pos.x - (256.f - 32.f));
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			best = 1;
 		}
 
 		// górna krawêdŸ
 		dist = abs(pos.z - 32.f);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			best = 2;
 		}
 
 		// dolna krawêdŸ
 		dist = abs(pos.z - (256.f - 32.f));
-		if(dist < best_dist)
+		if(dist < bestDist)
 			best = 3;
 
 		switch(best)
@@ -4002,7 +4002,7 @@ void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 //=================================================================================================
 void Level::AddPlayerTeam(const Vec3& pos, float rot)
 {
-	const bool hide_weapon = enterFrom == ENTER_FROM_OUTSIDE;
+	const bool hideWeapon = enterFrom == ENTER_FROM_OUTSIDE;
 
 	for(Unit& unit : team->members)
 	{
@@ -4011,7 +4011,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		if(unit.IsHero())
 			game->ais.push_back(unit.ai);
 
-		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
+		unit.SetTakeHideWeaponAnimationToEnd(hideWeapon, false);
 		unit.rot = rot;
 		unit.animation = unit.currentAnimation = ANI_STAND;
 		unit.meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
@@ -4028,7 +4028,8 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			unit.ai->timer = Random(2.f, 5.f);
 		}
 
-		WarpNearLocation(*localPart, unit, pos, cityCtx ? 4.f : 2.f, true, 20);
+		const bool isSafe = (cityCtx && cityCtx->citizens != 0);
+		WarpNearLocation(*localPart, unit, pos, isSafe ? 4.f : 2.f, true, 20);
 		unit.visualPos = unit.pos;
 
 		if(!location->outside)
@@ -4100,6 +4101,12 @@ void Level::RevealMinimap()
 
 	if(Net::IsServer())
 		Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
+}
+
+//=================================================================================================
+bool Level::IsSafeSettlement()
+{
+	return cityCtx && cityCtx->citizens != 0;
 }
 
 //=================================================================================================
@@ -4329,16 +4336,16 @@ void Level::SpawnItemRandomly(const Item* item, uint count)
 Unit* Level::GetNearestEnemy(Unit* unit)
 {
 	Unit* best = nullptr;
-	float best_dist;
+	float bestDist;
 	for(Unit* u : unit->locPart->units)
 	{
 		if(u->IsAlive() && unit->IsEnemy(*u))
 		{
 			float dist = Vec3::DistanceSquared(unit->pos, u->pos);
-			if(!best || dist < best_dist)
+			if(!best || dist < bestDist)
 			{
 				best = u;
-				best_dist = dist;
+				bestDist = dist;
 			}
 		}
 	}
@@ -4357,21 +4364,21 @@ GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 	assert(item);
 
 	LocationPart& locPart = GetLocationPart(pos);
-	float best_dist = 999.f;
-	GroundItem* best_item = nullptr;
+	float bestDist = 999.f;
+	GroundItem* bestItem = nullptr;
 	for(GroundItem* groundItem : locPart.GetGroundItems())
 	{
 		if(groundItem->item == item)
 		{
 			float dist = Vec3::Distance(pos, groundItem->pos);
-			if(dist < best_dist || !best_item)
+			if(dist < bestDist || !bestItem)
 			{
-				best_dist = dist;
-				best_item = groundItem;
+				bestDist = dist;
+				bestItem = groundItem;
 			}
 		}
 	}
-	return best_item;
+	return bestItem;
 }
 
 //=================================================================================================
@@ -4394,8 +4401,9 @@ GroundItem* Level::FindItem(const Item* item)
 //=================================================================================================
 Unit* Level::GetMayor()
 {
-	if(!cityCtx)
+	if(!IsSafeSettlement())
 		return nullptr;
+
 	cstring id;
 	if(cityCtx->target == VILLAGE)
 		id = "soltys";
@@ -4407,7 +4415,7 @@ Unit* Level::GetMayor()
 //=================================================================================================
 bool Level::IsSafe()
 {
-	if(cityCtx)
+	if(IsSafeSettlement())
 		return true;
 	else if(location->outside)
 		return location->state == LS_CLEARED || location->type == L_ENCOUNTER;
@@ -4460,7 +4468,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 	if(questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
 
-	if(cityCtx)
+	if(IsSafeSettlement())
 	{
 		for(Unit& u : team->members)
 		{
@@ -4551,17 +4559,17 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 {
 	assert(shape->isConvex());
 
-	btTransform t_from, t_to;
-	t_from.setIdentity();
-	t_from.setOrigin(ToVector3(from));
-	t_to.setIdentity();
-	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
+	btTransform tFrom, tTo;
+	tFrom.setIdentity();
+	tFrom.setOrigin(ToVector3(from));
+	tTo.setIdentity();
+	tTo.setOrigin(ToVector3(dir) + tFrom.getOrigin());
 
 	ConvexCallback callback(clbk, tList, useClbk2);
 
-	phyWorld->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, tFrom, tTo, callback);
 
-	bool has_hit = (callback.closest <= 1.f);
+	bool hasHit = (callback.closest <= 1.f);
 	t = min(callback.closest, 1.f);
 	if(endT)
 	{
@@ -4570,7 +4578,7 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 		else
 			*endT = 1.f;
 	}
-	return has_hit;
+	return hasHit;
 }
 
 //=================================================================================================
@@ -4587,52 +4595,52 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 	assert(radius > 0.f && me);
 
 	constexpr float SMALL_DISTANCE = 0.001f;
-	Vec3 new_pos = pos + dir;
-	Vec3 gather_pos = pos + dir / 2;
-	float gather_radius = dir.Length() + radius;
+	Vec3 newPos = pos + dir;
+	Vec3 gatherPos = pos + dir / 2;
+	float gatherRadius = dir.Length() + radius;
 	globalCol.clear();
 
-	Level::IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore{};
 	Unit* ignored[] = { me, nullptr };
 	ignore.ignoredUnits = (const Unit**)ignored;
-	GatherCollisionObjects(*me->locPart, globalCol, gather_pos, gather_radius, &ignore);
+	GatherCollisionObjects(*me->locPart, globalCol, gatherPos, gatherRadius, &ignore);
 
 	if(globalCol.empty())
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
-		pos = new_pos;
+			*isSmall = (Vec3::Distance(pos, newPos) < SMALL_DISTANCE);
+		pos = newPos;
 		return 3;
 	}
 
 	// idŸ prosto po x i z
-	if(!Collide(globalCol, new_pos, radius))
+	if(!Collide(globalCol, newPos, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
-		pos = new_pos;
+			*isSmall = (Vec3::Distance(pos, newPos) < SMALL_DISTANCE);
+		pos = newPos;
 		return 3;
 	}
 
 	// idŸ po x
-	Vec3 new_pos2 = me->pos;
-	new_pos2.x = new_pos.x;
-	if(!Collide(globalCol, new_pos2, radius))
+	Vec3 newPos2 = me->pos;
+	newPos2.x = newPos.x;
+	if(!Collide(globalCol, newPos2, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
-		pos = new_pos2;
+			*isSmall = (Vec3::Distance(pos, newPos2) < SMALL_DISTANCE);
+		pos = newPos2;
 		return 1;
 	}
 
 	// idŸ po z
-	new_pos2.x = me->pos.x;
-	new_pos2.z = new_pos.z;
-	if(!Collide(globalCol, new_pos2, radius))
+	newPos2.x = me->pos.x;
+	newPos2.z = newPos.z;
+	if(!Collide(globalCol, newPos2, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
-		pos = new_pos2;
+			*isSmall = (Vec3::Distance(pos, newPos2) < SMALL_DISTANCE);
+		pos = newPos2;
 		return 2;
 	}
 
@@ -4643,9 +4651,9 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 //=================================================================================================
 void Level::SpawnUnitEffect(Unit& unit)
 {
-	Vec3 real_pos = unit.pos;
-	real_pos.y += 1.f;
-	soundMgr->PlaySound3d(gameRes->sSummon, real_pos, SPAWN_SOUND_DIST);
+	Vec3 realPos = unit.pos;
+	realPos.y += 1.f;
+	soundMgr->PlaySound3d(gameRes->sSummon, realPos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = gameRes->tSpawn;
@@ -4746,22 +4754,22 @@ CScriptArray* Level::FindPath(Room& from, Room& to)
 	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Room@>");
 	CScriptArray* array = CScriptArray::Create(type);
 
-	Int2 from_pt = from.CenterTile();
-	Int2 to_pt = to.CenterTile();
+	Int2 fromPt = from.CenterTile();
+	Int2 toPt = to.CenterTile();
 
 	vector<Int2> path;
-	pathfinding->FindPath(*localPart, from_pt, to_pt, path);
+	pathfinding->FindPath(*localPart, fromPt, toPt, path);
 	std::reverse(path.begin(), path.end());
 
-	word prev_room_index = 0xFFFF;
+	word prevRoomIndex = 0xFFFF;
 	for(const Int2& pt : path)
 	{
-		word room_index = lvl->map[pt.x + pt.y * lvl->w].room;
-		if(room_index != prev_room_index)
+		word roomIndex = lvl->map[pt.x + pt.y * lvl->w].room;
+		if(roomIndex != prevRoomIndex)
 		{
-			Room* room = lvl->rooms[room_index];
+			Room* room = lvl->rooms[roomIndex];
 			array->InsertLast(&room);
-			prev_room_index = room_index;
+			prevRoomIndex = roomIndex;
 		}
 	}
 

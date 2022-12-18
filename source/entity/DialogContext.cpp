@@ -135,13 +135,13 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 }
 
 //=================================================================================================
-void DialogContext::StartNextDialog(GameDialog* new_dialog, Quest* quest, bool returns)
+void DialogContext::StartNextDialog(GameDialog* newDialog, Quest* quest, bool returns)
 {
-	assert(new_dialog);
+	assert(newDialog);
 
 	if(returns)
 		prev.push_back({ dialog, dialogQuest, dialogPos });
-	dialog = new_dialog;
+	dialog = newDialog;
 	dialogQuest = quest;
 	dialogPos = -1;
 }
@@ -213,7 +213,7 @@ void DialogContext::Update(float dt)
 					net->netStrs.push_back(c.str);
 				}
 
-				bool use_return = false;
+				bool useReturn = false;
 				switch(choice.type)
 				{
 				case DialogChoice::Normal:
@@ -227,17 +227,17 @@ void DialogContext::Update(float dt)
 					dialogPos = choice.pos;
 					break;
 				case DialogChoice::Perk:
-					use_return = LearnPerk((Perk*)choice.pos);
+					useReturn = LearnPerk((Perk*)choice.pos);
 					break;
 				case DialogChoice::Hero:
-					use_return = RecruitHero((Class*)choice.pos);
+					useReturn = RecruitHero((Class*)choice.pos);
 					break;
 				}
 
 				ClearChoices();
 				choiceSelected = -1;
 				dialogEsc = -1;
-				if(use_return)
+				if(useReturn)
 					return;
 			}
 			else
@@ -339,7 +339,7 @@ void DialogContext::UpdateClient()
 //=================================================================================================
 void DialogContext::UpdateLoop()
 {
-	bool cmp_result = false;
+	bool cmpResult = false;
 	while(true)
 	{
 		DialogEntry& de = *(dialog->code.data() + dialogPos);
@@ -498,25 +498,25 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_QUEST_TIMEOUT:
 			assert(dialogQuest);
-			cmp_result = (dialogQuest->IsActive() && dialogQuest->IsTimedout());
+			cmpResult = (dialogQuest->IsActive() && dialogQuest->IsTimedout());
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_RAND:
-			cmp_result = (Rand() % de.value == 0);
+			cmpResult = (Rand() % de.value == 0);
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_RAND_P:
-			cmp_result = (Rand() % 100 < de.value);
+			cmpResult = (Rand() % 100 < de.value);
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_ONCE:
-			cmp_result = once;
+			cmpResult = once;
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
-			if(cmp_result)
+				cmpResult = !cmpResult;
+			if(cmpResult)
 				once = false;
 			break;
 		case DTF_DO_ONCE:
@@ -538,22 +538,22 @@ void DialogContext::UpdateLoop()
 				int questId = -1;
 				if(msg[0] == '$' && msg[1] == '$')
 					questId = talker->questId;
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, questId);
+				cmpResult = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, questId);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_HAVE_QUEST_ITEM_CURRENT:
-			cmp_result = (dialogQuest && pc->unit->HaveQuestItem(dialogQuest->id));
+			cmpResult = (dialogQuest && pc->unit->HaveQuestItem(dialogQuest->id));
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, true);
+				cmpResult = pc->unit->FindQuestItem(msg, nullptr, nullptr, true);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_DO_QUEST_ITEM:
@@ -569,7 +569,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_QUEST_PROGRESS:
 			assert(dialogQuest);
-			cmp_result = DoIfOp(dialogQuest->prog, de.value, de.op);
+			cmpResult = DoIfOp(dialogQuest->prog, de.value, de.op);
 			break;
 		case DTF_IF_NEED_TALK:
 			{
@@ -577,10 +577,10 @@ void DialogContext::UpdateLoop()
 				bool negate = (de.op == OP_NOT_EQUAL);
 				for(Quest* quest : questMgr->quests)
 				{
-					cmp_result = (quest->IsActive() && quest->IfNeedTalk(msg));
+					cmpResult = (quest->IsActive() && quest->IfNeedTalk(msg));
 					if(negate)
-						cmp_result = !cmp_result;
-					if(cmp_result)
+						cmpResult = !cmpResult;
+					if(cmpResult)
 						break;
 				}
 			}
@@ -601,13 +601,13 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_SPECIAL:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = ExecuteSpecialIf(msg);
+				cmpResult = ExecuteSpecialIf(msg);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_CHOICES:
-			cmp_result = DoIfOp(choices.size(), de.value, de.op);
+			cmpResult = DoIfOp(choices.size(), de.value, de.op);
 			break;
 		case DTF_DO_QUEST2:
 			{
@@ -638,17 +638,17 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_HAVE_ITEM:
 			{
 				const Item* item = (const Item*)de.value;
-				cmp_result = pc->unit->HaveItem(item);
+				cmpResult = pc->unit->HaveItem(item);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_QUEST_EVENT:
 			{
 				assert(dialogQuest);
-				cmp_result = dialogQuest->IfQuestEvent();
+				cmpResult = dialogQuest->IfQuestEvent();
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_END_OF_DIALOG:
@@ -658,9 +658,9 @@ void DialogContext::UpdateLoop()
 			{
 				assert(dialogQuest);
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = dialogQuest->SpecialIf(*this, msg);
+				cmpResult = dialogQuest->SpecialIf(*this, msg);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_QUEST_SPECIAL:
@@ -722,7 +722,7 @@ void DialogContext::UpdateLoop()
 					instance = nullptr;
 				}
 				int index = de.value;
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmp_result](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmpResult](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -730,25 +730,25 @@ void DialogContext::UpdateLoop()
 					}
 					else if(stage == 1)
 					{
-						cmp_result = (ctx->GetReturnByte() != 0);
+						cmpResult = (ctx->GetReturnByte() != 0);
 					}
 				});
 				ctx.quest = nullptr;
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_JMP:
 			dialogPos = de.value - 1;
 			break;
 		case DTF_CJMP:
-			if(!cmp_result)
+			if(!cmpResult)
 				dialogPos = de.value - 1;
 			break;
 		case DTF_IF_VAR:
-			cmp_result = DoIfOp(var, de.value, de.op);
+			cmpResult = DoIfOp(var, de.value, de.op);
 			break;
 		case DTF_NEXT:
 			{
@@ -893,7 +893,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 	if(strcmp(msg, "mayor_quest") == 0)
 	{
-		bool have_quest = true;
+		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questMayorTime > 30
 			|| gameLevel->cityCtx->questMayorTime == -1
 			|| gameLevel->cityCtx->questMayor == CityQuestState::Failed)
@@ -913,7 +913,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
-				have_quest = false;
+				haveQuest = false;
 		}
 		else if(gameLevel->cityCtx->questMayor == CityQuestState::InProgress)
 		{
@@ -934,12 +934,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					return true;
 				}
 				else
-					have_quest = false;
+					haveQuest = false;
 			}
 		}
 		else
-			have_quest = false;
-		if(!have_quest)
+			haveQuest = false;
+
+		if(!haveQuest)
 		{
 			Talk(RandomString(game->txMayorNoQ));
 			++dialogPos;
@@ -948,7 +949,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "captain_quest") == 0)
 	{
-		bool have_quest = true;
+		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questCaptainTime > 30
 			|| gameLevel->cityCtx->questCaptainTime == -1
 			|| gameLevel->cityCtx->questCaptain == CityQuestState::Failed)
@@ -968,7 +969,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
-				have_quest = false;
+				haveQuest = false;
 		}
 		else if(gameLevel->cityCtx->questCaptain == CityQuestState::InProgress)
 		{
@@ -989,12 +990,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					return true;
 				}
 				else
-					have_quest = false;
+					haveQuest = false;
 			}
 		}
 		else
-			have_quest = false;
-		if(!have_quest)
+			haveQuest = false;
+
+		if(!haveQuest)
 		{
 			Talk(RandomString(game->txCaptainNoQ));
 			++dialogPos;
@@ -1140,26 +1142,26 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			case 1:
 				// info about unknown camp
 				{
-					Location* new_camp = nullptr;
+					Location* newCamp = nullptr;
 					static vector<Location*> camps;
 					for(vector<Location*>::const_iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 					{
 						if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
 						{
 							camps.push_back(*it);
-							if((*it)->state == LS_UNKNOWN && !new_camp)
-								new_camp = *it;
+							if((*it)->state == LS_UNKNOWN && !newCamp)
+								newCamp = *it;
 						}
 					}
 
-					if(!new_camp && !camps.empty())
-						new_camp = camps[Rand() % camps.size()];
+					if(!newCamp && !camps.empty())
+						newCamp = camps[Rand() % camps.size()];
 
 					camps.clear();
 
-					if(new_camp)
+					if(newCamp)
 					{
-						Location& loc = *new_camp;
+						Location& loc = *newCamp;
 						Location& cloc = *gameLevel->location;
 						cstring distance;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
@@ -1252,7 +1254,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strncmp(msg, "train/", 6) == 0)
 	{
-		const int gold_cost = 200;
+		const int goldCost = 200;
 		cstring s = msg + 6;
 		int type, what, cost;
 		int* train;
@@ -1309,9 +1311,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 
 		// does player have enough gold?
-		if(pc->unit->gold < gold_cost)
+		if(pc->unit->gold < goldCost)
 		{
-			dialogString = Format(game->txNeedMoreGold, gold_cost - pc->unit->gold);
+			dialogString = Format(game->txNeedMoreGold, goldCost - pc->unit->gold);
 			Talk(dialogString.c_str());
 			forceEnd = true;
 			return true;
@@ -1321,7 +1323,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(train)
 			*train += 1;
 		pc->learningPoints -= cost;
-		pc->unit->ModGold(-gold_cost);
+		pc->unit->ModGold(-goldCost);
 		pc->unit->frozen = FROZEN::YES;
 		if(isLocal)
 		{
@@ -1346,12 +1348,12 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(updateLocations == 1)
 		{
 			activeLocations.clear();
-			const Vec2& world_pos = world->GetWorldPos();
+			const Vec2& worldPos = world->GetWorldPos();
 
 			int index = 0;
 			for(Location* loc : locations)
 			{
-				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, worldPos) <= 150.f && loc->state != LS_HIDDEN)
 					activeLocations.push_back(pair<int, bool>(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
@@ -1475,7 +1477,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
 		team->RemoveMember(talker);
-		if(gameLevel->cityCtx)
+		if(gameLevel->IsSafeSettlement())
 			talker->OrderWander();
 		else
 			talker->OrderLeave();
@@ -1587,7 +1589,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "show_perks") == 0)
 	{
-		LocalVector<Perk*> to_pick;
+		LocalVector<Perk*> toPick;
 		PerkContext ctx(pc, false);
 		for(Perk* perk : Perk::perks)
 		{
@@ -1597,13 +1599,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				continue;
 			TakenPerk tp(perk);
 			if(tp.CanTake(ctx))
-				to_pick->push_back(perk);
+				toPick->push_back(perk);
 		}
-		std::sort(to_pick->begin(), to_pick->end(), [](const Perk* info1, const Perk* info2)
+		std::sort(toPick->begin(), toPick->end(), [](const Perk* info1, const Perk* info2)
 		{
 			return info1->name < info2->name;
 		});
-		for(Perk* perk : to_pick)
+		for(Perk* perk : toPick)
 		{
 			string* str = StringPool.Get();
 			*str = Format("%s (%s %d %s)", perk->name.c_str(), perk->desc.c_str(), perk->cost,

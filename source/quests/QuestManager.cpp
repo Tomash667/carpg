@@ -410,7 +410,7 @@ void QuestManager::Update(int days)
 		questGoblins->OnProgress(days);
 		questCrazies->OnProgress(days);
 
-		if(gameLevel->cityCtx)
+		if(gameLevel->IsSafeSettlement())
 			GenerateQuestUnits(false);
 	}
 }
@@ -1210,7 +1210,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 //=================================================================================================
 void QuestManager::RemoveQuestUnits(bool onLeave)
 {
-	if(gameLevel->cityCtx)
+	if(gameLevel->IsSafeSettlement())
 	{
 		if(questSawmill->messenger)
 		{
