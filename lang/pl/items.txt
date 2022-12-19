@@ -1094,6 +1094,17 @@ item wanted_letter {
 item q_resources {
 	name "Zasoby"
 }
+item q_infected_organ {
+	name "Zainfekowany organ"
+}
+item q_yellow_crystal {
+	name "Dziwny kryszta³"
+	desc "Znalezione w zara¿onej wiosce."
+}
+item q_yellow_herbs {
+	name "Dziwne zio³a"
+	desc "Znalezione w zara¿onej wiosce."
+}
 
 //------------------------------------------------------------------------------
 item book_history {

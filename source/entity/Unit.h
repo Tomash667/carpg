@@ -980,6 +980,8 @@ public:
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmgType, bool bash);
 	void DoRangedAttack(bool prepare, bool notify = true, float speed = -1);
 	void AlertAllies(Unit* target);
+	void FireEvent(ScriptEvent& e);
+	bool HaveEventHandler(EventType eventType) const;
 };
 
 //-----------------------------------------------------------------------------

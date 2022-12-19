@@ -1023,6 +1023,8 @@ void World::SetLocationImageAndName(Location* l)
 		{
 		case VILLAGE:
 		case VILLAGE_EMPTY:
+		case VILLAGE_DESTROYED:
+		case VILLAGE_DESTROYED2:
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
 			break;
@@ -1650,9 +1652,9 @@ bool World::Read(BitStreamReader& f)
 		case L_CITY:
 			{
 				byte citizens;
-				word world_citizens;
+				word worldCitizens;
 				f >> citizens;
-				f >> world_citizens;
+				f >> worldCitizens;
 				if(!f)
 				{
 					Error("Read world: Broken packet for city location %u.", index);
@@ -1662,7 +1664,7 @@ bool World::Read(BitStreamReader& f)
 				City* city = new City;
 				loc = city;
 				city->citizens = citizens;
-				city->citizensWorld = world_citizens;
+				city->citizensWorld = worldCitizens;
 			}
 			break;
 		case L_OFFSCREEN:

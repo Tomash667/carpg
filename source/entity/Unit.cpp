@@ -252,6 +252,7 @@ float Unit::CalculateAttack() const
 		return CalculateAttack(&GetWeapon());
 	else if(IsSet(data->flags2, F2_FIXED_STATS))
 		return (float)(data->attack + data->attackLvl * (level - data->level.x));
+	else
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
 		return Get(SkillId::UNARMED) + (Get(AttributeId::STR) + Get(AttributeId::DEX)) / 2 - 25.f + bonus;
@@ -356,11 +357,11 @@ float Unit::CalculateDefense(const Item* armor) const
 		if(armor)
 		{
 			const Armor& a = armor->ToArmor();
-			float skill_val = (float)Get(a.GetSkill());
+			float skillVal = (float)Get(a.GetSkill());
 			int str = Get(AttributeId::STR);
 			if(str < a.reqStr)
-				skill_val *= float(str) / a.reqStr;
-			def += a.def + skill_val;
+				skillVal *= float(str) / a.reqStr;
+			def += a.def + skillVal;
 		}
 	}
 	else
@@ -390,12 +391,12 @@ Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 }
 
 //=================================================================================================
-void Unit::SetGold(int new_gold)
+void Unit::SetGold(int newGold)
 {
-	if(new_gold == gold)
+	if(newGold == gold)
 		return;
-	int dif = new_gold - gold;
-	gold = new_gold;
+	int dif = newGold - gold;
+	gold = newGold;
 	if(IsPlayer())
 	{
 		gameGui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
@@ -787,10 +788,10 @@ bool Unit::AddItem(const Item* item, uint count, uint teamCount)
 			if(teamCount && IsTeamMember())
 			{
 				team->AddGold(teamCount);
-				uint normal_gold = count - teamCount;
-				if(normal_gold)
+				uint normalGold = count - teamCount;
+				if(normalGold)
 				{
-					gold += normal_gold;
+					gold += normalGold;
 					if(IsPlayer() && !player->isLocal)
 						player->playerInfo->UpdateGold();
 				}
@@ -862,16 +863,16 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 		gameGui->messages->AddItemMessage(player, count);
 
 	// rebuild inventory
-	int rebuild_id = -1;
+	int rebuildId = -1;
 	if(IsLocalPlayer())
 	{
 		if(gameGui->inventory->invMine->visible || gameGui->inventory->gpTrade->visible)
-			rebuild_id = 0;
+			rebuildId = 0;
 	}
 	else if(gameGui->inventory->gpTrade->visible && gameGui->inventory->invTradeOther->unit == this)
-		rebuild_id = 1;
-	if(rebuild_id != -1)
-		gameGui->inventory->BuildTmpInventory(rebuild_id);
+		rebuildId = 1;
+	if(rebuildId != -1)
+		gameGui->inventory->BuildTmpInventory(rebuildId);
 }
 
 //=================================================================================================
@@ -999,8 +1000,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		case EffectId::Poison:
 		case EffectId::Alcohol:
 			{
-				float poison_res = GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = effect.effect;
@@ -1008,7 +1009,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					e.sourceId = -1;
 					e.value = -1;
 					e.time = item.time;
-					e.power = effect.power / item.time * poison_res;
+					e.power = effect.power / item.time * poisonRes;
 					AddEffect(e);
 				}
 			}
@@ -1561,10 +1562,10 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prevValue) cons
 	if(value)
 	{
 		float v = CalculateWeaponPros(weapon);
-		float prev_v = CalculateWeaponPros(GetWeapon());
+		float prevV = CalculateWeaponPros(GetWeapon());
 		*value = (int)v;
-		*prevValue = (int)prev_v;
-		return prev_v < v;
+		*prevValue = (int)prevV;
+		return prevV < v;
 	}
 	else
 		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
@@ -1586,10 +1587,10 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prevValue) const
 	if(value)
 	{
 		float v = CalculateDefense(&armor);
-		float prev_v = CalculateDefense();
+		float prevV = CalculateDefense();
 		*value = (int)v;
-		*prevValue = (int)prev_v;
-		return prev_v < v;
+		*prevValue = (int)prevV;
+		return prevV < v;
 	}
 	else
 		return CalculateDefense() < CalculateDefense(&armor);
@@ -1648,22 +1649,22 @@ float Unit::GetAttackFrame(int frame) const
 {
 	assert(InRange(frame, 0, 2));
 
-	int attack_id = act.attack.index;
-	assert(attack_id < data->frames->attacks);
+	int attackId = act.attack.index;
+	assert(attackId < data->frames->attacks);
 
 	if(!data->frames->extra)
 	{
 		switch(frame)
 		{
 		case 0:
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 0];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 0];
 		case 1:
-			return data->frames->Lerp(F_ATTACK1_START + attack_id * 2);
+			return data->frames->Lerp(F_ATTACK1_START + attackId * 2);
 		case 2:
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 1];
 		default:
 			assert(0);
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 1];
 		}
 	}
 	else
@@ -1671,14 +1672,14 @@ float Unit::GetAttackFrame(int frame) const
 		switch(frame)
 		{
 		case 0:
-			return data->frames->extra->e[attack_id].start;
+			return data->frames->extra->e[attackId].start;
 		case 1:
-			return data->frames->extra->e[attack_id].Lerp();
+			return data->frames->extra->e[attackId].Lerp();
 		case 2:
-			return data->frames->extra->e[attack_id].end;
+			return data->frames->extra->e[attackId].end;
 		default:
 			assert(0);
-			return data->frames->extra->e[attack_id].end;
+			return data->frames->extra->e[attackId].end;
 		}
 	}
 }
@@ -1896,45 +1897,45 @@ void Unit::Save(GameWriter& f)
 	}
 
 	// orders
-	UnitOrderEntry* current_order = order;
-	while(current_order)
+	UnitOrderEntry* currentOrder = order;
+	while(currentOrder)
 	{
 		f.Write1();
-		f << current_order->order;
-		f << current_order->timer;
-		switch(current_order->order)
+		f << currentOrder->order;
+		f << currentOrder->timer;
+		switch(currentOrder->order)
 		{
 		case ORDER_FOLLOW:
 		case ORDER_GUARD:
-			f << current_order->unit;
+			f << currentOrder->unit;
 			break;
 		case ORDER_LOOK_AT:
-			f << current_order->pos;
+			f << currentOrder->pos;
 			break;
 		case ORDER_MOVE:
-			f << current_order->pos;
-			f << current_order->moveType;
-			f << current_order->range;
+			f << currentOrder->pos;
+			f << currentOrder->moveType;
+			f << currentOrder->range;
 			break;
 		case ORDER_ESCAPE_TO:
-			f << current_order->pos;
+			f << currentOrder->pos;
 			break;
 		case ORDER_ESCAPE_TO_UNIT:
-			f << current_order->unit;
-			f << current_order->pos;
+			f << currentOrder->unit;
+			f << currentOrder->pos;
 			break;
 		case ORDER_AUTO_TALK:
-			f << current_order->autoTalk;
-			if(current_order->autoTalkDialog)
+			f << currentOrder->autoTalk;
+			if(currentOrder->autoTalkDialog)
 			{
-				f << current_order->autoTalkDialog->id;
-				f << (current_order->autoTalkQuest ? current_order->autoTalkQuest->id : -1);
+				f << currentOrder->autoTalkDialog->id;
+				f << (currentOrder->autoTalkQuest ? currentOrder->autoTalkQuest->id : -1);
 			}
 			else
 				f.Write0();
 			break;
 		}
-		current_order = current_order->next;
+		currentOrder = currentOrder->next;
 	}
 	f.Write0();
 
@@ -1989,15 +1990,15 @@ void Unit::Load(GameReader& f)
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f >> slot.count;
 		f >> slot.teamCount;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
+		if(itemId[0] != '$')
+			slot.item = Item::Get(itemId);
 		else
 		{
-			int quest_item_id = f.Read<int>();
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
+			int questItemId = f.Read<int>();
+			questMgr->AddQuestItemRequest(&slot.item, itemId.c_str(), questItemId, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			canSort = false;
 		}
@@ -2029,13 +2030,13 @@ void Unit::Load(GameReader& f)
 		{
 			// upgrade unit - previously there was 'mage' unit, now it is split into 'mage novice', 'mage' and 'master mage'
 			// calculate which one to use
-			int best_dif = data->GetLevelDif(level);
+			int bestDif = data->GetLevelDif(level);
 			for(UnitData* u : *data->upgrade)
 			{
 				int dif = u->GetLevelDif(level);
-				if(dif < best_dif)
+				if(dif < bestDif)
 				{
-					best_dif = dif;
+					bestDif = dif;
 					data = u;
 				}
 			}
@@ -2139,7 +2140,7 @@ void Unit::Load(GameReader& f)
 		f >> prevSpeed;
 		f >> animationState;
 		if(LOAD_VERSION < V_0_13)
-			f >> aiMode; // old attack_id, assigned to unused variable at client side to pass to AIController
+			f >> aiMode; // old attackId, assigned to unused variable at client side to pass to AIController
 		f >> action;
 		f >> weaponTaken;
 		f >> weaponHiding;
@@ -2226,10 +2227,10 @@ void Unit::Load(GameReader& f)
 			break;
 		}
 
-		const string& item_id = f.ReadString1();
-		if(!item_id.empty())
+		const string& itemId = f.ReadString1();
+		if(!itemId.empty())
 		{
-			usedItem = Item::Get(item_id);
+			usedItem = Item::Get(itemId);
 			f >> usedItemIsTeam;
 		}
 		else
@@ -2333,64 +2334,64 @@ void Unit::Load(GameReader& f)
 	// orders
 	if(LOAD_VERSION >= V_0_12)
 	{
-		UnitOrderEntry* current_order = nullptr;
+		UnitOrderEntry* currentOrder = nullptr;
 		while(f.Read1())
 		{
-			if(current_order)
+			if(currentOrder)
 			{
-				current_order->next = UnitOrderEntry::Get();
-				current_order = current_order->next;
+				currentOrder->next = UnitOrderEntry::Get();
+				currentOrder = currentOrder->next;
 			}
 			else
 			{
 				order = UnitOrderEntry::Get();
-				current_order = order;
+				currentOrder = order;
 			}
 
-			f >> current_order->order;
-			f >> current_order->timer;
-			switch(current_order->order)
+			f >> currentOrder->order;
+			f >> currentOrder->timer;
+			switch(currentOrder->order)
 			{
 			case ORDER_FOLLOW:
-				f >> current_order->unit;
+				f >> currentOrder->unit;
 				break;
 			case ORDER_LOOK_AT:
-				f >> current_order->pos;
+				f >> currentOrder->pos;
 				break;
 			case ORDER_MOVE:
-				f >> current_order->pos;
-				f >> current_order->moveType;
+				f >> currentOrder->pos;
+				f >> currentOrder->moveType;
 				if(LOAD_VERSION >= V_0_14)
-					f >> current_order->range;
+					f >> currentOrder->range;
 				else
-					current_order->range = 0.1f;
+					currentOrder->range = 0.1f;
 				break;
 			case ORDER_ESCAPE_TO:
-				f >> current_order->pos;
+				f >> currentOrder->pos;
 				break;
 			case ORDER_ESCAPE_TO_UNIT:
-				f >> current_order->unit;
-				f >> current_order->pos;
+				f >> currentOrder->unit;
+				f >> currentOrder->pos;
 				break;
 			case ORDER_GUARD:
-				f >> current_order->unit;
+				f >> currentOrder->unit;
 				break;
 			case ORDER_AUTO_TALK:
-				f >> current_order->autoTalk;
+				f >> currentOrder->autoTalk;
 				if(const string& dialogId = f.ReadString1(); !dialogId.empty())
 				{
-					current_order->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
+					currentOrder->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
 					int questId;
 					f >> questId;
 					if(questId != -1)
-						questMgr->AddQuestRequest(questId, &current_order->autoTalkQuest);
+						questMgr->AddQuestRequest(questId, &currentOrder->autoTalkQuest);
 					else
-						current_order->autoTalkQuest = nullptr;
+						currentOrder->autoTalkQuest = nullptr;
 				}
 				else
 				{
-					current_order->autoTalkDialog = nullptr;
-					current_order->autoTalkQuest = nullptr;
+					currentOrder->autoTalkDialog = nullptr;
+					currentOrder->autoTalkQuest = nullptr;
 				}
 				break;
 			}
@@ -2398,14 +2399,14 @@ void Unit::Load(GameReader& f)
 	}
 	else
 	{
-		UnitOrder unit_order;
+		UnitOrder unitOrder;
 		float timer;
-		f >> unit_order;
+		f >> unitOrder;
 		f >> timer;
-		if(unit_order != ORDER_NONE)
+		if(unitOrder != ORDER_NONE)
 		{
 			order = UnitOrderEntry::Get();
-			order->order = unit_order;
+			order->order = unitOrder;
 			order->timer = timer;
 			switch(order->order)
 			{
@@ -2540,15 +2541,15 @@ void Unit::LoadStock(GameReader& f)
 	cnt.resize(count);
 	for(ItemSlot& slot : cnt)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f >> slot.count;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
+		if(itemId[0] != '$')
+			slot.item = Item::Get(itemId);
 		else
 		{
 			int questId;
 			f >> questId;
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), questId, &cnt);
+			questMgr->AddQuestItemRequest(&slot.item, itemId.c_str(), questId, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			canSort = false;
 		}
@@ -2699,14 +2700,14 @@ bool Unit::Read(BitStreamReader& f)
 {
 	// main
 	f >> id;
-	const string& unit_data_id = f.ReadString1();
+	const string& unitDataId = f.ReadString1();
 	if(!f)
 		return false;
 	Register();
-	data = UnitData::TryGet(unit_data_id);
+	data = UnitData::TryGet(unitDataId);
 	if(!data)
 	{
-		Error("Missing base unit id '%s'!", unit_data_id.c_str());
+		Error("Missing base unit id '%s'!", unitDataId.c_str());
 		return false;
 	}
 
@@ -2748,14 +2749,14 @@ bool Unit::Read(BitStreamReader& f)
 	{
 		for(int i = 0; i < SLOT_MAX_VISIBLE; ++i)
 		{
-			const string& item_id = f.ReadString1();
+			const string& itemId = f.ReadString1();
 			if(!f)
 				return false;
-			if(item_id.empty())
+			if(itemId.empty())
 				slots[i] = nullptr;
 			else
 			{
-				const Item* item = Item::TryGet(item_id);
+				const Item* item = Item::TryGet(itemId);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
 				{
 					gameRes->PreloadItem(item);
@@ -2924,16 +2925,16 @@ bool Unit::Read(BitStreamReader& f)
 		f >> targetPos;
 		f >> targetPos2;
 		f >> timer;
-		const string& used_item_id = f.ReadString1();
+		const string& usedItemId = f.ReadString1();
 		int usableId = f.Read<int>();
 
 		// used item
-		if(!used_item_id.empty())
+		if(!usedItemId.empty())
 		{
-			usedItem = Item::TryGet(used_item_id);
+			usedItem = Item::TryGet(usedItemId);
 			if(!usedItem)
 			{
-				Error("Missing used item '%s'.", used_item_id.c_str());
+				Error("Missing used item '%s'.", usedItemId.c_str());
 				return false;
 			}
 		}
@@ -3040,9 +3041,9 @@ bool Unit::FindEffect(EffectId effect, float* value)
 // szuka miksturek leczniczych w ekwipunku, zwraca -1 jeœli nie odnaleziono
 int Unit::FindHealingPotion() const
 {
-	float healed_hp,
-		missing_hp = hpmax - hp;
-	int potion_index = -1, index = 0;
+	float healedHp,
+		missingHp = hpmax - hp;
+	int potionIndex = -1, index = 0;
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
@@ -3054,30 +3055,30 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
-		if(potion_index == -1)
+		if(potionIndex == -1)
 		{
-			potion_index = index;
-			healed_hp = power;
+			potionIndex = index;
+			healedHp = power;
 		}
 		else
 		{
-			if(power > missing_hp)
+			if(power > missingHp)
 			{
-				if(power < healed_hp)
+				if(power < healedHp)
 				{
-					potion_index = index;
-					healed_hp = power;
+					potionIndex = index;
+					healedHp = power;
 				}
 			}
-			else if(power > healed_hp)
+			else if(power > healedHp)
 			{
-				potion_index = index;
-				healed_hp = power;
+				potionIndex = index;
+				healedHp = power;
 			}
 		}
 	}
 
-	return potion_index;
+	return potionIndex;
 }
 
 //=================================================================================================
@@ -3270,13 +3271,13 @@ bool Unit::HaveItem(const Item* item, bool owned) const
 //=================================================================================================
 bool Unit::HaveItemEquipped(const Item* item) const
 {
-	ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
-	if(slot_type == SLOT_INVALID)
+	ITEM_SLOT slotType = ItemTypeToSlot(item->type);
+	if(slotType == SLOT_INVALID)
 		return false;
-	else if(slot_type == SLOT_RING1)
+	else if(slotType == SLOT_RING1)
 		return slots[SLOT_RING1] == item || slots[SLOT_RING2] == item;
 	else
-		return slots[slot_type] == item;
+		return slots[slotType] == item;
 }
 
 //=================================================================================================
@@ -3650,18 +3651,18 @@ void Unit::EquipItem(const Item* item)
 
 //=================================================================================================
 // currently using this on pc, looted units is not written
-void Unit::RemoveItem(int iindex, bool activeLocation)
+void Unit::RemoveItem(int iIndex, bool activeLocation)
 {
 	assert(!player);
 	assert(Net::IsLocal());
-	if(iindex >= 0)
+	if(iIndex >= 0)
 	{
-		assert(iindex < (int)items.size());
-		RemoveElementIndex(items, iindex);
+		assert(iIndex < (int)items.size());
+		RemoveElementIndex(items, iIndex);
 	}
 	else
 	{
-		ITEM_SLOT s = IIndexToSlot(iindex);
+		ITEM_SLOT s = IIndexToSlot(iIndex);
 		assert(slots[s]);
 		slots[s] = nullptr;
 		if(activeLocation && IsVisible(s))
@@ -3717,7 +3718,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 				NetChangePlayer& c = Add1(player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = iIndex;
-				c.count = count;
+				c.count = removed;
 			}
 		}
 		else
@@ -3738,7 +3739,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 				NetChangePlayer& c = Add1(t->player->playerInfo->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = id;
-				c.count = count;
+				c.count = removed;
 				c.a = iIndex;
 			}
 		}
@@ -3766,9 +3767,9 @@ uint Unit::RemoveItem(const Item* item, uint count)
 }
 
 //=================================================================================================
-uint Unit::RemoveItemS(const string& item_id, uint count)
+uint Unit::RemoveItemS(const string& itemId, uint count)
 {
-	const Item* item = Item::TryGet(item_id);
+	const Item* item = Item::TryGet(itemId);
 	if(!item)
 		return 0;
 	return RemoveItem(item, count);
@@ -3929,35 +3930,35 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 		else
 		{
 			int v = item->aiValue;
-			int prev_v = HaveWeapon() ? GetWeapon().aiValue : 0;
+			int prevV = HaveWeapon() ? GetWeapon().aiValue : 0;
 			if(value)
 			{
 				*value = v;
-				*prevValue = prev_v;
+				*prevValue = prevV;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_BOW:
 		{
 			int v = item->ToBow().dmg;
-			int prev_v = HaveBow() ? GetBow().dmg : 0;
+			int prevV = HaveBow() ? GetBow().dmg : 0;
 			if(value)
 			{
 				*value = v * 2;
-				*prevValue = prev_v * 2;
+				*prevValue = prevV * 2;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_SHIELD:
 		{
 			int v = item->ToShield().block;
-			int prev_v = HaveShield() ? GetShield().block : 0;
+			int prevV = HaveShield() ? GetShield().block : 0;
 			if(value)
 			{
 				*value = v * 2;
-				*prevValue = prev_v * 2;
+				*prevValue = prevV * 2;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_ARMOR:
 		if(!IsSet(data->flags, F_MAGE))
@@ -3965,63 +3966,63 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 		else
 		{
 			int v = item->aiValue;
-			int prev_v = HaveArmor() ? GetArmor().aiValue : 0;
+			int prevV = HaveArmor() ? GetArmor().aiValue : 0;
 			if(value)
 			{
 				*value = v;
-				*prevValue = prev_v;
+				*prevValue = prevV;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_AMULET:
 		{
 			float v = GetItemAiValue(item);
-			float prev_v = HaveAmulet() ? GetItemAiValue(&GetAmulet()) : 0;
+			float prevV = HaveAmulet() ? GetItemAiValue(&GetAmulet()) : 0;
 			if(value)
 			{
 				*value = (int)v;
-				*prevValue = (int)prev_v;
+				*prevValue = (int)prevV;
 			}
-			return v > prev_v && v > 0;
+			return v > prevV && v > 0;
 		}
 	case IT_RING:
 		{
 			float v = GetItemAiValue(item);
-			float prev_v;
-			ITEM_SLOT best_slot;
+			float prevV;
+			ITEM_SLOT bestSlot;
 			if(!slots[SLOT_RING1])
 			{
-				prev_v = 0;
-				best_slot = SLOT_RING1;
+				prevV = 0;
+				bestSlot = SLOT_RING1;
 			}
 			else if(!slots[SLOT_RING2])
 			{
-				prev_v = 0;
-				best_slot = SLOT_RING2;
+				prevV = 0;
+				bestSlot = SLOT_RING2;
 			}
 			else
 			{
-				float prev_v1 = GetItemAiValue(slots[SLOT_RING1]),
-					prev_v2 = GetItemAiValue(slots[SLOT_RING2]);
-				if(prev_v1 > prev_v2)
+				float prevV1 = GetItemAiValue(slots[SLOT_RING1]),
+					prevV2 = GetItemAiValue(slots[SLOT_RING2]);
+				if(prevV1 > prevV2)
 				{
-					prev_v = prev_v2;
-					best_slot = SLOT_RING2;
+					prevV = prevV2;
+					bestSlot = SLOT_RING2;
 				}
 				else
 				{
-					prev_v = prev_v1;
-					best_slot = SLOT_RING1;
+					prevV = prevV1;
+					bestSlot = SLOT_RING1;
 				}
 			}
 			if(value)
 			{
 				*value = (int)v;
-				*prevValue = (int)prev_v;
+				*prevValue = (int)prevV;
 			}
 			if(targetSlot)
-				*targetSlot = best_slot;
-			return v > prev_v && v > 0;
+				*targetSlot = bestSlot;
+			return v > prevV && v > 0;
 		}
 	default:
 		assert(0);
@@ -4093,9 +4094,9 @@ const Item* Unit::GetIIndexItem(int iIndex) const
 	}
 	else
 	{
-		ITEM_SLOT slot_type = IIndexToSlot(iIndex);
-		if(slot_type < SLOT_MAX)
-			return slots[slot_type];
+		ITEM_SLOT slotType = IIndexToSlot(iIndex);
+		if(slotType < SLOT_MAX)
+			return slots[slotType];
 		else
 			return nullptr;
 	}
@@ -4144,8 +4145,8 @@ float Unit::CalculateMagicResistance() const
 		mres = 0.5f;
 	else if(IsSet(data->flags2, F2_MAGIC_RES25))
 		mres = 0.75f;
-	float effect_mres = GetEffectMulInv(EffectId::MagicResistance);
-	return mres * effect_mres;
+	float effectMres = GetEffectMulInv(EffectId::MagicResistance);
+	return mres * effectMres;
 }
 
 //=================================================================================================
@@ -5260,18 +5261,15 @@ void Unit::Standup(bool warp, bool leave)
 	}
 	else
 	{
+		action = A_STAND_UP;
 		Mesh::Animation* anim = meshInst->mesh->GetAnimation("wstaje2");
 		if(anim)
 		{
 			meshInst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-			action = A_STAND_UP;
 			animation = ANI_PLAY;
 		}
 		else
-		{
-			action = A_NONE;
 			animation = ANI_STAND;
-		}
 	}
 	usedItem = nullptr;
 	if(weaponState != WeaponState::Hidden)
@@ -6005,12 +6003,14 @@ void Unit::AddDialogS(Quest2* quest, const string& dialogId, int priority)
 void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 {
 	assert(quest);
+
 	LoopAndRemove(dialogs, [quest](QuestDialog& dialog)
 	{
 		if(dialog.quest == quest)
 			return true;
 		return false;
 	});
+
 	if(!cleanup)
 	{
 		quest->RemoveDialogPtr(this);
@@ -6026,7 +6026,7 @@ void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 //=================================================================================================
 void Unit::AddEventHandler(Quest2* quest, EventType type)
 {
-	assert(type == EVENT_UPDATE || type == EVENT_DIE);
+	assert(Any(type, EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE));
 
 	Event e;
 	e.quest = quest;
@@ -6742,9 +6742,9 @@ void Unit::CastSpell()
 			if(IsSet(ability.flags, Ability::Triple))
 				count = 3;
 
-			float expected_rot = Clip(-Vec3::Angle2d(coord, targetPos) + PI / 2);
-			float current_rot = Clip(rot + PI);
-			AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
+			float expectedRot = Clip(-Vec3::Angle2d(coord, targetPos) + PI / 2);
+			float currentRot = Clip(rot + PI);
+			AdjustAngle(currentRot, expectedRot, ToRadians(10.f));
 
 			for(int i = 0; i < count; ++i)
 			{
@@ -6757,7 +6757,7 @@ void Unit::CastSpell()
 				bullet->backstab = 0.25f;
 				bullet->pos = coord;
 				bullet->attack = dmg;
-				bullet->rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
+				bullet->rot = Vec3(0, Clip(currentRot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				bullet->mesh = ability.mesh;
 				bullet->tex = ability.tex;
 				bullet->texSize = ability.size;
@@ -6793,18 +6793,15 @@ void Unit::CastSpell()
 					pe->life = -1;
 					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawnMin = 3;
-					pe->spawnMax = 4;
+					pe->spawn = Int2(3, 4);
 					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
 					pe->speedMin = Vec3(-1, -1, -1);
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.sizeParticle;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->size = Vec2(ability.sizeParticle, 0.f);
+					pe->alpha = Vec2(1.f, 0.f);
 					pe->mode = 1;
 					pe->Init();
 					locPart->lvlPart->pes.push_back(pe);
@@ -6965,9 +6962,10 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				Vec3 pos = target->pos;
-				pos.y += target->GetUnitHeight() / 2;
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, Vec2::Zero);
+				Vec2 bounds(target->GetUnitRadius(), 0);
+				Vec3 pos = target->GetLootCenter();
+				pos.y += 0.5f;
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -6985,8 +6983,14 @@ void Unit::CastSpell()
 
 				// particle effect
 				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
-				Vec3 pos = target->pos;
-				pos.y += bounds.y / 2;
+				Vec3 pos;
+				if(target->liveState == Unit::FALL || target->liveState == Unit::DEAD)
+					pos = target->GetLootCenter();
+				else
+				{
+					pos = target->pos;
+					pos.y += bounds.y / 2;
+				}
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 		}
@@ -6994,24 +6998,24 @@ void Unit::CastSpell()
 	case Ability::Summon:
 		{
 			// despawn old
-			Unit* existing_unit = gameLevel->FindUnit([&](Unit* u) { return u->summoner == this; });
-			if(existing_unit)
+			Unit* existingUnit = gameLevel->FindUnit([&](Unit* u) { return u->summoner == this; });
+			if(existingUnit)
 			{
-				team->RemoveMember(existing_unit);
-				gameLevel->RemoveUnit(existing_unit);
+				team->RemoveMember(existingUnit);
+				gameLevel->RemoveUnit(existingUnit);
 			}
 
 			// spawn new
-			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
-			if(new_unit)
+			Unit* newUnit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
+			if(newUnit)
 			{
-				new_unit->summoner = this;
-				new_unit->inArena = inArena;
-				if(new_unit->inArena != -1)
-					game->arena->units.push_back(new_unit);
-				team->AddMember(new_unit, HeroType::Visitor);
-				new_unit->order->unit = this; // follow summoner
-				gameLevel->SpawnUnitEffect(*new_unit);
+				newUnit->summoner = this;
+				newUnit->inArena = inArena;
+				if(newUnit->inArena != -1)
+					game->arena->units.push_back(newUnit);
+				team->AddMember(newUnit, HeroType::Visitor);
+				newUnit->order->unit = this; // follow summoner
+				gameLevel->SpawnUnitEffect(*newUnit);
 			}
 		}
 		break;
@@ -7034,15 +7038,15 @@ void Unit::CastSpell()
 		{
 			float angle = Random(MAX_ANGLE);
 			Vec3 targetPos = pos + Vec3(sin(angle) * ability.range, 0, cos(angle) * ability.range);
-			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
-			if(new_unit)
+			Unit* newUnit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
+			if(newUnit)
 			{
-				new_unit->inArena = inArena;
-				if(new_unit->inArena != -1)
-					game->arena->units.push_back(new_unit);
-				gameLevel->SpawnUnitEffect(*new_unit);
-				new_unit->ai->alertTarget = ai->target;
-				new_unit->ai->alertTargetPos = ai->targetLastPos;
+				newUnit->inArena = inArena;
+				if(newUnit->inArena != -1)
+					game->arena->units.push_back(newUnit);
+				gameLevel->SpawnUnitEffect(*newUnit);
+				newUnit->ai->alertTarget = ai->target;
+				newUnit->ai->alertTargetPos = ai->targetLastPos;
 			}
 		}
 		break;
@@ -8265,12 +8269,17 @@ void Unit::Update(float dt)
 		assert(Net::IsClient());
 		break;
 	case A_STAND_UP:
-		if(meshInst->IsEnded())
+		if(animation == ANI_PLAY)
 		{
-			action = A_NONE;
-			animation = ANI_STAND;
-			currentAnimation = (Animation)-1;
+			if(meshInst->IsEnded())
+			{
+				action = A_NONE;
+				animation = ANI_STAND;
+				currentAnimation = (Animation)-1;
+			}
 		}
+		else if(!meshInst->IsBlending())
+			action = A_NONE;
 		break;
 	case A_USE_ITEM:
 		if(meshInst->IsEnded(1))
@@ -8775,8 +8784,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		pe->life = 5.f;
 		pe->particleLife = 0.5f;
 		pe->emissions = 1;
-		pe->spawnMin = 10;
-		pe->spawnMax = 15;
+		pe->spawn = Int2(10, 15);
 		pe->maxParticles = 15;
 		if(hitpoint)
 			pe->pos = *hitpoint;
@@ -8789,10 +8797,8 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		pe->speedMax = Vec3(1, 1, 1);
 		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = 0.3f;
-		pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 0.9f;
-		pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->size = Vec2(0.3f, 0.f);
+		pe->alpha = Vec2(0.9f, 0.f);
 		pe->mode = 0;
 		pe->Init();
 		locPart->lvlPart->pes.push_back(pe);
@@ -9128,15 +9134,15 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	// apply poison
 	if(IsSet(data->flags, F_POISON_ATTACK))
 	{
-		float poison_res = hitted.GetPoisonResistance();
-		if(poison_res > 0.f)
+		float poisonRes = hitted.GetPoisonResistance();
+		if(poisonRes > 0.f)
 		{
 			Effect e;
 			e.effect = EffectId::Poison;
 			e.source = EffectSource::Temporary;
 			e.sourceId = -1;
 			e.value = -1;
-			e.power = dmg / 10 * poison_res;
+			e.power = dmg / 10 * poisonRes;
 			e.time = 5.f;
 			hitted.AddEffect(e);
 		}
@@ -9189,3 +9195,32 @@ void Unit::AlertAllies(Unit* target)
 	}
 }
 
+//=================================================================================================
+void Unit::FireEvent(ScriptEvent& e)
+{
+	if(events.empty())
+		return;
+
+	e.unit = this;
+
+	for(Event& event : events)
+	{
+		if(event.type == e.type)
+			event.quest->FireEvent(e);
+	}
+}
+
+//=================================================================================================
+bool Unit::HaveEventHandler(EventType eventType) const
+{
+	if(!events.empty())
+	{
+		for(const Event& event : events)
+		{
+			if(event.type == eventType)
+				return true;
+		}
+	}
+
+	return false;
+}

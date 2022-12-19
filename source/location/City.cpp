@@ -368,6 +368,12 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 	case VILLAGE_EMPTY:
 		scriptName = "village_empty";
 		break;
+	case VILLAGE_DESTROYED:
+		scriptName = "village_destroyed";
+		break;
+	case VILLAGE_DESTROYED2:
+		scriptName = "village_destroyed2";
+		break;
 	}
 
 	BuildingScript* script = BuildingScript::Get(scriptName);

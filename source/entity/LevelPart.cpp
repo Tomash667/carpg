@@ -61,20 +61,28 @@ void LevelPart::Save(GameWriter& f)
 //=================================================================================================
 void LevelPart::Load(GameReader& f)
 {
-	const int particle_version = (LOAD_VERSION >= V_0_13 ? 2 : (LOAD_VERSION >= V_0_12 ? 1 : 0));
+	int particleVersion;
+	if(LOAD_VERSION >= V_DEV)
+		particleVersion = 3;
+	else if(LOAD_VERSION >= V_0_13)
+		particleVersion = 2;
+	else if(LOAD_VERSION >= V_0_12)
+		particleVersion = 1;
+	else
+		particleVersion = 0;
 
 	pes.resize(f.Read<uint>());
 	for(ParticleEmitter*& pe : pes)
 	{
 		pe = new ParticleEmitter;
-		pe->Load(f, particle_version);
+		pe->Load(f, particleVersion);
 	}
 
 	tpes.resize(f.Read<uint>());
 	for(TrailParticleEmitter*& tpe : tpes)
 	{
 		tpe = new TrailParticleEmitter;
-		tpe->Load(f, particle_version);
+		tpe->Load(f, particleVersion);
 	}
 
 	explos.resize(f.Read<uint>());

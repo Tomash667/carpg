@@ -423,9 +423,15 @@ quest main {
 		14 "Go in any order to $(villages[0].name), $(villages[1].name), y and z."
 		15 "Now I'm back to research. We count on you!"
 		16 "Get back to me when you get some information."
-		17 "Good job! Come back when you get more information."
-		18 "Hmmm, all the villagers just disappeared. It's hard to connect it with other symptoms of the plague."
-		19 "Take this gold collected by the villagers. You will surely need it."
+		17 "Welcome back! Got any new information?"
+		18 "Good job! Come back when you get more information."
+		19 "Give the soltys's diary"
+		20 "Hmmm, all the villagers just disappeared. It's hard to connect it with other symptoms of the plague."
+		21 "Take this gold collected by the villagers. You will surely need it."
+		22 "Give the weird crystal"
+		23 "This crystal has the same color as the lesions from this plague. I'll send for a magician to examine it thoroughly."
+		24 "Give infected organs"
+		25 "I know it's not a pleasant job, but only by researching these organs can we find a cure for the plague."
 		
 		//12 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
 	}
@@ -495,7 +501,7 @@ quest main_village1 {
 		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
 		3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
 		4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
-		5 "I returned the diary to $(cleric.realName) and got rewarded for it."
+		5 "I returned the diary to $(cleric.realName) and got rewarded for it. Quest done!"
 	}
 }
 
@@ -505,8 +511,10 @@ quest main_village2 {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
 		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
-		//3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
-		//4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
-		//5 "I returned the diary to $(cleric.realName) and got rewarded for it."
+		3 "Upon reaching the village, you can already see from afar that something is wrong. Unfortunately, I have to kill all the villagers who have gone mad, it's too late for them. I also need to find some information on the source of the plague."
+		4 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		5 "I found some strange crystal on the soltys's body. Maybe it is responsible for this plague?"
+		6 "I did all I could. Time to go back to $(cleric.realName)."
+		7 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
 	}
 }

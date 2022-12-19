@@ -2096,3 +2096,9 @@ dialog hunter_leader {
 dialog ill_idle {
 	0 "(coughs)"
 }
+
+//==============================================================================
+dialog plague_idle {
+	0 "(coughs)"
+	1 "(mumble)"
+}

@@ -594,35 +594,35 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player change equipped items
 		case NetChange::CHANGE_EQUIPMENT:
 			{
-				int i_index;
-				f >> i_index;
+				int iIndex;
+				f >> iIndex;
 				if(!f)
 					Error("Update server: Broken CHANGE_EQUIPMENT from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					if(i_index >= 0)
+					if(iIndex >= 0)
 					{
 						// equipping item
-						if(uint(i_index) >= unit.items.size())
+						if(uint(iIndex) >= unit.items.size())
 						{
-							Error("Update server: CHANGE_EQUIPMENT from %s, invalid index %d.", info.name.c_str(), i_index);
+							Error("Update server: CHANGE_EQUIPMENT from %s, invalid index %d.", info.name.c_str(), iIndex);
 							break;
 						}
 
-						ItemSlot& slot = unit.items[i_index];
+						ItemSlot& slot = unit.items[iIndex];
 						if(!unit.CanWear(slot.item))
 						{
 							Error("Update server: CHANGE_EQUIPMENT from %s, item at index %d (%s) is not wearable.",
-								info.name.c_str(), i_index, slot.item->id.c_str());
+								info.name.c_str(), iIndex, slot.item->id.c_str());
 							break;
 						}
 
-						unit.EquipItem(i_index);
+						unit.EquipItem(iIndex);
 					}
 					else
 					{
 						// removing item
-						ITEM_SLOT slot = IIndexToSlot(i_index);
+						ITEM_SLOT slot = IIndexToSlot(iIndex);
 
 						if(!IsValid(slot))
 							Error("Update server: CHANGE_EQUIPMENT from %s, invalid slot type %d.", info.name.c_str(), slot);
@@ -777,8 +777,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player drops item
 		case NetChange::DROP_ITEM:
 			{
-				int i_index, count;
-				f >> i_index;
+				int iIndex, count;
+				f >> iIndex;
 				f >> count;
 				if(!f)
 					Error("Update server: Broken DROP_ITEM from %s.", info.name.c_str());
@@ -788,19 +788,19 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					GroundItem* item;
 
-					if(i_index >= 0)
+					if(iIndex >= 0)
 					{
 						// dropping unequipped item
-						if(i_index >= (int)unit.items.size())
+						if(iIndex >= (int)unit.items.size())
 						{
-							Error("Update server: DROP_ITEM from %s, invalid index %d (count %d).", info.name.c_str(), i_index, count);
+							Error("Update server: DROP_ITEM from %s, invalid index %d (count %d).", info.name.c_str(), iIndex, count);
 							break;
 						}
 
-						ItemSlot& sl = unit.items[i_index];
+						ItemSlot& sl = unit.items[iIndex];
 						if(count > (int)sl.count)
 						{
-							Error("Update server: DROP_ITEM from %s, index %d (count %d) have only %d count.", info.name.c_str(), i_index,
+							Error("Update server: DROP_ITEM from %s, index %d (count %d) have only %d count.", info.name.c_str(), iIndex,
 								count, sl.count);
 							count = sl.count;
 						}
@@ -813,12 +813,12 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->teamCount = min(count, (int)sl.teamCount);
 						sl.teamCount -= item->teamCount;
 						if(sl.count == 0)
-							unit.items.erase(unit.items.begin() + i_index);
+							unit.items.erase(unit.items.begin() + iIndex);
 					}
 					else
 					{
 						// dropping equipped item
-						ITEM_SLOT slot_type = IIndexToSlot(i_index);
+						ITEM_SLOT slot_type = IIndexToSlot(iIndex);
 						if(!IsValid(slot_type))
 						{
 							Error("Update server: DROP_ITEM from %s, invalid slot %d.", info.name.c_str(), slot_type);
@@ -914,6 +914,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						ScriptEvent e(EVENT_PICKUP);
 						e.unit = &unit;
 						e.groundItem = groundItem;
+						e.item = groundItem->item;
 						event.quest->FireEvent(e);
 					}
 				}
@@ -1013,8 +1014,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player gets item from unit or container
 		case NetChange::GET_ITEM:
 			{
-				int i_index, count;
-				f >> i_index;
+				int iIndex, count;
+				f >> iIndex;
 				f >> count;
 				if(!f)
 				{
@@ -1031,16 +1032,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				if(i_index >= 0)
+				if(iIndex >= 0)
 				{
 					// getting not equipped item
-					if(i_index >= (int)player.chestTrade->size())
+					if(iIndex >= (int)player.chestTrade->size())
 					{
-						Error("Update server: GET_ITEM from %s, invalid index %d.", info.name.c_str(), i_index);
+						Error("Update server: GET_ITEM from %s, invalid index %d.", info.name.c_str(), iIndex);
 						break;
 					}
 
-					ItemSlot& slot = player.chestTrade->at(i_index);
+					ItemSlot& slot = player.chestTrade->at(iIndex);
 					if(count < 1 || count >(int)slot.count)
 					{
 						Error("Update server: GET_ITEM from %s, invalid item count %d (have %d).", info.name.c_str(), count, slot.count);
@@ -1068,7 +1069,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chestTrade->erase(player.chestTrade->begin() + i_index);
+							player.chestTrade->erase(player.chestTrade->begin() + iIndex);
 						else
 							slot.teamCount -= teamCount;
 					}
@@ -1107,6 +1108,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 										c.unit = player.actionUnit;
 									}
 								}
+
 								if(IsSet(slot.item->flags, ITEM_IMPORTANT))
 								{
 									player.actionUnit->mark = false;
@@ -1115,11 +1117,15 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 									c.unit = player.actionUnit;
 									c.id = 0;
 								}
+
+								ScriptEvent e(EVENT_PICKUP);
+								e.item = slot.item;
+								player.actionUnit->FireEvent(e);
 							}
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chestTrade->erase(player.chestTrade->begin() + i_index);
+							player.chestTrade->erase(player.chestTrade->begin() + iIndex);
 						else
 							slot.teamCount -= teamCount;
 					}
@@ -1127,7 +1133,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					// getting equipped item
-					ITEM_SLOT type = IIndexToSlot(i_index);
+					ITEM_SLOT type = IIndexToSlot(iIndex);
 					if(Any(player.action, PlayerAction::LootChest, PlayerAction::LootContainer)
 						|| !IsValid(type)
 						|| !player.actionUnit->HaveEquippedItem(type))
@@ -1137,17 +1143,22 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 
 					// get equipped item from unit
-					unit.AddItem2(player.actionUnit->GetEquippedItem(type), 1u, 1u, false, false);
+					const Item* item = player.actionUnit->GetEquippedItem(type);
+					unit.AddItem2(item, 1u, 1u, false, false);
 					player.actionUnit->RemoveEquippedItem(type);
+
+					ScriptEvent e(EVENT_PICKUP);
+					e.item = item;
+					player.actionUnit->FireEvent(e);
 				}
 			}
 			break;
 		// player puts item into unit or container
 		case NetChange::PUT_ITEM:
 			{
-				int i_index;
+				int iIndex;
 				uint count;
-				f >> i_index;
+				f >> iIndex;
 				f >> count;
 				if(!f)
 				{
@@ -1164,16 +1175,16 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				if(i_index >= 0)
+				if(iIndex >= 0)
 				{
 					// put not equipped item
-					if(i_index >= (int)unit.items.size())
+					if(iIndex >= (int)unit.items.size())
 					{
-						Error("Update server: PUT_ITEM from %s, invalid index %d.", info.name.c_str(), i_index);
+						Error("Update server: PUT_ITEM from %s, invalid index %d.", info.name.c_str(), iIndex);
 						break;
 					}
 
-					ItemSlot& slot = unit.items[i_index];
+					ItemSlot& slot = unit.items[iIndex];
 					if(count < 1 || count > slot.count)
 					{
 						Error("Update server: PUT_ITEM from %s, invalid count %u (have %u).", info.name.c_str(), count, slot.count);
@@ -1194,10 +1205,10 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						player.Train(TrainWhat::Trade, (float)price * count, 0);
 						if(teamCount)
 							team->AddGold(price * teamCount);
-						uint normal_count = count - teamCount;
-						if(normal_count)
+						uint normalCount = count - teamCount;
+						if(normalCount)
 						{
-							unit.gold += price * normal_count;
+							unit.gold += price * normalCount;
 							info.UpdateGold();
 						}
 					}
@@ -1246,14 +1257,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.weight -= slot.item->weight * count;
 					slot.count -= count;
 					if(slot.count == 0)
-						unit.items.erase(unit.items.begin() + i_index);
+						unit.items.erase(unit.items.begin() + iIndex);
 					else
 						slot.teamCount -= teamCount;
 				}
 				else
 				{
 					// put equipped item
-					ITEM_SLOT type = IIndexToSlot(i_index);
+					ITEM_SLOT type = IIndexToSlot(iIndex);
 					if(!IsValid(type) || !unit.HaveEquippedItem(type))
 					{
 						Error("Update server: PUT_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
@@ -1307,24 +1318,36 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
+				Unit* lootedUnit = nullptr;
+				bool any = false, pickupEvent = false;
+
 				// slots
-				bool any = false;
 				if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 				{
-					array<const Item*, SLOT_MAX>& equipped = player.actionUnit->GetEquippedItems();
+					lootedUnit = player.actionUnit;
+					pickupEvent = lootedUnit->HaveEventHandler(EVENT_PICKUP);
+
+					array<const Item*, SLOT_MAX>& equipped = lootedUnit->GetEquippedItems();
 					for(int i = 0; i < SLOT_MAX; ++i)
 					{
-						if(equipped[i])
+						if(const Item* item = equipped[i])
 						{
-							InsertItemBare(unit.items, equipped[i]);
-							unit.weight += equipped[i]->weight;
+							InsertItemBare(unit.items, item);
+							unit.weight += item->weight;
 							any = true;
+
+							if(pickupEvent)
+							{
+								ScriptEvent e(EVENT_PICKUP);
+								e.item = item;
+								lootedUnit->FireEvent(e);
+							}
 						}
 					}
 
 					// reset weight
-					player.actionUnit->weight = 0;
-					player.actionUnit->RemoveAllEquippedItems();
+					lootedUnit->weight = 0;
+					lootedUnit->RemoveAllEquippedItems();
 				}
 
 				// not equipped items
@@ -1340,6 +1363,13 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						InsertItemBare(unit.items, slot.item, slot.count, slot.teamCount);
 						unit.weight += slot.item->weight * slot.count;
 						any = true;
+
+						if(pickupEvent)
+						{
+							ScriptEvent e(EVENT_PICKUP);
+							e.item = slot.item;
+							lootedUnit->FireEvent(e);
+						}
 					}
 				}
 				player.chestTrade->clear();
@@ -1510,23 +1540,23 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player wants to enter building
 		case NetChange::ENTER_BUILDING:
 			{
-				byte building_index;
-				f >> building_index;
+				byte buildingIndex;
+				f >> buildingIndex;
 				if(!f)
 					Error("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
 				else if(game->gameState == GS_LEVEL)
 				{
-					if(gameLevel->cityCtx && building_index < gameLevel->cityCtx->insideBuildings.size())
+					if(gameLevel->cityCtx && buildingIndex < gameLevel->cityCtx->insideBuildings.size())
 					{
 						WarpData& warp = Add1(warps);
 						warp.u = &unit;
-						warp.where = building_index;
+						warp.where = buildingIndex;
 						warp.building = -1;
 						warp.timer = 1.f;
 						unit.frozen = FROZEN::YES;
 					}
 					else
-						Error("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), building_index);
+						Error("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), buildingIndex);
 				}
 			}
 			break;
@@ -1690,8 +1720,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// client checks if item is better for npc
 		case NetChange::IS_BETTER_ITEM:
 			{
-				int i_index;
-				f >> i_index;
+				int iIndex;
+				f >> iIndex;
 				if(!f)
 				{
 					Error("Update server: Broken IS_BETTER_ITEM from %s.", info.name.c_str());
@@ -1707,14 +1737,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 				if(player.action == PlayerAction::GiveItems)
 				{
-					const Item* item = unit.GetIIndexItem(i_index);
+					const Item* item = unit.GetIIndexItem(iIndex);
 					if(item)
 					{
 						if(player.actionUnit->IsBetterItem(item))
 							c.id = 1;
 					}
 					else
-						Error("Update server: IS_BETTER_ITEM from %s, invalid i_index %d.", info.name.c_str(), i_index);
+						Error("Update server: IS_BETTER_ITEM from %s, invalid iIndex %d.", info.name.c_str(), iIndex);
 				}
 				else
 					Error("Update server: IS_BETTER_ITEM from %s, player is not giving items.", info.name.c_str());

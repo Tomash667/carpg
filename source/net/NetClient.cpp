@@ -823,18 +823,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					pe->life = 5.f;
 					pe->particleLife = 0.5f;
 					pe->emissions = 1;
-					pe->spawnMin = 10;
-					pe->spawnMax = 15;
+					pe->spawn = Int2(10, 15);
 					pe->maxParticles = 15;
 					pe->pos = pos;
 					pe->speedMin = Vec3(-1, 0, -1);
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-					pe->size = 0.3f;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 0.9f;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->size = Vec2(0.3f, 0.f);
+					pe->alpha = Vec2(0.9f, 0.f);
 					pe->mode = 0;
 					pe->Init();
 					gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
@@ -1275,15 +1272,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// change location state
 		case NetChange::CHANGE_LOCATION_STATE:
 			{
-				byte location_index;
-				f >> location_index;
+				byte locationIndex;
+				f >> locationIndex;
 				if(!f)
 					Error("Update client: Broken CHANGE_LOCATION_STATE.");
-				else if(!world->VerifyLocation(location_index))
-					Error("Update client: CHANGE_LOCATION_STATE, invalid location %u.", location_index);
+				else if(!world->VerifyLocation(locationIndex))
+					Error("Update client: CHANGE_LOCATION_STATE, invalid location %u.", locationIndex);
 				else
 				{
-					Location* loc = world->GetLocation(location_index);
+					Location* loc = world->GetLocation(locationIndex);
 					loc->SetKnown();
 				}
 			}
@@ -2092,65 +2089,69 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			if(game->gameState == GS_LEVEL)
 			{
 				// change object
-				BaseObject* base_obj = BaseObject::Get("bloody_altar");
-				Object* obj = gameLevel->localPart->FindObject(base_obj);
+				BaseObject* baseObj = BaseObject::Get("bloody_altar");
+				Object* obj = gameLevel->localPart->FindObject(baseObj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
 				resMgr->Load(obj->mesh);
 
 				// remove particles
-				float best_dist = 999.f;
-				ParticleEmitter* best_pe = nullptr;
+				float bestDist = 999.f;
+				ParticleEmitter* bestPe = nullptr;
 				for(ParticleEmitter* pe : gameLevel->localPart->lvlPart->pes)
 				{
 					if(pe->tex == gameRes->tBlood[BLOOD_RED])
 					{
 						float dist = Vec3::Distance(pe->pos, obj->pos);
-						if(dist < best_dist)
+						if(dist < bestDist)
 						{
-							best_dist = dist;
-							best_pe = pe;
+							bestDist = dist;
+							bestPe = pe;
 						}
 					}
 				}
-				assert(best_pe);
-				best_pe->destroy = true;
+				assert(bestPe);
+				bestPe->destroy = true;
 			}
 			break;
 		// add new location
 		case NetChange::ADD_LOCATION:
 			{
-				byte location_index;
+				byte locationIndex;
 				LOCATION type;
-				f >> location_index;
+				f >> locationIndex;
 				f.ReadCasted<byte>(type);
-				if(!f)
-				{
-					Error("Update client: Broken ADD_LOCATION.");
-					break;
-				}
 
 				Location* loc;
-				if(type == L_DUNGEON)
+				switch(type)
 				{
-					byte levels;
-					f >> levels;
-					if(!f)
+				case L_CITY:
 					{
-						Error("Update client: Broken ADD_LOCATION(2).");
-						break;
+						City* city = new City;
+						city->citizens = 0;
+						city->citizensWorld = 0;
+						loc = city;
 					}
-					if(levels == 1)
-						loc = new SingleInsideLocation;
-					else
-						loc = new MultiInsideLocation(levels);
-				}
-				else if(type == L_CAVE)
+					break;
+				case L_DUNGEON:
+					{
+						byte levels;
+						f >> levels;
+						if(levels == 1)
+							loc = new SingleInsideLocation;
+						else
+							loc = new MultiInsideLocation(levels);
+					}
+					break;
+				case L_CAVE:
 					loc = new Cave;
-				else
+					break;
+				default:
 					loc = new OutsideLocation;
+					break;
+				}
 				loc->type = type;
-				loc->index = location_index;
+				loc->index = locationIndex;
 
 				f.ReadCasted<byte>(loc->state);
 				f.ReadCasted<byte>(loc->target);
@@ -2159,7 +2160,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				f.ReadCasted<byte>(loc->image);
 				if(!f)
 				{
-					Error("Update client: Broken ADD_LOCATION(3).");
+					Error("Update client: Broken ADD_LOCATION.");
 					delete loc;
 					break;
 				}
@@ -2170,14 +2171,14 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// remove camp
 		case NetChange::REMOVE_CAMP:
 			{
-				byte camp_index;
-				f >> camp_index;
+				byte campIndex;
+				f >> campIndex;
 				if(!f)
 					Error("Update client: Broken REMOVE_CAMP.");
-				else if(!world->VerifyLocation(camp_index) || world->GetLocation(camp_index)->type != L_CAMP)
-					Error("Update client: REMOVE_CAMP, invalid location %u.", camp_index);
+				else if(!world->VerifyLocation(campIndex) || world->GetLocation(campIndex)->type != L_CAMP)
+					Error("Update client: REMOVE_CAMP, invalid location %u.", campIndex);
 				else
-					world->RemoveLocation(camp_index);
+					world->RemoveLocation(campIndex);
 			}
 			break;
 		// change unit ai mode
@@ -2330,18 +2331,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					pe->life = -1;
 					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawnMin = 3;
-					pe->spawnMax = 4;
+					pe->spawn = Int2(3, 4);
 					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
 					pe->speedMin = Vec3(-1, -1, -1);
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.sizeParticle;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->size = Vec2(ability.sizeParticle, 0.f);
+					pe->alpha = Vec2(1.f, 0.f);
 					pe->mode = 1;
 					pe->Init();
 					locPart.lvlPart->pes.push_back(pe);
@@ -2477,18 +2475,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						pe->life = 0.f;
 						pe->particleLife = 0.5f;
 						pe->emissions = 1;
-						pe->spawnMin = 8;
-						pe->spawnMax = 12;
+						pe->spawn = Int2(8, 12);
 						pe->maxParticles = 12;
 						pe->pos = pos;
 						pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 						pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 						pe->posMax = Vec3(ability->size, ability->size, ability->size);
-						pe->size = ability->sizeParticle;
-						pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-						pe->alpha = 1.f;
-						pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+						pe->size = Vec2(ability->sizeParticle, 0.f);
+						pe->alpha = Vec2(1.f, 0.f);
 						pe->mode = 1;
 						pe->Init();
 
@@ -2645,15 +2640,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// player used cheat for fast travel on map
 		case NetChange::CHEAT_TRAVEL:
 			{
-				byte location_index;
-				f >> location_index;
+				byte locationIndex;
+				f >> locationIndex;
 				if(!f)
 					Error("Update client: Broken CHEAT_TRAVEL.");
-				else if(!world->VerifyLocation(location_index))
-					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
+				else if(!world->VerifyLocation(locationIndex))
+					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", locationIndex);
 				else if(game->gameState == GS_WORLDMAP)
 				{
-					world->Warp(location_index, false);
+					world->Warp(locationIndex, false);
 					gameGui->worldMap->StartTravel(true);
 				}
 			}
@@ -3370,24 +3365,24 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		// remove items from inventory
 		case NetChangePlayer::REMOVE_ITEMS:
 			{
-				int i_index, count;
-				f >> i_index;
+				int iIndex, count;
+				f >> iIndex;
 				f >> count;
 				if(!f)
 					Error("Update single client: Broken REMOVE_ITEMS.");
 				else if(count <= 0)
 					Error("Update single client: REMOVE_ITEMS, invalid count %d.", count);
 				else if(game->gameState == GS_LEVEL)
-					pc.unit->RemoveItem(i_index, (uint)count);
+					pc.unit->RemoveItem(iIndex, (uint)count);
 			}
 			break;
 		// remove items from traded inventory which is trading with player
 		case NetChangePlayer::REMOVE_ITEMS_TRADER:
 			{
-				int id, i_index, count;
+				int id, iIndex, count;
 				f >> id;
 				f >> count;
-				f >> i_index;
+				f >> iIndex;
 				if(!f)
 					Error("Update single client: Broken REMOVE_ITEMS_TRADER.");
 				else if(count <= 0)
@@ -3400,7 +3395,7 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(!pc.IsTradingWith(unit))
 						Error("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", id, unit->data->id.c_str());
 					else
-						unit->RemoveItem(i_index, (uint)count);
+						unit->RemoveItem(iIndex, (uint)count);
 				}
 			}
 			break;

@@ -1432,7 +1432,7 @@ void Game::UpdateServerTransfer(float dt)
 					c.unit = unit;
 
 					gameGui->mpBox->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));
-					if(gameLevel->cityCtx)
+					if(gameLevel->IsSafeSettlement())
 						unit->OrderWander();
 					else
 						unit->OrderLeave();

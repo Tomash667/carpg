@@ -362,10 +362,10 @@ void Arena::StartArenaCombat(int level)
 
 	// prepare list of units that can be spawned
 	int lvl = level * 5 + Random(-1, +1) + 3;
-	int min_level = Max(lvl - 5, lvl / 2);
-	int max_level = lvl + 1;
+	int minLevel = Max(lvl - 5, lvl / 2);
+	int maxLevel = lvl + 1;
 	Pooled<TmpUnitGroup> part;
-	part->Fill(group, min_level, max_level);
+	part->Fill(group, minLevel, maxLevel);
 
 	// spawn enemies
 	InsideBuilding* arena = gameLevel->GetArena();

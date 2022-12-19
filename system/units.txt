@@ -3419,7 +3419,7 @@ unit q_main_messenger : messenger {
 
 unit q_main_ill_villager : villager {
 	dialog "main/ill_villager"
-	flags {human ai_stay dont_eat}
+	flags {human ai_stay dont_eat dont_escape}
 	tex {
 		null
 		"head_ill.jpg"
@@ -3434,7 +3434,19 @@ unit q_main_ill_villager_attack : q_main_ill_villager {
 }
 
 unit q_main_plague_villager : q_main_ill_villager_attack {
+	flags {human dont_eat dont_escape}
+	attack 20
+	def 20
 	blood yellow
+	gold {20 35}
+	items {
+		if chance 40
+			random {al_clothes2 al_clothes2b}
+		else
+			al_clothes
+		random {!-2short_blade !-2axe !-2blunt}
+		q_infected_organ
+	}
 	tex {
 		null
 		"head_plague.jpg"
@@ -3442,6 +3454,53 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 	}
 	appearance {
 		hair_color {255 216 0}
+	}
+	idle_dialog plague_idle
+}
+
+unit q_main_plague_soltys : q_main_plague_villager {
+	items {
+		random {al_clothes3 al_clothes3b}
+		random {dagger_sword dagger_rapier sword_long sword_scimitar}
+		q_infected_organ
+		q_yellow_crystal
+	}
+	gold {125 250}
+}
+
+unit q_main_plague_alchemist : q_main_plague_villager {
+	gold {500 1000}
+	items {
+		random {al_clothes2 al_clothes2b}
+		dagger_short
+		p_hp
+		ladle
+		q_infected_organ
+		q_yellow_herbs
+	}
+}
+
+unit q_main_plague_guard : q_main_plague_villager {
+	level 7
+	gold {60 120}
+	items {
+		if chance 33 {
+			!light_armor
+			random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+			!bow
+		}
+		else if chance 50 {
+			!medium_armor
+			random {!long_blade !axe !blunt !short_blade}
+			random {!-2bow !-2shield}
+		}
+		else {
+			!heavy_armor
+			random {!long_blade !axe !blunt}
+			!shield
+		}
+		chance 50 p_hp
+		q_infected_organ
 	}
 }
 
@@ -3709,6 +3768,11 @@ group random {
 		1 evil
 		1 empty
 	}
+}
+
+group plague {
+	q_main_plague_villager 2
+	q_main_plague_guard 1
 }
 
 //------------------------------------------------------------------------------

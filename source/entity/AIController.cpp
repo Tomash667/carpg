@@ -188,9 +188,9 @@ void AIController::Load(GameReader& f)
 		break;
 	case Escape:
 		{
-			int room_id = f.Read<int>();
-			if(room_id != -1)
-				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
+			int roomId = f.Read<int>();
+			if(roomId != -1)
+				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 			else
 				st.escape.room = nullptr;
 		}
@@ -201,8 +201,8 @@ void AIController::Load(GameReader& f)
 		break;
 	case SearchEnemy:
 		{
-			int room_id = f.Read<int>();
-			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
+			int roomId = f.Read<int>();
+			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 		}
 		break;
 	}
@@ -228,9 +228,9 @@ void AIController::Load(GameReader& f)
 		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
 	{
-		bool goto_inn;
-		f >> goto_inn;
-		if(goto_inn)
+		bool gotoInn;
+		f >> gotoInn;
+		if(gotoInn)
 			unit->OrderGoToInn();
 	}
 	if(LOAD_VERSION >= V_0_19)
@@ -475,7 +475,7 @@ void AIController::Shout()
 	}
 
 	// alarm near allies
-	Unit* target_unit = target;
+	Unit* targetUnit = target;
 	for(Unit* u : unit->locPart->units)
 	{
 		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
@@ -484,7 +484,7 @@ void AIController::Shout()
 
 		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
-			u->ai->alertTarget = target_unit;
+			u->ai->alertTarget = targetUnit;
 			u->ai->alertTargetPos = targetLastPos;
 		}
 	}

@@ -410,7 +410,7 @@ void QuestManager::Update(int days)
 		questGoblins->OnProgress(days);
 		questCrazies->OnProgress(days);
 
-		if(gameLevel->cityCtx)
+		if(gameLevel->IsSafeSettlement())
 			GenerateQuestUnits(false);
 	}
 }
@@ -591,16 +591,6 @@ void QuestManager::Load(GameReader& f)
 	LoadQuests(f, quests);
 	LoadQuests(f, unacceptedQuests);
 
-	// create new quests on upgrade
-	if(content.requireUpdate)
-	{
-		for(QuestInfo& info : infos)
-		{
-			if(info.scheme && IsSet(info.scheme->flags, QuestScheme::RECREATE) && !FindAnyQuest(info.scheme))
-				CreateQuest(&info);
-		}
-	}
-
 	// get quest pointers
 	questSawmill = static_cast<Quest_Sawmill*>(FindQuest(Q_SAWMILL));
 	questMine = static_cast<Quest_Mine*>(FindQuest(Q_MINE));
@@ -668,16 +658,26 @@ void QuestManager::Load(GameReader& f)
 	}
 
 	// force quest
-	const string& force_id = f.ReadString1();
-	if(force_id.empty())
+	const string& forceId = f.ReadString1();
+	if(forceId.empty())
 		force = Q_FORCE_DISABLED;
 	else
-		SetForcedQuest(force_id);
+		SetForcedQuest(forceId);
 
 	// load pseudo-quests
 	questSecret->Load(f);
 	questContest->Load(f);
 	questTournament->Load(f);
+
+	// create new quests on upgrade
+	if(content.requireUpdate)
+	{
+		for(QuestInfo& info : infos)
+		{
+			if(info.scheme && IsSet(info.scheme->flags, QuestScheme::RECREATE) && !FindAnyQuest(info.scheme))
+				CreateQuest(&info);
+		}
+	}
 }
 
 //=================================================================================================
@@ -1210,7 +1210,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 //=================================================================================================
 void QuestManager::RemoveQuestUnits(bool onLeave)
 {
-	if(gameLevel->cityCtx)
+	if(gameLevel->IsSafeSettlement())
 	{
 		if(questSawmill->messenger)
 		{

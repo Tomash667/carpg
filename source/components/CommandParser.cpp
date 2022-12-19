@@ -933,13 +933,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			const string& type = t.MustGetItem();
-			CityBuilding* city_building = nullptr;
+			CityBuilding* cityBuilding = nullptr;
 			int index;
 			if(BuildingGroup* group = BuildingGroup::TryGet(type))
 			{
 				if(gameLevel->cityCtx)
-					city_building = gameLevel->cityCtx->FindBuilding(group, &index);
-				if(!city_building)
+					cityBuilding = gameLevel->cityCtx->FindBuilding(group, &index);
+				if(!cityBuilding)
 				{
 					Msg("Missing building group '%s'.", type.c_str());
 					break;
@@ -948,8 +948,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			else if(Building* building = Building::TryGet(type))
 			{
 				if(gameLevel->cityCtx)
-					city_building = gameLevel->cityCtx->FindBuilding(building, &index);
-				if(!city_building)
+					cityBuilding = gameLevel->cityCtx->FindBuilding(building, &index);
+				if(!cityBuilding)
 				{
 					Msg("Missing building '%s'.", type.c_str());
 					break;
@@ -962,10 +962,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			bool inside = true;
-			if((t.Next() && t.IsItem("front")) || !city_building->building->insideMesh)
+			if((t.Next() && t.IsItem("front")) || !cityBuilding->building->insideMesh)
 				inside = false;
 			else
-				gameLevel->cityCtx->FindInsideBuilding(city_building->building, &index);
+				gameLevel->cityCtx->FindInsideBuilding(cityBuilding->building, &index);
 
 			if(Net::IsLocal())
 			{
@@ -990,8 +990,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				else
 				{
 					// warp from outside to front of building
-					gameLevel->WarpUnit(*game->pc->unit, city_building->walkPt);
-					game->pc->unit->RotateTo(PtToPos(city_building->pt));
+					gameLevel->WarpUnit(*game->pc->unit, cityBuilding->walkPt);
+					game->pc->unit->RotateTo(PtToPos(cityBuilding->pt));
 				}
 			}
 			else
@@ -2390,9 +2390,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 		break;
 	case CMD_WARP:
 		{
-			byte building_index;
+			byte buildingIndex;
 			bool inside;
-			f >> building_index;
+			f >> buildingIndex;
 			f >> inside;
 			if(game->gameState != GS_LEVEL)
 				break;
@@ -2404,14 +2404,14 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			if(inside)
 			{
-				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->insideBuildings.size())
+				if(!gameLevel->cityCtx || buildingIndex >= gameLevel->cityCtx->insideBuildings.size())
 				{
-					Error("CommandParser CMD_WARP: Invalid inside building index %u.", building_index);
+					Error("CommandParser CMD_WARP: Invalid inside building index %u.", buildingIndex);
 					break;
 				}
 				Net::WarpData& warp = Add1(net->warps);
 				warp.u = &unit;
-				warp.where = building_index;
+				warp.where = buildingIndex;
 				warp.building = -1;
 				warp.timer = 1.f;
 				unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
@@ -2420,9 +2420,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 			else
 			{
-				if(!gameLevel->cityCtx || building_index >= gameLevel->cityCtx->buildings.size())
+				if(!gameLevel->cityCtx || buildingIndex >= gameLevel->cityCtx->buildings.size())
 				{
-					Error("CommandParser CMD_WARP: Invalid building index %u.", building_index);
+					Error("CommandParser CMD_WARP: Invalid building index %u.", buildingIndex);
 					return false;
 				}
 				if(unit.locPart->partType != LocationPart::Type::Outside)
@@ -2430,7 +2430,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					Net::WarpData& warp = Add1(net->warps);
 					warp.u = &unit;
 					warp.where = -1;
-					warp.building = building_index;
+					warp.building = buildingIndex;
 					warp.timer = 1.f;
 					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 					NetChangePlayer& c = Add1(player->playerInfo->changes);
@@ -2438,9 +2438,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				}
 				else
 				{
-					CityBuilding& city_building = gameLevel->cityCtx->buildings[building_index];
-					gameLevel->WarpUnit(unit, city_building.walkPt);
-					unit.RotateTo(PtToPos(city_building.pt));
+					CityBuilding& cityBuilding = gameLevel->cityCtx->buildings[buildingIndex];
+					gameLevel->WarpUnit(unit, cityBuilding.walkPt);
+					unit.RotateTo(PtToPos(cityBuilding.pt));
 				}
 			}
 		}

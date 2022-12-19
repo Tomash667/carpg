@@ -88,9 +88,9 @@ void Location::Load(GameReader& f)
 {
 	if(LOAD_VERSION < V_0_12)
 	{
-		old::LOCATION old_type;
-		f >> old_type;
-		switch(old_type)
+		old::LOCATION oldType;
+		f >> oldType;
+		switch(oldType)
 		{
 		case old::L_CITY:
 			type = L_CITY;

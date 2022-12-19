@@ -567,7 +567,9 @@ void ScriptManager::RegisterGame()
 		{ "THRONE_VAULT", THRONE_VAULT },
 		{ "HUNTERS_CAMP", HUNTERS_CAMP },
 		{ "HILLS", HILLS },
-		{ "VILLAGE_EMPTY", VILLAGE_EMPTY }
+		{ "VILLAGE_EMPTY", VILLAGE_EMPTY },
+		{ "VILLAGE_DESTROYED", VILLAGE_DESTROYED },
+		{ "VILLAGE_DESTROYED2", VILLAGE_DESTROYED2 }
 		});
 
 	AddEnum("UNIT_ORDER", {
@@ -706,6 +708,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void RemoveItemEventHandler(Quest@, Item@)", asMETHOD(QuestManager, RemoveItemEventHandler));
 
 	ForType("Item")
+		.Member("const string id", offsetof(Item, id))
 		.Member("const int value", offsetof(Item, value))
 		.Method("const string& get_name() const property", asMETHOD(Item, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Item, RenameS))
@@ -973,6 +976,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ get_location() property", asMETHOD(Level, GetLocation))
 		.AddFunction("int get_dungeonLevel() property", asMETHOD(Level, GetDungeonLevel))
 		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))
+		.AddFunction("bool IsSafeSettlement()", asMETHOD(Level, IsSafeSettlement))
 		.AddFunction("bool IsCity()", asMETHOD(Level, IsCity))
 		.AddFunction("bool IsVillage()", asMETHOD(Level, IsVillage))
 		.AddFunction("bool IsTutorial()", asMETHOD(Level, IsTutorial))
@@ -991,8 +995,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Vec3 FindSpawnPos(LocationPart@, Unit@)", asMETHODPR(Level, FindSpawnPos, (LocationPart&, Unit* unit), Vec3))
 		.AddFunction("Vec3 GetSpawnCenter()", asMETHOD(Level, GetSpawnCenter))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float = 2, int = -1)", asMETHOD(Level, SpawnUnitNearLocationS))
-		.AddFunction("Unit@ SpawnUnit(LocationPart@, Spawn)", asMETHOD(Level, SpawnUnit))
+		.AddFunction("Unit@ SpawnUnit(LocationPart@, Spawn)", asMETHODPR(Level, SpawnUnit, (LocationPart&, TmpSpawn), Unit*))
+		.AddFunction("Unit@ SpawnUnit(LocationPart@, UnitData@, int = -1)", asMETHODPR(Level, SpawnUnit, (LocationPart&, UnitData&, int), Unit*))
 		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@, int = -1)", asMETHOD(Level, SpawnUnitInsideRoomS))
+		.AddFunction("void SpawnUnits(UnitGroup@, int)", asMETHOD(Level, SpawnUnits))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
 		.AddFunction("Room@ GetRoom(ROOM_TARGET)", asMETHOD(Level, GetRoom))

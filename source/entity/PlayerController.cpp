@@ -2956,6 +2956,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 							ScriptEvent e(EVENT_PICKUP);
 							e.unit = unit;
 							e.groundItem = groundItem;
+							e.item = groundItem->item;
 							event.quest->FireEvent(e);
 						}
 					}

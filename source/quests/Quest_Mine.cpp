@@ -1109,7 +1109,7 @@ void Quest_Mine::OnProgress(int d)
 			if(mineState == State::Shares)
 			{
 				// player invested in mine, inform him about finishing
-				if(gameLevel->cityCtx && game->gameState == GS_LEVEL)
+				if(gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 				{
 					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 					if(u)
@@ -1139,7 +1139,7 @@ void Quest_Mine::OnProgress(int d)
 		// mine is built/in expand/expanded
 		// count time to news about expanding/finished expanding/found portal
 		days += d;
-		if(days >= daysRequired && gameLevel->cityCtx && game->gameState == GS_LEVEL)
+		if(days >= daysRequired && gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 		{
 			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 			if(u)

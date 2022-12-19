@@ -123,6 +123,8 @@ public:
 	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	void SpawnUnitsGroup(LocationPart& locPart, const Vec3& pos, const Vec3* lookAt, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	Unit* SpawnUnit(LocationPart& locPart, TmpSpawn spawn);
+	Unit* SpawnUnit(LocationPart& locPart, UnitData& unit, int level = -1);
+	void SpawnUnits(UnitGroup* group, int level);
 	struct IgnoreObjects
 	{
 		const Unit** ignoredUnits; // nullptr or array of units with last element of nullptr
@@ -165,6 +167,7 @@ public:
 	void UpdateDungeonMinimap(bool inLevel);
 	void RevealMinimap();
 	bool IsSettlement() { return cityCtx != nullptr; }
+	bool IsSafeSettlement();
 	bool IsCity();
 	bool IsVillage();
 	bool IsTutorial();

@@ -89,7 +89,7 @@ void CampGenerator::Generate()
 		bool ok = true;
 		for(vector<Vec2>::iterator it = used.begin(), end = used.end(); it != end; ++it)
 		{
-			if(Vec2::Distance(pos, *it) < 16.f)
+			if(Vec2::DistanceSquared(pos, *it) < Pow2(16.f))
 			{
 				ok = false;
 				break;
@@ -110,7 +110,7 @@ void CampGenerator::Generate()
 			for(int x = -5; x <= 5; ++x)
 			{
 				const Int2 pt2(pt.x + x, pt.y + y);
-				if(Vec3::Distance(PtToPos(pt), PtToPos(pt2)) < 10.f)
+				if(Vec3::DistanceSquared(PtToPos(pt), PtToPos(pt2)) < Pow2(10.f))
 				{
 					TerrainTile& tile = outside->tiles[pt2.x + pt2.y * s];
 					tile.t = TT_SAND;
@@ -127,7 +127,7 @@ void CampGenerator::Generate()
 			for(int x = -5; x <= 5; ++x)
 			{
 				const Int2 pt2(pt.x + x, pt.y + y);
-				if(Vec3::Distance(PtToPos(pt), PtToPos(pt2)) < 10.f)
+				if(Vec3::DistanceSquared(PtToPos(pt), PtToPos(pt2)) < Pow2(10.f))
 					outside->h[pt2.x + pt2.y * (s + 1)] = hSum;
 			}
 		}
@@ -286,7 +286,7 @@ void CampGenerator::GenerateObjects()
 		bool ok = true;
 		for(vector<Vec2>::iterator it = used.begin(), end = used.end(); it != end; ++it)
 		{
-			if(Vec2::Distance(pos2d, *it) < 10.f)
+			if(Vec2::DistanceSquared(pos2d, *it) < Pow2(10.f))
 			{
 				ok = false;
 				break;
@@ -323,7 +323,7 @@ void CampGenerator::GenerateObjects()
 		bool ok = true;
 		for(vector<Vec2>::iterator it = used.begin(), end = used.end(); it != end; ++it)
 		{
-			if(Vec2::Distance(pos2d, *it) < 10.f)
+			if(Vec2::DistanceSquared(pos2d, *it) < Pow2(10.f))
 			{
 				ok = false;
 				break;
@@ -355,10 +355,10 @@ void CampGenerator::GenerateUnits()
 		// leader
 		const Vec2 center(128, 128);
 		Vec2 bestPos = used[0];
-		float bestDist = Vec2::Distance(bestPos, center);
+		float bestDist = Vec2::DistanceSquared(bestPos, center);
 		for(uint i = 1; i < used.size(); ++i)
 		{
-			float dist = Vec2::Distance(used[i], center);
+			float dist = Vec2::DistanceSquared(used[i], center);
 			if(dist < bestDist)
 			{
 				bestPos = used[i];

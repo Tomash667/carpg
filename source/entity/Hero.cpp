@@ -110,16 +110,16 @@ int Hero::JoinCost() const
 void Hero::PassTime(int days, bool travel)
 {
 	// koñczenie efektów
-	float natural_mod;
-	unit->EndEffects(days, &natural_mod);
+	float naturalMod;
+	unit->EndEffects(days, &naturalMod);
 
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(gameLevel->cityCtx && !travel)
+		if(gameLevel->IsSafeSettlement() && !travel)
 			heal *= 2;
-		heal *= natural_mod * days;
+		heal *= naturalMod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 	}
@@ -150,10 +150,10 @@ void Hero::AddExp(int exp)
 	if(unit->level == MAX_LEVEL)
 		return;
 	expe += int(GetExpMod() * exp);
-	int exp_need = 10000 * unit->level;
-	if(expe >= exp_need)
+	int expNeed = 10000 * unit->level;
+	if(expe >= expNeed)
 	{
-		expe -= exp_need;
+		expe -= expNeed;
 		LevelUp();
 	}
 }

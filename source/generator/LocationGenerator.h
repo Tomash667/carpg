@@ -24,6 +24,7 @@ public:
 	virtual void OnLoad() = 0;
 	virtual int HandleUpdate(int days) { return 0; }
 	void RespawnUnits();
+	virtual void SpawnUnits(UnitGroup* group, int level) { assert(0); }
 
 	Location* loc;
 	int dungeonLevel;

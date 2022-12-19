@@ -437,9 +437,15 @@ quest main {
 		14 "Udaj siê w dowolnej kolejnoœci do $(villages[0].name), $(villages[1].name), y i z."
 		15 "Ja w tym czasie wracam do badañ. Liczymy na ciebie!"
 		16 "Wróæ do mnie gdy uda ci siê zdobyæ jakieœ informacje."
-		17 "Dobra robota! Wróæ gdy zdobêdziesz wiêcej informacji."
-		18 "Hmmm wszyscy mieszkañcy wioski ot tak zniknêli. Ciê¿ko powi¹zaæ to innymi objawami zarazy."
-		19 "WeŸ to z³oto zebrane przez mieszkañców. Z pewnoœci¹ ci siê przyda."
+		17 "Witaj z powrotem! Masz jakieœ nowe informacje?"
+		18 "Dobra robota! Wróæ gdy zdobêdziesz wiêcej informacji."
+		19 "Oddaj dziennik so³tysa"
+		20 "Hmmm wszyscy mieszkañcy wioski ot tak zniknêli. Ciê¿ko powi¹zaæ to innymi objawami zarazy."
+		21 "WeŸ to z³oto zebrane przez mieszkañców. Z pewnoœci¹ ci siê przyda."
+		22 "Oddaj dziwny kryszta³"
+		23 "Ten kryszta³ ma taki sam kolor jak zmiany chorobowe od tej zarazy. Wyœlê po jakiegoœ maga ¿eby zbada³ go dok³adnie."
+		24 "Oddaj zara¿one ograny"
+		25 "Wiem ¿e nie jest to przyjemna robota ale tylko dziêki badaniami nad tymi organami mo¿emy znaleŸæ lekarstwo na zarazê."
 		
 		//12 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
 	}
@@ -509,7 +515,7 @@ quest main_village1 {
 		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
 		3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
 		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
-		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
+		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }
 
@@ -519,8 +525,24 @@ quest main_village2 {
 		0 "ród³o zarazy w $(village.name)"
 		1 "Rozpoczêto dnia $date$."
 		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
-		//3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
-		//4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
-		//5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê."
+		3 "Po dotarciu do wioski ju¿ z daleka widaæ ¿e coœ jest nie tak. Niestety muszê zabiæ wszystkich mieszkañców wioski którzy oszaleli, dla nich jest ju¿ za póŸno. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
+		4 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
+		5 "Znalaz³em jakiœ dziwny kryszta³ przy ciele so³tysa. Mo¿e to on odpowiada za t¹ zarazê?"
+		6 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
+		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+	}
+}
+
+//=============================================================================
+quest main_village3 {
+	texts {
+		0 "ród³o zarazy w $(village.name)"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
+		3 "Po dotarciu do wioski ju¿ z daleka widaæ ¿e coœ jest nie tak. Niestety muszê zabiæ wszystkich mieszkañców wioski którzy oszaleli, dla nich jest ju¿ za póŸno. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
+		4 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
+		5 "Znalaz³em jakiœ dziwny kryszta³ przy ciele so³tysa. Mo¿e to on odpowiada za t¹ zarazê?"
+		6 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
+		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }
