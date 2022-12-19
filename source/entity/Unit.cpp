@@ -8780,7 +8780,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = gameRes->tBlood[data->blood];
-		pe->emissionInterval = 0.01f;
+		pe->emissionInterval = 0.f;
 		pe->life = 5.f;
 		pe->particleLife = 0.5f;
 		pe->emissions = 1;

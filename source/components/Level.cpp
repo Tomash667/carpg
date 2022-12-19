@@ -1501,23 +1501,24 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			else if(token == "smoke")
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tFlare2;
-				pe->alpha = Vec2(1.0f, 0.f);
-				pe->size = Vec2(1.0f, 0.f);
+				pe->tex = gameRes->tSmoke;
+				pe->alpha = Vec2(0.25f, 0.f);
+				pe->size = Vec2(1.0f, 5.f);
 				pe->emissionInterval = 0.1f;
 				pe->emissions = -1;
 				pe->life = -1;
-				pe->maxParticles = 50;
-				pe->particleLife = 0.5f;
+				pe->maxParticles = 100;
+				pe->particleLife = 2.5f;
 				pe->pos = pos;
 				if(locPart.partType == LocationPart::Type::Outside)
 					pe->pos.y += terrain->GetH(pos);
-				pe->posMin = Vec3(0, 0, 0);
-				pe->posMax = Vec3(0, 0, 0);
+				pe->posMin = Vec3(-0.5f, 0, -0.5f);
+				pe->posMax = Vec3(0.5f, 0, 0.5f);
 				pe->spawn = Int2(2, 4);
-				pe->speedMin = Vec3(-1, 3, -1);
-				pe->speedMax = Vec3(1, 4, 1);
-				pe->mode = 1;
+				pe->speedMin = Vec3(-0.5f, 3, -0.5f);
+				pe->speedMax = Vec3(0.5f, 4, 0.5f);
+				pe->mode = 0;
+				pe->gravity = false;
 				pe->Init();
 				locPart.lvlPart->pes.push_back(pe);
 			}
@@ -5051,14 +5052,14 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = ability->texParticle;
-	pe->emissionInterval = 0.01f;
+	pe->emissionInterval = 0.f;
 	pe->life = 0.f;
-	pe->particleLife = 0.5f;
 	pe->emissions = 1;
 	pe->pos = pos;
 	switch(ability->effect)
 	{
 	case Ability::Raise:
+		pe->particleLife = 1.f;
 		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
 		pe->speedMin = Vec3(0, 4, 0);
@@ -5066,11 +5067,11 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = Vec2(ability->sizeParticle, 0.f);
-		pe->particleLife = 1.f;
 		pe->alpha = Vec2(1.f, 0.f);
 		pe->mode = 0;
 		break;
 	case Ability::Heal:
+		pe->particleLife = 0.5f;
 		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
 		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
@@ -5082,6 +5083,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		pe->mode = 1;
 		break;
 	default:
+		pe->particleLife = 0.5f;
 		pe->spawn = Int2(12);
 		pe->maxParticles = 12;
 		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);

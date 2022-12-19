@@ -137,7 +137,7 @@ bool Electro::Update(float dt)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
+				pe->emissionInterval = 0.f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
 				pe->emissions = 1;
@@ -205,7 +205,7 @@ bool Electro::Update(float dt)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
+				pe->emissionInterval = 0.f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
 				pe->emissions = 1;

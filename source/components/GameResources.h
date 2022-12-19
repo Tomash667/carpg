@@ -28,7 +28,7 @@ public:
 	void LoadTrap(BaseTrap* trap);
 
 	TexturePtr tBlack, tWarning, tError;
-	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine, tFlare, tFlare2, tWater, tVignette;
+	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tSpark, tSpawn, tLightingLine, tFlare, tFlare2, tWater, tVignette, tSmoke;
 	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 	TexOverride tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	MeshPtr aHuman, aHair[5], aBeard[5], aMustache[2], aEyebrows;

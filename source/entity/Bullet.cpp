@@ -360,7 +360,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = gameRes->tSpark;
-			pe->emissionInterval = 0.01f;
+			pe->emissionInterval = 0.f;
 			pe->life = 5.f;
 			pe->particleLife = 0.5f;
 			pe->emissions = 1;

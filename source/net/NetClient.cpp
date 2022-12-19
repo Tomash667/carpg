@@ -819,7 +819,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = gameRes->tBlood[type];
-					pe->emissionInterval = 0.01f;
+					pe->emissionInterval = 0.f;
 					pe->life = 5.f;
 					pe->particleLife = 0.5f;
 					pe->emissions = 1;
@@ -2471,7 +2471,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
 						pe->tex = ability->texParticle;
-						pe->emissionInterval = 0.01f;
+						pe->emissionInterval = 0.f;
 						pe->life = 0.f;
 						pe->particleLife = 0.5f;
 						pe->emissions = 1;
