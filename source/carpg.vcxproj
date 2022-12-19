@@ -381,7 +381,6 @@
     <ClInclude Include="system\MusicType.h" />
     <ClInclude Include="system\MusicListLoader.h" />
     <ClInclude Include="system\ObjectLoader.h" />
-    <ClInclude Include="system\ParticleEffect.h" />
     <ClInclude Include="system\ParticleLoader.h" />
     <ClInclude Include="system\Perk.h" />
     <ClInclude Include="system\PerkLoader.h" />

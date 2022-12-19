@@ -1343,9 +1343,6 @@
     <ClInclude Include="script\ScriptExtensions.h">
       <Filter>script</Filter>
     </ClInclude>
-    <ClInclude Include="system\ParticleEffect.h">
-      <Filter>system\particles</Filter>
-    </ClInclude>
     <ClInclude Include="system\ParticleLoader.h">
       <Filter>system\particles</Filter>
     </ClInclude>

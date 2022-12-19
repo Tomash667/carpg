@@ -312,16 +312,16 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 		for(vector<ParticleEmitter*>::iterator it = lvlPart.pes.begin(), end = lvlPart.pes.end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
-			if(pe.alive && frustum.SphereToFrustum(pe.pos, pe.radius))
+			if(pe.IsAlive() && frustum.SphereToFrustum(pe.pos, pe.GetEffect()->radius))
 			{
 				drawBatch.pes.push_back(&pe);
 				if(drawParticleSphere)
 				{
-					DebugNode* debug_node = DebugNode::Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
-					debug_node->shape = MeshShape::Sphere;
-					debug_node->color = Color::Green;
-					drawBatch.debugNodes.push_back(debug_node);
+					DebugNode* debugNode = DebugNode::Get();
+					debugNode->mat = Matrix::Scale(pe.GetEffect()->radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
+					debugNode->shape = MeshShape::Sphere;
+					debugNode->color = Color::Green;
+					drawBatch.debugNodes.push_back(debugNode);
 				}
 			}
 		}
@@ -698,11 +698,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
-			debug_node->shape = MeshShape::Box;
-			debug_node->color = Color::Black;
-			drawBatch.debugNodes.push_back(debug_node);
+			DebugNode* debugNode = DebugNode::Get();
+			debugNode->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
+			debugNode->shape = MeshShape::Box;
+			debugNode->color = Color::Black;
+			drawBatch.debugNodes.push_back(debugNode);
 		}
 	}
 	else if(u.action == A_ATTACK && drawHitbox)
@@ -710,11 +710,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		Mesh::Point* hitbox = u.meshInst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
 		if(!hitbox)
 			hitbox = u.meshInst->mesh->FindPoint("hitbox");
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Box;
-		debug_node->color = Color::Black;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Box;
+		debugNode->color = Color::Black;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 
 	// shield
@@ -748,11 +748,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
-			debug_node->shape = MeshShape::Box;
-			debug_node->color = Color::Black;
-			drawBatch.debugNodes.push_back(debug_node);
+			DebugNode* debugNode = DebugNode::Get();
+			debugNode->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
+			debugNode->shape = MeshShape::Box;
+			debugNode->color = Color::Black;
+			drawBatch.debugNodes.push_back(debugNode);
 		}
 	}
 
@@ -949,22 +949,22 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(drawUnitRadius)
 	{
 		float h = u.GetUnitHeight() / 2;
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Cylinder;
-		debug_node->color = Color::White;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Cylinder;
+		debugNode->color = Color::White;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 	if(drawHitbox)
 	{
 		float h = u.GetUnitHeight() / 2;
 		Box box;
 		u.GetBox(box);
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Box;
-		debug_node->color = Color::Black;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Box;
+		debugNode->color = Color::Black;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 }
 

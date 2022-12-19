@@ -233,28 +233,21 @@ void Quest_Evil::SetProgress(int prog2)
 			// restore old altar
 			targetLoc->activeQuest = nullptr;
 			targetLoc->dontClean = false;
-			BaseObject* base_obj = BaseObject::Get("bloody_altar");
-			Object* obj = gameLevel->localPart->FindObject(base_obj);
+			BaseObject* baseObj = BaseObject::Get("bloody_altar");
+			Object* obj = gameLevel->localPart->FindObject(baseObj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			resMgr->Load(obj->mesh);
 			// remove particles
-			float best_dist = 999.f;
-			ParticleEmitter* best_pe = nullptr;
+			ParticleEffect* effect = ParticleEffect::Get("altarBlood");
 			for(ParticleEmitter* pe : gameLevel->localPart->lvlPart->pes)
 			{
-				if(pe->tex == gameRes->tBlood[BLOOD_RED])
+				if(pe->GetEffect() == effect)
 				{
-					float dist = Vec3::Distance(pe->pos, obj->pos);
-					if(dist < best_dist)
-					{
-						best_dist = dist;
-						best_pe = pe;
-					}
+					pe->Destroy();
+					break;
 				}
 			}
-			assert(best_pe);
-			best_pe->destroy = true;
 			// talking
 			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
 			if(unit)
@@ -316,35 +309,35 @@ cstring Quest_Evil::FormatString(const string& str)
 		return GetLocationDirName(world->GetLocation(loc[2].nearLoc)->pos, loc[2].targetLoc->pos);
 	else if(str == "close_dir")
 	{
-		float best_dist = 999.f;
-		int best_index = -1;
+		float bestDist = 999.f;
+		int bestIndex = -1;
 		for(int i = 0; i < 3; ++i)
 		{
 			if(loc[i].state != Loc::PortalClosed)
 			{
 				float dist = Vec2::Distance(world->GetWorldPos(), loc[i].targetLoc->pos);
-				if(dist < best_dist)
+				if(dist < bestDist)
 				{
-					best_dist = dist;
-					best_index = i;
+					bestDist = dist;
+					bestIndex = i;
 				}
 			}
 		}
-		Loc& l = loc[best_index];
+		Loc& l = loc[bestIndex];
 		return GetLocationDirName(world->GetWorldPos(), l.targetLoc->pos);
 	}
 	else if(str == "close_loc")
 	{
-		float best_dist = 999.f;
+		float bestDist = 999.f;
 		Location* bestLoc = nullptr;
 		for(int i = 0; i < 3; ++i)
 		{
 			if(loc[i].state != Loc::PortalClosed)
 			{
 				float dist = Vec2::Distance(world->GetWorldPos(), loc[i].targetLoc->pos);
-				if(dist < best_dist)
+				if(dist < bestDist)
 				{
-					best_dist = dist;
+					bestDist = dist;
 					bestLoc = loc[i].targetLoc;
 				}
 			}
@@ -505,17 +498,17 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// find altar need center
 	Vec3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
-	float best_dist = 999.f;
-	BaseObject* base_obj = BaseObject::Get("altar");
+	float bestDist = 999.f;
+	BaseObject* baseObj = BaseObject::Get("altar");
 	Object* obj = nullptr;
 	for(auto o : lvl.objects)
 	{
-		if(o->base == base_obj)
+		if(o->base == baseObj)
 		{
 			float dist = Vec3::Distance(o->pos, center);
-			if(dist < best_dist)
+			if(dist < bestDist)
 			{
-				best_dist = dist;
+				bestDist = dist;
 				obj = o;
 			}
 		}
@@ -528,23 +521,9 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// add particles
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->alpha = Vec2(0.8f, 0.f);
-	pe->emissionInterval = 0.1f;
-	pe->emissions = -1;
-	pe->life = -1;
-	pe->maxParticles = 50;
-	pe->particleLife = 0.5f;
-	pe->pos = obj->pos;
-	pe->pos.y += obj->base->centery;
-	pe->posMin = Vec3(0, 0, 0);
-	pe->posMax = Vec3(0, 0, 0);
-	pe->spawn = Int2(1, 3);
-	pe->speedMin = Vec3(-1, 4, -1);
-	pe->speedMax = Vec3(1, 6, 1);
-	pe->mode = 0;
-	pe->tex = gameRes->tBlood[BLOOD_RED];
-	pe->size = Vec2(0.5f, 0.f);
-	pe->Init();
+	Vec3 effectPos = obj->pos;
+	effectPos.y += obj->base->centery;
+	pe->Init(ParticleEffect::Get("altarBlood"), effectPos);
 	lvl.lvlPart->pes.push_back(pe);
 
 	// add blood

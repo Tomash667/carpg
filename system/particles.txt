@@ -29,32 +29,26 @@ effect hit {
 	emissionInterval 0.01
 	life 5
 	particleLife 0.5
-	spawnMin 10
-	spawnMax 15
+	spawn {10 15}
 	maxParticles 15
 	speedMin {-1 0 -1}
 	speedMax {1 1 1}
 	posMin {-0.1 -0.1 -0.1}
 	posMax {0.1 0.1 0.1}
-	size 0.3
-	alpha 0.9
-	opSize linearShrink
-	opAlpha linearShrink
+	size {0.3 0}
+	alpha {0.9 0}
 }
 
 effect torch {
 	tex "flare.png"
 	emissionInterval 0.1
 	particleLife 0.5
-	spawnMin 1
-	spawnMax 3
+	spawn {1 3}
 	maxParticles 50
 	speedMin {-1 3 -1}
 	speedMax {1 4 1}
-	size 0.5
-	alpha 0.8
-	opSize linearShrink
-	opAlpha linearShrink
+	size {0.5 0}
+	alpha {0.8 0}
 	mode addOne
 }
 
@@ -63,52 +57,43 @@ effect torchMagic : torch {
 }
 
 effect campfire : torch {
-	size 0.7
+	size {0.7 0}
 }
 
 effect altarBlood {
 	tex "krew.png"
 	emissionInterval 0.1
 	particleLife 0.5
-	spawnMin 1
-	spawnMax 3
+	spawn {1 3}
 	maxParticles 50
 	speedMin {-1 4 -1}
 	speedMax {1 6 1}
-	alpha 0.8
-	size 0.5
-	opAlpha linearShrink
-	opSize linearShrink
+	alpha {0.8 0}
+	size {0.5 0}
 }
 
 effect water {
 	tex "water.png"
 	emissionInterval 0.1
 	particleLife 3
-	spawnMin 4
-	spawnMax 8
+	spawn {4 8}
 	maxParticles 500
 	speedMin {-0.6 4 -0.6}
 	speedMax {0.6 7 0.6}
-	alpha 0.8
-	size 0.05
-	opAlpha linearShrink
-	opSize linearShrink
+	alpha {0.8 0}
+	size {0.05 0}
 }
 
-effect magicFire {
+effect magicfire {
 	tex "flare2.png"
 	emissionInterval 0.1
 	particleLife 0.5
-	spawnMin 2
-	spawnMax 4
+	spawn {2 4}
 	maxParticles 50
 	speedMin {-1 3 -1}
 	speedMax {1 4 1}
-	alpha 1
-	size 1
-	opAlpha linearShrink
-	opSize linearShrink
+	alpha {1 0}
+	size {1 0}
 	mode addOne
 }
 
@@ -118,17 +103,14 @@ effect spawnUnit {
 	emissionInterval 0.1
 	life 5
 	particleLife 0.5
-	spawnMin 10
-	spawnMax 15
+	spawn {10 15}
 	maxParticles 75
 	speedMin {-1 0 -1}
 	speedMax {1 1 1}
 	posMin {-0.75 0 -0.75}
 	posMax {0.75 1 0.75}
-	size 0.3
-	alpha 0.5
-	opAlpha linearShrink
-	opSize linearShrink
+	alpha {0.5 0}
+	size {0.3 0}
 }
 
 effect raise {
@@ -137,18 +119,67 @@ effect raise {
 	emissionInterval 0.01
 	life 0
 	particleLife 0.5
-	spawnMin 16
-	spawnMax 25
+	spawn {16 25}
 	maxParticles 25
 	speedMin {-1.5 -1.5 -1.5}
 	speedMax {1.5 1.5 1.5}
 	// TODO
-	//posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//posMax = Vec3(ability->size, ability->size, ability->size);
-	size 0.1
-	alpha 1
-	opSize linearShrink
-	opAlpha linearShrink
+	//pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+	//pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	alpha {1 0}
+	size {0.2 0}
+	mode addOne
+}
+
+effect heal {
+	tex "heal_effect.png"
+	emissions 1
+	emissionInterval 0.01
+	life 0
+	particleLife 0.5
+	spawn {16 25}
+	maxParticles 25
+	speedMin {-1.5 -1.5 -1.5}
+	speedMax {1.5 1.5 1.5}
+	// TODO
+	//pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+	//pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	alpha {0.9 0}
+	size {0.1 0}
+	mode addOne
+}
+
+effect fireTrap {
+	tex "fire_spark.png"
+	emissions 1
+	emissionInterval 0.01
+	life 0
+	particleLife 0.5
+	spawn 12
+	maxParticles 12
+	speedMin {-0.5 1.5 -0.5}
+	speedMax {0.5 3 0.5}
+	posMin {-0.5 0 -0.5}
+	posMax {0.5 0 0.5}
+	alpha {1 0}
+	size {0.075 0}
+	mode addOne
+}
+
+effect bearTrap {
+	tex "dust.png"
+	emissions 1
+	emissionInterval 0.01
+	life 0
+	particleLife 0.5
+	spawn 12
+	maxParticles 12
+	speedMin {-0.5 1.5 -0.5}
+	speedMax {0.5 3 0.5}
+	posMin {-0.5 0 -0.5}
+	posMax {0.5 0 0.5}
+	alpha {1 0}
+	size {0.075 0}
 	mode addOne
 }
 

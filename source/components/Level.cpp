@@ -1431,42 +1431,20 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'e': // effect
-			if(game->inLoad)
-				break;
-			if(token == "magicfire")
+			if(!game->inLoad)
 			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tFlare2;
-				pe->alpha = Vec2(1.0f, 0.f);
-				pe->size = Vec2(1.0f, 0.f);
-				pe->emissionInterval = 0.1f;
-				pe->emissions = -1;
-				pe->life = -1;
-				pe->maxParticles = 50;
-				pe->particleLife = 0.5f;
-				pe->pos = pos;
-				if(locPart.partType == LocationPart::Type::Outside)
-					pe->pos.y += terrain->GetH(pos);
-				pe->posMin = Vec3(0, 0, 0);
-				pe->posMax = Vec3(0, 0, 0);
-				pe->spawn = Int2(2, 4);
-				pe->speedMin = Vec3(-1, 3, -1);
-				pe->speedMax = Vec3(1, 4, 1);
-				pe->mode = 1;
-				pe->Init();
-				locPart.lvlPart->pes.push_back(pe);
-			}
-			else if(token == "smoke")
+				ParticleEffect* effect = ParticleEffect::Get(token);
+				assert(effect);
+				if(effect)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
 					Vec3 effectPos = pos;
 					if(locPart.partType == LocationPart::Type::Outside)
 						effectPos.y += terrain->GetH(effectPos);
-					pe->Init(ParticleEffect::Get("magicFire"), effectPos);
+					pe->Init(effect, effectPos);
 					locPart.lvlPart->pes.push_back(pe);
 				}
-			else
-				assert(0);
+			}
 			break;
 		}
 	}
@@ -4979,50 +4957,9 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = ability->texParticle;
-	pe->emissionInterval = 0.01f;
-	pe->life = 0.f;
-	pe->particleLife = 0.5f;
-	pe->emissions = 1;
-	pe->pos = pos;
-	switch(ability->effect)
-	{
-	case Ability::Raise:
-		pe->spawn = Int2(16, 25);
-		pe->maxParticles = 25;
-		pe->speedMin = Vec3(0, 4, 0);
-		pe->speedMax = Vec3(0, 5, 0);
-		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		pe->particleLife = 1.f;
-		pe->alpha = Vec2(1.f, 0.f);
-		pe->mode = 0;
-		break;
-	case Ability::Heal:
-		pe->spawn = Int2(16, 25);
-		pe->maxParticles = 25;
-		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		pe->alpha = Vec2(0.9f, 0.f);
-		pe->mode = 1;
-		break;
-	default:
-		pe->spawn = Int2(12);
-		pe->maxParticles = 12;
-		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
-		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
-		pe->posMin = Vec3(-0.5f, 0, -0.5f);
-		pe->posMax = Vec3(0.5f, 0, 0.5f);
-		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
-		pe->alpha = Vec2(1.f, 0.f);
-		pe->mode = 1;
-		break;
-	}
-	pe->Init();
+	pe->Init(ability->effect1, pos);
+	if(bounds != Vec2::Zero)
+		pe->SetArea(Box(-bounds.x, -bounds.y / 2, -bounds.x, bounds.x, bounds.y / 2, bounds.x));
 	locPart->lvlPart->pes.push_back(pe);
 
 	if(Net::IsServer())

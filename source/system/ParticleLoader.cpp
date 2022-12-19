@@ -1,15 +1,13 @@
 #include "Pch.h"
 #include "ParticleLoader.h"
 
-#include "ParticleEffect.h"
-
+#include <ParticleSystem.h>
 #include <ResourceManager.h>
 
 enum Group
 {
 	G_TOP,
 	G_KEYWORD,
-	G_OP,
 	G_MODE
 };
 
@@ -20,8 +18,7 @@ enum Keyword
 	K_EMISSION_INTERVAL,
 	K_LIFE,
 	K_PARTICLE_LIFE,
-	K_SPAWN_MIN,
-	K_SPAWN_MAX,
+	K_SPAWN,
 	K_MAX_PARTICLES,
 	K_SPEED_MIN,
 	K_SPEED_MAX,
@@ -29,8 +26,6 @@ enum Keyword
 	K_POS_MAX,
 	K_SIZE,
 	K_ALPHA,
-	K_OP_SIZE,
-	K_OP_ALPHA,
 	K_MODE
 };
 
@@ -50,8 +45,7 @@ void ParticleLoader::InitTokenizer()
 		{ "emissionInterval", K_EMISSION_INTERVAL },
 		{ "life", K_LIFE },
 		{ "particleLife", K_PARTICLE_LIFE },
-		{ "spawnMin", K_SPAWN_MIN },
-		{ "spawnMax", K_SPAWN_MAX },
+		{ "spawn", K_SPAWN },
 		{ "maxParticles", K_MAX_PARTICLES },
 		{ "speedMin", K_SPEED_MIN },
 		{ "speedMax", K_SPEED_MAX },
@@ -59,14 +53,7 @@ void ParticleLoader::InitTokenizer()
 		{ "posMax", K_POS_MAX },
 		{ "size", K_SIZE },
 		{ "alpha", K_ALPHA },
-		{ "opSize", K_OP_SIZE },
-		{ "opAlpha", K_OP_ALPHA} ,
 		{ "mode", K_MODE }
-		});
-
-	t.AddKeywords(G_OP, {
-		{ "const", POP_CONST },
-		{ "linearShrink", POP_LINEAR_SHRINK }
 		});
 
 	t.AddKeywords(G_MODE, {
@@ -87,7 +74,20 @@ void ParticleLoader::LoadEntity(int top, const string& id)
 			t.Throw("Id hash collision.");
 	}
 
-	Ptr<ParticleEffect> effect;
+	Ptr<ParticleEffect> effect(nullptr);
+	if(t.IsSymbol(':'))
+	{
+		t.Next();
+		const string& parentEffectId = t.MustGetItem();
+		ParticleEffect* parentEffect = ParticleEffect::Get(parentEffectId);
+		if(!parentEffect)
+			t.Throw("Missing parent effect '%s'.", parentEffectId.c_str());
+		t.Next();
+		effect = new ParticleEffect(*parentEffect);
+	}
+	else
+		effect = new ParticleEffect;
+
 	effect->id = id;
 	effect->hash = hash;
 
@@ -118,11 +118,8 @@ void ParticleLoader::LoadEntity(int top, const string& id)
 		case K_PARTICLE_LIFE:
 			effect->particleLife = t.MustGetFloat();
 			break;
-		case K_SPAWN_MIN:
-			effect->spawnMin = t.MustGetInt();
-			break;
-		case K_SPAWN_MAX:
-			effect->spawnMax = t.MustGetInt();
+		case K_SPAWN:
+			t.Parse(effect->spawn);
 			break;
 		case K_MAX_PARTICLES:
 			effect->maxParticles = t.MustGetInt();
@@ -140,16 +137,10 @@ void ParticleLoader::LoadEntity(int top, const string& id)
 			t.Parse(effect->posMax);
 			break;
 		case K_SIZE:
-			effect->size = t.MustGetFloat();
+			t.Parse(effect->size);
 			break;
 		case K_ALPHA:
-			effect->alpha = t.MustGetFloat();
-			break;
-		case K_OP_SIZE:
-			effect->opSize = (PARTICLE_OP)t.MustGetKeywordId(G_OP);
-			break;
-		case K_OP_ALPHA:
-			effect->opAlpha = (PARTICLE_OP)t.MustGetKeywordId(G_OP);
+			t.Parse(effect->alpha);
 			break;
 		case K_MODE:
 			effect->mode = t.MustGetKeywordId(G_MODE);
