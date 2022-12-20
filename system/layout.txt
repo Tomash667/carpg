@@ -1,4 +1,4 @@
-register_font "Florence-Regular.otf"
+registerFont "Florence-Regular.otf"
 
 font "normal" {
 	name "Arial"

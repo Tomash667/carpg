@@ -1167,12 +1167,12 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 			if(!cc.s[item->id].add)
 			{
 				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
-				item->tex_id = 0;
+				item->texId = 0;
 			}
 			else
 			{
 				item->state = Button::NONE;
-				item->tex_id = 1;
+				item->texId = 1;
 			}
 		}
 		else if(item->type == FlowItem::Item && item->id == id)
@@ -1423,12 +1423,12 @@ void CreateCharacterPanel::UpdateSkillButtons()
 			if(!cc.s[item->id].add)
 			{
 				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
-				item->tex_id = 0;
+				item->texId = 0;
 			}
 			else
 			{
 				item->state = Button::NONE;
-				item->tex_id = 1;
+				item->texId = 1;
 			}
 		}
 	}
