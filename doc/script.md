@@ -513,6 +513,7 @@ Properties:
 
 Methods:
 
+* bool IsAlive() - true if alive.
 * bool IsTeamMember() - true if unit is team member.
 * bool IsFollowing(Unit@) - true if following unit.
 * bool IsEnemy(Unit@) - true if unit is enemy.
@@ -631,7 +632,9 @@ Static methods:
 * Chest@ GetRandomChest(Room@) - get random chest in room.
 * Chest@ GetTreasureChest() - get silver chest in treasure room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
+* array<Unit@>@ GetUnits() - return all units in main level part.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
+* array<Unit@>@ GetNearbyUnits(const Vec3& in pos, float dist) - return nearby units.
 * bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
 * Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
 

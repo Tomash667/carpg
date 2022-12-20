@@ -210,7 +210,9 @@ public:
 	Room* GetFarRoom();
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
+	CScriptArray* GetUnits();
 	CScriptArray* GetUnits(Room& room);
+	CScriptArray* GetNearbyUnits(const Vec3& pos, float dist);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();

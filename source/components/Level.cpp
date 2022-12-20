@@ -4785,6 +4785,19 @@ CScriptArray* Level::FindPath(Room& from, Room& to)
 }
 
 //=================================================================================================
+CScriptArray* Level::GetUnits()
+{
+	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Unit@>");
+	CScriptArray* array = CScriptArray::Create(type);
+	array->Reserve(localPart->units.size());
+
+	for(Unit* unit : localPart->units)
+		array->InsertLast(&unit);
+
+	return array;
+}
+
+//=================================================================================================
 CScriptArray* Level::GetUnits(Room& room)
 {
 	assert(lvl);
@@ -4795,6 +4808,22 @@ CScriptArray* Level::GetUnits(Room& room)
 	for(Unit* unit : localPart->units)
 	{
 		if(room.IsInside(unit->pos))
+			array->InsertLast(&unit);
+	}
+
+	return array;
+}
+
+//=================================================================================================
+CScriptArray* Level::GetNearbyUnits(const Vec3& pos, float dist)
+{
+	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Unit@>");
+	CScriptArray* array = CScriptArray::Create(type);
+	const float dist2 = Pow2(dist);
+
+	for(Unit* unit : localPart->units)
+	{
+		if(Vec3::DistanceSquared(pos, unit->pos) < dist2)
 			array->InsertLast(&unit);
 	}
 
