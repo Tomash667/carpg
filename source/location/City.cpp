@@ -456,8 +456,8 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 		case BuildingScript::BS_SHUFFLE_END:
 			if(ifLevel == ifDepth)
 			{
-				int new_pos = (int)buildings.size();
-				if(new_pos - shuffleStart >= 2)
+				int newPos = (int)buildings.size();
+				if(newPos - shuffleStart >= 2)
 					Shuffle(buildings.begin() + shuffleStart, buildings.end());
 				shuffleStart = -1;
 			}

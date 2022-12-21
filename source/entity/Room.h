@@ -66,8 +66,8 @@ struct Room : ObjectPoolProxy<Room>
 	}
 	bool GetRandomPos(float margin, Vec3& outPos) const
 	{
-		float min_size = (min(size.x, size.y) - 1) * 2.f;
-		if(margin * 2 >= min_size)
+		float minSize = (min(size.x, size.y) - 1) * 2.f;
+		if(margin * 2 >= minSize)
 			return false;
 		outPos = Vec3(
 			Random(2.f * (pos.x + 1) + margin, 2.f * (pos.x + size.x - 1) - margin),

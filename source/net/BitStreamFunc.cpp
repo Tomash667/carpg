@@ -10,10 +10,10 @@
 #include "World.h"
 
 //-----------------------------------------------------------------------------
-static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
+static ObjectPool<BitStream> bitstreamWritePool, bitstreamReadPool;
 
 //-----------------------------------------------------------------------------
-BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_write_pool.Get()), totalSize(bitstream.GetNumberOfBytesUsed()), owned(true)
+BitStreamWriter::BitStreamWriter() : bitstream(*bitstreamWritePool.Get()), totalSize(bitstream.GetNumberOfBytesUsed()), owned(true)
 {
 }
 
@@ -26,16 +26,16 @@ BitStreamWriter::~BitStreamWriter()
 	if(owned)
 	{
 		bitstream.Reset();
-		bitstream_write_pool.Free(&bitstream);
+		bitstreamWritePool.Free(&bitstream);
 	}
 }
 
 void BitStreamWriter::Write(const void* ptr, uint size)
 {
 	bitstream.Write((const char*)ptr, size);
-	uint new_size = GetPos() + size;
-	if(new_size > totalSize)
-		totalSize = new_size;
+	uint newSize = GetPos() + size;
+	if(newSize > totalSize)
+		totalSize = newSize;
 }
 
 uint BitStreamWriter::GetPos() const
@@ -120,7 +120,7 @@ BitStreamReader::BitStreamReader(Packet* packet) : bitstream(CreateBitStream(pac
 BitStreamReader::~BitStreamReader()
 {
 	if(pooled)
-		bitstream_read_pool.Free(&bitstream);
+		bitstreamReadPool.Free(&bitstream);
 }
 
 void BitStreamReader::Read(void* ptr, uint size)
@@ -160,7 +160,7 @@ bool BitStreamReader::SetPos(uint pos)
 
 BitStream& BitStreamReader::CreateBitStream(Packet* packet)
 {
-	BitStream* bitstream = bitstream_read_pool.Get();
+	BitStream* bitstream = bitstreamReadPool.Get();
 	new(bitstream)BitStream(packet->data, packet->length, false);
 	return *bitstream;
 }
@@ -170,23 +170,23 @@ int BitStreamReader::ReadItemAndFind(const Item*& item)
 {
 	item = nullptr;
 
-	const string& item_id = ReadString1();
+	const string& itemId = ReadString1();
 	if(!IsOk())
 		return -2;
 
-	if(item_id.empty())
+	if(itemId.empty())
 		return 0;
 
-	if(item_id[0] == '$')
+	if(itemId[0] == '$')
 	{
 		int questId = Read<int>();
 		if(!IsOk())
 			return -2;
 
-		item = questMgr->FindQuestItemClient(item_id.c_str(), questId);
+		item = questMgr->FindQuestItemClient(itemId.c_str(), questId);
 		if(!item)
 		{
-			Warn("Missing quest item '%s' (%d).", item_id.c_str(), questId);
+			Warn("Missing quest item '%s' (%d).", itemId.c_str(), questId);
 			return -1;
 		}
 		else
@@ -194,10 +194,10 @@ int BitStreamReader::ReadItemAndFind(const Item*& item)
 	}
 	else
 	{
-		item = Item::TryGet(item_id);
+		item = Item::TryGet(itemId);
 		if(!item)
 		{
-			Warn("Missing item '%s'.", item_id.c_str());
+			Warn("Missing item '%s'.", itemId.c_str());
 			return -1;
 		}
 		else

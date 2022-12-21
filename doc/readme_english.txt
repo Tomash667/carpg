@@ -160,7 +160,7 @@ someone so it is proposed to play for 4 people. Expect changes for the better!
 
 ===================================================================================================
 6) Changes
-See changelog_eng.txt file.
+See changelog_english.txt file.
 
 ===================================================================================================
 7) Console command

@@ -115,7 +115,7 @@ struct GameDialog
 	vector<DialogEntry> code;
 	vector<string> strs;
 	vector<Text> texts;
-	int max_index;
+	int maxIndex;
 	QuestScheme* quest;
 
 	Text& GetText(int index);

@@ -667,13 +667,13 @@ bool LocationPart::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 	{
 		if(!(*it)->IsAlive())
 		{
-			int item_slot = (*it)->FindItem(item);
-			if(item_slot != Unit::INVALID_IINDEX)
+			int itemSlot = (*it)->FindItem(item);
+			if(itemSlot != Unit::INVALID_IINDEX)
 			{
 				if(unit)
 					*unit = *it;
 				if(slot)
-					*slot = item_slot;
+					*slot = itemSlot;
 				return true;
 			}
 		}
@@ -780,22 +780,22 @@ Object* LocationPart::FindObject(BaseObject* baseObj)
 //=================================================================================================
 Object* LocationPart::FindNearestObject(BaseObject* baseObj, const Vec3& pos)
 {
-	Object* found_obj = nullptr;
-	float best_dist = 9999.f;
+	Object* foundObj = nullptr;
+	float bestDist = 9999.f;
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == baseObj)
 		{
 			float dist = Vec3::Distance(pos, obj.pos);
-			if(dist < best_dist)
+			if(dist < bestDist)
 			{
-				best_dist = dist;
-				found_obj = &obj;
+				bestDist = dist;
+				foundObj = &obj;
 			}
 		}
 	}
-	return found_obj;
+	return foundObj;
 }
 
 //=================================================================================================
@@ -813,39 +813,39 @@ Chest* LocationPart::FindChestInRoom(const Room& p)
 //=================================================================================================
 Chest* LocationPart::GetRandomFarChest(const Int2& pt)
 {
-	vector<pair<Chest*, float>> far_chests;
-	float close_dist = -1.f;
+	vector<pair<Chest*, float>> farChests;
+	float closeDist = -1.f;
 	Vec3 pos = PtToPos(pt);
 
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 	{
 		float dist = Vec3::Distance2d(pos, (*it)->pos);
-		if(dist > close_dist)
+		if(dist > closeDist)
 		{
-			if(far_chests.empty())
-				far_chests.push_back(pair<Chest*, float>(*it, dist));
+			if(farChests.empty())
+				farChests.push_back(pair<Chest*, float>(*it, dist));
 			else
 			{
-				for(vector<pair<Chest*, float>>::iterator it2 = far_chests.begin(), end2 = far_chests.end(); it2 != end2; ++it2)
+				for(vector<pair<Chest*, float>>::iterator it2 = farChests.begin(), end2 = farChests.end(); it2 != end2; ++it2)
 				{
 					if(dist > it2->second)
 					{
-						far_chests.insert(it2, pair<Chest*, float>(*it, dist));
+						farChests.insert(it2, pair<Chest*, float>(*it, dist));
 						break;
 					}
 				}
 			}
-			if(far_chests.size() > 5u)
+			if(farChests.size() > 5u)
 			{
-				far_chests.pop_back();
-				close_dist = far_chests.back().second;
+				farChests.pop_back();
+				closeDist = farChests.back().second;
 			}
 		}
 	}
 
 	int index;
-	if(far_chests.size() != 5u)
+	if(farChests.size() != 5u)
 	{
 		// jeøeli skrzyni jest ma≥o wybierz najdalszπ
 		index = 0;
@@ -858,7 +858,7 @@ Chest* LocationPart::GetRandomFarChest(const Int2& pt)
 	else
 		index = Rand() % 5;
 
-	return far_chests[index].first;
+	return farChests[index].first;
 }
 
 //=================================================================================================

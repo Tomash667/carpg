@@ -116,9 +116,9 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	language.size = Int2(250, 25);
 	language.eventHandler = DialogEvent(this, &Options::OnChangeLanguage);
 	int index = 0;
-	for(Language::Map* p_lmap : Language::GetLanguages())
+	for(Language::Map* pLmap : Language::GetLanguages())
 	{
-		Language::Map& lmap = *p_lmap;
+		Language::Map& lmap = *pLmap;
 		string& dir = lmap["dir"];
 		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
 		if(dir == Language::prefix)
@@ -212,9 +212,9 @@ void Options::LoadLanguage()
 	render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
-	const vector<Int2>& ms_modes = render->GetMultisamplingModes();
+	const vector<Int2>& msModes = render->GetMultisamplingModes();
 	index = 1;
-	for(const Int2& mode : ms_modes)
+	for(const Int2& mode : msModes)
 	{
 		for(int level = 0; level < mode.y; ++level)
 		{
@@ -312,9 +312,9 @@ void Options::Update(float dt)
 	for(int i = 0; i < 4; ++i)
 	{
 		scroll[i].mouseFocus = focus;
-		float prev_offset = scroll[i].offset;
+		float prevOffset = scroll[i].offset;
 		scroll[i].Update(dt);
-		if(prev_offset != scroll[i].offset)
+		if(prevOffset != scroll[i].offset)
 		{
 			int value = int(scroll[i].GetValue() * 100);
 			if(i == 0)
@@ -506,7 +506,7 @@ void Options::SetSoundDevices()
 }
 
 //=================================================================================================
-void Options::OnChangeRes(int)
+void Options::OnChangeRes(int id)
 {
 	ResolutionItem& item = *res.GetItemCast<ResolutionItem>();
 	engine->SetWindowSize(item.resolution.size);

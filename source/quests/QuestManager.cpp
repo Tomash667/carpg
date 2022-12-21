@@ -350,21 +350,21 @@ void QuestManager::Update(int days)
 			return false;
 
 		Location* loc = quest->targetLoc;
-		bool in_camp = false;
+		bool inCamp = false;
 
 		if(loc->type == L_CAMP && (loc == world->GetTravelLocation() || loc == world->GetCurrentLocation()))
-			in_camp = true;
+			inCamp = true;
 
 		if(!quest->timeout)
 		{
-			bool ok = quest->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
+			bool ok = quest->OnTimeout(inCamp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
 			if(ok)
 				quest->timeout = true;
 			else
 				return false;
 		}
 
-		if(in_camp)
+		if(inCamp)
 			return false;
 
 		loc->activeQuest = nullptr;
@@ -454,14 +454,14 @@ bool QuestManager::Read(BitStreamReader& f)
 {
 	// quests
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
-	word quest_count;
-	f >> quest_count;
-	if(!f.Ensure(QUEST_MIN_SIZE * quest_count))
+	word questCount;
+	f >> questCount;
+	if(!f.Ensure(QUEST_MIN_SIZE * questCount))
 	{
 		Error("Read world: Broken packet for quests.");
 		return false;
 	}
-	quests.resize(quest_count);
+	quests.resize(questCount);
 
 	int index = 0;
 	for(Quest*& quest : quests)
@@ -482,17 +482,17 @@ bool QuestManager::Read(BitStreamReader& f)
 
 	// quest items
 	const int QUEST_ITEM_MIN_SIZE = 7;
-	word quest_items_count;
-	f >> quest_items_count;
-	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
+	word questItemsCount;
+	f >> questItemsCount;
+	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * questItemsCount))
 	{
 		Error("Read world: Broken packet for quest items.");
 		return false;
 	}
-	questItems.reserve(quest_items_count);
-	for(word i = 0; i < quest_items_count; ++i)
+	questItems.reserve(questItemsCount);
+	for(word i = 0; i < questItemsCount; ++i)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		if(!f)
 		{
 			Error("Read world: Broken packet for quest item %u.", i);
@@ -500,13 +500,13 @@ bool QuestManager::Read(BitStreamReader& f)
 		}
 
 		const Item* baseItem;
-		if(item_id[0] == '$')
-			baseItem = Item::TryGet(item_id.c_str() + 1);
+		if(itemId[0] == '$')
+			baseItem = Item::TryGet(itemId.c_str() + 1);
 		else
-			baseItem = Item::TryGet(item_id);
+			baseItem = Item::TryGet(itemId);
 		if(!baseItem)
 		{
-			Error("Read world: Missing quest item '%s' (%u).", item_id.c_str(), i);
+			Error("Read world: Missing quest item '%s' (%u).", itemId.c_str(), i);
 			return false;
 		}
 
@@ -826,11 +826,11 @@ Quest* QuestManager::FindQuestS(const string& questId)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItem(cstring item_id, int questId)
+const Item* QuestManager::FindQuestItem(cstring itemId, int questId)
 {
 	for(Item* item : questItems)
 	{
-		if(item->questId == questId && item->id == item_id)
+		if(item->questId == questId && item->id == itemId)
 			return item;
 	}
 
@@ -920,13 +920,13 @@ bool QuestManager::HandleFormatString(const string& str, cstring& result)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItemClient(cstring item_id, int questId) const
+const Item* QuestManager::FindQuestItemClient(cstring itemId, int questId) const
 {
-	assert(item_id);
+	assert(itemId);
 
 	for(Item* item : questItems)
 	{
-		if(item->id == item_id && (questId == -1 || item->IsQuest(questId)))
+		if(item->id == itemId && (questId == -1 || item->IsQuest(questId)))
 			return item;
 	}
 

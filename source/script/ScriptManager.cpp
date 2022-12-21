@@ -452,11 +452,11 @@ string World_GetDirName2(Location* loc1, Location* loc2)
 	return GetLocationDirName(loc1->pos, loc2->pos);
 }
 
-Location* World_GetRandomSettlementWithBuilding(const string& building_id)
+Location* World_GetRandomSettlementWithBuilding(const string& buildingId)
 {
-	Building* b = Building::TryGet(building_id);
+	Building* b = Building::TryGet(buildingId);
 	if(!b)
-		throw ScriptException("Missing building '%s'.", building_id.c_str());
+		throw ScriptException("Missing building '%s'.", buildingId.c_str());
 	return world->GetRandomSettlement([b](City* city)
 	{
 		return city->FindBuilding(b) != nullptr;
@@ -487,12 +487,12 @@ void StockScript_AddItem(const Item* item, uint count)
 	InsertItemBare(*stock, item, count);
 }
 
-void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
+void StockScript_AddRandomItem(ITEM_TYPE type, int priceLimit, int flags, uint count)
 {
 	vector<ItemSlot>* stock = scriptMgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
-	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
+	ItemHelper::AddRandomItem(*stock, type, priceLimit, flags, count);
 }
 
 void ScriptManager::RegisterGame()
@@ -1364,7 +1364,7 @@ void ScriptManager::ScriptSleep(float time)
 	asIScriptContext* ctx = asGetActiveContext();
 	ctx->Suspend();
 
-	for(SuspendedScript& ss : suspended_scripts)
+	for(SuspendedScript& ss : suspendedScripts)
 	{
 		if(ss.ctx == ctx)
 		{
@@ -1373,7 +1373,7 @@ void ScriptManager::ScriptSleep(float time)
 		}
 	}
 
-	SuspendedScript& ss = Add1(suspended_scripts);
+	SuspendedScript& ss = Add1(suspendedScripts);
 	ss.ctx = ctx;
 	ss.sctx = this->ctx;
 	ss.time = time;
@@ -1381,7 +1381,7 @@ void ScriptManager::ScriptSleep(float time)
 
 void ScriptManager::UpdateScripts(float dt)
 {
-	LoopAndRemove(suspended_scripts, [&](SuspendedScript& ss)
+	LoopAndRemove(suspendedScripts, [&](SuspendedScript& ss)
 	{
 		if(ss.time < 0)
 			return false;
@@ -1422,9 +1422,9 @@ bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
 
 void ScriptManager::StopAllScripts()
 {
-	for(SuspendedScript& ss : suspended_scripts)
+	for(SuspendedScript& ss : suspendedScripts)
 		engine->ReturnContext(ss.ctx);
-	suspended_scripts.clear();
+	suspendedScripts.clear();
 }
 
 asIScriptContext* ScriptManager::SuspendScript()
@@ -1435,7 +1435,7 @@ asIScriptContext* ScriptManager::SuspendScript()
 
 	ctx->Suspend();
 
-	SuspendedScript& ss = Add1(suspended_scripts);
+	SuspendedScript& ss = Add1(suspendedScripts);
 	ss.ctx = ctx;
 	ss.sctx = this->ctx;
 	ss.time = -1;
@@ -1445,12 +1445,12 @@ asIScriptContext* ScriptManager::SuspendScript()
 
 void ScriptManager::ResumeScript(asIScriptContext* ctx)
 {
-	for(auto it = suspended_scripts.begin(), end = suspended_scripts.end(); it != end; ++it)
+	for(auto it = suspendedScripts.begin(), end = suspendedScripts.end(); it != end; ++it)
 	{
 		if(it->ctx == ctx)
 		{
 			this->ctx = it->sctx;
-			suspended_scripts.erase(it);
+			suspendedScripts.erase(it);
 			ExecuteScript(ctx);
 			return;
 		}

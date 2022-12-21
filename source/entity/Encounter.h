@@ -37,16 +37,16 @@ struct Encounter
 	GameDialog* dialog;
 	UnitGroup* group;
 	cstring text;
-	string* pooled_string;
+	string* pooledString;
 	LocationEventHandler* locationEventHandler;
 	BoolFunc checkFunc;
 	int st; // when -1 use world st
 	bool dontAttack, timed, scripted;
 
 	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
-	Encounter() : checkFunc(nullptr), st(-1), pooled_string(nullptr), scripted(false) {}
+	Encounter() : checkFunc(nullptr), st(-1), pooledString(nullptr), scripted(false) {}
 	Encounter(Quest* quest) : pos(Vec2::Zero), chance(100), range(64.f), dontAttack(false), timed(false), dialog(nullptr), group(nullptr), text(nullptr),
-		pooled_string(nullptr), quest(quest), locationEventHandler(nullptr), checkFunc(nullptr), st(-1), scripted(true) {}
+		pooledString(nullptr), quest(quest), locationEventHandler(nullptr), checkFunc(nullptr), st(-1), scripted(true) {}
 	~Encounter();
 	const string& GetTextS();
 	void SetTextS(const string& str);

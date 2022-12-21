@@ -212,7 +212,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 //=================================================================================================
 void Game::CreateSaveImage()
 {
-	int old_flags = drawFlags;
+	int oldFlags = drawFlags;
 	if(gameState == GS_LEVEL)
 		drawFlags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
@@ -220,7 +220,7 @@ void Game::CreateSaveImage()
 	render->SetRenderTarget(rtSave);
 	DrawGame();
 	render->SetRenderTarget(nullptr);
-	drawFlags = old_flags;
+	drawFlags = oldFlags;
 }
 
 //=================================================================================================
@@ -650,16 +650,16 @@ void Game::LoadGame(GameReader& f)
 	f >> version;
 	if(version > VERSION)
 	{
-		cstring ver_str = VersionToString(version);
-		throw SaveException(Format(txLoadVersion, ver_str, VERSION_STR), Format("Invalid file version %s, current %s.", ver_str, VERSION_STR));
+		cstring verStr = VersionToString(version);
+		throw SaveException(Format(txLoadVersion, verStr, VERSION_STR), Format("Invalid file version %s, current %s.", verStr, VERSION_STR));
 	}
 
 	// save version
 	f >> LOAD_VERSION;
 	if(LOAD_VERSION < MIN_SUPPORT_LOAD_VERSION)
 	{
-		cstring ver_str = VersionToString(version);
-		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
+		cstring verStr = VersionToString(version);
+		throw SaveException(Format(txLoadSaveVersionOld, verStr), Format("Unsupported version '%s'.", verStr));
 	}
 	f >> startVersion;
 
@@ -673,20 +673,20 @@ void Game::LoadGame(GameReader& f)
 	// save flags
 	byte flags;
 	f >> flags;
-	bool online_save = IsSet(flags, SF_ONLINE);
+	bool onlineSave = IsSet(flags, SF_ONLINE);
 	if(net->mpLoad)
 	{
-		if(!online_save)
+		if(!onlineSave)
 			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
 	}
 	else
 	{
-		if(online_save)
+		if(onlineSave)
 			throw SaveException(txLoadMP, "Save is from multiplayer mode.");
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(startVersion), LOAD_VERSION,
-		online_save ? 1 : 0, IsSet(flags, SF_DEBUG) ? 1 : 0);
+		onlineSave ? 1 : 0, IsSet(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
 	f.SkipString1(); // text
@@ -695,9 +695,9 @@ void Game::LoadGame(GameReader& f)
 	if(net->mpLoad) // mp players
 		f.SkipStringArray<byte, byte>();
 	f.Skip<time_t>(); // saveDate
-	f.Skip<int>(); // game_year
-	f.Skip<int>(); // game_month
-	f.Skip<int>(); // game_day
+	f.Skip<int>(); // game year
+	f.Skip<int>(); // game month
+	f.Skip<int>(); // game day
 	f.SkipString1(); // location
 	f.SkipData<uint>(); // image
 
@@ -718,14 +718,14 @@ void Game::LoadGame(GameReader& f)
 		f >> Bullet::impl.idCounter;
 
 	LoadingHandler loading;
-	GAME_STATE game_state2;
+	GAME_STATE gameState2;
 	hardcoreMode = IsSet(flags, SF_HARDCORE);
 
 	gameStats->Load(f);
 
 	// game state
-	f >> game_state2;
-	gameLevel->isOpen = game_state2 == GS_LEVEL;
+	f >> gameState2;
+	gameLevel->isOpen = gameState2 == GS_LEVEL;
 
 	if(LOAD_VERSION >= V_0_17)
 		aiMgr->Load(f);
@@ -735,7 +735,7 @@ void Game::LoadGame(GameReader& f)
 	world->Load(f, loading);
 
 	int locationEventHandlerQuestId;
-	if(game_state2 == GS_LEVEL)
+	if(gameState2 == GS_LEVEL)
 		f >> locationEventHandlerQuestId;
 	else
 	{
@@ -841,7 +841,7 @@ void Game::LoadGame(GameReader& f)
 
 	LoadingStep(txLoadingLevel);
 
-	if(game_state2 == GS_LEVEL)
+	if(gameState2 == GS_LEVEL)
 	{
 		LocationGenerator* locGen = locGenFactory->Get(gameLevel->location);
 		locGen->OnLoad();
@@ -864,21 +864,21 @@ void Game::LoadGame(GameReader& f)
 	// set ai bow targets
 	if(!aiBowTargets.empty())
 	{
-		BaseObject* bow_target = BaseObject::Get("bow_target");
+		BaseObject* bowTarget = BaseObject::Get("bow_target");
 		for(vector<AIController*>::iterator it = aiBowTargets.begin(), end = aiBowTargets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
 			Object* ptr = nullptr;
-			float dist, best_dist;
+			float dist, bestDist;
 			for(Object* obj : ai.unit->locPart->objects)
 			{
-				if(obj->base == bow_target)
+				if(obj->base == bowTarget)
 				{
 					dist = Vec3::Distance(obj->pos, ai.st.idle.pos);
-					if(!ptr || dist < best_dist)
+					if(!ptr || dist < bestDist)
 					{
 						ptr = obj;
-						best_dist = dist;
+						bestDist = dist;
 					}
 				}
 			}
@@ -956,8 +956,8 @@ void Game::LoadGame(GameReader& f)
 
 	gameRes->LoadCommonMusic();
 
-	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
-	if(game_state2 == GS_LEVEL)
+	LoadResources(txEndOfLoading, gameState2 == GS_WORLDMAP);
+	if(gameState2 == GS_LEVEL)
 	{
 		for(LocationPart& locPart : gameLevel->ForEachPart())
 			locPart.BuildScene();
@@ -974,7 +974,7 @@ void Game::LoadGame(GameReader& f)
 		return;
 	}
 
-	gameState = game_state2;
+	gameState = gameState2;
 	if(gameState == GS_LEVEL)
 	{
 		gameLevel->ready = true;
@@ -1057,7 +1057,7 @@ void Game::Quickload()
 //=================================================================================================
 void Game::RemoveUnusedAiAndCheck()
 {
-	uint prev_size = ais.size();
+	uint prevSize = ais.size();
 	bool deleted = false;
 
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
@@ -1087,7 +1087,7 @@ void Game::RemoveUnusedAiAndCheck()
 	if(deleted)
 	{
 		RemoveNullElements(ais);
-		ReportError(5, Format("Removed unused ais: %u.", prev_size - ais.size()));
+		ReportError(5, Format("Removed unused ais: %u.", prevSize - ais.size()));
 	}
 
 	if(IsDebug())

@@ -11,11 +11,11 @@
 bool Explo::Update(float dt, LocationPart& locPart)
 {
 	// increase size
-	bool delete_me = false;
+	bool deleteMe = false;
 	size += sizemax * dt;
 	if(size >= sizemax)
 	{
-		delete_me = true;
+		deleteMe = true;
 		size = sizemax;
 	}
 
@@ -43,9 +43,9 @@ bool Explo::Update(float dt, LocationPart& locPart)
 		}
 	}
 
-	if(delete_me)
+	if(deleteMe)
 		delete this;
-	return delete_me;
+	return deleteMe;
 }
 
 //=================================================================================================

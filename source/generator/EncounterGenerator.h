@@ -15,6 +15,6 @@ private:
 	void SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest);
 	void SpawnEncounterTeam();
 
-	GameDirection enter_dir; // direction from where team entered encounter
-	bool far_encounter; // is team far from other units at encounter
+	GameDirection enterDir; // direction from where team entered encounter
+	bool farEncounter; // is team far from other units at encounter
 };

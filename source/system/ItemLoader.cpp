@@ -98,12 +98,12 @@ enum ListType
 //=================================================================================================
 void ItemLoader::DoLoading()
 {
-	bool require_id[IT_MAX];
-	std::fill_n(require_id, IT_MAX, true);
-	require_id[IT_START_ITEMS] = false;
-	require_id[IT_BETTER_ITEMS] = false;
+	bool requireId[IT_MAX];
+	std::fill_n(requireId, IT_MAX, true);
+	requireId[IT_START_ITEMS] = false;
+	requireId[IT_BETTER_ITEMS] = false;
 
-	Load("items.txt", G_ITEM_TYPE, require_id);
+	Load("items.txt", G_ITEM_TYPE, requireId);
 }
 
 //=================================================================================================
@@ -159,7 +159,7 @@ void ItemLoader::InitTokenizer()
 		{ "defense", P_DEFENSE },
 		{ "mobility", P_MOBILITY },
 		{ "unit_type", P_UNIT_TYPE },
-		{ "tex_override", P_TEX_OVERRIDE },
+		{ "texOverrideverride", P_TEX_OVERRIDE },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
@@ -411,10 +411,10 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		const string& parent_id = t.MustGetItem();
-		Item* parent = Item::TryGet(parent_id);
+		const string& parentId = t.MustGetItem();
+		Item* parent = Item::TryGet(parentId);
 		if(!parent)
-			t.Throw("Missing parent item '%s'.", parent_id.c_str());
+			t.Throw("Missing parent item '%s'.", parentId.c_str());
 		if(parent->type != type)
 			t.Throw("Item can't inherit from other item type.");
 		*item = *parent;
@@ -455,20 +455,20 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			{
 				if(IsSet(item->flags, ITEM_TEX_ONLY))
 					t.Throw("Can't have mesh, it is texture only item.");
-				const string& mesh_id = t.MustGetString();
-				item->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				item->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(!item->mesh)
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing mesh '%s'.", meshId.c_str());
 			}
 			break;
 		case P_TEX:
 			{
 				if(item->mesh)
 					t.Throw("Can't be texture only item, it have mesh.");
-				const string& tex_id = t.MustGetString();
-				item->tex = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				item->tex = resMgr->TryGet<Texture>(texId);
 				if(!item->tex)
-					LoadError("Missing texture '%s'.", tex_id.c_str());
+					LoadError("Missing texture '%s'.", texId.c_str());
 				else
 					item->flags |= ITEM_TEX_ONLY;
 			}
@@ -582,30 +582,30 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TEX_OVERRIDE:
 			{
-				vector<TexOverride>& tex_o = item->ToArmor().texOverride;
+				vector<TexOverride>& texOverride = item->ToArmor().texOverride;
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
 					do
 					{
-						const string& tex_id = t.MustGetString();
-						Texture* tex = resMgr->TryGet<Texture>(tex_id);
+						const string& texId = t.MustGetString();
+						Texture* tex = resMgr->TryGet<Texture>(texId);
 						if(tex)
-							tex_o.push_back(TexOverride(tex));
+							texOverride.push_back(TexOverride(tex));
 						else
-							LoadError("Missing texture override '%s'.", tex_id.c_str());
+							LoadError("Missing texture override '%s'.", texId.c_str());
 						t.Next();
 					}
 					while(!t.IsSymbol('}'));
 				}
 				else
 				{
-					const string& tex_id = t.MustGetString();
-					Texture* tex = resMgr->TryGet<Texture>(tex_id);
+					const string& texId = t.MustGetString();
+					Texture* tex = resMgr->TryGet<Texture>(texId);
 					if(tex)
-						tex_o.push_back(TexOverride(tex));
+						texOverride.push_back(TexOverride(tex));
 					else
-						LoadError("Missing texture override '%s'.", tex_id.c_str());
+						LoadError("Missing texture override '%s'.", texId.c_str());
 				}
 			}
 			break;
@@ -666,7 +666,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				}
 				EffectId effect = (EffectId)t.MustGetKeywordId(G_EFFECT);
 				t.Next();
-				int effect_value;
+				int effectValue;
 				EffectInfo& info = EffectInfo::effects[(int)effect];
 				if(info.valueType != EffectInfo::None)
 				{
@@ -676,17 +676,17 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 						Attribute* attrib = Attribute::Find(value);
 						if(!attrib)
 							t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
-						effect_value = (int)attrib->attribId;
+						effectValue = (int)attrib->attribId;
 					}
 					else
-						effect_value = t.MustGetKeywordId(G_SKILL);
+						effectValue = t.MustGetKeywordId(G_SKILL);
 					t.Next();
 				}
 				else
-					effect_value = -1;
+					effectValue = -1;
 				float power = t.MustGetFloat();
 				t.Next();
-				item->effects.push_back({ effect, power, effect_value, onAttack });
+				item->effects.push_back({ effect, power, effectValue, onAttack });
 			}
 			break;
 		case P_TAG:
@@ -729,32 +729,32 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	if(!item->mesh && !item->tex)
 		LoadError("No mesh/texture.");
 
-	Item* item_ptr = item.Pin();
-	Item::items.insert(ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
+	Item* itemPtr = item.Pin();
+	Item::items.insert(ItemsMap::value_type(itemPtr->id.c_str(), itemPtr));
 
-	switch(item_ptr->type)
+	switch(itemPtr->type)
 	{
 	case IT_WEAPON:
-		Weapon::weapons.push_back(static_cast<Weapon*>(item_ptr));
+		Weapon::weapons.push_back(static_cast<Weapon*>(itemPtr));
 		break;
 	case IT_BOW:
-		Bow::bows.push_back(static_cast<Bow*>(item_ptr));
+		Bow::bows.push_back(static_cast<Bow*>(itemPtr));
 		break;
 	case IT_SHIELD:
-		Shield::shields.push_back(static_cast<Shield*>(item_ptr));
+		Shield::shields.push_back(static_cast<Shield*>(itemPtr));
 		break;
 	case IT_ARMOR:
-		Armor::armors.push_back(static_cast<Armor*>(item_ptr));
+		Armor::armors.push_back(static_cast<Armor*>(itemPtr));
 		break;
 	case IT_AMULET:
-		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr));
+		Amulet::amulets.push_back(static_cast<Amulet*>(itemPtr));
 		break;
 	case IT_RING:
-		Ring::rings.push_back(static_cast<Ring*>(item_ptr));
+		Ring::rings.push_back(static_cast<Ring*>(itemPtr));
 		break;
 	case IT_CONSUMABLE:
 		{
-			Consumable* consumable = static_cast<Consumable*>(item_ptr);
+			Consumable* consumable = static_cast<Consumable*>(itemPtr);
 			if(consumable->subtype == Consumable::Subtype::Potion)
 			{
 				for(ItemEffect& e : consumable->effects)
@@ -775,11 +775,11 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		}
 		break;
 	case IT_OTHER:
-		OtherItem::others.push_back(static_cast<OtherItem*>(item_ptr));
+		OtherItem::others.push_back(static_cast<OtherItem*>(itemPtr));
 		break;
 	case IT_BOOK:
 		{
-			Book& b = item_ptr->ToBook();
+			Book& b = itemPtr->ToBook();
 			if(!b.scheme)
 				t.Throw("Missing book '%s' scheme.", b.id.c_str());
 			Book::books.push_back(&b);
@@ -837,10 +837,10 @@ void ItemLoader::ParseItemList(const string& id)
 			entry.chance = 1;
 		lis->total += entry.chance;
 
-		const string& item_id = t.MustGetItemKeyword();
-		entry.item = Item::TryGet(item_id);
+		const string& itemId = t.MustGetItemKeyword();
+		entry.item = Item::TryGet(itemId);
 		if(!entry.item)
-			t.Throw("Missing item %s.", item_id.c_str());
+			t.Throw("Missing item %s.", itemId.c_str());
 		t.Next();
 
 		if(lis->isLeveled)
@@ -869,7 +869,7 @@ void ItemLoader::ParseStock(const string& id)
 		t.Throw("Id must be unique.");
 
 	Ptr<Stock> stock;
-	bool in_set = false, in_city = false, in_city_else;
+	bool inSet = false, inCity = false, inCityElse;
 
 	// id
 	stock->id = t.MustGetItemKeyword();
@@ -883,12 +883,12 @@ void ItemLoader::ParseStock(const string& id)
 	{
 		if(t.IsSymbol('}'))
 		{
-			if(in_city)
+			if(inCity)
 			{
 				t.Next();
-				if(!in_city_else && t.IsKeyword(SK_ELSE, G_STOCK_KEYWORD))
+				if(!inCityElse && t.IsKeyword(SK_ELSE, G_STOCK_KEYWORD))
 				{
-					in_city_else = true;
+					inCityElse = true;
 					stock->code.push_back(SE_NOT_CITY);
 					t.Next();
 					t.AssertSymbol('{');
@@ -896,13 +896,13 @@ void ItemLoader::ParseStock(const string& id)
 				}
 				else
 				{
-					in_city = false;
+					inCity = false;
 					stock->code.push_back(SE_ANY_CITY);
 				}
 			}
-			else if(in_set)
+			else if(inSet)
 			{
-				in_set = false;
+				inSet = false;
 				stock->code.push_back(SE_END_SET);
 				t.Next();
 			}
@@ -917,23 +917,23 @@ void ItemLoader::ParseStock(const string& id)
 			switch(k)
 			{
 			case SK_SET:
-				if(in_set)
+				if(inSet)
 					t.Throw("Can't have nested sets.");
-				if(in_city)
+				if(inCity)
 					t.Throw("Can't have set block inside city block.");
-				in_set = true;
+				inSet = true;
 				stock->code.push_back(SE_START_SET);
 				t.AssertSymbol('{');
 				t.Next();
 				break;
 			case SK_CITY:
-				if(in_city)
+				if(inCity)
 					t.Throw("Already in city block.");
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
-					in_city = true;
-					in_city_else = false;
+					inCity = true;
+					inCityElse = false;
 					stock->code.push_back(SE_CITY);
 				}
 				else if(t.IsItem())
@@ -955,7 +955,7 @@ void ItemLoader::ParseStock(const string& id)
 					// chance { item X   item2 Y   ... }
 					t.Next();
 					stock->code.push_back(SE_CHANCE);
-					uint chance_pos = stock->code.size();
+					uint chancePos = stock->code.size();
 					stock->code.push_back(0);
 					stock->code.push_back(0);
 					int count = 0, chance = 0;
@@ -972,8 +972,8 @@ void ItemLoader::ParseStock(const string& id)
 					}
 					if(count <= 1)
 						t.Throw("Chance with 1 or less items.");
-					stock->code[chance_pos] = count;
-					stock->code[chance_pos + 1] = chance;
+					stock->code[chancePos] = count;
+					stock->code[chancePos + 1] = chance;
 					t.Next();
 				}
 				else
@@ -1069,8 +1069,8 @@ void ItemLoader::ParseStock(const string& id)
 void ItemLoader::ParseItemOrList(Stock* stock)
 {
 	ItemList* lis;
-	const string& item_id = t.MustGetItemKeyword();
-	const Item* item = FindItemOrList(item_id, lis);
+	const string& itemId = t.MustGetItemKeyword();
+	const Item* item = FindItemOrList(itemId, lis);
 	if(lis)
 	{
 		stock->code.push_back(SE_LIST);
@@ -1082,7 +1082,7 @@ void ItemLoader::ParseItemOrList(Stock* stock)
 		stock->code.push_back((int)item);
 	}
 	else
-		t.Throw("Missing item or list '%s'.", item_id.c_str());
+		t.Throw("Missing item or list '%s'.", itemId.c_str());
 	t.Next();
 }
 
@@ -1268,10 +1268,10 @@ void ItemLoader::ParseRecipe(const string& id)
 		{
 		case RP_RESULT:
 			{
-				const string& item_id = t.MustGetItem();
-				recipe->result = Item::TryGet(item_id);
+				const string& itemId = t.MustGetItem();
+				recipe->result = Item::TryGet(itemId);
 				if(!recipe->result)
-					LoadError("Missing result item '%s'.", item_id.c_str());
+					LoadError("Missing result item '%s'.", itemId.c_str());
 			}
 			break;
 		case RP_INGREDIENTS:
@@ -1288,10 +1288,10 @@ void ItemLoader::ParseRecipe(const string& id)
 					t.Next();
 				}
 
-				const string& item_id = t.MustGetItem();
-				const Item* item = Item::TryGet(item_id);
+				const string& itemId = t.MustGetItem();
+				const Item* item = Item::TryGet(itemId);
 				if(!recipe->result)
-					LoadError("Missing item '%s'.", item_id.c_str());
+					LoadError("Missing item '%s'.", itemId.c_str());
 				else
 				{
 					bool added = false;
@@ -1415,8 +1415,8 @@ void ItemLoader::CalculateCrc()
 				crc.Update(a.armorType);
 				crc.Update(a.armorUnitType);
 				crc.Update(a.texOverride.size());
-				for(TexOverride& tex_o : a.texOverride)
-					crc.Update(tex_o.diffuse ? tex_o.diffuse->filename : "");
+				for(TexOverride& texOverride : a.texOverride)
+					crc.Update(texOverride.diffuse ? texOverride.diffuse->filename : "");
 			}
 			break;
 		case IT_AMULET:

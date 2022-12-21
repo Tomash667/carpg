@@ -1597,7 +1597,7 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 void Game::Event_RandomEncounter(int)
 {
-	gameGui->worldMap->dialog_enc = nullptr;
+	gameGui->worldMap->dialogEnc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	world->StartEncounter();

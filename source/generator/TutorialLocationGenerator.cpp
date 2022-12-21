@@ -16,7 +16,7 @@ struct RoomInfo
 	int connected;
 };
 
-RoomInfo t_rooms[] = {
+RoomInfo tutorialRooms[] = {
 	Int2(0,19), Int2(6,3), false, -1,
 	Int2(0,14), Int2(8,5), false, 0,
 	Int2(8,14), Int2(5,5), false, 1,
@@ -29,7 +29,7 @@ RoomInfo t_rooms[] = {
 	Int2(2,1), Int2(7,7), false, 8,
 };
 
-char mapa_t[] = {
+char tutorialMap[] = {
 	"$$$$$$$$###########$$$"
 	"$   ### #  S  #   #  $"
 	"$ ###/###  T  + T #  $"
@@ -76,7 +76,7 @@ S:
 6 - po tekœcie 7 i trafieniu w 5
 */
 
-char mapa_t2[] = {
+char tutorialMap2[] = {
 	"        66666655555   "
 	"  99999966666655555   "
 	"  99999966666655555   "
@@ -101,7 +101,7 @@ char mapa_t2[] = {
 	"000000                "
 };
 
-char mapa_t3[] = {
+char tutorialMap3[] = {
 	"        ###########   "
 	"    ### #  4  #   #   "
 	"  ###/###  6  4 5 #   "
@@ -130,7 +130,7 @@ void TutorialLocationGenerator::OnEnter()
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	Quest_Tutorial& quest = *questMgr->questTutorial;
-	Int2 start_tile;
+	Int2 startTile;
 
 	lvl.w = lvl.h = 22;
 	inside->SetActiveLevel(dungeonLevel);
@@ -139,11 +139,11 @@ void TutorialLocationGenerator::OnEnter()
 	SetDungeonParamsAndTextures(gBaseLocations[TUTORIAL_FORT]);
 
 	// rooms
-	lvl.rooms.resize(countof(t_rooms));
-	for(uint i = 0; i < countof(t_rooms); ++i)
+	lvl.rooms.resize(countof(tutorialRooms));
+	for(uint i = 0; i < countof(tutorialRooms); ++i)
 	{
 		Room* room = Room::Get();
-		RoomInfo& info = t_rooms[i];
+		RoomInfo& info = tutorialRooms[i];
 		lvl.rooms[i] = room;
 		room->index = i;
 		room->target = (info.corridor ? RoomTarget::Corridor : RoomTarget::None);
@@ -167,7 +167,7 @@ void TutorialLocationGenerator::OnEnter()
 		{
 			Tile& p = lvl.map[x + y * 22];
 			p.flags = 0;
-			switch(mapa_t[x + y * 22])
+			switch(tutorialMap[x + y * 22])
 			{
 			case ' ':
 				p.type = EMPTY;
@@ -191,7 +191,7 @@ void TutorialLocationGenerator::OnEnter()
 				{
 					p.type = EMPTY;
 					Quest_Tutorial::Text& tt = Add1(quest.texts);
-					char c = mapa_t3[x + y * 22];
+					char c = tutorialMap3[x + y * 22];
 					assert(InRange(c, '0', '9'));
 					tt.id = int(c - '0');
 					tt.state = (tt.id == 0 ? 1 : 0);
@@ -202,7 +202,7 @@ void TutorialLocationGenerator::OnEnter()
 			case 'S':
 				{
 					p.type = EMPTY;
-					char c = mapa_t3[x + y * 22];
+					char c = tutorialMap3[x + y * 22];
 					assert(InRange(c, '0', '9'));
 					switch((int)(c - '0'))
 					{
@@ -214,7 +214,7 @@ void TutorialLocationGenerator::OnEnter()
 					5 - tarcza strzelniacza [w prawo]
 					6 - cz³owiek [w dó³]*/
 					case 0:
-						start_tile = Int2(x, y);
+						startTile = Int2(x, y);
 						break;
 					case 1:
 						{
@@ -272,7 +272,7 @@ void TutorialLocationGenerator::OnEnter()
 				break;
 			}
 
-			char c = mapa_t2[x + y * 22];
+			char c = tutorialMap2[x + y * 22];
 			if(c == ' ')
 				p.room = -1;
 			else if(InRange(c, '0', '9'))
@@ -289,12 +289,12 @@ void TutorialLocationGenerator::OnEnter()
 	// doors
 	for(Door* door : lvl.doors)
 	{
-		char c = mapa_t3[door->pt(22)];
+		char c = tutorialMap3[door->pt(22)];
 		assert(InRange(c, '0', '9'));
 		door->locked = LOCK_TUTORIAL + int(c - '0');
 	}
 
 	gameLevel->SpawnDungeonColliders();
 	CreateMinimap();
-	gameLevel->AddPlayerTeam(Vec3(2.f * start_tile.x + 1, 0, 2.f * start_tile.y + 1), 0);
+	gameLevel->AddPlayerTeam(Vec3(2.f * startTile.x + 1, 0, 2.f * startTile.y + 1), 0);
 }

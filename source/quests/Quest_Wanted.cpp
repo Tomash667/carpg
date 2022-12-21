@@ -238,9 +238,9 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 		clas = Class::TryGet(f.ReadString1());
 	else
 	{
-		int old_clas;
-		f >> old_clas;
-		clas = old::ConvertOldClass(old_clas);
+		int oldClass;
+		f >> oldClass;
+		clas = old::ConvertOldClass(oldClass);
 	}
 	f >> unitName;
 	f >> targetUnit;

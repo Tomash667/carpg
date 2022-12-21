@@ -179,7 +179,7 @@ GameDirection DungeonMapGenerator::CheckFreePath(int id)
 }
 
 //=================================================================================================
-void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool is_corridor, Room* parent)
+void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool isCorridor, Room* parent)
 {
 	assert(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < mapW && y + h < mapH);
 
@@ -188,7 +188,7 @@ void DungeonMapGenerator::AddRoom(int x, int y, int w, int h, bool is_corridor, 
 	room->pos.y = y;
 	room->size.x = w;
 	room->size.y = h;
-	room->target = (is_corridor ? RoomTarget::Corridor : RoomTarget::None);
+	room->target = (isCorridor ? RoomTarget::Corridor : RoomTarget::None);
 	room->type = nullptr;
 	room->connected.clear();
 	settings->rooms->push_back(room);
@@ -345,17 +345,17 @@ void DungeonMapGenerator::SetWall(TILE_TYPE& tile)
 //=================================================================================================
 void DungeonMapGenerator::RemoveDeadEndCorridors()
 {
-	LocalVector<Room*> to_remove;
+	LocalVector<Room*> toRemove;
 	for(Room* room : *settings->rooms)
 	{
 		if(room->IsCorridor() && room->connected.size() == 1u)
-			to_remove->push_back(room);
+			toRemove->push_back(room);
 	}
 
-	while(!to_remove->empty())
+	while(!toRemove->empty())
 	{
-		Room* room = to_remove->back();
-		to_remove->pop_back();
+		Room* room = toRemove->back();
+		toRemove->pop_back();
 
 		int x = room->pos.x,
 			y = room->pos.y,
@@ -387,7 +387,7 @@ void DungeonMapGenerator::RemoveDeadEndCorridors()
 		Room* connected = room->connected.front();
 		RemoveElement(connected->connected, room);
 		if(connected->IsCorridor() && connected->connected.size() == 1u)
-			to_remove->push_back(connected);
+			toRemove->push_back(connected);
 		room->Free();
 	}
 }
@@ -433,9 +433,9 @@ void DungeonMapGenerator::RemoveWall(int x, int y, Room* room)
 		}
 	}
 
-	Room*& tile_room = HR(x, y);
-	if(tile_room == room)
-		tile_room = nullptr;
+	Room*& tileRoom = HR(x, y);
+	if(tileRoom == room)
+		tileRoom = nullptr;
 }
 
 //=================================================================================================
@@ -500,11 +500,11 @@ void DungeonMapGenerator::JoinCorridors()
 					{
 						assert(mapRooms[index] == room || mapRooms[index] == room2);
 						tile.type = EMPTY;
-						goto removed_doors;
+						goto removedDoors;
 					}
 				}
 			}
-		removed_doors:
+		removedDoors:
 			;
 		}
 
@@ -825,9 +825,9 @@ bool DungeonMapGenerator::AddEntryFarFromPoint(vector<Room*>& rooms, const Int2&
 
 	while(!p.empty())
 	{
-		int p_id = p.back().x;
+		int pId = p.back().x;
 		p.pop_back();
-		room = rooms[p_id];
+		room = rooms[pId];
 		if(AddEntry(*room, type, pt, dir, isPrev))
 			return true;
 	}
@@ -980,11 +980,11 @@ bool DungeonMapGenerator::AddEntry(Room& room, EntryType& type, Int2& pt, GameDi
 
 	std::sort(choice.begin(), choice.end());
 
-	int best_prio = choice.front().prio;
+	int bestPrio = choice.front().prio;
 	int count = 0;
 
 	vector<PosDir>::iterator it = choice.begin(), end = choice.end();
-	while(it != end && it->prio == best_prio)
+	while(it != end && it->prio == bestPrio)
 	{
 		++it;
 		++count;

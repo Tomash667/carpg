@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Tile.h"
 
-static const char tile_char[] = {
+static const char tileChar[] = {
 	' ', // UNUSED
 	'_', // EMPTY
 	'<', // ENTRY_PREV
@@ -126,7 +126,7 @@ void Tile::DebugDraw(Tile* tiles, const Int2& size)
 	for(int y = size.y - 1; y >= 0; --y)
 	{
 		for(int x = 0; x < size.x; ++x)
-			putchar(tile_char[tiles[x + y * size.x].type]);
+			putchar(tileChar[tiles[x + y * size.x].type]);
 		putchar('\n');
 	}
 }

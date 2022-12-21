@@ -95,7 +95,7 @@ void Skill::Validate(uint& err)
 	for(int i = 0; i < (int)SkillGroupId::MAX; ++i)
 	{
 		SkillGroup& sgi = SkillGroup::groups[i];
-		if(sgi.group_id != (SkillGroupId)i)
+		if(sgi.groupId != (SkillGroupId)i)
 		{
 			Warn("Test: SkillId group %s: id mismatch.", sgi.id);
 			++err;

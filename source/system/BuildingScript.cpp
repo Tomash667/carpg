@@ -51,7 +51,7 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 
 	const int* code = variant->code.data();
 	const int* end = code + variant->code.size();
-	vector<IfStatus> if_status;
+	vector<IfStatus> ifStatus;
 
 	while(code != end)
 	{
@@ -62,11 +62,11 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 		case BS_ADD_BUILDING:
 			if(IsEntryGroup(code, group))
 			{
-				if(if_status.empty())
+				if(ifStatus.empty())
 					return true;
 				else
 				{
-					IfStatus& s = if_status.back();
+					IfStatus& s = ifStatus.back();
 					if(s == IFS_IF)
 						s = IFS_IF_OK;
 					else if(s == IFS_ELSE_OK)
@@ -85,11 +85,11 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 				}
 				if(count == ok)
 				{
-					if(if_status.empty())
+					if(ifStatus.empty())
 						return true;
 					else
 					{
-						IfStatus& s = if_status.back();
+						IfStatus& s = ifStatus.back();
 						if(s == IFS_IF)
 							s = IFS_IF_OK;
 						else if(s == IFS_ELSE_OK)
@@ -118,15 +118,15 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 			++code;
 			break;
 		case BS_IF:
-			if_status.push_back(IFS_IF);
+			ifStatus.push_back(IFS_IF);
 			++code;
 			break;
 		case BS_IF_RAND:
-			if_status.push_back(IFS_IF);
+			ifStatus.push_back(IFS_IF);
 			break;
 		case BS_ELSE:
 			{
-				IfStatus& s = if_status.back();
+				IfStatus& s = ifStatus.back();
 				if(s == IFS_IF)
 					s = IFS_ELSE;
 				else
@@ -135,16 +135,16 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 			break;
 		case BS_ENDIF:
 			{
-				IfStatus s = if_status.back();
-				if_status.pop_back();
-				if(if_status.empty())
+				IfStatus s = ifStatus.back();
+				ifStatus.pop_back();
+				if(ifStatus.empty())
 				{
 					if(s == IFS_IF_OK || s == IFS_ELSE_OK2)
 						return true;
 				}
 				else
 				{
-					IfStatus& s2 = if_status.back();
+					IfStatus& s2 = ifStatus.back();
 					if(s == IFS_IF_OK || s == IFS_ELSE_OK2)
 					{
 						if(s2 == IFS_IF)

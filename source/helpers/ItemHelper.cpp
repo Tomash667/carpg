@@ -29,18 +29,18 @@ int treasureValue[] = {
 	10000 //20
 };
 
-const float price_mod_buy[] = { 1.75f, 1.25f, 1.f, 0.9f, 0.775f };
-const float price_mod_buy_v[] = { 1.75f, 1.25f, 1.f, 0.95f, 0.925f };
-const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
-const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
+const float priceModBuy[] = { 1.75f, 1.25f, 1.f, 0.9f, 0.775f };
+const float priceModBuyV[] = { 1.75f, 1.25f, 1.f, 0.95f, 0.925f };
+const float priceModSell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
+const float priceModSellV[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
 template<typename T>
-void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int priceLimit, int exclude_flags, uint count)
+void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int priceLimit, int excludeFlags, uint count)
 {
 	for(int i = 0; i < 100; ++i)
 	{
 		T* item = items[Rand() % items.size()];
-		if(item->value > priceLimit || IsSet(item->flags, exclude_flags))
+		if(item->value > priceLimit || IsSet(item->flags, excludeFlags))
 			continue;
 		InsertItemBare(container, item, count);
 		return;
@@ -137,17 +137,17 @@ void ItemHelper::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests
 		}
 	}
 
-	int divided_count = gold / count - 1;
-	if(divided_count < 0)
-		divided_count = 0;
-	gold -= divided_count * count;
+	int dividedCount = gold / count - 1;
+	if(dividedCount < 0)
+		dividedCount = 0;
+	gold -= dividedCount * count;
 
 	for(int i = 0; i < count; ++i)
 	{
 		if(i == count - 1)
-			divided_count += gold;
+			dividedCount += gold;
 		ItemSlot& slot = Add1(chests[i]->items);
-		slot.Set(Item::gold, divided_count, divided_count);
+		slot.Set(Item::gold, dividedCount, dividedCount);
 		SortItems(chests[i]->items);
 	}
 }
@@ -179,36 +179,35 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 			persuasion += 20;
 	}
 
-	const float* mod_table;
-
+	const float* modTable;
 	if(item->type == IT_OTHER && item->ToOther().subtype == OtherItem::Subtype::Valuable)
 	{
 		if(buy)
-			mod_table = price_mod_buy_v;
+			modTable = priceModBuyV;
 		else
-			mod_table = price_mod_sell_v;
+			modTable = priceModSellV;
 	}
 	else
 	{
 		if(buy)
-			mod_table = price_mod_buy;
+			modTable = priceModBuy;
 		else
-			mod_table = price_mod_sell;
+			modTable = priceModSell;
 	}
 
 	float mod;
 	if(persuasion <= -25)
-		mod = mod_table[0];
+		mod = modTable[0];
 	else if(persuasion <= 0)
-		mod = Lerp(mod_table[0], mod_table[1], float(persuasion + 25) / 25);
+		mod = Lerp(modTable[0], modTable[1], float(persuasion + 25) / 25);
 	else if(persuasion <= 15)
-		mod = Lerp(mod_table[1], mod_table[2], float(persuasion) / 15);
+		mod = Lerp(modTable[1], modTable[2], float(persuasion) / 15);
 	else if(persuasion <= 50)
-		mod = Lerp(mod_table[2], mod_table[3], float(persuasion - 15) / 30);
+		mod = Lerp(modTable[2], modTable[3], float(persuasion - 15) / 30);
 	else if(persuasion <= 150)
-		mod = Lerp(mod_table[3], mod_table[4], float(persuasion - 50) / 100);
+		mod = Lerp(modTable[3], modTable[4], float(persuasion - 50) / 100);
 	else
-		mod = mod_table[4];
+		mod = modTable[4];
 
 	int price = int(mod * item->value);
 	if(price == 0 && buy)
@@ -297,10 +296,10 @@ void ItemHelper::SkipStock(GameReader& f)
 
 	for(uint i = 0; i < count; ++i)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f.Skip<uint>(); // count
-		if(item_id[0] == '$')
-			f.Skip<int>(); // quest_id
+		if(itemId[0] == '$')
+			f.Skip<int>(); // questId
 	}
 }
 

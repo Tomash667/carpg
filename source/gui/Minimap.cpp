@@ -50,8 +50,8 @@ void Minimap::Draw()
 
 	// map texture
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
-	Rect r_part = { 0, 0, minimapSize, minimapSize };
-	gui->DrawSpriteRectPart(game->tMinimap, r, r_part, Color::Alpha(140));
+	Rect rPart = { 0, 0, minimapSize, minimapSize };
+	gui->DrawSpriteRectPart(game->tMinimap, r, rPart, Color::Alpha(140));
 
 	// stairs
 	if(type == L_DUNGEON || type == L_CAVE)

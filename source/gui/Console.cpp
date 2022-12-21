@@ -66,25 +66,25 @@ void Console::Update(float dt)
 				string s = Trimmed(itb.inputStr);
 				if(!s.empty() && s.find_first_of(' ') == string::npos)
 				{
-					cstring best_cmd_name = nullptr;
-					int best_index = -1, index = 0;
+					cstring bestCmdName = nullptr;
+					int bestIndex = -1, index = 0;
 
 					for(const ConsoleCommand& cmd : cmdp->GetCommands())
 					{
 						if(strncmp(cmd.name, s.c_str(), s.length()) == 0)
 						{
-							if(best_index == -1 || strcmp(cmd.name, best_cmd_name) < 0)
+							if(bestIndex == -1 || strcmp(cmd.name, bestCmdName) < 0)
 							{
-								best_index = index;
-								best_cmd_name = cmd.name;
+								bestIndex = index;
+								bestCmdName = cmd.name;
 							}
 						}
 						++index;
 					}
 
-					if(best_index != -1)
+					if(bestIndex != -1)
 					{
-						itb.inputStr = best_cmd_name;
+						itb.inputStr = bestCmdName;
 						itb.inputStr += ' ';
 					}
 				}

@@ -157,10 +157,10 @@ void OutsideLocationGenerator::OnEnter()
 	ApplyTiles();
 
 	int days;
-	bool need_reset = outside->CheckUpdate(days, world->GetWorldtime());
-	int update_flags = HandleUpdate(days);
-	if(IsSet(update_flags, PREVENT_RESET))
-		need_reset = false;
+	bool needReset = outside->CheckUpdate(days, world->GetWorldtime());
+	int updateFlags = HandleUpdate(days);
+	if(IsSet(updateFlags, PREVENT_RESET))
+		needReset = false;
 
 	SetOutsideParams();
 
@@ -183,20 +183,20 @@ void OutsideLocationGenerator::OnEnter()
 	else
 	{
 		if(days > 0)
-			gameLevel->UpdateLocation(days, 100, need_reset);
+			gameLevel->UpdateLocation(days, 100, needReset);
 
 		gameLevel->RecreateTmpObjectPhysics();
 
 		// recreate colliders
 		game->LoadingStep(game->txGeneratingPhysics);
-		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
+		if(!IsSet(updateFlags, PREVENT_RECREATE_OBJECTS))
 			gameLevel->RecreateObjects();
 
 		// respawn units
 		game->LoadingStep(game->txGeneratingUnits);
-		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
+		if(!IsSet(updateFlags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
-		if(need_reset)
+		if(needReset)
 			GenerateUnits();
 
 		if(days > 10)

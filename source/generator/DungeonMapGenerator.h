@@ -53,7 +53,7 @@ private:
 	void SetLayout();
 	void GenerateRooms();
 	GameDirection CheckFreePath(int id);
-	void AddRoom(int x, int y, int w, int h, bool is_corridor, Room* parent);
+	void AddRoom(int x, int y, int w, int h, bool isCorridor, Room* parent);
 	void SetRoom(Room* room);
 	void AddCorridor(Int2& pt, GameDirection dir, Room* parent);
 	bool CheckRoom(int x, int y, int w, int h);

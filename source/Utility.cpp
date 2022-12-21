@@ -9,8 +9,8 @@ static cstring SHARED_MEMORY_NAME = "CaRpg-DelayLockMemory";
 static HANDLE mutex;
 static HANDLE shmem;
 static int* mem;
-static int app_id = 1;
-static string compile_time;
+static int appId = 1;
+static string compileTime;
 
 //=================================================================================================
 bool utility::InitMutex()
@@ -76,7 +76,7 @@ void utility::IncrementDelayLock()
 //=================================================================================================
 void utility::WaitForDelayLock(int delay)
 {
-	app_id = delay;
+	appId = delay;
 
 	if(!InitMutex())
 		return;
@@ -113,14 +113,14 @@ void utility::WaitForDelayLock(int delay)
 //=================================================================================================
 int utility::GetAppId()
 {
-	return app_id;
+	return appId;
 }
 
 //=================================================================================================
 const string& utility::GetCompileTime()
 {
-	if(!compile_time.empty())
-		return compile_time;
+	if(!compileTime.empty())
+		return compileTime;
 
 	int len = GetModuleFileName(nullptr, BUF, 256);
 	HANDLE file;
@@ -137,8 +137,8 @@ const string& utility::GetCompileTime()
 
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		compile_time = "0";
-		return compile_time;
+		compileTime = "0";
+		return compileTime;
 	}
 
 	// read header position
@@ -169,10 +169,10 @@ const string& utility::GetCompileTime()
 	if(err == 0)
 	{
 		strftime(BUF, 256, "%Y-%m-%d %H:%M:%S", &t);
-		compile_time = BUF;
+		compileTime = BUF;
 	}
 	else
-		compile_time = "0";
+		compileTime = "0";
 
-	return compile_time;
+	return compileTime;
 }

@@ -2351,7 +2351,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					if(!*u)
 						break;
 					if(*u == *it)
-						goto ignore_unit;
+						goto ignoreUnit;
 					++u;
 				}
 				while(1);
@@ -2366,7 +2366,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					co.type = CollisionObject::SPHERE;
 				}
 
-			ignore_unit:
+			ignoreUnit:
 				;
 			}
 		}
@@ -2552,7 +2552,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					if(!*u)
 						break;
 					if(*u == *it)
-						goto ignore_unit;
+						goto ignoreUnit;
 					++u;
 				}
 				while(1);
@@ -2566,7 +2566,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					co.type = CollisionObject::SPHERE;
 				}
 
-			ignore_unit:
+			ignoreUnit:
 				;
 			}
 		}
@@ -4840,11 +4840,11 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 	const Vec2 size = pt->size.XZ() * 2;
 
 	const int width = 2 + (int)ceil(size.x / 2);
-	const int width_a = (width - 1) / 2;
-	const int width_b = width - width_a - 1;
-	const int start_x = Random(width_a, lvl->h - width_b);
-	const int start_y = Random(width_a, lvl->h - width_b);
-	int x = start_x, y = start_y;
+	const int widthA = (width - 1) / 2;
+	const int widthB = width - widthA - 1;
+	const int startX = Random(widthA, lvl->h - widthB);
+	const int startY = Random(widthA, lvl->h - widthB);
+	int x = startX, y = startY;
 
 	while(true)
 	{
@@ -4852,7 +4852,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?#
 		// __#
 		bool ok = true;
-		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		for(int y1 = -widthA; y1 <= widthB; ++y1)
 		{
 			if(IsBlocking2(lvl->map[x - 1 + (y + y1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
@@ -4864,7 +4864,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x + 1), 0, 2.f * (y - width_a) + (float)width);
+			point.pos = Vec3(2.f * (x + 1), 0, 2.f * (y - widthA) + (float)width);
 			point.rot = DirToRot(GDIR_LEFT);
 			return true;
 		}
@@ -4873,7 +4873,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// #?_
 		// #__
 		ok = true;
-		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		for(int y1 = -widthA; y1 <= widthB; ++y1)
 		{
 			if(IsBlocking2(lvl->map[x + 1 + (y + y1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
@@ -4885,7 +4885,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * x, 0, 2.f * (y - width_a) + (float)width);
+			point.pos = Vec3(2.f * x, 0, 2.f * (y - widthA) + (float)width);
 			point.rot = DirToRot(GDIR_RIGHT);
 			return true;
 		}
@@ -4894,7 +4894,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?_
 		// ___
 		ok = true;
-		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		for(int x1 = -widthA; x1 <= widthB; ++x1)
 		{
 			if(IsBlocking2(lvl->map[x + x1 + (y - 1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
@@ -4906,7 +4906,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * (y + 1));
+			point.pos = Vec3(2.f * (x - widthA) + (float)width, 0, 2.f * (y + 1));
 			point.rot = DirToRot(GDIR_DOWN);
 			return true;
 		}
@@ -4915,7 +4915,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?_
 		// ###
 		ok = true;
-		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		for(int x1 = -widthA; x1 <= widthB; ++x1)
 		{
 			if(IsBlocking2(lvl->map[x + x1 + (y + 1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
@@ -4927,20 +4927,20 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * y);
+			point.pos = Vec3(2.f * (x - widthA) + (float)width, 0, 2.f * y);
 			point.rot = DirToRot(GDIR_UP);
 			return true;
 		}
 
 		++x;
-		if(x == lvl->w - width_b)
+		if(x == lvl->w - widthB)
 		{
-			x = width_a;
+			x = widthA;
 			++y;
-			if(y == lvl->h - width_b)
-				y = width_a;
+			if(y == lvl->h - widthB)
+				y = widthA;
 		}
-		if(x == start_x && y == start_y)
+		if(x == startX && y == startY)
 			return false;
 	}
 }

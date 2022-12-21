@@ -616,9 +616,9 @@ void UnitLoader::Finalize()
 	UnitGroup::empty = UnitGroup::Get("empty");
 	UnitGroup::random = UnitGroup::Get("random");
 
-	uint crc_value = crc.Get();
-	content.crc[(int)Content::Id::Units] = crc_value;
-	Info("Loaded units (%u) - crc %p.", UnitData::units.size(), crc_value);
+	uint crcValue = crc.Get();
+	content.crc[(int)Content::Id::Units] = crcValue;
+	Info("Loaded units (%u) - crc %p.", UnitData::units.size(), crcValue);
 }
 
 //=================================================================================================
@@ -637,13 +637,13 @@ void UnitLoader::ParseUnit(const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		auto& parent_id = t.MustGetItemKeyword();
-		auto parent = UnitData::TryGet(parent_id);
+		auto& parentId = t.MustGetItemKeyword();
+		auto parent = UnitData::TryGet(parentId);
 		if(!parent)
-			t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			t.Throw("Missing parent unit '%s'.", parentId.c_str());
 		parent->flags3 |= F3_PARENT_DATA;
 		unit->CopyFrom(*parent);
-		crc.Update(parent_id);
+		crc.Update(parentId);
 		t.Next();
 	}
 
@@ -661,12 +661,12 @@ void UnitLoader::ParseUnit(const string& id)
 		{
 		case P_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				unit->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				unit->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(unit->mesh)
-					crc.Update(mesh_id);
+					crc.Update(meshId);
 				else
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing mesh '%s'.", meshId.c_str());
 			}
 			break;
 		case P_MAT:
@@ -1013,10 +1013,10 @@ void UnitLoader::ParseUnit(const string& id)
 					{
 						if(unit->trader->stock)
 							t.Throw("Unit trader stock already set.");
-						const string& stock_id = t.MustGetItem();
-						unit->trader->stock = Stock::TryGet(stock_id);
+						const string& stockId = t.MustGetItem();
+						unit->trader->stock = Stock::TryGet(stockId);
 						if(!unit->trader->stock)
-							LoadError("Missing trader stock '%s'.", stock_id.c_str());
+							LoadError("Missing trader stock '%s'.", stockId.c_str());
 					}
 					break;
 				case TK_GROUPS:
@@ -1075,10 +1075,10 @@ void UnitLoader::ParseUnit(const string& id)
 					t.Next();
 					while(!t.IsSymbol('}'))
 					{
-						const string& item_id = t.MustGetItem();
-						const Item* item = Item::TryGet(item_id);
+						const string& itemId = t.MustGetItem();
+						const Item* item = Item::TryGet(itemId);
 						if(!item)
-							LoadError("Missing trader item include '%s'.", item_id.c_str());
+							LoadError("Missing trader item include '%s'.", itemId.c_str());
 						else
 							unit->trader->includes.push_back(item);
 						t.Next();
@@ -1554,8 +1554,8 @@ ARMOR_TYPE UnitLoader::GetArmorType()
 //=================================================================================================
 void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 {
-	vector<IfState> if_state;
-	bool done_if = false;
+	vector<IfState> ifState;
+	bool doneIf = false;
 
 	// {
 	t.AssertSymbol('{');
@@ -1565,15 +1565,15 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 	{
 		if(t.IsSymbol('}'))
 		{
-			while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+			while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 			{
 				script->code.push_back(PS_END_IF);
 				crc.Update(PS_END_IF);
-				if_state.pop_back();
+				ifState.pop_back();
 			}
-			if(if_state.empty())
+			if(ifState.empty())
 				break;
-			if(if_state.back() == IFS_START)
+			if(ifState.back() == IFS_START)
 			{
 				t.Next();
 				if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
@@ -1616,25 +1616,25 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 						}
 						t.Next();
-						if_state.back() = IFS_ELSE_INLINE;
+						ifState.back() = IFS_ELSE_INLINE;
 						if(t.IsSymbol('{'))
 						{
 							t.Next();
-							if_state.push_back(IFS_START);
+							ifState.push_back(IFS_START);
 						}
 						else
-							if_state.push_back(IFS_START_INLINE);
+							ifState.push_back(IFS_START_INLINE);
 					}
 					else if(t.IsSymbol('{'))
 					{
 						// else { ... }
 						t.Next();
-						if_state.back() = IFS_ELSE;
+						ifState.back() = IFS_ELSE;
 					}
 					else
 					{
 						// single expression else
-						if_state.back() = IFS_ELSE_INLINE;
+						ifState.back() = IFS_ELSE_INLINE;
 					}
 				}
 				else
@@ -1642,27 +1642,27 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 					// } end of if
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
-					while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+					ifState.pop_back();
+					while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 					{
 						script->code.push_back(PS_END_IF);
 						crc.Update(PS_END_IF);
-						if_state.pop_back();
+						ifState.pop_back();
 					}
 				}
 			}
-			else if(if_state.back() == IFS_ELSE)
+			else if(ifState.back() == IFS_ELSE)
 			{
 				// } end of else
 				script->code.push_back(PS_END_IF);
 				crc.Update(PS_END_IF);
-				if_state.pop_back();
+				ifState.pop_back();
 				t.Next();
-				while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+				while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
+					ifState.pop_back();
 				}
 			}
 			else
@@ -1803,11 +1803,11 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 					if(t.IsSymbol('{'))
 					{
 						t.Next();
-						if_state.push_back(IFS_START);
+						ifState.push_back(IFS_START);
 					}
 					else
-						if_state.push_back(IFS_START_INLINE);
-					done_if = true;
+						ifState.push_back(IFS_START_INLINE);
+					doneIf = true;
 				}
 				break;
 			default:
@@ -1824,16 +1824,16 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 		else
 			t.Unexpected();
 
-		if(done_if)
-			done_if = false;
+		if(doneIf)
+			doneIf = false;
 		else
 		{
 			t.Next();
-			while(!if_state.empty())
+			while(!ifState.empty())
 			{
-				if(if_state.back() == IFS_START_INLINE)
+				if(ifState.back() == IFS_START_INLINE)
 				{
-					if_state.pop_back();
+					ifState.pop_back();
 					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 					{
 						script->code.push_back(PS_ELSE);
@@ -1842,10 +1842,10 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						if(t.IsSymbol('{'))
 						{
 							t.Next();
-							if_state.push_back(IFS_ELSE);
+							ifState.push_back(IFS_ELSE);
 						}
 						else
-							if_state.push_back(IFS_ELSE_INLINE);
+							ifState.push_back(IFS_ELSE_INLINE);
 						break;
 					}
 					else
@@ -1854,11 +1854,11 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						crc.Update(PS_END_IF);
 					}
 				}
-				else if(if_state.back() == IFS_ELSE_INLINE)
+				else if(ifState.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
+					ifState.pop_back();
 				}
 				else
 					break;
@@ -1866,13 +1866,13 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 		}
 	}
 
-	while(!if_state.empty())
+	while(!ifState.empty())
 	{
-		if(if_state.back() == IFS_START_INLINE || if_state.back() == IFS_ELSE_INLINE)
+		if(ifState.back() == IFS_START_INLINE || ifState.back() == IFS_ELSE_INLINE)
 		{
 			script->code.push_back(PS_END_IF);
 			crc.Update(PS_END_IF);
-			if_state.pop_back();
+			ifState.pop_back();
 		}
 		else
 			t.Throw("Missing closing '}'.");
@@ -2004,7 +2004,7 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 			AbilityKeyword k = (AbilityKeyword)t.GetKeywordId(G_ABILITY_KEYWORD);
 			if(k == AK_NON_COMBAT)
 			{
-				// non_combat
+				// non combat
 				t.Next();
 				list->haveNonCombat = t.MustGetBool();
 				crc.Update(list->haveNonCombat ? 2 : 1);
@@ -2024,10 +2024,10 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 				t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 			t.AssertSymbol('{');
 			t.Next();
-			const string& ability_id = t.MustGetItemKeyword();
-			Ability* ability = Ability::Get(ability_id.c_str());
+			const string& abilityId = t.MustGetItemKeyword();
+			Ability* ability = Ability::Get(abilityId.c_str());
 			if(!ability)
-				t.Throw("Missing ability '%s'.", ability_id.c_str());
+				t.Throw("Missing ability '%s'.", abilityId.c_str());
 			t.Next();
 			int lvl = t.MustGetInt();
 			if(lvl < 0)
@@ -2106,7 +2106,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 	t.AssertSymbol('{');
 	t.Next();
 
-	bool have_simple = false;
+	bool haveSimple = false;
 
 	while(!t.IsSymbol('}'))
 	{
@@ -2116,7 +2116,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 		switch(k)
 		{
 		case FK_ATTACKS:
-			if(have_simple || frames->extra)
+			if(haveSimple || frames->extra)
 				t.Throw("Frame info already have attacks information.");
 			t.AssertSymbol('{');
 			t.Next();
@@ -2149,7 +2149,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			crc.Update(frames->attacks);
 			break;
 		case FK_SIMPLE_ATTACKS:
-			if(have_simple || frames->extra)
+			if(haveSimple || frames->extra)
 				t.Throw("Frame info already have attacks information.");
 			else
 			{
@@ -2248,15 +2248,15 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 		}
 		else
 		{
-			const string& tex_id = t.MustGetString();
-			Texture* tex = resMgr->TryGet<Texture>(tex_id);
+			const string& texId = t.MustGetString();
+			Texture* tex = resMgr->TryGet<Texture>(texId);
 			if(tex)
 			{
 				pack->textures.push_back(TexOverride(tex));
-				crc.Update(tex_id);
+				crc.Update(texId);
 			}
 			else
-				LoadError("Missing texture override '%s'.", tex_id.c_str());
+				LoadError("Missing texture override '%s'.", texId.c_str());
 			any = true;
 		}
 		t.Next();
@@ -2328,12 +2328,12 @@ void UnitLoader::ParseGroup(const string& id)
 			case GK_GROUP:
 				{
 					const string& id = t.MustGetItemKeyword();
-					UnitGroup* other_group = UnitGroup::TryGet(id);
-					if(!other_group)
+					UnitGroup* otherGroup = UnitGroup::TryGet(id);
+					if(!otherGroup)
 						t.Throw("Missing group '%s'.", id.c_str());
-					for(UnitGroup::Entry& e : other_group->entries)
+					for(UnitGroup::Entry& e : otherGroup->entries)
 						group->entries.push_back(e);
-					group->maxWeight += other_group->maxWeight;
+					group->maxWeight += otherGroup->maxWeight;
 					crc.Update(id);
 				}
 				break;
@@ -2465,14 +2465,14 @@ void UnitLoader::ProcessDialogRequests()
 		if(!unit)
 			continue;
 		uint pos = request.dialog.find_first_of('/');
-		string quest_name = request.dialog.substr(0, pos);
-		string dialog_name = request.dialog.substr(pos + 1);
-		QuestScheme* scheme = QuestScheme::TryGet(quest_name);
-		GameDialog* dialog = (scheme ? scheme->GetDialog(dialog_name) : nullptr);
+		string questName = request.dialog.substr(0, pos);
+		string dialogName = request.dialog.substr(pos + 1);
+		QuestScheme* scheme = QuestScheme::TryGet(questName);
+		GameDialog* dialog = (scheme ? scheme->GetDialog(dialogName) : nullptr);
 		if(!scheme || !dialog)
 		{
 			++content.errors;
-			LoadError("Missing quest dialog '%s/%s' for unit %s.", quest_name.c_str(), dialog_name.c_str(), unit->id.c_str());
+			LoadError("Missing quest dialog '%s/%s' for unit %s.", questName.c_str(), dialogName.c_str(), unit->id.c_str());
 		}
 		else
 			unit->dialog = dialog;

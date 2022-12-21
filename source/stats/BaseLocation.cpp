@@ -7,7 +7,7 @@
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
-RoomStrChance human_fort_rooms[] = {
+RoomStrChance humanFortRooms[] = {
 	RoomStrChance("bedroom", 10),
 	RoomStrChance("commander", 2),
 	RoomStrChance("library", 5),
@@ -21,7 +21,7 @@ RoomStrChance human_fort_rooms[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance mage_tower_rooms[] = {
+RoomStrChance mageTowerRooms[] = {
 	RoomStrChance("magic", 3),
 	RoomStrChance("bedroom", 10),
 	RoomStrChance("commander", 2),
@@ -36,7 +36,7 @@ RoomStrChance mage_tower_rooms[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance necro_base_rooms[] = {
+RoomStrChance necroBaseRooms[] = {
 	RoomStrChance("bedroom", 10),
 	RoomStrChance("commander", 2),
 	RoomStrChance("library", 5),
@@ -51,7 +51,7 @@ RoomStrChance necro_base_rooms[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance vault_rooms[] = {
+RoomStrChance vaultRooms[] = {
 	RoomStrChance("bedroom", 5),
 	RoomStrChance("library", 2),
 	RoomStrChance("storeroom", 10),
@@ -64,7 +64,7 @@ RoomStrChance vault_rooms[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance crypt_rooms[] = {
+RoomStrChance cryptRooms[] = {
 	RoomStrChance("graves", 8),
 	RoomStrChance("graves2", 8),
 	RoomStrChance("shrine", 4),
@@ -72,12 +72,12 @@ RoomStrChance crypt_rooms[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance labyrinth_rooms[] = {
+RoomStrChance labyrinthRooms[] = {
 	RoomStrChance("labyrinth_treasure", 1)
 };
 
 //-----------------------------------------------------------------------------
-RoomStrChance tutorial_rooms[] = {
+RoomStrChance tutorialRooms[] = {
 	RoomStrChance("tutorial", 1)
 };
 
@@ -88,43 +88,43 @@ BaseLocation gBaseLocations[] = {
 	//										SIZE		COR	ROOM				LENGTH		SIZE
 	"Human fort",			Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	BLO_DOOR_ENTRY, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		human_fort_rooms, countof(human_fort_rooms), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
+		humanFortRooms, countof(humanFortRooms), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
 	"Dwarf fort",			Int2(2, 4),		40, 3,		50, 5,		25,			Int2(5,12),	Int2(4,8),	BLO_DOOR_ENTRY, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		human_fort_rooms, countof(human_fort_rooms), 0, 60, 20, 6, "random", nullptr, nullptr, 100, 0, 0, TRAPS_NORMAL, -1,
+		humanFortRooms, countof(humanFortRooms), 0, 60, 20, 6, "random", nullptr, nullptr, 100, 0, 0, TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile.jpg", "mur078.jpg", "sufit3.jpg"),
 	"Mage tower",			Int2(4, 5),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND | BLO_DOOR_ENTRY | BLO_GOES_UP, "stairs", nullptr,
 		Color(100,0,0), Color(0.4f,0.3f,0.3f), Vec2(10,20), 20.f,
-		mage_tower_rooms, countof(mage_tower_rooms), 0, 100, 0, 3, "mages", "mages_and_golems", "random", 50, 25, 25, TRAPS_MAGIC, -1,
+		mageTowerRooms, countof(mageTowerRooms), 0, 100, 0, 3, "mages", "mages_and_golems", "random", 50, 25, 25, TRAPS_MAGIC, -1,
 		LocationTexturePack("floor_pavingStone_ceramic.jpg", "stone01d.jpg", "block02b.jpg"),
 	"Bandits hideout",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	BLO_DOOR_ENTRY, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		human_fort_rooms, countof(human_fort_rooms), 0, 80, 10, 3, "bandits", "random", nullptr, 75, 25, 0, TRAPS_NORMAL | TRAPS_NEAR_ENTRANCE, -1,
+		humanFortRooms, countof(humanFortRooms), 0, 80, 10, 3, "bandits", "random", nullptr, 75, 25, 0, TRAPS_NORMAL | TRAPS_NEAR_ENTRANCE, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "sup075.jpg"),
 	"Hero crypt",			Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		crypt_rooms, countof(crypt_rooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
+		cryptRooms, countof(cryptRooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01a.jpg", "sufit2.jpg"),
 	"Monster crypt",		Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(5,10),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		crypt_rooms, countof(crypt_rooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
+		cryptRooms, countof(cryptRooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01a.jpg", "sufit2.jpg"),
 	"Old temple",			Int2(1, 3),		40, 2,		35, 15,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", "shrine",
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		necro_base_rooms, countof(necro_base_rooms), 0, 80, 5, 1, "undead", "necromancers", "evil", 25, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
+		necroBaseRooms, countof(necroBaseRooms), 0, 80, 5, 1, "undead", "necromancers", "evil", 25, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),
 	"Safehouse",			Int2(1, 1),		30, 0,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		vault_rooms, countof(vault_rooms), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
+		vaultRooms, countof(vaultRooms), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),
 	"Necromancers base",	Int2(2, 3),		45, 3,		35,	15,		25,			Int2(5,10),	Int2(5,10), BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		necro_base_rooms, countof(necro_base_rooms), 0, 80, 5, 1, "necromancers", "evil", "random", 50, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
+		necroBaseRooms, countof(necroBaseRooms), 0, 80, 5, 1, "necromancers", "evil", "random", 50, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_paving_littleStones3.jpg", "256-03b.jpg", "sufit2.jpg"),
 	"Labyrinth",			Int2(1, 1),		60, 0,		0, 0,		0,			Int2(0,0),	Int2(6,6),	BLO_LABYRINTH, nullptr, nullptr,
 		Color::Black, Color(0.33f,0.33f,0.33f), Vec2(3.f,15.f), 15.f,
-		labyrinth_rooms, countof(labyrinth_rooms), 0, 0, 0, 3, "undead", nullptr, nullptr, 100, 0, 0, 0, -1,
+		labyrinthRooms, countof(labyrinthRooms), 0, 0, 0, 3, "undead", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack("block01b.jpg", "stone01b.jpg", "block01d.jpg"),
 	"Cave",					Int2(0,0),		52, 0,		0, 0,		0,			Int2(0,0),	Int2(0,0),	BLO_LABYRINTH,	nullptr, nullptr,
 		Color::Black, Color(0.4f,0.4f,0.4f), Vec2(16.f,25.f), 25.f,
@@ -132,23 +132,23 @@ BaseLocation gBaseLocations[] = {
 		LocationTexturePack("rock2.jpg", "rock1.jpg", "rock3.jpg"),
 	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		human_fort_rooms, countof(human_fort_rooms), 0, 80, 5, 1, "golems", nullptr, nullptr, 100, 0, 0, TRAPS_MAGIC | TRAPS_NORMAL, -1,
+		humanFortRooms, countof(humanFortRooms), 0, 80, 5, 1, "golems", nullptr, nullptr, 100, 0, 0, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),
 	"Tutorial",				Int2(1,1),		22, 0,		40, 20,		30,			Int2(3,12),	Int2(5,10),	0, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		tutorial_rooms, countof(tutorial_rooms), 0, 100, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
+		tutorialRooms, countof(tutorialRooms), 0, 100, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
 	"Fort with throne",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	BLO_DOOR_ENTRY, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		human_fort_rooms, countof(human_fort_rooms), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
+		humanFortRooms, countof(humanFortRooms), 0, 50, 25, 2, "random", nullptr, nullptr, 100, 0, 0, 0, -1,
 		LocationTexturePack(),
 	"Safehouse with throne",Int2(2, 2),		35, 2,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
-		vault_rooms, countof(vault_rooms), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
+		vaultRooms, countof(vaultRooms), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),
 	"Crypt 2nd texture",	Int2(2, 3),		35, 5,		30, 10,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "stairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
-		crypt_rooms, countof(crypt_rooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, -1,
+		cryptRooms, countof(cryptRooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, -1,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01b.jpg", "sufit2.jpg")
 };
 const uint nBaseLocations = countof(gBaseLocations);

@@ -109,24 +109,21 @@ void MoonwellGenerator::GenerateObjects()
 //=================================================================================================
 void MoonwellGenerator::GenerateUnits()
 {
-	UnitData* ud_hunter = UnitData::Get("wild_hunter");
+	UnitData* udHunter = UnitData::Get("wild_hunter");
 	const int level = gameLevel->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);
-	static vector<Vec2> poss;
-	poss.clear();
-	poss.push_back(Vec2(teamPos.x, teamPos.z));
+	LocalVector3<Vec2> existingPositions;
+	existingPositions.push_back(Vec2(teamPos.x, teamPos.z));
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
 		Vec2 pos = outside->GetRandomPos();
-		if(Vec2::Distance(pos, Vec2(128.f, 128.f)) < 12.f)
-			continue;
 
 		bool ok = true;
-		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		for(const Vec2& existingPos : existingPositions)
 		{
-			if(Vec2::Distance(pos, *it) < 24.f)
+			if(Vec2::DistanceSquared(pos, existingPos) < Pow2(24.f))
 			{
 				ok = false;
 				break;
@@ -135,16 +132,16 @@ void MoonwellGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			poss.push_back(pos);
+			existingPositions.push_back(pos);
 			++added;
 
 			Vec3 pos3(pos.x, 0, pos.y);
 
 			// spawn units
-			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
+			if(Rand() % 5 == 0 && udHunter->level.x <= level)
 			{
-				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
-				gameLevel->SpawnUnitNearLocation(*outside, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
+				int enemyLevel = Random(udHunter->level.x, min(udHunter->level.y, level));
+				gameLevel->SpawnUnitNearLocation(*outside, pos3, *udHunter, nullptr, enemyLevel, 6.f);
 			}
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{

@@ -305,9 +305,9 @@ void GameResources::PreloadTraps()
 //=================================================================================================
 void GameResources::PreloadAbilities()
 {
-	for(Ability* ptr_ability : Ability::abilities)
+	for(Ability* ptrAbility : Ability::abilities)
 	{
-		Ability& ability = *ptr_ability;
+		Ability& ability = *ptrAbility;
 
 		if(ability.soundCast)
 			resMgr->Load(ability.soundCast);
@@ -386,16 +386,16 @@ void GameResources::PreloadObjects()
 				if(IsSet(obj.flags, OBJ_MULTI_PHYSICS))
 				{
 					LocalVector<Mesh::Point*> points;
-					Mesh::Point* prev_point = point;
+					Mesh::Point* prevPoint = point;
 
 					while(true)
 					{
-						Mesh::Point* new_point = obj.mesh->FindNextPoint("hit", prev_point);
-						if(new_point)
+						Mesh::Point* newPoint = obj.mesh->FindNextPoint("hit", prevPoint);
+						if(newPoint)
 						{
-							assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
-							points.push_back(new_point);
-							prev_point = new_point;
+							assert(newPoint->IsBox() && newPoint->size.x >= 0 && newPoint->size.y >= 0 && newPoint->size.z >= 0);
+							points.push_back(newPoint);
+							prevPoint = newPoint;
 						}
 						else
 							break;
@@ -442,9 +442,9 @@ void GameResources::PreloadObjects()
 }
 
 //=================================================================================================
-void GameResources::PreloadItem(const Item* p_item)
+void GameResources::PreloadItem(const Item* ptrItem)
 {
-	Item& item = *(Item*)p_item;
+	Item& item = *(Item*)ptrItem;
 	if(item.state == ResourceState::Loaded)
 		return;
 
@@ -457,10 +457,10 @@ void GameResources::PreloadItem(const Item* p_item)
 				Armor& armor = item.ToArmor();
 				if(!armor.texOverride.empty())
 				{
-					for(TexOverride& tex_o : armor.texOverride)
+					for(TexOverride& texOverride : armor.texOverride)
 					{
-						if(tex_o.diffuse)
-							resMgr->Load(tex_o.diffuse);
+						if(texOverride.diffuse)
+							resMgr->Load(texOverride.diffuse);
 					}
 				}
 			}
@@ -487,10 +487,10 @@ void GameResources::PreloadItem(const Item* p_item)
 			Armor& armor = item.ToArmor();
 			if(!armor.texOverride.empty())
 			{
-				for(TexOverride& tex_o : armor.texOverride)
+				for(TexOverride& texOverride : armor.texOverride)
 				{
-					if(tex_o.diffuse)
-						resMgr->Load(tex_o.diffuse);
+					if(texOverride.diffuse)
+						resMgr->Load(texOverride.diffuse);
 				}
 			}
 		}
@@ -538,11 +538,11 @@ void GameResources::GenerateItemIcon(Item& item)
 	}
 
 	// try to find icon using same mesh
-	bool use_tex_override = false;
+	bool useTexOverride = false;
 	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().texOverride.empty();
+		useTexOverride = !item.ToArmor().texOverride.empty();
 	ItemTextureMap::iterator it;
-	if(!use_tex_override)
+	if(!useTexOverride)
 	{
 		it = itemTextureMap.lower_bound(item.mesh);
 		if(it != itemTextureMap.end() && !(itemTextureMap.key_comp()(item.mesh, it->first)))

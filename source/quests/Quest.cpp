@@ -69,10 +69,10 @@ void Quest::OnStart(cstring name)
 }
 
 //=================================================================================================
-void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
+void Quest::OnUpdate(const std::initializer_list<cstring>& newMsgs)
 {
-	assert(new_msgs.size() > 0u);
-	for(cstring msg : new_msgs)
+	assert(newMsgs.size() > 0u);
+	for(cstring msg : newMsgs)
 		msgs.push_back(msg);
 	gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
 	gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -81,7 +81,7 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 		NetChange& c = Add1(Net::changes);
 		c.id = id;
 		c.type = NetChange::UPDATE_QUEST;
-		c.count = new_msgs.size();
+		c.count = newMsgs.size();
 	}
 }
 

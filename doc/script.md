@@ -235,7 +235,7 @@ Methods:
 Static methods:
 
 * Item@ Get(const string& in id) - return item with id.
-* Item@ GetRandom(int maxValue) - returns random item with `value <= max_value`, can return quest item.
+* Item@ GetRandom(int maxValue) - returns random item with `value <= maxValue`, can return quest item.
 
 ### ItemList type
 List of items (swords, light armors).

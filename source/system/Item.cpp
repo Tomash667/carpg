@@ -36,7 +36,7 @@ WeaponTypeInfo WeaponTypeInfo::info[] = {
 	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.0014f, SkillId::AXE, 60.f,
 };
 
-vector<const Item*> items_to_add;
+vector<const Item*> itemsToAdd;
 
 //=================================================================================================
 Item& Item::operator = (const Item& i)
@@ -162,25 +162,25 @@ const Item* ItemList::GetLeveled(int level) const
 
 	if(level < 1)
 		level = 1;
-	int best_lvl = -1;
+	int bestLvl = -1;
 
 	for(const Entry& e : items)
 	{
-		if(e.level <= level && e.level >= best_lvl)
+		if(e.level <= level && e.level >= bestLvl)
 		{
-			if(e.level > best_lvl)
+			if(e.level > bestLvl)
 			{
-				items_to_add.clear();
-				best_lvl = e.level;
+				itemsToAdd.clear();
+				bestLvl = e.level;
 			}
-			items_to_add.push_back(e.item);
+			itemsToAdd.push_back(e.item);
 		}
 	}
 
-	if(!items_to_add.empty())
+	if(!itemsToAdd.empty())
 	{
-		const Item* best = items_to_add[Rand() % items_to_add.size()];
-		items_to_add.clear();
+		const Item* best = itemsToAdd[Rand() % itemsToAdd.size()];
+		itemsToAdd.clear();
 		return best;
 	}
 
@@ -194,20 +194,20 @@ void ItemList::Get(int count, const Item** result) const
 	assert(!isPriority); // TODO
 
 	for(const Entry& e : items)
-		items_to_add.push_back(e.item);
+		itemsToAdd.push_back(e.item);
 
 	int index = 0;
-	for(; index < count && !items_to_add.empty(); ++index)
+	for(; index < count && !itemsToAdd.empty(); ++index)
 	{
-		int items_index = Rand() % items_to_add.size();
-		result[index] = items_to_add[items_index];
-		RemoveElementIndex(items_to_add, items_index);
+		int itemsIndex = Rand() % itemsToAdd.size();
+		result[index] = itemsToAdd[itemsIndex];
+		RemoveElementIndex(itemsToAdd, itemsIndex);
 	}
 
 	for(; index < count; ++index)
 		result[index] = nullptr;
 
-	items_to_add.clear();
+	itemsToAdd.clear();
 }
 
 //=================================================================================================
@@ -417,10 +417,10 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 	if(it == StartItem::startItems.end())
 		return nullptr;
 	const Item* best = nullptr;
-	int best_value = -2;
+	int bestValue = -2;
 	if(mage)
 	{
-		auto start_it = it;
+		auto startIt = it;
 		while(true)
 		{
 			if(it->mage)
@@ -430,10 +430,10 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 					if(value == HEIRLOOM)
 						return it->item;
 				}
-				else if(it->value > best_value && it->value <= value)
+				else if(it->value > bestValue && it->value <= value)
 				{
 					best = it->item;
-					best_value = it->value;
+					bestValue = it->value;
 				}
 			}
 			++it;
@@ -442,7 +442,7 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 		}
 		if(best)
 			return best;
-		it = start_it;
+		it = startIt;
 	}
 	while(true)
 	{
@@ -453,10 +453,10 @@ const Item* StartItem::GetStartItem(SkillId skill, int value, bool mage)
 				if(value == HEIRLOOM)
 					return it->item;
 			}
-			else if(it->value > best_value && it->value <= value)
+			else if(it->value > bestValue && it->value <= value)
 			{
 				best = it->item;
-				best_value = it->value;
+				bestValue = it->value;
 			}
 		}
 		++it;

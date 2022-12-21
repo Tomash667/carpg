@@ -646,7 +646,7 @@ public:
 	void RemoveItem(int iindex, bool activeLocation = true);
 	uint RemoveItem(int iIndex, uint count);
 	uint RemoveItem(const Item* item, uint count);
-	uint RemoveItemS(const string& item_id, uint count);
+	uint RemoveItemS(const string& itemId, uint count);
 	void RemoveEquippedItem(ITEM_SLOT slot);
 	void RemoveAllEquippedItems();
 	int CountItem(const Item* item);
@@ -834,7 +834,7 @@ public:
 	bool CanAct() const;
 
 	int Get(AttributeId a, StatState* state = nullptr) const;
-	int Get(SkillId s, StatState* state = nullptr, bool skill_bonus = true) const;
+	int Get(SkillId s, StatState* state = nullptr, bool skillBonus = true) const;
 	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
 	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
 	void Set(AttributeId a, int value);
@@ -906,8 +906,8 @@ public:
 	void PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
-	Sound* GetSound(SOUND_ID sound_id) const;
-	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
+	Sound* GetSound(SOUND_ID soundId) const;
+	bool SetWeaponState(bool takesOut, WeaponType type, bool send);
 	void SetWeaponStateInstant(WeaponState weaponState, WeaponType type);
 	void SetTakeHideWeaponAnimationToEnd(bool hide, bool breakAction);
 	void UpdateInventory(bool notify = true);

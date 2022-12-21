@@ -194,9 +194,9 @@ void PlayerController::Train(SkillId skill, float points)
 	int s = (int)skill;
 	StatData& stat = this->skill[s];
 	points += stat.trainPart;
-	int int_points = (int)points;
-	stat.trainPart = points - int_points;
-	stat.points += int_points;
+	int intPoints = (int)points;
+	stat.trainPart = points - intPoints;
+	stat.points += intPoints;
 
 	int gained = 0,
 		value = unit->GetBase(skill);
@@ -240,9 +240,9 @@ void PlayerController::Train(AttributeId attrib, float points)
 	int a = (int)attrib;
 	StatData& stat = this->attrib[a];
 	points += stat.trainPart;
-	int int_points = (int)points;
-	stat.trainPart = points - int_points;
-	stat.points += int_points;
+	int intPoints = (int)points;
+	stat.trainPart = points - intPoints;
+	stat.points += intPoints;
 
 	int gained = 0,
 		value = unit->GetBase(attrib);
@@ -295,11 +295,11 @@ void PlayerController::TrainMove(float dist)
 void PlayerController::Rest(int days, bool resting, bool travel)
 {
 	// update effects that work for days, end other
-	float natural_mod;
-	float prev_hp = unit->hp,
-		prev_mp = unit->mp,
-		prev_stamina = unit->stamina;
-	unit->EndEffects(days, &natural_mod);
+	float naturalMod;
+	float prevHp = unit->hp,
+		prevMp = unit->mp,
+		prevStamina = unit->stamina;
+	unit->EndEffects(days, &naturalMod);
 
 	// regenerate hp
 	if(Net::IsLocal() && unit->hp != unit->hpmax)
@@ -307,7 +307,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 		float heal = 0.5f * unit->Get(AttributeId::END);
 		if(resting)
 			heal *= 2;
-		heal *= natural_mod * days;
+		heal *= naturalMod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
@@ -317,21 +317,21 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	// send update
 	if(Net::IsServer() && !travel)
 	{
-		if(unit->hp != prev_hp)
+		if(unit->hp != prevHp)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = unit;
 		}
 
-		if(unit->mp != prev_mp)
+		if(unit->mp != prevMp)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_MP;
 			c.unit = unit;
 		}
 
-		if(unit->stamina != prev_stamina)
+		if(unit->stamina != prevStamina)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_STAMINA;
@@ -673,21 +673,21 @@ int PlayerController::CalculateLevel()
 	values.clear();
 	for(Class::LevelEntry& entry : clas->level)
 	{
-		float e_level, e_prio = -1;
+		float eLevel, ePrio = -1;
 		switch(entry.type)
 		{
 		case Class::LevelEntry::T_ATTRIBUTE:
 			{
 				float value = (float)stats.attrib[entry.value];
-				e_level = (value - 25) / 5 * entry.priority;
-				e_prio = entry.priority;
+				eLevel = (value - 25) / 5 * entry.priority;
+				ePrio = entry.priority;
 			}
 			break;
 		case Class::LevelEntry::T_SKILL:
 			{
 				float value = (float)stats.skill[entry.value];
-				e_level = value / 5 * entry.priority;
-				e_prio = entry.priority;
+				eLevel = value / 5 * entry.priority;
+				ePrio = entry.priority;
 			}
 			break;
 		case Class::LevelEntry::T_SKILL_SPECIAL:
@@ -695,28 +695,28 @@ int PlayerController::CalculateLevel()
 			{
 				SkillId skill = WeaponTypeInfo::info[unit->GetBestWeaponType()].skill;
 				float value = (float)stats.skill[(int)skill];
-				e_level = value / 5 * entry.priority;
-				e_prio = entry.priority;
+				eLevel = value / 5 * entry.priority;
+				ePrio = entry.priority;
 			}
 			else if(entry.value == Class::LevelEntry::S_ARMOR)
 			{
 				SkillId skill = GetArmorTypeSkill(unit->GetBestArmorType());
 				float value = (float)stats.skill[(int)skill];
-				e_level = value / 5 * entry.priority;
-				e_prio = entry.priority;
+				eLevel = value / 5 * entry.priority;
+				ePrio = entry.priority;
 			}
 			break;
 		}
 
-		if(e_prio > 0)
+		if(ePrio > 0)
 		{
 			if(entry.required)
 			{
-				level += e_level;
-				prio += e_prio;
+				level += eLevel;
+				prio += ePrio;
 			}
 			else
-				values.push_back({ e_level, e_prio });
+				values.push_back({ eLevel, ePrio });
 		}
 	}
 
@@ -751,7 +751,7 @@ void PlayerController::RecalculateLevel()
 	}
 }
 
-const float level_mod[21] = {
+const float levelMod[21] = {
 	0.0f, // -10
 	0.1f, // -9
 	0.2f, // -8
@@ -775,9 +775,9 @@ const float level_mod[21] = {
 	2.0f, // 10
 };
 
-inline float GetLevelMod(int my_level, int target_level)
+inline float GetLevelMod(int myLevel, int targetLevel)
 {
-	return level_mod[Clamp(target_level - my_level + 10, 0, 20)];
+	return levelMod[Clamp(targetLevel - myLevel + 10, 0, 20)];
 }
 
 //=================================================================================================
@@ -797,52 +797,52 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::AttackStart:
 		{
-			const float c_points = 50.f;
+			const float cPoints = 50.f;
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 
 			int skill = unit->GetBase(info.skill);
 			if(skill < 25)
-				TrainMod2(info.skill, c_points);
+				TrainMod2(info.skill, cPoints);
 			else if(skill < 50)
-				TrainMod2(info.skill, c_points / 2);
+				TrainMod2(info.skill, cPoints / 2);
 
 			skill = unit->GetBase(SkillId::ONE_HANDED_WEAPON);
 			if(skill < 25)
-				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
+				TrainMod2(SkillId::ONE_HANDED_WEAPON, cPoints);
 			else if(skill < 50)
-				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points / 2);
+				TrainMod2(SkillId::ONE_HANDED_WEAPON, cPoints / 2);
 
 			int str = unit->Get(AttributeId::STR);
 			if(weapon.reqStr > str)
-				TrainMod(AttributeId::STR, c_points);
+				TrainMod(AttributeId::STR, cPoints);
 			else if(weapon.reqStr + 10 > str)
-				TrainMod(AttributeId::STR, c_points / 2);
+				TrainMod(AttributeId::STR, cPoints / 2);
 
-			TrainMod(AttributeId::STR, c_points * info.str2dmg);
-			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
+			TrainMod(AttributeId::STR, cPoints * info.str2dmg);
+			TrainMod(AttributeId::DEX, cPoints * info.dex2dmg);
 		}
 		break;
 	case TrainWhat::AttackNoDamage:
 		{
-			const float c_points = 200.f * GetLevelMod(unit->level, level);
+			const float cPoints = 200.f * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(info.skill, c_points);
-			TrainMod(AttributeId::STR, c_points * info.str2dmg);
-			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
+			TrainMod2(SkillId::ONE_HANDED_WEAPON, cPoints);
+			TrainMod2(info.skill, cPoints);
+			TrainMod(AttributeId::STR, cPoints * info.str2dmg);
+			TrainMod(AttributeId::DEX, cPoints * info.dex2dmg);
 		}
 		break;
 	case TrainWhat::AttackHit:
 		{
-			const float c_points = (200.f + 2300.f * value) * GetLevelMod(unit->level, level);
+			const float cPoints = (200.f + 2300.f * value) * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(info.skill, c_points);
-			TrainMod(AttributeId::STR, c_points * info.str2dmg);
-			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
+			TrainMod2(SkillId::ONE_HANDED_WEAPON, cPoints);
+			TrainMod2(info.skill, cPoints);
+			TrainMod(AttributeId::STR, cPoints * info.str2dmg);
+			TrainMod(AttributeId::DEX, cPoints * info.dex2dmg);
 		}
 		break;
 	case TrainWhat::BlockBullet:
@@ -1242,11 +1242,11 @@ bool PlayerController::Read(BitStreamReader& f)
 	gameGui->ability->Refresh();
 
 	// recipes
-	uint i_count;
-	f >> i_count;
-	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * i_count))
+	uint iCount;
+	f >> iCount;
+	if(!f || !f.Ensure(sizeof(MemorizedRecipe) * iCount))
 		return false;
-	recipes.resize(i_count);
+	recipes.resize(iCount);
 	for(MemorizedRecipe& mr : recipes)
 		mr.recipe = Recipe::Get(f.Read<int>());
 
@@ -1645,10 +1645,10 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 		TakenPerk& tp = *it;
 		if(tp.perk == perk && tp.value == value)
 		{
-			TakenPerk tp_copy = tp;
+			TakenPerk tpCopy = tp;
 			perks.erase(it);
 			PerkContext ctx(this, false);
-			tp_copy.Remove(ctx);
+			tpCopy.Remove(ctx);
 			if(Net::IsServer() && !IsLocal())
 			{
 				NetChangePlayer& c = Add1(playerInfo->changes);
@@ -1690,26 +1690,26 @@ void PlayerController::AddExp(int xp)
 //=================================================================================================
 int PlayerController::GetExpNeed() const
 {
-	int exp_per_level = 1000 - (unit->GetBase(AttributeId::INT) - 50);
-	return exp_per_level * (expLevel + 1);
+	int expPerLevel = 1000 - (unit->GetBase(AttributeId::INT) - 50);
+	return expPerLevel * (expLevel + 1);
 }
 
 //=================================================================================================
 int PlayerController::GetAptitude(SkillId s)
 {
 	int apt = skill[(int)s].apt;
-	SkillType skill_type = Skill::skills[(int)s].type;
-	if(skill_type != SkillType::NONE)
+	SkillType skillType = Skill::skills[(int)s].type;
+	if(skillType != SkillType::NONE)
 	{
 		int value = unit->GetBase(s);
 		// cross training bonus
-		if(skill_type == SkillType::WEAPON)
+		if(skillType == SkillType::WEAPON)
 		{
 			SkillId best = WeaponTypeInfo::info[unit->GetBestWeaponType()].skill;
 			if(best != s && value - 1 > unit->GetBase(best))
 				apt += 5;
 		}
-		else if(skill_type == SkillType::ARMOR)
+		else if(skillType == SkillType::ARMOR)
 		{
 			SkillId best = GetArmorTypeSkill(unit->GetBestArmorType());
 			if(best != s && value - 1 > unit->GetBase(best))
@@ -1826,21 +1826,21 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 				auto& bu = *use->base;
 				if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
 				{
-					float allowed_dif;
+					float allowedDif;
 					switch(bu.limitRot)
 					{
 					default:
 					case 0:
-						allowed_dif = PI * 2;
+						allowedDif = PI * 2;
 						break;
 					case 1:
-						allowed_dif = PI / 2;
+						allowedDif = PI / 2;
 						break;
 					case 2:
-						allowed_dif = PI / 4;
+						allowedDif = PI / 4;
 						break;
 					}
-					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos))) > allowed_dif)
+					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(unit->pos, pos))) > allowedDif)
 						return;
 				}
 			}
@@ -2337,8 +2337,8 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 		if(u.frozen == FROZEN::NO)
 		{
-			bool cancel_autowalk = (GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || GKey.KeyDownAllowed(GK_MOVE_BACK));
-			if(cancel_autowalk)
+			bool cancelAutowalk = (GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || GKey.KeyDownAllowed(GK_MOVE_BACK));
+			if(cancelAutowalk)
 				data.autowalk = false;
 			else if(GKey.KeyPressedReleaseAllowed(GK_AUTOWALK))
 				data.autowalk = !data.autowalk;
@@ -2400,12 +2400,12 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 			if(rotating)
 			{
-				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = Clamp(data.rotBuf, -rot_speed_dt, rot_speed_dt);
-				const float val = rot_speed_dt * rotate + mouse_rot;
+				const float rotSpeedDt = u.GetRotationSpeed() * dt;
+				const float mouseRot = Clamp(data.rotBuf, -rotSpeedDt, rotSpeedDt);
+				const float val = rotSpeedDt * rotate + mouseRot;
 
-				data.rotBuf -= mouse_rot;
-				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
+				data.rotBuf -= mouseRot;
+				u.rot = Clip(u.rot + Clamp(val, -rotSpeedDt, rotSpeedDt));
 
 				if(val > 0)
 					u.animation = ANI_RIGHT;
@@ -2487,7 +2487,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 				u.prevPos = u.pos;
 
 				const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
-				Int2 prev_tile(int(u.pos.x / 2), int(u.pos.z / 2));
+				Int2 prevTile(int(u.pos.x / 2), int(u.pos.z / 2));
 				bool moved = false;
 
 				if(noclip)
@@ -2509,9 +2509,9 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					// revealing minimap
 					if(!gameLevel->location->outside)
 					{
-						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
-						if(new_tile != prev_tile)
-							FOV::DungeonReveal(new_tile, gameLevel->minimapReveal);
+						Int2 newTile(int(u.pos.x / 2), int(u.pos.z / 2));
+						if(newTile != prevTile)
+							FOV::DungeonReveal(newTile, gameLevel->minimapReveal);
 					}
 				}
 
@@ -2557,16 +2557,16 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					}
 					else if(u.CanWear(item))
 					{
-						bool ignore_team = !team->HaveOtherActiveTeamMember();
-						int i_index = u.FindItem([=](const ItemSlot& slot)
+						bool ignoreTeam = !team->HaveOtherActiveTeamMember();
+						int iIndex = u.FindItem([=](const ItemSlot& slot)
 						{
-							return slot.item == item && (slot.teamCount == 0u || ignore_team);
+							return slot.item == item && (slot.teamCount == 0u || ignoreTeam);
 						});
-						if(i_index != Unit::INVALID_IINDEX)
+						if(iIndex != Unit::INVALID_IINDEX)
 						{
-							ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
+							ITEM_SLOT slotType = ItemTypeToSlot(item->type);
 							bool ok = true;
-							if(u.SlotRequireHideWeapon(slot_type))
+							if(u.SlotRequireHideWeapon(slotType))
 							{
 								u.HideWeapon();
 								if(u.action == A_TAKE_WEAPON)
@@ -2574,7 +2574,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 									ok = false;
 									nextAction = NA_EQUIP_DRAW;
 									nextActionData.item = item;
-									nextActionData.index = i_index;
+									nextActionData.index = iIndex;
 									if(Net::IsClient())
 										Net::PushChange(NetChange::SET_NEXT_ACTION);
 								}
@@ -2582,7 +2582,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 							if(ok)
 							{
-								gameGui->inventory->invMine->EquipSlotItem(i_index);
+								gameGui->inventory->invMine->EquipSlotItem(iIndex);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -2599,19 +2599,19 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 				}
 				else if(item->type == IT_CONSUMABLE)
 				{
-					int i_index = u.FindItem(item);
-					if(i_index != Unit::INVALID_IINDEX)
-						gameGui->inventory->invMine->ConsumeItem(i_index);
+					int iIndex = u.FindItem(item);
+					if(iIndex != Unit::INVALID_IINDEX)
+						gameGui->inventory->invMine->ConsumeItem(iIndex);
 				}
 				else if(item->type == IT_BOOK)
 				{
-					int i_index = u.FindItem(item);
-					if(i_index != Unit::INVALID_IINDEX)
+					int iIndex = u.FindItem(item);
+					if(iIndex != Unit::INVALID_IINDEX)
 					{
 						if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 						{
 							if(!u.usable) // can't use when sitting
-								ReadBook(i_index);
+								ReadBook(iIndex);
 						}
 						else
 						{
@@ -2701,11 +2701,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 		if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_HEALTH_POTION && u.hp < u.hpmax)
 		{
 			// drink healing potion
-			int potion_index = u.FindHealingPotion();
-			if(potion_index != -1)
+			int potionIndex = u.FindHealingPotion();
+			if(potionIndex != -1)
 			{
 				idle = false;
-				u.ConsumeItem(potion_index);
+				u.ConsumeItem(potionIndex);
 			}
 			else
 				gameGui->messages->AddGameMsg3(GMS_NO_HEALTH_POTION);
@@ -2713,11 +2713,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 		else if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MANA_POTION && u.mp < u.mpmax)
 		{
 			// drink mana potion
-			int potion_index = u.FindManaPotion();
-			if(potion_index != -1)
+			int potionIndex = u.FindManaPotion();
+			if(potionIndex != -1)
 			{
 				idle = false;
-				u.ConsumeItem(potion_index);
+				u.ConsumeItem(potionIndex);
 			}
 			else
 				gameGui->messages->AddGameMsg3(GMS_NO_MANA_POTION);
@@ -2928,11 +2928,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 			GroundItem* groundItem = data.beforePlayerPtr.item;
 			if(u.action == A_NONE)
 			{
-				bool up_anim = (groundItem->pos.y > u.pos.y + 0.5f);
+				bool upAnim = (groundItem->pos.y > u.pos.y + 0.5f);
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.meshInst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.meshInst->Play(upAnim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 
 				if(Net::IsLocal())
 				{
@@ -2946,7 +2946,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::PICKUP_ITEM;
 						c.unit = unit;
-						c.count = (up_anim ? 1 : 0);
+						c.count = (upAnim ? 1 : 0);
 					}
 
 					for(Event& event : gameLevel->location->events)

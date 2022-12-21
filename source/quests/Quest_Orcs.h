@@ -32,7 +32,7 @@ public:
 	int GetLocationEventHandlerQuestId() override { return id; }
 
 private:
-	int dungeon_levels;
+	int dungeonLevels;
 };
 
 //-----------------------------------------------------------------------------
@@ -125,6 +125,6 @@ public:
 private:
 	void ChangeClass(OrcClass newOrcClass);
 
-	int near_loc;
+	int nearLoc;
 	OrcClass orcClass;
 };

@@ -55,19 +55,19 @@ void GroundItem::Load(GameReader& f)
 		f >> rot;
 	else
 	{
-		float rot_y;
-		f >> rot_y;
-		rot = Quat::RotY(rot_y);
+		float rotY;
+		f >> rotY;
+		rot = Quat::RotY(rotY);
 	}
 	f >> count;
 	f >> teamCount;
-	const string& item_id = f.ReadString1();
-	if(item_id[0] != '$')
-		item = Item::Get(item_id);
+	const string& itemId = f.ReadString1();
+	if(itemId[0] != '$')
+		item = Item::Get(itemId);
 	else
 	{
 		int questId = f.Read<int>();
-		questMgr->AddQuestItemRequest(&item, item_id.c_str(), questId, nullptr);
+		questMgr->AddQuestItemRequest(&item, itemId.c_str(), questId, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	if(LOAD_VERSION < V_0_12)

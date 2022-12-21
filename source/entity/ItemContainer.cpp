@@ -23,7 +23,7 @@ void ItemContainer::Save(GameWriter& f)
 //=================================================================================================
 void ItemContainer::Load(GameReader& f)
 {
-	bool can_sort = true;
+	bool canSort = true;
 
 	uint count;
 	f >> count;
@@ -33,22 +33,22 @@ void ItemContainer::Load(GameReader& f)
 	items.resize(count);
 	for(auto& slot : items)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f >> slot.count;
 		f >> slot.teamCount;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
+		if(itemId[0] != '$')
+			slot.item = Item::Get(itemId);
 		else
 		{
 			int questId;
 			f >> questId;
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), questId, &items);
+			questMgr->AddQuestItemRequest(&slot.item, itemId.c_str(), questId, &items);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
+			canSort = false;
 		}
 	}
 
-	if(can_sort && !items.empty() && content.requireUpdate)
+	if(canSort && !items.empty() && content.requireUpdate)
 		SortItems(items);
 }
 

@@ -178,7 +178,7 @@ void StatsPanel::SetText()
 	flowStats.Reposition();
 
 	// skills
-	SkillGroupId last_group = SkillGroupId::NONE;
+	SkillGroupId lastGroup = SkillGroupId::NONE;
 	flowSkills.Clear();
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
@@ -186,10 +186,10 @@ void StatsPanel::SetText()
 		if(value > 0)
 		{
 			Skill& info = Skill::skills[i];
-			if(info.group != last_group)
+			if(info.group != lastGroup)
 			{
 				flowSkills.Add()->Set(SkillGroup::groups[(int)info.group].name.c_str());
-				last_group = info.group;
+				lastGroup = info.group;
 			}
 			StatState state;
 			int value = pc->unit->Get((SkillId)i, &state);

@@ -98,11 +98,11 @@ struct Skill
 //-----------------------------------------------------------------------------
 struct SkillGroup
 {
-	SkillGroupId group_id;
+	SkillGroupId groupId;
 	cstring id;
 	string name;
 
-	SkillGroup(SkillGroupId group_id, cstring id) : group_id(group_id), id(id)
+	SkillGroup(SkillGroupId groupId, cstring id) : groupId(groupId), id(id)
 	{
 	}
 

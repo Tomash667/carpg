@@ -136,11 +136,11 @@ private:
 	vector<OldFlowItem> flowItems;
 	TooltipController tooltip;
 	// data
-	bool reset_skills_perks, rotating;
+	bool resetSkillsPerks, rotating;
 	cstring txHardcoreMode, txHardcoreDesc, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes,
 		txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany,
 		txFlawExtraPerk, txPerksRemoved;
-	Perk* picked_perk;
+	Perk* pickedPerk;
 	PickItemDialog* pickItemDialog;
 	vector<Perk*> availablePerks;
 	vector<pair<cstring, int>> takenPerks;
