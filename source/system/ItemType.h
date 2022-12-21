@@ -13,7 +13,7 @@ If equippable
 		Unit.AddItemAndEquipIfNone
 		Unit.HaveItemEquipped
 		Inventory.cpp
-	UnitStats default_priorities
+	UnitStats defaultPriorities
 If need special texts in inventory:
 	ItemSlot.GetItemString
 If require special ordering:

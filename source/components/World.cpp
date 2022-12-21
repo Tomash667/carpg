@@ -553,10 +553,10 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			const Vec2 parent_pos = locations[Rand() % locations.size()]->pos;
+			const Vec2 parentPos = locations[Rand() % locations.size()]->pos;
 			const float rot = Random(MAX_ANGLE);
 			const float dist = Random(300.f, 400.f);
-			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 pos = parentPos + Vec2(cos(rot) * dist, sin(rot) * dist);
 
 			if(pos.x < worldBounds.x || pos.y < worldBounds.x || pos.x > worldBounds.y || pos.y > worldBounds.y)
 				continue;
@@ -577,10 +577,10 @@ void World::GenerateWorld()
 	{
 		for(int tries = 0; tries < 20; ++tries)
 		{
-			const Vec2 parent_pos = locations[Rand() % cities]->pos;
+			const Vec2 parentPos = locations[Rand() % cities]->pos;
 			const float rot = Random(MAX_ANGLE);
 			const float dist = Random(100.f, 250.f);
-			const Vec2 pos = parent_pos + Vec2(cos(rot) * dist, sin(rot) * dist);
+			const Vec2 pos = parentPos + Vec2(cos(rot) * dist, sin(rot) * dist);
 
 			if(pos.x < worldBounds.x || pos.y < worldBounds.x || pos.x > worldBounds.y || pos.y > worldBounds.y)
 				continue;
@@ -649,9 +649,9 @@ void World::GenerateWorld()
 	CalculateTiles();
 
 	// generate locations content
-	int index = 0, guaranteed_dungeon = 0, guaranteed_outside = 0;
-	UnitGroup* forest_group = UnitGroup::Get("forest");
-	UnitGroup* cave_group = UnitGroup::Get("cave");
+	int index = 0, guaranteedDungeon = 0, guaranteedOutside = 0;
+	UnitGroup* forestGroup = UnitGroup::Get("forest");
+	UnitGroup* caveGroup = UnitGroup::Get("cave");
 	const bool knowsHuntersCamp = team->HaveClass(Class::TryGet("hunter"));
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
@@ -683,7 +683,7 @@ void World::GenerateWorld()
 				InsideLocation* inside;
 
 				int target;
-				switch(guaranteed_dungeon++)
+				switch(guaranteedDungeon++)
 				{
 				case 0:
 					target = HUMAN_FORT;
@@ -796,7 +796,7 @@ void World::GenerateWorld()
 			loc.group = UnitGroup::empty;
 			break;
 		case L_OUTSIDE:
-			switch(guaranteed_outside++)
+			switch(guaranteedOutside++)
 			{
 			case 0:
 				loc.target = MOONWELL;
@@ -826,13 +826,13 @@ void World::GenerateWorld()
 					else if(st > 10)
 						st = 10;
 					loc.st = st;
-					loc.group = forest_group;
+					loc.group = forestGroup;
 				}
 				break;
 			case MOONWELL:
 				loc.target = MOONWELL;
 				loc.st = 10;
-				loc.group = forest_group;
+				loc.group = forestGroup;
 				GetTileSt(loc.pos) = 10;
 				break;
 			case HUNTERS_CAMP:
@@ -853,7 +853,7 @@ void World::GenerateWorld()
 				else if(st > 10)
 					st = 10;
 				loc.st = st;
-				loc.group = cave_group;
+				loc.group = caveGroup;
 			}
 			break;
 		}
@@ -880,14 +880,14 @@ void World::StartInLocation()
 	startup = false;
 
 	// reveal near locations
-	const Vec2& start_pos = startLocation->pos;
+	const Vec2& startPos = startLocation->pos;
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 	{
 		if(!*it)
 			continue;
 
 		Location& loc = **it;
-		if(loc.state == LS_UNKNOWN && Vec2::Distance(start_pos, loc.pos) <= 150.f)
+		if(loc.state == LS_UNKNOWN && Vec2::Distance(startPos, loc.pos) <= 150.f)
 			loc.state = LS_KNOWN;
 	}
 }
@@ -1160,7 +1160,7 @@ void World::Save(GameWriter& f)
 		current = currentLocation;
 	else
 		current = nullptr;
-	byte check_id = 0;
+	byte checkId = 0;
 	for(Location* loc : locations)
 	{
 		if(!loc)
@@ -1173,8 +1173,8 @@ void World::Save(GameWriter& f)
 			f.isLocal = (current == loc);
 			loc->Save(f);
 		}
-		f << check_id;
-		++check_id;
+		f << checkId;
+		++checkId;
 	}
 	f.isLocal = false;
 
@@ -1209,8 +1209,8 @@ void World::Save(GameWriter& f)
 			else
 				f.Write0();
 			f << enc->group;
-			if(enc->pooled_string)
-				f << *enc->pooled_string;
+			if(enc->pooledString)
+				f << *enc->pooledString;
 			else
 				f.Write0();
 			f << enc->st;
@@ -1256,17 +1256,17 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 //=================================================================================================
 void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 {
-	byte read_id,
-		check_id = 0;
+	byte readId,
+		checkId = 0;
 
 	uint count = f.Read<uint>();
 	locations.resize(count);
 	int index = -1;
-	int current_index;
+	int currentIndex;
 	if(state == State::INSIDE_LOCATION || state == State::INSIDE_ENCOUNTER)
-		current_index = currentLocationIndex;
+		currentIndex = currentLocationIndex;
 	else
-		current_index = -1;
+		currentIndex = -1;
 	int step = 0;
 	for(Location*& loc : locations)
 	{
@@ -1316,7 +1316,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
-				f.isLocal = (current_index == index);
+				f.isLocal = (currentIndex == index);
 				loc->type = type;
 				loc->index = index;
 				loc->Load(f);
@@ -1326,12 +1326,12 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		}
 		else
 		{
-			old::LOCATION_TOKEN loc_token;
-			f >> loc_token;
+			old::LOCATION_TOKEN locToken;
+			f >> locToken;
 
-			if(loc_token != old::LT_NULL)
+			if(locToken != old::LT_NULL)
 			{
-				switch(loc_token)
+				switch(locToken)
 				{
 				case old::LT_OUTSIDE:
 					loc = new OutsideLocation;
@@ -1361,7 +1361,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					break;
 				}
 
-				f.isLocal = (current_index == index);
+				f.isLocal = (currentIndex == index);
 				loc->index = index;
 				loc->Load(f);
 			}
@@ -1394,10 +1394,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			}
 		}
 
-		f >> read_id;
-		if(read_id != check_id)
+		f >> readId;
+		if(readId != checkId)
 			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
-		++check_id;
+		++checkId;
 	}
 	f.isLocal = false;
 	f >> emptyLocations;
@@ -1413,8 +1413,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	if(LOAD_VERSION < V_0_14)
 	{
 		// old encounterLoc
-		const int encounter_loc_index = f.Read<int>();
-		encounterLoc = static_cast<OutsideLocation*>(locations[encounter_loc_index]);
+		const int encounterLocIndex = f.Read<int>();
+		encounterLoc = static_cast<OutsideLocation*>(locations[encounterLocIndex]);
 
 		// create offscreen location
 		offscreenLoc = new OffscreenLocation;
@@ -1448,33 +1448,33 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			f >> enc->pos;
 			f >> enc->chance;
 			f >> enc->range;
-			int quest_id;
-			f >> quest_id;
-			const string& dialog_id = f.ReadString1();
-			if(!dialog_id.empty())
+			int questId;
+			f >> questId;
+			const string& dialogId = f.ReadString1();
+			if(!dialogId.empty())
 			{
 				string* str = StringPool.Get();
-				*str = dialog_id;
-				questMgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
+				*str = dialogId;
+				questMgr->AddQuestRequest(questId, &enc->quest, [enc, str]
 				{
 					enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
 					StringPool.Free(str);
 				});
 			}
 			else
-				questMgr->AddQuestRequest(quest_id, &enc->quest);
+				questMgr->AddQuestRequest(questId, &enc->quest);
 			f >> enc->group;
 			const string& text = f.ReadString1();
 			if(text.empty())
 			{
 				enc->text = nullptr;
-				enc->pooled_string = nullptr;
+				enc->pooledString = nullptr;
 			}
 			else
 			{
-				enc->pooled_string = StringPool.Get();
-				*enc->pooled_string = text;
-				enc->text = enc->pooled_string->c_str();
+				enc->pooledString = StringPool.Get();
+				*enc->pooledString = text;
+				enc->text = enc->pooledString->c_str();
 			}
 			f >> enc->st;
 			f >> enc->dontAttack;
@@ -1531,15 +1531,15 @@ void World::Write(BitStreamWriter& f)
 
 	// locations
 	f.WriteCasted<byte>(locations.size());
-	for(Location* loc_ptr : locations)
+	for(Location* locPtr : locations)
 	{
-		if(!loc_ptr)
+		if(!locPtr)
 		{
 			f.WriteCasted<byte>(L_NULL);
 			continue;
 		}
 
-		Location& loc = *loc_ptr;
+		Location& loc = *locPtr;
 		f.WriteCasted<byte>(loc.type);
 		if(loc.type == L_DUNGEON)
 			f.WriteCasted<byte>(loc.GetLastLevel() + 1);
@@ -1720,14 +1720,14 @@ bool World::Read(BitStreamReader& f)
 	}
 
 	// position on world map when inside encounter locations
-	bool inside_encounter;
-	f >> inside_encounter;
+	bool insideEncounter;
+	f >> insideEncounter;
 	if(!f)
 	{
 		Error("Read world: Broken packet for in travel data.");
 		return false;
 	}
-	if(inside_encounter)
+	if(insideEncounter)
 	{
 		state = State::INSIDE_ENCOUNTER;
 		f >> travelLocation;
@@ -2081,7 +2081,7 @@ Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float
 {
 	Location* bestOk = nullptr, *bestEmpty = nullptr;
 	int index = settlements;
-	float ok_range, empty_range, dist;
+	float okRange, emptyRange, dist;
 
 	for(vector<Location*>::iterator it = locations.begin() + settlements, end = locations.end(); it != end; ++it, ++index)
 	{
@@ -2097,18 +2097,18 @@ Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float
 				{
 					if(inside->group == group)
 					{
-						if(!bestOk || dist < ok_range)
+						if(!bestOk || dist < okRange)
 						{
 							bestOk = inside;
-							ok_range = dist;
+							okRange = dist;
 						}
 					}
 					else
 					{
-						if(!bestEmpty || dist < empty_range)
+						if(!bestEmpty || dist < emptyRange)
 						{
 							bestEmpty = inside;
-							empty_range = dist;
+							emptyRange = dist;
 						}
 					}
 				}
@@ -2129,15 +2129,15 @@ Location* World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float
 		return bestEmpty;
 	}
 
-	const Vec2 target_pos = FindPlace(pos, range / 2);
-	return CreateCamp(target_pos, group);
+	const Vec2 targetPos = FindPlace(pos, range / 2);
+	return CreateCamp(targetPos, group);
 }
 
 //=================================================================================================
 City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 {
-	int start_index = Rand() % settlements;
-	int index = start_index;
+	int startIndex = Rand() % settlements;
+	int index = startIndex;
 	do
 	{
 		City* loc = static_cast<City*>(locations[index]);
@@ -2145,30 +2145,30 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 			return loc;
 		index = (index + 1) % settlements;
 	}
-	while(index != start_index);
+	while(index != startIndex);
 	return nullptr;
 }
 
 //=================================================================================================
 Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 {
-	float best_value = -1.f;
-	int best_index = -1;
-	int start_index = Rand() % settlements;
-	int index = start_index;
+	float bestValue = -1.f;
+	int bestIndex = -1;
+	int startIndex = Rand() % settlements;
+	int index = startIndex;
 	do
 	{
 		Location* loc = locations[index];
 		float result = func(loc);
-		if(result >= 0.f && result > best_value)
+		if(result >= 0.f && result > bestValue)
 		{
-			best_value = result;
-			best_index = index;
+			bestValue = result;
+			bestIndex = index;
 		}
 		index = (index + 1) % settlements;
 	}
-	while(index != start_index);
-	return (best_index != -1 ? locations[best_index] : nullptr);
+	while(index != startIndex);
+	return (bestIndex != -1 ? locations[bestIndex] : nullptr);
 }
 
 //=================================================================================================
@@ -2339,10 +2339,10 @@ void World::UpdateTravel(float dt)
 	else
 	{
 		Vec2 dir = travelTargetPos - travelStartPos;
-		float travel_dist = travelTimer / dist * TRAVEL_SPEED * 3;
-		worldPos = travelStartPos + dir * travel_dist;
+		float travelDist = travelTimer / dist * TRAVEL_SPEED * 3;
+		worldPos = travelStartPos + dir * travelDist;
 		if(Net::IsLocal())
-			team->OnTravel(travel_dist);
+			team->OnTravel(travelDist);
 
 		// reveal nearby locations, check encounters
 		revealTimer += dt;
@@ -2719,38 +2719,38 @@ Encounter* World::RecreateEncounterS(Quest* quest, int index)
 // Set unit pos, dir according to travelDir
 void World::GetOutsideSpawnPoint(Vec3& pos, float& dir) const
 {
-	const float map_size = 256.f;
+	const float mapSize = 256.f;
 	const float dist = 40.f;
 
 	// reverse dir, if you exit from north then you enter from south
-	float entry_dir = Clip(travelDir + PI);
+	float entryDir = Clip(travelDir + PI);
 
-	if(entry_dir < PI / 4 || entry_dir > 7.f / 4 * PI)
+	if(entryDir < PI / 4 || entryDir > 7.f / 4 * PI)
 	{
 		// east
 		dir = PI / 2;
-		if(entry_dir < PI / 4)
-			pos = Vec3(map_size - dist, 0, Lerp(map_size / 2, dist, entry_dir / (PI / 4)));
+		if(entryDir < PI / 4)
+			pos = Vec3(mapSize - dist, 0, Lerp(mapSize / 2, dist, entryDir / (PI / 4)));
 		else
-			pos = Vec3(map_size - dist, 0, Lerp(map_size - dist, map_size / 2, (entry_dir - 7.f / 4 * PI) / (PI / 4)));
+			pos = Vec3(mapSize - dist, 0, Lerp(mapSize - dist, mapSize / 2, (entryDir - 7.f / 4 * PI) / (PI / 4)));
 	}
-	else if(entry_dir < 3.f / 4 * PI)
+	else if(entryDir < 3.f / 4 * PI)
 	{
 		// south
 		dir = PI;
-		pos = Vec3(Lerp(map_size - dist, dist, (entry_dir - 1.f / 4 * PI) / (PI / 2)), 0, dist);
+		pos = Vec3(Lerp(mapSize - dist, dist, (entryDir - 1.f / 4 * PI) / (PI / 2)), 0, dist);
 	}
-	else if(entry_dir < 5.f / 4 * PI)
+	else if(entryDir < 5.f / 4 * PI)
 	{
 		// west
 		dir = 3.f / 2 * PI;
-		pos = Vec3(dist, 0, Lerp(dist, map_size - dist, (entry_dir - 3.f / 4 * PI) / (PI / 2)));
+		pos = Vec3(dist, 0, Lerp(dist, mapSize - dist, (entryDir - 3.f / 4 * PI) / (PI / 2)));
 	}
 	else
 	{
 		// north
 		dir = 0;
-		pos = Vec3(Lerp(dist, map_size - dist, (entry_dir - 5.f / 4 * PI) / (PI / 2)), 0, map_size - dist);
+		pos = Vec3(Lerp(dist, mapSize - dist, (entryDir - 5.f / 4 * PI) / (PI / 2)), 0, mapSize - dist);
 	}
 }
 
@@ -2766,59 +2766,59 @@ float World::GetTravelDays(float dist)
 // When using city gates find closest line segment point and then use above calculation on this point
 void World::SetTravelDir(const Vec3& pos)
 {
-	const float map_size = 256.f;
+	const float mapSize = 256.f;
 	const float border = 33.f;
-	Vec2 unit_pos = pos.XZ();
+	Vec2 unitPos = pos.XZ();
 
-	if(Box2d(border, border, map_size - border, map_size - border).IsInside(unit_pos))
+	if(Box2d(border, border, mapSize - border, mapSize - border).IsInside(unitPos))
 	{
 		// not inside exit border, find closest line segment
 		const float mini = 32.f;
 		const float maxi = 256 - 32.f;
 		float bestDist = 999.f, dist;
-		Vec2 pt, close_pt;
+		Vec2 pt, closePt;
 		// check right
-		dist = GetClosestPointOnLineSegment(Vec2(maxi, mini), Vec2(maxi, maxi), unit_pos, pt);
+		dist = GetClosestPointOnLineSegment(Vec2(maxi, mini), Vec2(maxi, maxi), unitPos, pt);
 		if(dist < bestDist)
 		{
 			bestDist = dist;
-			close_pt = pt;
+			closePt = pt;
 		}
 		// check left
-		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(mini, maxi), unit_pos, pt);
+		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(mini, maxi), unitPos, pt);
 		if(dist < bestDist)
 		{
 			bestDist = dist;
-			close_pt = pt;
+			closePt = pt;
 		}
 		// check bottom
-		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(maxi, mini), unit_pos, pt);
+		dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(maxi, mini), unitPos, pt);
 		if(dist < bestDist)
 		{
 			bestDist = dist;
-			close_pt = pt;
+			closePt = pt;
 		}
 		// check top
-		dist = GetClosestPointOnLineSegment(Vec2(mini, maxi), Vec2(maxi, maxi), unit_pos, pt);
+		dist = GetClosestPointOnLineSegment(Vec2(mini, maxi), Vec2(maxi, maxi), unitPos, pt);
 		if(dist < bestDist)
-			close_pt = pt;
-		unit_pos = close_pt;
+			closePt = pt;
+		unitPos = closePt;
 	}
 
 	// point is outside of location borders
-	if(unit_pos.x < border)
-		travelDir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unit_pos.y - border) / (map_size - border * 2));
-	else if(unit_pos.x > map_size - border)
+	if(unitPos.x < border)
+		travelDir = Lerp(3.f / 4.f * PI, 5.f / 4.f * PI, 1.f - (unitPos.y - border) / (mapSize - border * 2));
+	else if(unitPos.x > mapSize - border)
 	{
-		if(unit_pos.y > map_size / 2)
-			travelDir = Lerp(0.f, 1.f / 4 * PI, (unit_pos.y - map_size / 2) / (map_size - map_size / 2 - border));
+		if(unitPos.y > mapSize / 2)
+			travelDir = Lerp(0.f, 1.f / 4 * PI, (unitPos.y - mapSize / 2) / (mapSize - mapSize / 2 - border));
 		else
-			travelDir = Lerp(7.f / 4 * PI, PI * 2, (unit_pos.y - border) / (map_size - map_size / 2 - border));
+			travelDir = Lerp(7.f / 4 * PI, PI * 2, (unitPos.y - border) / (mapSize - mapSize / 2 - border));
 	}
-	else if(unit_pos.y < border)
-		travelDir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit_pos.x - border) / (map_size - border * 2));
+	else if(unitPos.y < border)
+		travelDir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unitPos.x - border) / (mapSize - border * 2));
 	else
-		travelDir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
+		travelDir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unitPos.x - border) / (mapSize - border * 2));
 
 	// convert RH angle to LH and then entry to exit dir
 	travelDir = Clip(ConvertAngle(travelDir) + PI);

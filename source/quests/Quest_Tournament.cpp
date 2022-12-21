@@ -639,46 +639,46 @@ void Quest_Tournament::Update(float dt)
 					static const Consumable* p1 = (Consumable*)Item::Get("p_hp");
 					static const Consumable* p2 = (Consumable*)Item::Get("p_hp2");
 					static const Consumable* p3 = (Consumable*)Item::Get("p_hp3");
-					static const float p1_power = p1->GetEffectPower(EffectId::Heal);
-					static const float p2_power = p2->GetEffectPower(EffectId::Heal);
-					static const float p3_power = p3->GetEffectPower(EffectId::Heal);
+					static const float p1Power = p1->GetEffectPower(EffectId::Heal);
+					static const float p2Power = p2->GetEffectPower(EffectId::Heal);
+					static const float p3Power = p3->GetEffectPower(EffectId::Heal);
 					for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
 					{
 						Unit& u = **it;
 						float mhp = u.hpmax - u.hp;
-						uint given_items = 0;
+						uint givenItems = 0;
 						if(mhp > 0.f && u.IsAI())
 							u.ai->havePotion = HavePotion::Yes;
-						if(mhp >= p3_power)
+						if(mhp >= p3Power)
 						{
-							int count = (int)floor(mhp / p3_power);
+							int count = (int)floor(mhp / p3Power);
 							u.AddItem2(p3, count, 0, false);
-							mhp -= p3_power * count;
-							given_items += count;
+							mhp -= p3Power * count;
+							givenItems += count;
 						}
-						if(mhp >= p2_power)
+						if(mhp >= p2Power)
 						{
-							int count = (int)floor(mhp / p2_power);
+							int count = (int)floor(mhp / p2Power);
 							u.AddItem2(p2, count, 0, false);
-							mhp -= p2_power * count;
-							given_items += count;
+							mhp -= p2Power * count;
+							givenItems += count;
 						}
 						if(mhp > 0.f)
 						{
-							int count = (int)ceil(mhp / p1_power);
+							int count = (int)ceil(mhp / p1Power);
 							u.AddItem2(p1, count, 0, false);
-							mhp -= p1_power * count;
-							given_items += count;
+							mhp -= p1Power * count;
+							givenItems += count;
 						}
-						if(u.IsPlayer() && given_items)
-							gameGui->messages->AddItemMessage(u.player, given_items);
+						if(u.IsPlayer() && givenItems)
+							gameGui->messages->AddItemMessage(u.player, givenItems);
 					}
 
 					// winner goes to next round
-					Unit* round_winner = game->arena->units[game->arena->result];
-					round_winner->busy = Unit::Busy_Tournament;
-					units.push_back(round_winner);
-					Talk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], round_winner->GetRealName()));
+					Unit* roundWinner = game->arena->units[game->arena->result];
+					roundWinner->busy = Unit::Busy_Tournament;
+					units.push_back(roundWinner);
+					Talk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], roundWinner->GetRealName()));
 					state3 = 3;
 					game->arena->units.clear();
 				}

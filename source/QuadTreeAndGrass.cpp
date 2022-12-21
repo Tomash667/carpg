@@ -156,11 +156,11 @@ QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 	return node;
 }
 
-ObjectPool<LevelQuad> level_quads_pool;
+ObjectPool<LevelQuad> levelQuadsPool;
 
 QuadNode* GetLevelQuad()
 {
-	LevelQuad* quad = level_quads_pool.Get();
+	LevelQuad* quad = levelQuadsPool.Get();
 	quad->generated = false;
 	return quad;
 }
@@ -195,12 +195,12 @@ void Game::ListGrass()
 	OutsideLocation* outside = static_cast<OutsideLocation*>(gameLevel->location);
 	Vec3 pos, angle;
 	Vec2 from = gameLevel->camera.from.XZ();
-	float in_dist = settings.grassRange * settings.grassRange;
+	float inDist = settings.grassRange * settings.grassRange;
 
 	for(LevelQuads::iterator it = levelQuads.begin(), end = levelQuads.end(); it != end; ++it)
 	{
 		LevelQuad& quad = **it;
-		if(!quad.leaf || Vec2::DistanceSquared(quad.box.Midpoint(), from) > in_dist)
+		if(!quad.leaf || Vec2::DistanceSquared(quad.box.Midpoint(), from) > inDist)
 			continue;
 
 		if(!quad.generated)
@@ -304,7 +304,7 @@ void Game::ClearQuadtree()
 		quad.objects.clear();
 	}
 
-	level_quads_pool.Free(levelQuads);
+	levelQuadsPool.Free(levelQuads);
 	levelQuads.clear();
 }
 

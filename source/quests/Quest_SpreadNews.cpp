@@ -90,9 +90,9 @@ void Quest_SpreadNews::SetProgress(int prog2)
 
 			prog = Progress::Started;
 
-			bool is_city = LocationHelper::IsCity(startLoc);
-			msgs.push_back(Format(questMgr->txQuest[3], is_city ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str(), world->GetDate()));
-			msgs.push_back(Format(questMgr->txQuest[17], Upper(is_city ? questMgr->txForMayor : questMgr->txForSoltys), startLoc->name.c_str(), FormatString("targets")));
+			bool isCity = LocationHelper::IsCity(startLoc);
+			msgs.push_back(Format(questMgr->txQuest[3], isCity ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str(), world->GetDate()));
+			msgs.push_back(Format(questMgr->txQuest[17], Upper(isCity ? questMgr->txForMayor : questMgr->txForSoltys), startLoc->name.c_str(), FormatString("targets")));
 		}
 		break;
 	case Progress::Deliver:

@@ -93,20 +93,20 @@ void Game::StartQuickGame()
 	Net::SetMode(Net::Mode::Singleplayer);
 
 	Class* clas = nullptr;
-	const string& class_id = cfg.GetString("quickstartClass");
-	if(!class_id.empty())
+	const string& classId = cfg.GetString("quickstartClass");
+	if(!classId.empty())
 	{
-		clas = Class::TryGet(class_id);
+		clas = Class::TryGet(classId);
 		if(clas)
 		{
 			if(!clas->IsPickable())
 			{
-				Warn("Settings [quickstartClass]: Class '%s' is not pickable by players.", class_id.c_str());
+				Warn("Settings [quickstartClass]: Class '%s' is not pickable by players.", classId.c_str());
 				clas = nullptr;
 			}
 		}
 		else
-			Warn("Settings [quickstartClass]: Invalid class '%s'.", class_id.c_str());
+			Warn("Settings [quickstartClass]: Invalid class '%s'.", classId.c_str());
 	}
 
 	string quickstartName = cfg.GetString("quickstartName", "Test");
@@ -259,22 +259,22 @@ void Game::CreateServerEvent(int id)
 		net->serverLan = gameGui->createServer->checkbox.checked;
 
 		// check settings
-		cstring error_text = nullptr;
-		Control* give_focus = nullptr;
+		cstring errorText = nullptr;
+		Control* giveFocus = nullptr;
 		if(net->serverName.empty())
 		{
-			error_text = gameGui->createServer->txEnterServerName;
-			give_focus = &gameGui->createServer->textbox[0];
+			errorText = gameGui->createServer->txEnterServerName;
+			giveFocus = &gameGui->createServer->textbox[0];
 		}
 		else if(!InRange(net->maxPlayers, MIN_PLAYERS, MAX_PLAYERS))
 		{
-			error_text = Format(gameGui->createServer->txInvalidPlayersCount, MAX_PLAYERS);
-			give_focus = &gameGui->createServer->textbox[1];
+			errorText = Format(gameGui->createServer->txInvalidPlayersCount, MAX_PLAYERS);
+			giveFocus = &gameGui->createServer->textbox[1];
 		}
-		if(error_text)
+		if(errorText)
 		{
-			gui->SimpleDialog(error_text, gameGui->createServer);
-			gameGui->createServer->cont.giveFocus = give_focus;
+			gui->SimpleDialog(errorText, gameGui->createServer);
+			gameGui->createServer->cont.giveFocus = giveFocus;
 			return;
 		}
 
@@ -427,13 +427,13 @@ void Game::UpdateClientConnectingIp(float dt)
 		for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 		{
 			BitStreamReader f(packet);
-			byte msg_id;
-			f >> msg_id;
+			byte msgId;
+			f >> msgId;
 
-			if(msg_id != ID_UNCONNECTED_PONG)
+			if(msgId != ID_UNCONNECTED_PONG)
 			{
 				// unknown packet from server
-				Warn("NM_CONNECTING(0): Unknown server response: %u.", msg_id);
+				Warn("NM_CONNECTING(0): Unknown server response: %u.", msgId);
 				continue;
 			}
 
@@ -453,19 +453,19 @@ void Game::UpdateClientConnectingIp(float dt)
 			// 9+ byte - name
 
 			// header
-			TimeMS time_ms;
-			char sign_ca[2];
-			f >> time_ms;
-			f >> sign_ca;
+			TimeMS timeMs;
+			char signCa[2];
+			f >> timeMs;
+			f >> signCa;
 			if(!f)
 			{
 				Warn("NM_CONNECTING(0): Broken server response.");
 				continue;
 			}
-			if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
+			if(signCa[0] != 'C' || signCa[1] != 'A')
 			{
 				// invalid signature, this is not carpg server
-				Warn("NM_CONNECTING(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]));
+				Warn("NM_CONNECTING(0): Invalid server signature 0x%x%x.", byte(signCa[0]), byte(signCa[1]));
 				net->peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
 				return;
@@ -473,12 +473,12 @@ void Game::UpdateClientConnectingIp(float dt)
 
 			// read data
 			uint version;
-			byte players, max_players, flags;
+			byte players, maxPlayers, flags;
 			f >> version;
 			f >> players;
-			f >> max_players;
+			f >> maxPlayers;
 			f >> flags;
-			const string& server_name_r = f.ReadString1();
+			const string& serverNameRead = f.ReadString1();
 			if(!f)
 			{
 				Error("NM_CONNECTING(0): Broken server message.");
@@ -501,9 +501,9 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 
 			// set server status
-			gameGui->server->maxPlayers = max_players;
-			gameGui->server->serverName = server_name_r;
-			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
+			gameGui->server->maxPlayers = maxPlayers;
+			gameGui->server->serverName = serverNameRead;
+			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", serverNameRead.c_str(), players, maxPlayers, flags);
 			if(IsSet(flags, 0xFC))
 				Warn("NM_CONNECTING(0): Unknown server flags.");
 			net->server = packet->systemAddress;
@@ -514,7 +514,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				// password is required
 				netState = NetState::Client_WaitingForPassword;
 				gameGui->infoBox->Show(txWaitingForPswd);
-				GetTextDialogParams params(Format(txEnterPswd, server_name_r.c_str()), enterPswd);
+				GetTextDialogParams params(Format(txEnterPswd, serverNameRead.c_str()), enterPswd);
 				params.event = DialogEvent(this, &Game::OnEnterPassword);
 				params.limit = 16;
 				params.parent = gameGui->infoBox;
@@ -530,8 +530,8 @@ void Game::UpdateClientConnectingIp(float dt)
 					// connecting...
 					netTimer = T_CONNECT;
 					netState = NetState::Client_Connecting;
-					gameGui->infoBox->Show(Format(txConnectingTo, server_name_r.c_str()));
-					Info("NM_CONNECTING(0): Connecting to server %s...", server_name_r.c_str());
+					gameGui->infoBox->Show(Format(txConnectingTo, serverNameRead.c_str()));
+					Info("NM_CONNECTING(0): Connecting to server %s...", serverNameRead.c_str());
 				}
 				else
 				{
@@ -554,10 +554,10 @@ void Game::UpdateClientConnectingIp(float dt)
 				continue;
 
 			BitStreamReader reader(packet);
-			byte msg_id;
-			reader >> msg_id;
+			byte msgId;
+			reader >> msgId;
 
-			switch(msg_id)
+			switch(msgId)
 			{
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 				{
@@ -578,7 +578,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_JOIN:
 				// server accepted and sent info about players and my id
 				{
-					int count, load_char;
+					int count, loadChar;
 					reader.ReadCasted<byte>(team->myId);
 					reader.ReadCasted<byte>(net->activePlayers);
 					reader.ReadCasted<byte>(team->leaderId);
@@ -606,7 +606,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.loaded = false;
 
 					// read other players
-					string class_id;
+					string classId;
 					for(int i = 0; i < count; ++i)
 					{
 						pinfo = new PlayerInfo;
@@ -618,7 +618,7 @@ void Game::UpdateClientConnectingIp(float dt)
 
 						reader.ReadCasted<byte>(info2.id);
 						reader >> info2.ready;
-						reader >> class_id;
+						reader >> classId;
 						reader >> info2.name;
 						if(!reader)
 						{
@@ -629,14 +629,14 @@ void Game::UpdateClientConnectingIp(float dt)
 						}
 
 						// verify player class
-						if(class_id.empty())
+						if(classId.empty())
 							info2.clas = nullptr;
 						else
 						{
-							info2.clas = Class::TryGet(class_id);
+							info2.clas = Class::TryGet(classId);
 							if(!info2.clas || !info2.clas->IsPickable())
 							{
-								Error("NM_CONNECTING(2): Broken packet ID_JOIN, player '%s' has class '%s'.", info2.name.c_str(), class_id.c_str());
+								Error("NM_CONNECTING(2): Broken packet ID_JOIN, player '%s' has class '%s'.", info2.name.c_str(), classId.c_str());
 								net->peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
 								return;
@@ -645,7 +645,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					}
 
 					// read save information
-					reader.ReadCasted<byte>(load_char);
+					reader.ReadCasted<byte>(loadChar);
 					if(!reader)
 					{
 						Error("NM_CONNECTING(2): Broken packet ID_JOIN(4).");
@@ -653,10 +653,10 @@ void Game::UpdateClientConnectingIp(float dt)
 						EndConnecting(txCantJoin, true);
 						return;
 					}
-					if(load_char == 2)
+					if(loadChar == 2)
 					{
-						reader >> class_id;
-						info.clas = Class::TryGet(class_id);
+						reader >> classId;
+						info.clas = Class::TryGet(classId);
 						if(!reader)
 						{
 							Error("NM_CONNECTING(2): Broken packet ID_JOIN(3).");
@@ -666,7 +666,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						}
 						else if(!info.clas || !info.clas->IsPickable())
 						{
-							Error("NM_CONNECTING(2): Invalid loaded class '%s'.", class_id.c_str());
+							Error("NM_CONNECTING(2): Invalid loaded class '%s'.", classId.c_str());
 							net->peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -689,9 +689,9 @@ void Game::UpdateClientConnectingIp(float dt)
 					if(gameGui->multiplayer->visible)
 						gameGui->multiplayer->CloseDialog();
 					gameGui->server->Show();
-					if(load_char != 0)
-						gameGui->server->UseLoadedCharacter(load_char == 2);
-					if(load_char != 2)
+					if(loadChar != 0)
+						gameGui->server->UseLoadedCharacter(loadChar == 2);
+					if(loadChar != 2)
 						gameGui->server->CheckAutopick();
 					gameGui->infoBox->CloseDialog();
 					SetTitle("CLIENT");
@@ -702,10 +702,10 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_NO_FREE_INCOMING_CONNECTIONS:
 				// can't join server (full or other reason)
 				{
-					cstring reason, reason_eng;
+					cstring reason, reasonEng;
 
 					JoinResult result;
-					if(msg_id == ID_NO_FREE_INCOMING_CONNECTIONS)
+					if(msgId == ID_NO_FREE_INCOMING_CONNECTIONS)
 						result = JoinResult::FullServer;
 					else
 						result = (packet->length >= 2 ? (JoinResult)packet->data[1] : JoinResult::OtherError);
@@ -714,7 +714,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					{
 					case JoinResult::FullServer:
 						reason = txServerFull;
-						reason_eng = "server is full";
+						reasonEng = "server is full";
 						break;
 					case JoinResult::InvalidVersion:
 						if(packet->length == 6)
@@ -723,54 +723,54 @@ void Game::UpdateClientConnectingIp(float dt)
 							memcpy(&w, packet->data + 2, 4);
 							cstring s = VersionToString(w);
 							reason = Format(txInvalidVersion2, VERSION, s);
-							reason_eng = Format("invalid version (%s) vs server (%s)", VERSION, s);
+							reasonEng = Format("invalid version (%s) vs server (%s)", VERSION, s);
 						}
 						else
 						{
 							reason = txInvalidVersion;
-							reason_eng = "invalid version";
+							reasonEng = "invalid version";
 						}
 						break;
 					case JoinResult::TakenNick:
 						reason = txNickUsed;
-						reason_eng = "nick used";
+						reasonEng = "nick used";
 						break;
 					case JoinResult::BrokenPacket:
 						reason = txInvalidData;
-						reason_eng = "invalid data";
+						reasonEng = "invalid data";
 						break;
 					case JoinResult::InvalidNick:
 						reason = txInvalidNick;
-						reason_eng = "invalid nick";
+						reasonEng = "invalid nick";
 						break;
 					case JoinResult::InvalidCrc:
 						{
-							reason_eng = "invalid unknown type crc";
+							reasonEng = "invalid unknown type crc";
 							reason = txInvalidCrc;
 
 							if(packet->length == 7)
 							{
-								uint server_crc;
+								uint serverCrc;
 								byte type;
-								memcpy(&server_crc, packet->data + 2, 4);
+								memcpy(&serverCrc, packet->data + 2, 4);
 								memcpy(&type, packet->data + 6, 1);
-								uint my_crc;
-								cstring type_str;
-								if(content.GetCrc((Content::Id)type, my_crc, type_str))
-									reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
+								uint myCrc;
+								cstring typeStr;
+								if(content.GetCrc((Content::Id)type, myCrc, typeStr))
+									reasonEng = Format("invalid %s crc (%p) vs server (%p)", typeStr, myCrc, serverCrc);
 							}
 						}
 						break;
 					case JoinResult::OtherError:
 					default:
 						reason = nullptr;
-						reason_eng = nullptr;
+						reasonEng = nullptr;
 						break;
 					}
 
 					net->peer->DeallocatePacket(packet);
-					if(reason_eng)
-						Warn("NM_CONNECTING(2): Can't connect to server: %s.", reason_eng);
+					if(reasonEng)
+						Warn("NM_CONNECTING(2): Can't connect to server: %s.", reasonEng);
 					else
 						Warn("NM_CONNECTING(2): Can't connect to server (%d).", result);
 					if(reason)
@@ -782,7 +782,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_CONNECTION_LOST:
 			case ID_DISCONNECTION_NOTIFICATION:
 				// lost connecting with server or was kicked out
-				Warn(msg_id == ID_CONNECTION_LOST ? "NM_CONNECTING(2): Lost connection with server." : "NM_CONNECTING(2): Disconnected from server.");
+				Warn(msgId == ID_CONNECTION_LOST ? "NM_CONNECTING(2): Lost connection with server." : "NM_CONNECTING(2): Disconnected from server.");
 				net->peer->DeallocatePacket(packet);
 				EndConnecting(txLostConnection);
 				return;
@@ -801,7 +801,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				// used by punchthrough, ignore
 				break;
 			default:
-				Warn("NM_CONNECTING(2): Unknown packet from server %u.", msg_id);
+				Warn("NM_CONNECTING(2): Unknown packet from server %u.", msgId);
 				break;
 			}
 		}
@@ -819,10 +819,10 @@ void Game::UpdateClientConnectingIp(float dt)
 		for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 		{
 			BitStreamReader reader(packet);
-			byte msg_id;
-			reader >> msg_id;
+			byte msgId;
+			reader >> msgId;
 
-			switch(msg_id)
+			switch(msgId)
 			{
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 				{
@@ -840,7 +840,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_NAT_TARGET_UNRESPONSIVE:
 			case ID_NAT_CONNECTION_TO_TARGET_LOST:
 			case ID_NAT_PUNCHTHROUGH_FAILED:
-				Warn("NM_CONNECTING(3): Punchthrough failed (%d).", msg_id);
+				Warn("NM_CONNECTING(3): Punchthrough failed (%d).", msgId);
 				api->EndPunchthrough();
 				EndConnecting(txConnectionFailed);
 				break;
@@ -873,7 +873,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				}
 				break;
 			default:
-				Warn("NM_CONNECTING(3): Unknown packet from proxy %u.", msg_id);
+				Warn("NM_CONNECTING(3): Unknown packet from proxy %u.", msgId);
 				break;
 			}
 		}
@@ -894,10 +894,10 @@ void Game::UpdateClientTransfer(float dt)
 	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
-		byte msg_id;
-		reader >> msg_id;
+		byte msgId;
+		reader >> msgId;
 
-		switch(msg_id)
+		switch(msgId)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
@@ -1159,7 +1159,7 @@ void Game::UpdateClientTransfer(float dt)
 			}
 			return;
 		default:
-			Warn("NM_TRANSFER: Unknown packet %u.", msg_id);
+			Warn("NM_TRANSFER: Unknown packet %u.", msgId);
 			break;
 		}
 	}
@@ -1171,10 +1171,10 @@ void Game::UpdateClientQuiting(float dt)
 	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader f(packet);
-		byte msg_id;
-		f >> msg_id;
+		byte msgId;
+		f >> msgId;
 
-		if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
+		if(msgId == ID_DISCONNECTION_NOTIFICATION || msgId == ID_CONNECTION_LOST)
 		{
 			Info("NM_QUITTING: Server accepted disconnection.");
 			net->peer->DeallocatePacket(packet);
@@ -1187,7 +1187,7 @@ void Game::UpdateClientQuiting(float dt)
 			return;
 		}
 		else
-			Info("NM_QUITTING: Ignored packet %u.", msg_id);
+			Info("NM_QUITTING: Ignored packet %u.", msgId);
 	}
 
 	netTimer -= dt;
@@ -1211,23 +1211,23 @@ void Game::UpdateServerTransfer(float dt)
 	{
 		BitStreamReader f(packet);
 
-		PlayerInfo* ptr_info = net->FindPlayer(packet->systemAddress);
-		if(!ptr_info)
+		PlayerInfo* ptrInfo = net->FindPlayer(packet->systemAddress);
+		if(!ptrInfo)
 		{
 			Info("NM_TRANSFER_SERVER: Ignoring packet from %s.", packet->systemAddress.ToString());
 			continue;
 		}
-		if(ptr_info->left != PlayerInfo::LEFT_NO)
+		if(ptrInfo->left != PlayerInfo::LEFT_NO)
 		{
-			Info("NM_TRANSFER_SERVER: Packet from %s who left game.", ptr_info->name.c_str());
+			Info("NM_TRANSFER_SERVER: Packet from %s who left game.", ptrInfo->name.c_str());
 			continue;
 		}
 
-		PlayerInfo& info = *ptr_info;
-		byte msg_id;
-		f >> msg_id;
+		PlayerInfo& info = *ptrInfo;
+		byte msgId;
+		f >> msgId;
 
-		switch(msg_id)
+		switch(msgId)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
@@ -1235,7 +1235,7 @@ void Game::UpdateServerTransfer(float dt)
 				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
 				--net->activePlayers;
 				net->playersLeft = true;
-				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
+				info.left = (msgId == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			break;
 		case ID_READY:
@@ -1271,7 +1271,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 			break;
 		default:
-			Warn("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id);
+			Warn("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msgId);
 			break;
 		}
 	}
@@ -1338,16 +1338,16 @@ void Game::UpdateServerTransfer(float dt)
 		else
 			netState = NetState::Server_EnterLocation;
 
-		vector<Unit*> prev_team;
+		vector<Unit*> prevTeam;
 
 		// create team
 		if(net->mpLoad)
-			prev_team = team->members.ptrs;
+			prevTeam = team->members.ptrs;
 		team->members.clear();
 		team->activeMembers.clear();
 		gameLevel->ready = false;
-		const bool in_level = gameLevel->isOpen;
-		int leader_perk = 0;
+		const bool inLevel = gameLevel->isOpen;
+		int leaderPerk = 0;
 		for(PlayerInfo& info : net->players)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
@@ -1356,7 +1356,7 @@ void Game::UpdateServerTransfer(float dt)
 			Unit* u;
 			if(!info.loaded)
 			{
-				u = gameLevel->CreateUnit(*info.clas->player, -1, in_level);
+				u = gameLevel->CreateUnit(*info.clas->player, -1, inLevel);
 				u->locPart = nullptr;
 				u->ApplyHumanData(info.hd);
 				u->meshInst->needUpdate = true;
@@ -1368,7 +1368,7 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->Init(*u, &info.cc);
 
 				if(info.cc.HavePerk(Perk::Get("leader")))
-					++leader_perk;
+					++leaderPerk;
 
 				if(net->mpLoad)
 					PreloadUnit(u);
@@ -1409,8 +1409,8 @@ void Game::UpdateServerTransfer(float dt)
 		team->CalculatePlayersLevel();
 
 		// add ai
-		bool anyone_left = false;
-		for(Unit* unit : prev_team)
+		bool anyoneLeft = false;
+		for(Unit* unit : prevTeam)
 		{
 			if(unit->IsPlayer())
 				continue;
@@ -1443,15 +1443,15 @@ void Game::UpdateServerTransfer(float dt)
 					unit->MakeItemsTeam(true);
 					unit->temporary = true;
 
-					anyone_left = true;
+					anyoneLeft = true;
 				}
 			}
 		}
 
-		if(!net->mpLoad && leader_perk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
+		if(!net->mpLoad && leaderPerk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
 		{
 			UnitData& ud = *Class::GetRandomHeroData();
-			int level = ud.level.x + 2 * (leader_perk - 1);
+			int level = ud.level.x + 2 * (leaderPerk - 1);
 			Unit* npc = gameLevel->CreateUnit(ud, level, false);
 			npc->locPart = nullptr;
 			npc->ai = new AIController;
@@ -1462,13 +1462,13 @@ void Game::UpdateServerTransfer(float dt)
 		}
 
 		// recalculate credit if someone left
-		if(anyone_left)
+		if(anyoneLeft)
 			team->CheckCredit(false, true);
 
 		// set leader
-		PlayerInfo* leader_info = net->TryGetPlayer(team->leaderId);
-		if(leader_info)
-			team->leader = leader_info->u;
+		PlayerInfo* leaderInfo = net->TryGetPlayer(team->leaderId);
+		if(leaderInfo)
+			team->leader = leaderInfo->u;
 		else
 		{
 			team->leaderId = 0;
@@ -1499,7 +1499,7 @@ void Game::UpdateServerTransfer(float dt)
 		netTimer -= dt;
 		if(!ok && netTimer <= 0.f)
 		{
-			bool anyone_removed = false;
+			bool anyoneRemoved = false;
 			for(PlayerInfo& info : net->players)
 			{
 				if(info.left != PlayerInfo::LEFT_NO)
@@ -1510,11 +1510,11 @@ void Game::UpdateServerTransfer(float dt)
 					--net->activePlayers;
 					net->playersLeft = true;
 					info.left = PlayerInfo::LEFT_TIMEOUT;
-					anyone_removed = true;
+					anyoneRemoved = true;
 				}
 			}
 			ok = true;
-			if(anyone_removed)
+			if(anyoneRemoved)
 			{
 				team->CheckCredit(false, true);
 				if(team->leaderId == -1)
@@ -1589,9 +1589,9 @@ void Game::UpdateServerTransfer(float dt)
 				}
 
 				// find player that was in save and is playing now (first check leader)
-				Unit* center_unit = nullptr;
+				Unit* centerUnit = nullptr;
 				if(team->leader->player->playerInfo->loaded)
-					center_unit = team->leader;
+					centerUnit = team->leader;
 				else
 				{
 					// anyone
@@ -1599,25 +1599,25 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						if(info.loaded)
 						{
-							center_unit = info.u;
+							centerUnit = info.u;
 							break;
 						}
 					}
 				}
 
 				// set position of new units that didn't exists in save (warp to old unit or level entrance)
-				if(center_unit)
+				if(centerUnit)
 				{
 					// get positon of unit or building entrance
 					Vec3 pos;
-					if(center_unit->locPart->partType == LocationPart::Type::Building)
+					if(centerUnit->locPart->partType == LocationPart::Type::Building)
 					{
-						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->locPart);
+						InsideBuilding* inside = static_cast<InsideBuilding*>(centerUnit->locPart);
 						Vec2 p = inside->enterRegion.Midpoint();
 						pos = Vec3(p.x, inside->enterY, p.y);
 					}
 					else
-						pos = center_unit->pos;
+						pos = centerUnit->pos;
 
 					// warp
 					for(PlayerInfo& info : net->players)
@@ -1703,21 +1703,21 @@ void Game::UpdateServerSend(float dt)
 	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader f(packet);
-		PlayerInfo* ptr_info = net->FindPlayer(packet->systemAddress);
-		if(!ptr_info)
+		PlayerInfo* ptrInfo = net->FindPlayer(packet->systemAddress);
+		if(!ptrInfo)
 		{
 			Info("NM_SERVER_SEND: Ignoring packet from %s.", packet->systemAddress.ToString());
 			continue;
 		}
-		else if(ptr_info->left != PlayerInfo::LEFT_NO)
+		else if(ptrInfo->left != PlayerInfo::LEFT_NO)
 		{
-			Info("NM_SERVER_SEND: Packet from %s who left game.", ptr_info->name.c_str());
+			Info("NM_SERVER_SEND: Packet from %s who left game.", ptrInfo->name.c_str());
 			continue;
 		}
 
-		PlayerInfo& info = *ptr_info;
-		byte msg_id;
-		f >> msg_id;
+		PlayerInfo& info = *ptrInfo;
+		byte msgId;
+		f >> msgId;
 
 		switch(packet->data[0])
 		{
@@ -1727,7 +1727,7 @@ void Game::UpdateServerSend(float dt)
 				Info("NM_SERVER_SEND: Player %s left game.", info.name.c_str());
 				--net->activePlayers;
 				net->playersLeft = true;
-				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
+				info.left = (msgId == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			return;
 		case ID_SND_RECEIPT_ACKED:
@@ -1775,7 +1775,7 @@ void Game::UpdateServerSend(float dt)
 		case ID_CONTROL:
 			break;
 		default:
-			Warn("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str());
+			Warn("MN_SERVER_SEND: Invalid packet %d from %s.", msgId, info.name.c_str());
 			break;
 		}
 	}
@@ -1838,15 +1838,15 @@ void Game::UpdateServerQuiting(float dt)
 	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader f(packet);
-		PlayerInfo* ptr_info = net->FindPlayer(packet->systemAddress);
-		if(!ptr_info)
+		PlayerInfo* ptrInfo = net->FindPlayer(packet->systemAddress);
+		if(!ptrInfo)
 			Warn("NM_QUITTING_SERVER: Ignoring packet from unconnected player %s.", packet->systemAddress.ToString());
 		else
 		{
-			PlayerInfo& info = *ptr_info;
-			byte msg_id;
-			f >> msg_id;
-			if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
+			PlayerInfo& info = *ptrInfo;
+			byte msgId;
+			f >> msgId;
+			if(msgId == ID_DISCONNECTION_NOTIFICATION || msgId == ID_CONNECTION_LOST)
 			{
 				if(info.state == PlayerInfo::IN_LOBBY)
 					Info("NM_QUITTING_SERVER: Player %s left lobby.", info.name.c_str());
@@ -2085,14 +2085,14 @@ void Game::OnCreateCharacter(int id)
 		gameGui->server->bts[1].state = Button::NONE;
 		gameGui->server->bts[0].text = gameGui->server->txChangeChar;
 		// set data
-		Class* old_class = info.clas;
+		Class* oldClass = info.clas;
 		info.clas = gameGui->createCharacter->clas;
 		info.hd.Get(*gameGui->createCharacter->unit->humanData);
 		info.cc = gameGui->createCharacter->cc;
 		// send info to other active players about changing my class
 		if(Net::IsServer())
 		{
-			if(info.clas != old_class && net->activePlayers > 1)
+			if(info.clas != oldClass && net->activePlayers > 1)
 				gameGui->server->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		}
 		else

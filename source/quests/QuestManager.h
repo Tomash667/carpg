@@ -89,7 +89,7 @@ public:
 	bool HandleSpecial(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleFormatString(const string& str, cstring& result);
-	const Item* FindQuestItemClient(cstring item_id, int questId) const;
+	const Item* FindQuestItemClient(cstring itemId, int questId) const;
 	void AddScriptedQuest(QuestScheme* scheme);
 	QuestInfo* FindQuestInfo(QUEST_TYPE type);
 	QuestInfo* FindQuestInfo(const string& id);

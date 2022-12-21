@@ -157,35 +157,35 @@ void Quest_Evil::SetProgress(int prog2)
 				int target;
 				cstring group;
 				int st;
-			} l_info[3] = {
+			} locInfo[3] = {
 				L_DUNGEON, OLD_TEMPLE, "evil", 16,
 				L_DUNGEON, NECROMANCER_BASE, "necromancers", 15,
 				L_DUNGEON, MONSTER_CRYPT, "undead", 13
 			};
 
-			cstring new_msgs[4];
-			new_msgs[0] = questMgr->txQuest[245];
+			cstring newMsgs[4];
+			newMsgs[0] = questMgr->txQuest[245];
 
 			for(int i = 0; i < 3; ++i)
 			{
-				Int2 levels = gBaseLocations[l_info[i].target].levels;
-				Location& target = *world->CreateLocation(l_info[i].type, world->GetRandomPlace(), l_info[i].target,
+				Int2 levels = gBaseLocations[locInfo[i].target].levels;
+				Location& target = *world->CreateLocation(locInfo[i].type, world->GetRandomPlace(), locInfo[i].target,
 					Random(max(levels.x, 2), max(levels.y, 2)));
-				target.group = UnitGroup::Get(l_info[i].group);
-				target.st = l_info[i].st;
+				target.group = UnitGroup::Get(locInfo[i].group);
+				target.st = locInfo[i].st;
 				target.SetKnown();
 				target.activeQuest = this;
 				loc[i].targetLoc = &target;
 				loc[i].nearLoc = world->GetNearestSettlement(target.pos)->index;
 				loc[i].atLevel = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
-				new_msgs[i + 1] = Format(questMgr->txQuest[247], target.name.c_str(),
+				newMsgs[i + 1] = Format(questMgr->txQuest[247], target.name.c_str(),
 					GetLocationDirName(world->GetLocation(loc[i].nearLoc)->pos, target.pos),
 					world->GetLocation(loc[i].nearLoc)->name.c_str());
 				world->AddNews(Format(questMgr->txQuest[246], target.name.c_str()));
 			}
 
-			OnUpdate({ new_msgs[0], new_msgs[1], new_msgs[2], new_msgs[3] });
+			OnUpdate({ newMsgs[0], newMsgs[1], newMsgs[2], newMsgs[3] });
 
 			nextEvent = &loc[0];
 			loc[0].nextEvent = &loc[1];
@@ -572,51 +572,51 @@ void Quest_Evil::GeneratePortal()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Vec3 center(float(lvl.w), 0, float(lvl.h));
 
-	static vector<pair<Room*, float>> good_pts;
+	static vector<pair<Room*, float>> goodPts;
 	for(Room* room : lvl.rooms)
 	{
 		if(room->target == RoomTarget::None && room->size.x > 2 && room->size.y > 2)
 		{
 			float dist = Vec3::Distance2d(room->Center(), center);
-			good_pts.push_back({ room, dist });
+			goodPts.push_back({ room, dist });
 		}
 	}
-	std::sort(good_pts.begin(), good_pts.end(),
+	std::sort(goodPts.begin(), goodPts.end(),
 		[](const pair<Room*, float>& p1, const pair<Room*, float>& p2) { return p1.second > p2.second; });
 
 	Room* room;
 	while(true)
 	{
-		room = good_pts.back().first;
-		good_pts.pop_back();
+		room = goodPts.back().first;
+		goodPts.pop_back();
 
 		gameLevel->globalCol.clear();
 		gameLevel->GatherCollisionObjects(lvl, gameLevel->globalCol, room->Center(), 2.f);
 		if(gameLevel->globalCol.empty())
 			break;
 
-		if(good_pts.empty())
+		if(goodPts.empty())
 			throw "No free space to generate portal!";
 	}
-	good_pts.clear();
+	goodPts.clear();
 
-	Vec3 portal_pos = room->Center();
+	Vec3 portalPos = room->Center();
 	room->target = RoomTarget::PortalCreate;
 	float rot = PI * Random(0, 3);
-	gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
+	gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("portal"), portalPos, rot);
 	inside->portal = new Portal;
 	inside->portal->targetLoc = -1;
 	inside->portal->nextPortal = nullptr;
 	inside->portal->rot = rot;
-	inside->portal->pos = portal_pos;
+	inside->portal->pos = portalPos;
 	inside->portal->atLevel = gameLevel->dungeonLevel;
 
 	int d = GetLocId(world->GetCurrentLocation());
-	loc[d].pos = portal_pos;
+	loc[d].pos = portalPos;
 	loc[d].state = Quest_Evil::Loc::State::None;
 
 	if(game->devmode)
-		Info("Generated portal (%g,%g).", portal_pos.x, portal_pos.z);
+		Info("Generated portal (%g,%g).", portalPos.x, portalPos.z);
 }
 
 //=================================================================================================
@@ -634,9 +634,9 @@ void Quest_Evil::WarpEvilBossToAltar()
 
 	if(u && o)
 	{
-		Vec3 warp_pos = o->pos;
-		warp_pos -= Vec3(sin(o->rot.y) * 1.5f, 0, cos(o->rot.y) * 1.5f);
-		gameLevel->WarpUnit(*u, warp_pos);
+		Vec3 warpPos = o->pos;
+		warpPos -= Vec3(sin(o->rot.y) * 1.5f, 0, cos(o->rot.y) * 1.5f);
+		gameLevel->WarpUnit(*u, warpPos);
 		u->ai->startPos = u->pos;
 
 		for(int i = 0; i < 2; ++i)

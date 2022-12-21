@@ -43,22 +43,22 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	const string& id = DialogContext::current->talker->data->id;
-	cstring dialog_id;
+	cstring dialogId;
 
 	if(id == "mistrz_agentow")
-		dialog_id = "q_bandits_master";
+		dialogId = "q_bandits_master";
 	else if(id == "guard_captain")
-		dialog_id = "q_bandits_captain";
+		dialogId = "q_bandits_captain";
 	else if(id == "guard_q_bandyci")
-		dialog_id = "q_bandits_guard";
+		dialogId = "q_bandits_guard";
 	else if(id == "agent")
-		dialog_id = "q_bandits_agent";
+		dialogId = "q_bandits_agent";
 	else if(id == "q_bandyci_szef")
-		dialog_id = "q_bandits_boss";
+		dialogId = "q_bandits_boss";
 	else
-		dialog_id = "q_bandits_encounter";
+		dialogId = "q_bandits_encounter";
 
-	return GameDialog::TryGet(dialog_id);
+	return GameDialog::TryGet(dialogId);
 }
 
 //=================================================================================================

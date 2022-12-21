@@ -40,37 +40,37 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 	size = Int2(550, 572);
 	bts.resize(6);
 
-	const Int2 bt_size(180, 44);
+	const Int2 btSize(180, 44);
 
 	bts[0].id = IdPickCharacter;
 	bts[0].parent = this;
 	bts[0].pos = Int2(350, 60);
-	bts[0].size = bt_size;
+	bts[0].size = btSize;
 
 	bts[1].id = IdReady;
 	bts[1].parent = this;
 	bts[1].pos = Int2(350, 110);
-	bts[1].size = bt_size;
+	bts[1].size = btSize;
 
 	bts[2].id = IdKick;
 	bts[2].parent = this;
 	bts[2].pos = Int2(350, 160);
-	bts[2].size = bt_size;
+	bts[2].size = btSize;
 
 	bts[3].id = IdLeader;
 	bts[3].parent = this;
 	bts[3].pos = Int2(350, 210);
-	bts[3].size = bt_size;
+	bts[3].size = btSize;
 
 	bts[4].id = IdStart;
 	bts[4].parent = this;
 	bts[4].pos = Int2(350, 260);
-	bts[4].size = bt_size;
+	bts[4].size = btSize;
 
 	bts[5].id = IdCancel;
 	bts[5].parent = this;
 	bts[5].pos = Int2(350, 310);
-	bts[5].size = bt_size;
+	bts[5].size = btSize;
 
 	grid.pos = Int2(20, 60);
 	grid.size = Int2(320, 300);
@@ -98,24 +98,24 @@ void ServerPanel::Init()
 	if(autostartCount > MAX_PLAYERS)
 		autostartCount = 0;
 
-	const string& class_id = game->cfg.GetString("autopick", "");
-	if(!class_id.empty())
+	const string& classId = game->cfg.GetString("autopick", "");
+	if(!classId.empty())
 	{
-		if(class_id == "random")
+		if(classId == "random")
 			autopickClass = randomClass;
 		else
 		{
-			autopickClass = Class::TryGet(class_id);
+			autopickClass = Class::TryGet(classId);
 			if(autopickClass)
 			{
 				if(!autopickClass->IsPickable())
 				{
-					Warn("Settings [autopick]: Class '%s' is not pickable by players.", class_id.c_str());
+					Warn("Settings [autopick]: Class '%s' is not pickable by players.", classId.c_str());
 					autopickClass = nullptr;
 				}
 			}
 			else
-				Warn("Settings [autopick]: Invalid class '%s'.", class_id.c_str());
+				Warn("Settings [autopick]: Invalid class '%s'.", classId.c_str());
 		}
 	}
 }
@@ -270,10 +270,10 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			continue;
 
 		BitStreamReader reader(packet);
-		byte msg_id;
-		reader >> msg_id;
+		byte msgId;
+		reader >> msgId;
 
-		switch(msg_id)
+		switch(msgId)
 		{
 		case ID_SAY:
 			net->Client_Say(reader);
@@ -288,16 +288,16 @@ void ServerPanel::UpdateLobbyClient(float dt)
 		case ID_CONNECTION_LOST:
 		case ID_SERVER_CLOSE:
 			{
-				cstring reason, reason_eng;
-				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
+				cstring reason, reasonEng;
+				if(msgId == ID_DISCONNECTION_NOTIFICATION)
 				{
 					reason = txPlayerDisconnected;
-					reason_eng = "disconnected";
+					reasonEng = "disconnected";
 				}
-				else if(msg_id == ID_CONNECTION_LOST)
+				else if(msgId == ID_CONNECTION_LOST)
 				{
 					reason = game->txLostConnection;
-					reason_eng = "lost connection";
+					reasonEng = "lost connection";
 				}
 				else if(packet->length == 2 && Any(packet->data[1], 0, 1))
 				{
@@ -306,21 +306,21 @@ void ServerPanel::UpdateLobbyClient(float dt)
 					default:
 					case ServerClose_Closing:
 						reason = txClosing;
-						reason_eng = "closing";
+						reasonEng = "closing";
 						break;
 					case ServerClose_Kicked:
 						reason = txKicked;
-						reason_eng = "kicked";
+						reasonEng = "kicked";
 						break;
 					}
 				}
 				else
 				{
 					reason = txUnknown;
-					reason_eng = "unknown";
+					reasonEng = "unknown";
 				}
 
-				Info("ServerPanel: Disconnected from server: %s.", reason_eng);
+				Info("ServerPanel: Disconnected from server: %s.", reasonEng);
 				gui->SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 				CloseDialog();
@@ -384,7 +384,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			}
 			break;
 		default:
-			Warn("ServerPanel: Unknown packet: %u.", msg_id);
+			Warn("ServerPanel: Unknown packet: %u.", msgId);
 			break;
 		}
 	}
@@ -423,21 +423,21 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					return false;
 				}
 				f >> info->ready;
-				const string& class_id = f.ReadString1();
+				const string& classId = f.ReadString1();
 				if(!f)
 				{
 					Error("ServerPanel: Broken Lobby_UpdatePlayer.");
 					return false;
 				}
-				Class* clas = Class::TryGet(class_id);
+				Class* clas = Class::TryGet(classId);
 				if(!clas)
 				{
-					Error("ServerPanel: Broken Lobby_UpdatePlayer, player '%s' have invalid class '%s'.", info->name.c_str(), class_id.c_str());
+					Error("ServerPanel: Broken Lobby_UpdatePlayer, player '%s' have invalid class '%s'.", info->name.c_str(), classId.c_str());
 					return false;
 				}
 				else if(!clas->IsPickable())
 				{
-					Error("ServerPanel: Broken Lobby_UpdatePlayer, player 's' have non pickable class '%s'.", info->name.c_str(), class_id.c_str());
+					Error("ServerPanel: Broken Lobby_UpdatePlayer, player 's' have non pickable class '%s'.", info->name.c_str(), classId.c_str());
 					return false;
 				}
 				else
@@ -472,15 +472,15 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 		case Lobby_RemovePlayer:
 		case Lobby_KickPlayer:
 			{
-				bool is_kick = (type == Lobby_KickPlayer);
+				bool isKick = (type == Lobby_KickPlayer);
 				PlayerInfo* info = net->TryGetPlayer(id);
 				if(!info)
 				{
 					Error("ServerPanel: Broken Lobby_Remove/KickPlayer, invalid player id %d.", id);
 					return false;
 				}
-				Info("ServerPanel: Player %s %s.", info->name.c_str(), is_kick ? "was kicked" : "left lobby");
-				AddMsg(Format(is_kick ? game->txPlayerKicked : txPlayerLeft, info->name.c_str()));
+				Info("ServerPanel: Player %s %s.", info->name.c_str(), isKick ? "was kicked" : "left lobby");
+				AddMsg(Format(isKick ? game->txPlayerKicked : txPlayerLeft, info->name.c_str()));
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
 				delete info;
@@ -542,14 +542,14 @@ void ServerPanel::UpdateLobbyServer(float dt)
 	for(Packet* packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
-		byte msg_id;
-		reader >> msg_id;
+		byte msgId;
+		reader >> msgId;
 
 		// pobierz informacje o graczu
 		PlayerInfo* info = net->FindPlayer(packet->systemAddress);
 		if(info && info->state == PlayerInfo::REMOVING)
 		{
-			if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
+			if(msgId == ID_DISCONNECTION_NOTIFICATION || msgId == ID_CONNECTION_LOST)
 			{
 				// nie odes³a³ informacji tylko siê roz³¹czy³
 				Info(!info->name.empty() ? Format("ServerPanel: Player %s has disconnected.", info->name.c_str()) :
@@ -571,7 +571,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			continue;
 		}
 
-		switch(msg_id)
+		switch(msgId)
 		{
 		case ID_UNCONNECTED_PING:
 		case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
@@ -656,7 +656,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 		case ID_CONNECTION_LOST:
 			// klient siê roz³¹czy³
 			{
-				bool dis = (msg_id == ID_CONNECTION_LOST);
+				bool dis = (msgId == ID_CONNECTION_LOST);
 				if(!info)
 				{
 					Info(dis ? "ServerPanel: Disconnect notification from %s." :
@@ -710,11 +710,11 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			else
 			{
 				int version;
-				cstring reason_text = nullptr;
-				int include_extra = 0;
-				uint my_crc, player_crc;
+				cstring reasonText = nullptr;
+				int includeExtra = 0;
+				uint myCrc, playerCrc;
 				Content::Id type;
-				cstring type_str;
+				cstring typeStr;
 				JoinResult reason = JoinResult::Ok;
 
 				reader >> version;
@@ -724,28 +724,28 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				{
 					// failed to read packet
 					reason = JoinResult::BrokenPacket;
-					reason_text = Format("ServerPanel: Broken packet ID_HELLO from %s.", packet->systemAddress.ToString());
+					reasonText = Format("ServerPanel: Broken packet ID_HELLO from %s.", packet->systemAddress.ToString());
 				}
 				else if(version != VERSION)
 				{
 					// version mismatch
 					reason = JoinResult::InvalidVersion;
-					reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
+					reasonText = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 						VersionToString(version), VERSION_STR);
 				}
-				else if(!content.ValidateCrc(type, my_crc, player_crc, type_str))
+				else if(!content.ValidateCrc(type, myCrc, playerCrc, typeStr))
 				{
 					// invalid game type manager crc
 					reason = JoinResult::InvalidCrc;
-					reason_text = Format("ServerPanel: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
-						player_crc);
-					include_extra = 2;
+					reasonText = Format("ServerPanel: Invalid %s crc from %s. Our (%p) vs (%p).", typeStr, packet->systemAddress.ToString(), myCrc,
+						playerCrc);
+					includeExtra = 2;
 				}
 				else if(!net->ValidateNick(info->name.c_str()))
 				{
 					// invalid nick
 					reason = JoinResult::InvalidNick;
-					reason_text = Format("ServerPanel: Invalid nick (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
+					reasonText = Format("ServerPanel: Invalid nick (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
 				}
 				else
 				{
@@ -763,19 +763,19 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					{
 						// nick is already used
 						reason = JoinResult::TakenNick;
-						reason_text = Format("ServerPanel: Nick already in use (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
+						reasonText = Format("ServerPanel: Nick already in use (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
 					}
 				}
 
 				BitStreamWriter fw;
 				if(reason != JoinResult::Ok)
 				{
-					Warn(reason_text);
+					Warn(reasonText);
 					fw << ID_CANT_JOIN;
 					fw.WriteCasted<byte>(reason);
-					if(include_extra != 0)
-						fw << my_crc;
-					if(include_extra == 2)
+					if(includeExtra != 0)
+						fw << myCrc;
+					if(includeExtra == 2)
 						fw.WriteCasted<byte>(type);
 					net->SendServer(fw, MEDIUM_PRIORITY, RELIABLE, packet->systemAddress);
 					info->state = PlayerInfo::REMOVING;
@@ -898,8 +898,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				Warn("ServerPanel: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString());
 			else
 			{
-				Class* old_class = info->clas;
-				bool old_ready = info->ready;
+				Class* oldClass = info->clas;
+				bool oldReady = info->ready;
 				int result = ReadCharacterData(reader, info->clas, info->hd, info->cc);
 				bool ok = false;
 				if(result == 0)
@@ -932,7 +932,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				CheckReady();
 
 				// send info to other net->activePlayers
-				if((old_ready != info->ready || old_class != info->clas) && net->activePlayers > 2)
+				if((oldReady != info->ready || oldClass != info->clas) && net->activePlayers > 2)
 					AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 				// send result
@@ -941,7 +941,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			}
 			break;
 		default:
-			Warn("ServerPanel: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id);
+			Warn("ServerPanel: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msgId);
 			break;
 		}
 	}
@@ -1262,19 +1262,19 @@ void ServerPanel::Event(GuiEvent e)
 	case IdStart: // start game / stop
 		if(!starting)
 		{
-			cstring error_text = nullptr;
+			cstring errorText = nullptr;
 
 			for(PlayerInfo& info : net->players)
 			{
 				if(!info.ready)
 				{
-					error_text = txNotAllReady;
-					AddMsg(error_text);
+					errorText = txNotAllReady;
+					AddMsg(errorText);
 					break;
 				}
 			}
 
-			if(!error_text)
+			if(!errorText)
 				Start();
 		}
 		else
@@ -1509,18 +1509,18 @@ void ServerPanel::AddLobbyUpdate(const Int2& u)
 //=================================================================================================
 void ServerPanel::CheckReady()
 {
-	bool all_ready = true;
+	bool allReady = true;
 
 	for(PlayerInfo& info : net->players)
 	{
 		if(!info.ready)
 		{
-			all_ready = false;
+			allReady = false;
 			break;
 		}
 	}
 
-	if(all_ready)
+	if(allReady)
 		bts[4].state = Button::NONE;
 	else
 		bts[4].state = Button::DISABLED;

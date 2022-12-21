@@ -95,7 +95,7 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 {
 	assert(path);
 
-	LocalString current_section;
+	LocalString currentSection;
 	Map* lm = lmap ? lmap : sections[""];
 
 	try
@@ -112,21 +112,21 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 				// open section
 				t.Next();
 				if(t.IsSymbol(']'))
-					current_section->clear();
+					currentSection->clear();
 				else
 				{
-					current_section = t.MustGetItem();
+					currentSection = t.MustGetItem();
 					t.Next();
 					t.AssertSymbol(']');
 				}
 
 				if(!lmap)
 				{
-					Sections::iterator it = sections.find(current_section.get_ref());
+					Sections::iterator it = sections.find(currentSection.get_ref());
 					if(it == sections.end())
 					{
 						lm = new Map;
-						sections.insert(it, Sections::value_type(current_section, lm));
+						sections.insert(it, Sections::value_type(currentSection, lm));
 					}
 					else
 						lm = it->second;
@@ -143,11 +143,11 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 				pair<Map::iterator, bool> const& r = lm->insert(Map::value_type(tstr, text));
 				if(!r.second)
 				{
-					if(current_section->empty())
+					if(currentSection->empty())
 						Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
 					else
 					{
-						Warn("LANG: String '%s.%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(),
+						Warn("LANG: String '%s.%s' already exists: \"%s\"; new text: \"%s\".", currentSection->c_str(), tstr.c_str(),
 							r.first->second.c_str(), text.c_str());
 					}
 				}
@@ -172,7 +172,7 @@ void Language::LoadLanguages()
 
 	io::FindFiles(Format("%s/*", dir.c_str()), [&](const io::FileInfo& info)
 	{
-		if(!info.is_dir)
+		if(!info.isDir)
 			return true;
 		LocalString path = Format("%s/%s/info.txt", dir.c_str(), info.filename);
 		if(lmap)

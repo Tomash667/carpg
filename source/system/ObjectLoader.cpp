@@ -8,7 +8,7 @@
 #include <Mesh.h>
 #include <ResourceManager.h>
 
-static vector<VariantObject*> variant_objects;
+static vector<VariantObject*> variantObjects;
 
 enum Group
 {
@@ -56,7 +56,7 @@ void ObjectLoader::Cleanup()
 {
 	DeleteElements(BaseObject::items);
 	DeleteElements(ObjectGroup::items);
-	DeleteElements(variant_objects);
+	DeleteElements(variantObjects);
 }
 
 //=================================================================================================
@@ -167,10 +167,10 @@ void ObjectLoader::ParseObject(const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		const string& parent_id = t.MustGetItem();
-		BaseObject* parent = BaseObject::TryGet(parent_id);
+		const string& parentId = t.MustGetItem();
+		BaseObject* parent = BaseObject::TryGet(parentId);
 		if(!parent)
-			t.Throw("Missing parent object '%s'.", parent_id.c_str());
+			t.Throw("Missing parent object '%s'.", parentId.c_str());
 		t.Next();
 		*obj = *parent;
 	}
@@ -197,10 +197,10 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	{
 	case OP_MESH:
 		{
-			const string& mesh_id = t.MustGetString();
-			obj->mesh = resMgr->TryGet<Mesh>(mesh_id);
+			const string& meshId = t.MustGetString();
+			obj->mesh = resMgr->TryGet<Mesh>(meshId);
 			if(!obj->mesh)
-				LoadError("Missing mesh '%s'.", mesh_id.c_str());
+				LoadError("Missing mesh '%s'.", meshId.c_str());
 			t.Next();
 		}
 		break;
@@ -230,15 +230,15 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			t.AssertSymbol('{');
 			t.Next();
 			obj->variants = new VariantObject;
-			variant_objects.push_back(obj->variants);
+			variantObjects.push_back(obj->variants);
 			while(!t.IsSymbol('}'))
 			{
-				const string& mesh_id = t.MustGetString();
-				Mesh* mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				Mesh* mesh = resMgr->TryGet<Mesh>(meshId);
 				if(mesh)
 					obj->variants->meshes.push_back(mesh);
 				else
-					LoadError("Missing variant mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing variant mesh '%s'.", meshId.c_str());
 				t.Next();
 			}
 			if(obj->variants->meshes.size() < 2u)
@@ -266,17 +266,17 @@ void ObjectLoader::ParseUsable(const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		const string& parent_id = t.MustGetItem();
-		BaseUsable* parent_usable = BaseUsable::TryGet(parent_id.c_str());
-		if(parent_usable)
-			*use = *parent_usable;
+		const string& parentId = t.MustGetItem();
+		BaseUsable* parentUsable = BaseUsable::TryGet(parentId.c_str());
+		if(parentUsable)
+			*use = *parentUsable;
 		else
 		{
-			BaseObject* parent_obj = BaseObject::TryGet(parent_id);
-			if(parent_obj)
-				*use = *parent_obj;
+			BaseObject* parentObj = BaseObject::TryGet(parentId);
+			if(parentObj)
+				*use = *parentObj;
 			else
-				t.Throw("Missing parent usable or object '%s'.", parent_id.c_str());
+				t.Throw("Missing parent usable or object '%s'.", parentId.c_str());
 		}
 		t.Next();
 	}
@@ -311,10 +311,10 @@ void ObjectLoader::ParseUsable(const string& id)
 			{
 			case UP_REQUIRED_ITEM:
 				{
-					const string& item_id = t.MustGetItem();
-					use->item = Item::TryGet(item_id);
+					const string& itemId = t.MustGetItem();
+					use->item = Item::TryGet(itemId);
 					if(!use->item)
-						LoadError("Missing item '%s'.", item_id.c_str());
+						LoadError("Missing item '%s'.", itemId.c_str());
 					t.Next();
 				}
 				break;
@@ -326,10 +326,10 @@ void ObjectLoader::ParseUsable(const string& id)
 				{
 					t.AssertSymbol('{');
 					t.Next();
-					const string& sound_id = t.MustGetString();
-					use->sound = resMgr->TryGet<Sound>(sound_id);
+					const string& soundId = t.MustGetString();
+					use->sound = resMgr->TryGet<Sound>(soundId);
 					if(!use->sound)
-						LoadError("Missing sound '%s'.", sound_id.c_str());
+						LoadError("Missing sound '%s'.", soundId.c_str());
 					t.Next();
 					use->soundTimer = t.MustGetFloat();
 					if(!InRange(use->soundTimer, 0.f, 1.f))
@@ -394,28 +394,28 @@ void ObjectLoader::ParseGroup(const string& id)
 
 		if(t.IsSymbol('{'))
 		{
-			auto new_list = new ObjectGroup::EntryList;
-			new_list->totalChance = 0;
-			new_list->parent = list;
+			auto newList = new ObjectGroup::EntryList;
+			newList->totalChance = 0;
+			newList->parent = list;
 			ObjectGroup::EntryList::Entry e;
-			e.list = new_list;
+			e.list = newList;
 			e.isList = true;
 			e.chance = chance;
 			list->entries.push_back(std::move(e));
 			list->totalChance += chance;
-			list = new_list;
+			list = newList;
 			t.Next();
 			e.isList = false;
 		}
 		else if(t.IsText())
 		{
-			const string& obj_id = t.GetText();
+			const string& objId = t.GetText();
 			ObjectGroup* group = nullptr;
-			BaseObject* obj = BaseObject::TryGet(obj_id, &group);
+			BaseObject* obj = BaseObject::TryGet(objId, &group);
 			if(group)
 				t.Throw("Can't use group inside group."); // YAGNI
 			if(!obj)
-				t.Throw("Missing object '%s'.", obj_id.c_str());
+				t.Throw("Missing object '%s'.", objId.c_str());
 			ObjectGroup::EntryList::Entry e;
 			e.obj = obj;
 			e.isList = false;

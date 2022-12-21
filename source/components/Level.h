@@ -210,7 +210,9 @@ public:
 	Room* GetFarRoom();
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
+	CScriptArray* GetUnits();
 	CScriptArray* GetUnits(Room& room);
+	CScriptArray* GetNearbyUnits(const Vec3& pos, float dist);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
@@ -222,8 +224,8 @@ public:
 	// ---
 	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
 
-	Location* location; // same as world->current_location
-	int locationIndex; // same as world->current_location_index
+	Location* location; // same as world->currentLocation
+	int locationIndex; // same as world->currentLocationIndex
 	int dungeonLevel;
 	InsideLocationLevel* lvl; // null when in outside location
 	GameCamera camera;

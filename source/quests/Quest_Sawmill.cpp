@@ -174,7 +174,7 @@ Quest::LoadResult Quest_Sawmill::Load(GameReader& f)
 }
 
 //=================================================================================================
-cstring sawmill_objs[] = {
+cstring sawmillObjs[] = {
 	"barrel",
 	"barrels",
 	"box",
@@ -183,8 +183,8 @@ cstring sawmill_objs[] = {
 	"torch_off",
 	"firewood"
 };
-const uint n_sawmill_objs = countof(sawmill_objs);
-BaseObject* sawmill_objs_ptrs[n_sawmill_objs];
+const uint nSawmillObjs = countof(sawmillObjs);
+BaseObject* sawmillObjsPtrs[nSawmillObjs];
 
 void Quest_Sawmill::GenerateSawmill(bool inProgress)
 {
@@ -216,10 +216,10 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 	// remove objects
 	DeleteElements(outside.objects, [](const Object* obj) { return Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f; });
 
-	if(!sawmill_objs_ptrs[0])
+	if(!sawmillObjsPtrs[0])
 	{
-		for(uint i = 0; i < n_sawmill_objs; ++i)
-			sawmill_objs_ptrs[i] = BaseObject::Get(sawmill_objs[i]);
+		for(uint i = 0; i < nSawmillObjs; ++i)
+			sawmillObjsPtrs[i] = BaseObject::Get(sawmillObjs[i]);
 	}
 
 	UnitData& ud = *UnitData::Get("artur_drwal");
@@ -236,7 +236,7 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			BaseObject* obj = sawmill_objs_ptrs[Rand() % n_sawmill_objs];
+			BaseObject* obj = sawmillObjsPtrs[Rand() % nSawmillObjs];
 			gameLevel->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
@@ -250,12 +250,12 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 	else
 	{
 		// building
-		Vec3 spawn_pt;
+		Vec3 spawnPt;
 		float rot = PI / 2 * (Rand() % 4);
-		gameLevel->SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, height, 128), rot, 1.f, 0, &spawn_pt);
+		gameLevel->SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, height, 128), rot, 1.f, 0, &spawnPt);
 
 		// arthur
-		Unit* u = gameLevel->SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
+		Unit* u = gameLevel->SpawnUnitNearLocation(outside, spawnPt, ud, nullptr, -2);
 		u->rot = rot;
 		u->hero->knowName = true;
 		u->ApplyHumanData(hdLumberjack);
@@ -264,7 +264,7 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			BaseObject* obj = sawmill_objs_ptrs[Rand() % n_sawmill_objs];
+			BaseObject* obj = sawmillObjsPtrs[Rand() % nSawmillObjs];
 			gameLevel->SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 

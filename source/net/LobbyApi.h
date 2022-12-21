@@ -59,7 +59,7 @@ public:
 	void Reset();
 	void GetServers() { AddOperation(GET_SERVERS); }
 	void GetChanges() { AddOperation(GET_CHANGES); }
-	int GetVersion(delegate<bool()> cancel_clbk, string& changelog, bool& update);
+	int GetVersion(delegate<bool()> cancelClbk, string& changelog, bool& update);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 	void Report(int id, cstring text);

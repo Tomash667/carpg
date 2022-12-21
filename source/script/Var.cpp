@@ -14,8 +14,8 @@ string Vars::tmpStr;
 //=================================================================================================
 bool Var::IsGeneric(void* ptr, int type)
 {
-	Type is_type = scriptMgr->GetVarType(type);
-	return this->type == is_type && this->ptr == ptr;
+	Type isType = scriptMgr->GetVarType(type);
+	return this->type == isType && this->ptr == ptr;
 }
 
 //=================================================================================================

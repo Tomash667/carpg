@@ -17,7 +17,7 @@
 
 //-----------------------------------------------------------------------------
 Content content;
-static cstring content_id[] = {
+static cstring contentId[] = {
 	"abilities",
 	"buildings",
 	"classes",
@@ -31,7 +31,7 @@ static cstring content_id[] = {
 	"required",
 	"units"
 };
-static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
+static_assert(countof(contentId) == (int)Content::Id::Max, "Missing contentId.");
 
 //=================================================================================================
 Content::Content() : abilityLoader(new AbilityLoader), buildingLoader(new BuildingLoader), classLoader(new ClassLoader), dialogLoader(new DialogLoader),
@@ -184,7 +184,7 @@ bool Content::GetCrc(Id type, uint& myCrc, cstring& typeCrc)
 		return false;
 
 	myCrc = crc[(int)type];
-	typeCrc = content_id[(int)type];
+	typeCrc = contentId[(int)type];
 	return true;
 }
 
@@ -198,7 +198,7 @@ bool Content::ValidateCrc(Id& type, uint& myCrc, uint& playerCrc, cstring& typeS
 			type = (Id)i;
 			myCrc = crc[i];
 			playerCrc = clientCrc[i];
-			typeStr = content_id[i];
+			typeStr = contentId[i];
 			return false;
 		}
 	}

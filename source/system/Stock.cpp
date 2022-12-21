@@ -20,11 +20,11 @@ enum class CityBlock
 };
 
 //=================================================================================================
-inline bool CheckCity(CityBlock in_city, bool city)
+inline bool CheckCity(CityBlock inCity, bool city)
 {
-	if(in_city == CityBlock::IN)
+	if(inCity == CityBlock::IN)
 		return city;
-	else if(in_city == CityBlock::OUT)
+	else if(inCity == CityBlock::OUT)
 		return !city;
 	else
 		return true;
@@ -55,9 +55,9 @@ void Stock::Parse(vector<ItemSlot>& items)
 //=================================================================================================
 void Stock::ParseInternal(vector<ItemSlot>& items)
 {
-	CityBlock in_city = CityBlock::ANY;
+	CityBlock inCity = CityBlock::ANY;
 	LocalVector<int> sets;
-	bool in_set = false;
+	bool inSet = false;
 	bool city = (gameLevel->location && gameLevel->IsCity());
 	uint i = 0;
 
@@ -69,7 +69,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 			switch(action)
 			{
 			case SE_ADD:
-				if(CheckCity(in_city, city))
+				if(CheckCity(inCity, city))
 				{
 					++i;
 					StockEntry type = (StockEntry)code[i];
@@ -81,7 +81,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 				break;
 			case SE_MULTIPLE:
 			case SE_SAME_MULTIPLE:
-				if(CheckCity(in_city, city))
+				if(CheckCity(inCity, city))
 				{
 					++i;
 					int count = code[i];
@@ -94,7 +94,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 					i += 3;
 				break;
 			case SE_CHANCE:
-				if(CheckCity(in_city, city))
+				if(CheckCity(inCity, city))
 				{
 					++i;
 					int count = code[i];
@@ -127,7 +127,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 				break;
 			case SE_RANDOM:
 			case SE_SAME_RANDOM:
-				if(CheckCity(in_city, city))
+				if(CheckCity(inCity, city))
 				{
 					++i;
 					int a = code[i];
@@ -144,22 +144,22 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 					i += 4;
 				break;
 			case SE_CITY:
-				in_city = CityBlock::IN;
+				inCity = CityBlock::IN;
 				break;
 			case SE_NOT_CITY:
-				in_city = CityBlock::OUT;
+				inCity = CityBlock::OUT;
 				break;
 			case SE_ANY_CITY:
-				in_city = CityBlock::ANY;
+				inCity = CityBlock::ANY;
 				break;
 			case SE_START_SET:
-				assert(!in_set);
+				assert(!inSet);
 				sets.push_back(i + 1);
 				while(code[i] != SE_END_SET)
 					++i;
 				break;
 			case SE_END_SET:
-				assert(in_set);
+				assert(inSet);
 				return;
 			default:
 				assert(0);
@@ -170,7 +170,7 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 		if(sets.size() > 0)
 		{
 			i = sets[Rand() % sets.size()];
-			in_set = true;
+			inSet = true;
 		}
 		else
 			break;

@@ -150,7 +150,7 @@ private:
 
 	TooltipController tooltip;
 	vector<BuffImage> buffImages;
-	vector<SortedUnitView> sorted_units;
+	vector<SortedUnitView> sortedUnits;
 	float buffScale, sidebar, cutsceneImageTimer, cutsceneTextTimer, bossAlpha;
 	int sidebarState[(int)SideButtonId::Max], dragAndDrop, dragAndDropType, dragAndDropIndex;
 	CutsceneState cutsceneImageState, cutsceneTextState;

@@ -173,8 +173,8 @@ void Arena::SpawnArenaViewers(int count)
 		Mesh::Point* pt = points[id];
 		points.erase(points.begin() + id);
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
-		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
-		Unit* u = gameLevel->SpawnUnitNearLocation(*arena, pos, ud, &look_at, -1, 2.f);
+		Vec3 lookAt(arena->offset.x, 0, arena->offset.y);
+		Unit* u = gameLevel->SpawnUnitNearLocation(*arena, pos, ud, &lookAt, -1, 2.f);
 		if(u)
 		{
 			u->ai->locTimer = Random(6.f, 12.f);
@@ -341,24 +341,24 @@ void Arena::StartArenaCombat(int level)
 	}
 
 	// select enemy list
-	cstring list_id;
+	cstring listId;
 	switch(level)
 	{
 	default:
 	case 1:
-		list_id = "arena_easy";
+		listId = "arena_easy";
 		SpawnArenaViewers(1);
 		break;
 	case 2:
-		list_id = "arena_medium";
+		listId = "arena_medium";
 		SpawnArenaViewers(3);
 		break;
 	case 3:
-		list_id = "arena_hard";
+		listId = "arena_hard";
 		SpawnArenaViewers(5);
 		break;
 	}
-	UnitGroup* group = UnitGroup::Get(list_id)->GetRandomGroup();
+	UnitGroup* group = UnitGroup::Get(listId)->GetRandomGroup();
 
 	// prepare list of units that can be spawned
 	int lvl = level * 5 + Random(-1, +1) + 3;
@@ -600,32 +600,32 @@ void Arena::Update(float dt)
 		{
 			state = WAITING_TO_END;
 			timer = 0.f;
-			bool victory_sound;
+			bool victorySound;
 			if(alive[0] == 0)
 			{
 				result = 1;
-				victory_sound = false;
+				victorySound = false;
 			}
 			else
 			{
 				result = 0;
-				victory_sound = true;
+				victorySound = true;
 			}
 			if(mode != FIGHT)
 			{
 				if(count[0] == 0 || count[1] == 0)
-					victory_sound = false; // someone quit
+					victorySound = false; // someone quit
 				else
-					victory_sound = true;
+					victorySound = true;
 			}
 
 			if(gameLevel->GetArena() == game->pc->unit->locPart)
-				soundMgr->PlaySound2d(victory_sound ? gameRes->sArenaWin : gameRes->sArenaLost);
+				soundMgr->PlaySound2d(victorySound ? gameRes->sArenaWin : gameRes->sArenaLost);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::ARENA_SOUND;
-				c.id = victory_sound ? 1 : 2;
+				c.id = victorySound ? 1 : 2;
 			}
 		}
 	}
@@ -862,13 +862,13 @@ void Arena::RewardExp(Unit* deadUnit)
 	}
 	else if(!deadUnit->IsTeamMember())
 	{
-		rvector<Unit> to_reward;
+		rvector<Unit> toReward;
 		for(Unit* unit : units)
 		{
 			if(unit->inArena != deadUnit->inArena)
-				to_reward.push_back(unit);
+				toReward.push_back(unit);
 		}
-		team->AddExp(50 * deadUnit->level, &to_reward);
+		team->AddExp(50 * deadUnit->level, &toReward);
 	}
 }
 

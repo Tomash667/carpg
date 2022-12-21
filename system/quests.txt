@@ -2166,6 +2166,17 @@ quest main
 					restart
 				}
 			}
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_herbs\")) && Quest::Find(\"main_village3\").progress == P_MAIN_V3_CLEARED_PICKED"
+			{
+				choice 26
+				{
+					do_once
+					talk 27
+					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE;"
+					talk 21
+					restart
+				}
+			}
 			if have_item q_infected_organ
 			{
 				choice 24
@@ -2804,6 +2815,20 @@ quest main_village3
 		P_MAIN_V3_DONE
 	}
 	
+	dialog villager {
+		script "OrderLeave()"
+		talk 0
+		end2
+	}
+	
+	dialog inn_villager {
+		talk 0
+		script "InnVillagerTalk()"
+		talk 1
+		talk 2
+		end2
+	}
+	
 	code {
 		Unit@ cleric;
 		Location@ village;
@@ -2838,9 +2863,26 @@ quest main_village3
 					// enemies
 					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
 					
+					// villages
+					Level::SpawnUnits(UnitGroup::Get("plague_villagers"), 3);
+					UnitData@ data = UnitData::Get("q_main_villager_def");
+					array<Unit@> units = Level::GetUnits();
+					for(uint i = 0; i < units.length(); ++i)
+					{
+						Unit@ unit = units[i];
+						if(unit.data is data)
+							unit.OrderAutoTalk();
+					}
+					
+					// inn villager
+					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					unit.AddDialog(quest, "inn_villager");
+					unit.OrderAutoTalk();
+					
 					// alchemist
 					CityBuilding@ building = Level::GetRandomBuilding(BuildingGroup::Get("alchemist"));
-					Unit@ unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
+					@unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
 					unit.RotateTo(building.unitRot);
 					unit.AddEventHandler(quest, EVENT_PICKUP);
 					
@@ -2851,18 +2893,18 @@ quest main_village3
 				}
 				break;
 			case P_MAIN_V3_CLEARED:
-				quest.AddEntry(TEXT(4));
-				break;
-			case P_MAIN_V3_PICKED:
 				quest.AddEntry(TEXT(5));
 				break;
-			case P_MAIN_V3_CLEARED_PICKED:
+			case P_MAIN_V3_PICKED:
 				quest.AddEntry(TEXT(6));
 				break;
-			case P_MAIN_V3_DONE:
+			case P_MAIN_V3_CLEARED_PICKED:
 				quest.AddEntry(TEXT(7));
+				break;
+			case P_MAIN_V3_DONE:
+				quest.AddEntry(TEXT(8));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
+				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
 				Team::AddReward(5000, 15000);
 				break;
 			}
@@ -2882,7 +2924,7 @@ quest main_village3
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.item.id == "q_yellow_crystal")
+				if(e.item.id == "q_yellow_herbs")
 				{
 					if(progress == P_MAIN_V3_ENTER)
 						progress = P_MAIN_V3_PICKED;
@@ -2891,6 +2933,46 @@ quest main_village3
 					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
+		}
+		
+		void OrderLeave()
+		{
+			int exp = 0;
+			Var@ var = target.vars["leaving"];
+			if(var == true)
+				return;
+			
+			var = true;
+			exp += 1000;
+			target.OrderLeave();
+			
+			UnitData@ data = UnitData::Get("q_main_villager_def");
+			array<Unit@> units = Level::GetNearbyUnits(target.pos, 20);
+			for(uint i = 0; i < units.length(); ++i)
+			{
+				Unit@ unit = units[i];
+				if(!(unit is target) && unit.data is data && unit.IsAlive())
+				{
+					@var = unit.vars["leaving"];
+					if(var == true)
+						continue;
+					var = true;
+					exp += 1000;
+					unit.OrderLeave();
+				}
+			}
+			
+			if(exp > 0)
+				Team::AddExp(exp);
+		}
+		
+		void InnVillagerTalk()
+		{
+			target.vars["leaving"] = true;
+			target.RemoveDialog(quest);
+			target.OrderLeave();
+			Team::AddExp(1000);
+			quest.AddEntry(TEXT(4));
 		}
 	}
 }

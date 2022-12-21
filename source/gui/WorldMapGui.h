@@ -26,7 +26,7 @@ public:
 	void StartTravel(bool fast = false);
 	bool HaveFocus() const { return !comboSearch.focus; }
 
-	DialogBox* dialog_enc;
+	DialogBox* dialogEnc;
 
 private:
 	void AppendLocationText(Location& loc, string& s);

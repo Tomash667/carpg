@@ -461,9 +461,8 @@ building destroyed_cottage {
 	}
 }
 
-/*
 building destroyed_cottage2 {
-	mesh "chata2.qmsh"
+	mesh "chata_zniszczona2.qmsh"
 	flags favor_road
 	scheme {
 		"||||||||"
@@ -483,7 +482,7 @@ building destroyed_cottage2 {
 }
 
 building destroyed_cottage3 {
-	mesh "chata3.qmsh"
+	mesh "chata_zniszczona3.qmsh"
 	flags favor_road
 	scheme {
 		"||||||"
@@ -495,7 +494,7 @@ building destroyed_cottage3 {
 	}
 	group destroyed_cottage
 	shift {1 1}
-}*/
+}
 
 //================================================================================
 // Building script

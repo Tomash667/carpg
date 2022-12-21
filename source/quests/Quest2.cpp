@@ -117,9 +117,9 @@ cstring Quest2::GetText(int index)
 		return str.c_str();
 
 	asIScriptObject* instance = CreateInstance(true);
-	static string str_part;
-	static string dialog_s_text;
-	dialog_s_text.clear();
+	static string strPart;
+	static string dialogString;
+	dialogString.clear();
 
 	ScriptContext& ctx = scriptMgr->GetContext();
 	ctx.quest = this;
@@ -128,7 +128,7 @@ cstring Quest2::GetText(int index)
 	{
 		if(str[i] == '$')
 		{
-			str_part.clear();
+			strPart.clear();
 			++i;
 			if(str[i] == '(')
 			{
@@ -143,7 +143,7 @@ cstring Quest2::GetText(int index)
 					else if(stage == 1)
 					{
 						string* result = (string*)ctx->GetAddressOfReturnValue();
-						dialog_s_text += *result;
+						dialogString += *result;
 					}
 				});
 				i = pos;
@@ -152,18 +152,18 @@ cstring Quest2::GetText(int index)
 			{
 				while(str[i] != '$')
 				{
-					str_part.push_back(str[i]);
+					strPart.push_back(str[i]);
 					++i;
 				}
-				dialog_s_text += FormatString(str_part);
+				dialogString += FormatString(strPart);
 			}
 		}
 		else
-			dialog_s_text.push_back(str[i]);
+			dialogString.push_back(str[i]);
 	}
 
 	ctx.quest = nullptr;
-	return dialog_s_text.c_str();
+	return dialogString.c_str();
 }
 
 //=================================================================================================

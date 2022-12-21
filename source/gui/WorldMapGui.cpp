@@ -175,7 +175,7 @@ void WorldMapGui::Draw()
 	}
 
 	LocalString s = Format(txWorldDate, world->GetDate());
-	const Vec2& world_pos = world->GetWorldPos();
+	const Vec2& worldPos = world->GetWorldPos();
 
 	// current location icon, set description
 	if(world->GetCurrentLocation())
@@ -194,7 +194,7 @@ void WorldMapGui::Draw()
 		Location& picked = *world->locations[pickedLocation];
 		if(pickedLocation != world->GetCurrentLocationIndex())
 		{
-			float distance = Vec2::Distance(world_pos, picked.pos) * World::MAP_KM_RATIO;
+			float distance = Vec2::Distance(worldPos, picked.pos) * World::MAP_KM_RATIO;
 			int daysCost = int(floor(distance / World::TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			AppendLocationText(picked, s.get_ref());
@@ -213,7 +213,7 @@ void WorldMapGui::Draw()
 	}
 	else if(mapPosValid)
 	{
-		float distance = Vec2::Distance(world_pos, mapPos) * World::MAP_KM_RATIO;
+		float distance = Vec2::Distance(worldPos, mapPos) * World::MAP_KM_RATIO;
 		int daysCost = int(floor(distance / World::TRAVEL_SPEED));
 		cstring cost;
 		if(daysCost == 0)
@@ -228,7 +228,7 @@ void WorldMapGui::Draw()
 	// team position
 	if(world->GetCurrentLocationIndex() == -1)
 	{
-		const Vec2 pos(WorldPosToScreen(Vec2(world_pos.x - 8, world_pos.y + 8)));
+		const Vec2 pos(WorldPosToScreen(Vec2(worldPos.x - 8, worldPos.y + 8)));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSpriteTransform(tMover, mat, 0xBBFFFFFF);
 	}
@@ -252,7 +252,7 @@ void WorldMapGui::Draw()
 		ok = true;
 	}
 	if(ok)
-		gui->DrawLine(WorldPosToScreen(world_pos), WorldPosToScreen(targetPos), 0xAA000000);
+		gui->DrawLine(WorldPosToScreen(worldPos), WorldPosToScreen(targetPos), 0xAA000000);
 
 	// encounter chance
 	if(game->devmode && Net::IsLocal())
@@ -573,15 +573,15 @@ void WorldMapGui::Event(GuiEvent e)
 			comboSearch.globalPos = comboSearch.pos;
 			comboSearch.size = rect.Size();
 
-			const int img_size = int(32.f * gui->wndSize.y / 768);
-			buttons[0].pos = Int2(rect.p1.x, rect.p1.y - img_size - 5);
+			const int imgSize = int(32.f * gui->wndSize.y / 768);
+			buttons[0].pos = Int2(rect.p1.x, rect.p1.y - imgSize - 5);
 			buttons[0].globalPos = buttons[0].pos;
-			buttons[0].size = Int2(rect.SizeX() / 2 - 2, img_size);
-			buttons[0].forceImgSize = Int2(img_size);
-			buttons[1].pos = Int2(rect.p1.x + rect.SizeX() / 2 + 2, rect.p1.y - img_size - 5);
+			buttons[0].size = Int2(rect.SizeX() / 2 - 2, imgSize);
+			buttons[0].forceImgSize = Int2(imgSize);
+			buttons[1].pos = Int2(rect.p1.x + rect.SizeX() / 2 + 2, rect.p1.y - imgSize - 5);
 			buttons[1].globalPos = buttons[1].pos;
-			buttons[1].size = Int2(rect.SizeX() / 2 - 2, img_size);
-			buttons[1].forceImgSize = Int2(img_size);
+			buttons[1].size = Int2(rect.SizeX() / 2 - 2, imgSize);
+			buttons[1].forceImgSize = Int2(imgSize);
 
 			if(e == GuiEvent_Show)
 			{
@@ -655,7 +655,7 @@ void WorldMapGui::Clear()
 	follow = false;
 	tracking = -1;
 	clicked = false;
-	dialog_enc = nullptr;
+	dialogEnc = nullptr;
 	pickedLocation = -1;
 }
 
@@ -750,7 +750,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 	info.pause = true;
 	info.text = text;
 	info.type = DIALOG_OK;
-	dialog_enc = gui->ShowDialog(info);
+	dialogEnc = gui->ShowDialog(info);
 
 	if(Net::IsOnline())
 	{
@@ -761,7 +761,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 
 		// disable button when server is not leader
 		if(!team->IsLeader())
-			dialog_enc->bts[0].state = Button::DISABLED;
+			dialogEnc->bts[0].state = Button::DISABLED;
 	}
 }
 

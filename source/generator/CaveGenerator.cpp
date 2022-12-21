@@ -269,32 +269,32 @@ void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stair
 				pt -= dir;
 				// sprawdü z ilu stron jest puste pole
 				int count = 0;
-				GameDirection stairs_dir_result;
+				GameDirection stairsDirResult;
 				if(tiles[pt.x - 1 + pt.y * size].type == EMPTY)
 				{
 					++count;
-					stairs_dir_result = GDIR_LEFT;
+					stairsDirResult = GDIR_LEFT;
 				}
 				if(tiles[pt.x + 1 + pt.y * size].type == EMPTY)
 				{
 					++count;
-					stairs_dir_result = GDIR_RIGHT;
+					stairsDirResult = GDIR_RIGHT;
 				}
 				if(tiles[pt.x + (pt.y - 1) * size].type == EMPTY)
 				{
 					++count;
-					stairs_dir_result = GDIR_DOWN;
+					stairsDirResult = GDIR_DOWN;
 				}
 				if(tiles[pt.x + (pt.y + 1) * size].type == EMPTY)
 				{
 					++count;
-					stairs_dir_result = GDIR_UP;
+					stairsDirResult = GDIR_UP;
 				}
 
 				if(count == 1)
 				{
 					stairs = pt;
-					stairsDir = stairs_dir_result;
+					stairsDir = stairsDirResult;
 					tiles[pt.x + pt.y * size].type = ENTRY_PREV;
 					return;
 				}
@@ -391,7 +391,7 @@ void CaveGenerator::GenerateObjects()
 	}
 
 	// stalactites
-	BaseObject* base_obj = BaseObject::Get("stalactite");
+	BaseObject* baseObj = BaseObject::Get("stalactite");
 	sta.clear();
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
@@ -414,8 +414,8 @@ void CaveGenerator::GenerateObjects()
 			++count;
 
 			Object* o = new Object;
-			o->base = base_obj;
-			o->mesh = base_obj->mesh;
+			o->base = baseObj;
+			o->mesh = baseObj->mesh;
 			o->scale = Random(1.f, 2.f);
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + 1.f, 4.f, 2.f * pt.y + 1.f);
@@ -425,7 +425,7 @@ void CaveGenerator::GenerateObjects()
 	}
 
 	// plants
-	base_obj = BaseObject::Get("plant2");
+	baseObj = BaseObject::Get("plant2");
 	for(int i = 0; i < 150; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -433,8 +433,8 @@ void CaveGenerator::GenerateObjects()
 		if(lvl.map[pt.x + pt.y * lvl.w].type == EMPTY)
 		{
 			Object* o = new Object;
-			o->base = base_obj;
-			o->mesh = base_obj->mesh;
+			o->base = baseObj;
+			o->mesh = baseObj->mesh;
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + Random(0.1f, 1.9f), 0.f, 2.f * pt.y + Random(0.1f, 1.9f));
@@ -443,7 +443,7 @@ void CaveGenerator::GenerateObjects()
 	}
 
 	// mushrooms
-	base_obj = BaseObject::Get("mushrooms");
+	baseObj = BaseObject::Get("mushrooms");
 	for(int i = 0; i < 100; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -451,8 +451,8 @@ void CaveGenerator::GenerateObjects()
 		if(lvl.map[pt.x + pt.y * lvl.w].type == EMPTY)
 		{
 			Object* o = new Object;
-			o->base = base_obj;
-			o->mesh = base_obj->mesh;
+			o->base = baseObj;
+			o->mesh = baseObj->mesh;
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f * pt.x + Random(0.1f, 1.9f), 0.f, 2.f * pt.y + Random(0.1f, 1.9f));
@@ -461,13 +461,13 @@ void CaveGenerator::GenerateObjects()
 	}
 
 	// stalagmites
-	base_obj = BaseObject::Get("stalagmite");
-	BaseObject* base_obj2 = BaseObject::Get("stalagmite2");
+	baseObj = BaseObject::Get("stalagmite");
+	BaseObject* baseObj2 = BaseObject::Get("stalagmite2");
 	for(int i = 0; i < 80; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
 		if(lvl.map[pt.x + pt.y * lvl.w].type == EMPTY)
-			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
+			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? baseObj : baseObj2);
 	}
 
 	if(gameLevel->location == questMgr->questMine->targetLoc)
@@ -525,12 +525,12 @@ void CaveGenerator::GenerateItems()
 //=================================================================================================
 int CaveGenerator::HandleUpdate(int days)
 {
-	int update_flags = 0;
+	int updateFlags = 0;
 	if(gameLevel->location == questMgr->questMine->targetLoc)
-		update_flags = questMgr->questMine->GenerateMine(this, false);
+		updateFlags = questMgr->questMine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateCaveItems(min(days, 10));
-	return update_flags;
+	return updateFlags;
 }
 
 //=================================================================================================

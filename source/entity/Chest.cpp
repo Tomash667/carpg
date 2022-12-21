@@ -87,12 +87,12 @@ void Chest::Load(GameReader& f)
 	else
 		meshInst = nullptr;
 
-	int handler_id = f.Read<int>();
-	if(handler_id == -1)
+	int handlerId = f.Read<int>();
+	if(handlerId == -1)
 		handler = nullptr;
 	else
 	{
-		handler = reinterpret_cast<ChestEventHandler*>(handler_id);
+		handler = reinterpret_cast<ChestEventHandler*>(handlerId);
 		game->loadChestHandler.push_back(this);
 	}
 }

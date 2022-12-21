@@ -31,6 +31,6 @@ private:
 	cstring txMeleeWeapon, txRangedWeapon, txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc;
 	TexturePtr tItemBar, tMelee, tRanged, tHealthPotion, tManaPotion;
 	Int2 dragAndDropPos;
-	int grid_offset, dragAndDropGroup, dragAndDropIndex;
+	int gridOffset, dragAndDropGroup, dragAndDropIndex;
 	bool dragAndDrop;
 };

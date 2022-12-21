@@ -67,8 +67,8 @@ void DialogLoader::DoLoading()
 	quest = nullptr;
 	scripts = &DialogScripts::global;
 	loadingTexts = false;
-	bool require_id[2] = { true, false };
-	Load("dialogs.txt", G_TOP, require_id);
+	bool requireId[2] = { true, false };
+	Load("dialogs.txt", G_TOP, requireId);
 }
 
 //=================================================================================================
@@ -150,7 +150,7 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 {
 	Ptr<GameDialog> dialog;
 	currentDialog = dialog.Get();
-	dialog->max_index = -1;
+	dialog->maxIndex = -1;
 	dialog->id = id;
 	dialog->quest = nullptr;
 	t.Next();
@@ -268,10 +268,10 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				node->op = OP_NONE;
 				node->value = index;
 				++index;
-				if(index > currentDialog->max_index)
+				if(index > currentDialog->maxIndex)
 				{
 					currentDialog->texts.resize(index, GameDialog::Text());
-					currentDialog->max_index = index;
+					currentDialog->maxIndex = index;
 				}
 				return node;
 			}
@@ -286,10 +286,10 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 				for(int i = 0; i < 4; ++i)
 					map.index[i] = index;
 				++index;
-				if(index > currentDialog->max_index)
+				if(index > currentDialog->maxIndex)
 				{
 					currentDialog->texts.resize(index, GameDialog::Text());
-					currentDialog->max_index = index;
+					currentDialog->maxIndex = index;
 				}
 
 				// parse next texts
@@ -304,10 +304,10 @@ DialogLoader::Node* DialogLoader::ParseStatement()
 						t.Throw("Index %d already used.", index);
 					map.index[pos] = index;
 					++index;
-					if(index > currentDialog->max_index)
+					if(index > currentDialog->maxIndex)
 					{
 						currentDialog->texts.resize(index, GameDialog::Text());
-						currentDialog->max_index = index;
+						currentDialog->maxIndex = index;
 					}
 					t.Next();
 					if(t.IsSymbol(','))
@@ -635,10 +635,10 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 	t.Next();
 
 	++index;
-	if(index > currentDialog->max_index)
+	if(index > currentDialog->maxIndex)
 	{
 		currentDialog->texts.resize(index, GameDialog::Text());
-		currentDialog->max_index = index;
+		currentDialog->maxIndex = index;
 	}
 
 	node->childs.push_back(ParseBlock());
@@ -706,7 +706,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 	// convert to if..else
 	Node* first = nullptr;
 	Node* current = nullptr;
-	Node* def_case = nullptr;
+	Node* defCase = nullptr;
 	for(Node* n : node->childs)
 	{
 		Node* child;
@@ -723,7 +723,7 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 
 		if(n->value == -1)
 		{
-			def_case = child;
+			defCase = child;
 			continue;
 		}
 
@@ -741,12 +741,12 @@ DialogLoader::Node* DialogLoader::ParseSwitch()
 		current = converted;
 	}
 
-	if(def_case)
+	if(defCase)
 	{
 		if(current)
-			current->childs.push_back(def_case);
+			current->childs.push_back(defCase);
 		else
-			return def_case;
+			return defCase;
 	}
 
 	return first;
@@ -974,33 +974,33 @@ bool DialogLoader::BuildDialog(Node* node)
 		{
 			// if
 			code.push_back(DialogEntry(node->type, node->op, node->value));
-			uint jmp_pos = code.size();
+			uint jmpPos = code.size();
 			code.push_back(DialogEntry(DTF_CJMP));
 			BuildDialog(node->childs[0]);
 			uint pos = code.size();
-			code[jmp_pos].value = pos;
+			code[jmpPos].value = pos;
 			return false;
 		}
 		else
 		{
 			// if else
 			code.push_back(DialogEntry(node->type, node->op, node->value));
-			uint jmp_pos = code.size();
+			uint jmpPos = code.size();
 			code.push_back(DialogEntry(DTF_CJMP));
 			bool result = BuildDialog(node->childs[0]);
-			uint jmp_end_pos = code.size();
+			uint jmpEndPos = code.size();
 			code.push_back(DialogEntry(DTF_JMP));
 			uint pos = code.size();
-			code[jmp_pos].value = pos;
+			code[jmpPos].value = pos;
 			result = BuildDialog(node->childs[1]) && result;
 			pos = code.size();
-			code[jmp_end_pos].value = pos;
+			code[jmpEndPos].value = pos;
 			return result;
 		}
 	case NodeOp::Choice:
 		{
 			code.push_back(DialogEntry(node->type, node->op, node->value));
-			uint jmp_pos = code.size();
+			uint jmpPos = code.size();
 			code.push_back(DialogEntry(DTF_JMP));
 			if(!BuildDialogBlock(node))
 			{
@@ -1011,7 +1011,7 @@ bool DialogLoader::BuildDialog(Node* node)
 #endif
 			}
 			uint pos = code.size();
-			code[jmp_pos].value = pos;
+			code[jmpPos].value = pos;
 			return false;
 		}
 	case NodeOp::Goto:
@@ -1030,12 +1030,12 @@ bool DialogLoader::BuildDialogBlock(Node* node)
 	if(!node->str.empty())
 		labels.push_back(std::make_pair(node->str, currentDialog->code.size()));
 
-	int have_exit = 0;
+	int haveExit = 0;
 	for(Node* child : node->childs)
 	{
-		if(have_exit == 1)
+		if(haveExit == 1)
 		{
-			have_exit = 2;
+			haveExit = 2;
 #ifdef _DEBUG
 			LoadWarning("Unreachable code found at line %d.", child->line);
 #else
@@ -1043,10 +1043,10 @@ bool DialogLoader::BuildDialogBlock(Node* node)
 #endif
 		}
 		bool result = BuildDialog(child);
-		if(result && have_exit == 0)
-			have_exit = 1;
+		if(result && haveExit == 0)
+			haveExit = 1;
 	}
-	return (have_exit >= 1);
+	return (haveExit >= 1);
 }
 
 //=================================================================================================
@@ -1082,16 +1082,16 @@ void DialogLoader::LoadGlobals()
 	{
 		type = t.MustGetItem();
 		t.Next();
-		bool is_ref = t.IsSymbol('@');
-		if(is_ref)
+		bool isRef = t.IsSymbol('@');
+		if(isRef)
 			t.Next();
 		name = t.MustGetItem();
 		t.Next();
 		t.AssertSymbol(';');
 		t.Next();
-		ScriptManager::RegisterResult result = scriptMgr->RegisterGlobalVar(type, is_ref, name);
+		ScriptManager::RegisterResult result = scriptMgr->RegisterGlobalVar(type, isRef, name);
 		if(result == ScriptManager::InvalidType)
-			LoadError("Invalid type for global variable '%s%s %s'.", type.c_str(), is_ref ? "@" : "", name.c_str());
+			LoadError("Invalid type for global variable '%s%s %s'.", type.c_str(), isRef ? "@" : "", name.c_str());
 		else if(result == ScriptManager::AlreadyExists)
 			LoadError("Global variable with name '%s' already declared.", name.c_str());
 	}
@@ -1107,16 +1107,16 @@ void DialogLoader::Finalize()
 }
 
 //=================================================================================================
-GameDialog* DialogLoader::LoadSingleDialog(Tokenizer& parent_t, QuestScheme* quest)
+GameDialog* DialogLoader::LoadSingleDialog(Tokenizer& parentTokenizer, QuestScheme* quest)
 {
 	this->quest = quest;
 	scripts = &quest->scripts;
-	t.FromTokenizer(parent_t);
+	t.FromTokenizer(parentTokenizer);
 	const string& id = t.MustGetItem();
 	SetLocalId(id);
 	GameDialog* dialog = LoadDialog(id);
 	dialog->quest = quest;
-	parent_t.MoveTo(t.GetPos());
+	parentTokenizer.MoveTo(t.GetPos());
 	return dialog;
 }
 
@@ -1201,7 +1201,7 @@ bool DialogLoader::LoadText(Tokenizer& t, QuestScheme* scheme)
 		while(!t.IsSymbol('}'))
 		{
 			int index = t.MustGetInt();
-			if(index < 0 || index >= dialog->max_index)
+			if(index < 0 || index >= dialog->maxIndex)
 				t.Throw("Invalid text index %d.", index);
 			t.Next();
 

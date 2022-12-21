@@ -76,7 +76,7 @@ void AcademyGenerator::Generate()
 
 	// set building tiles
 	Int2 ext2 = building->size;
-	vector<Int2> tmp_pts;
+	vector<Int2> tmpPts;
 
 	const int x1 = (ext2.x - 1) / 2;
 	const int x2 = ext2.x - x1 - 1;
@@ -130,13 +130,13 @@ void AcademyGenerator::Generate()
 			Int2 pt2(pt.x + xx, pt.y + yy);
 			++count;
 			sum += outside->h[pt2.x + pt2.y * (s + 1)];
-			tmp_pts.push_back(pt2);
+			tmpPts.push_back(pt2);
 		}
 	}
 	sum /= count;
-	for(Int2& pt : tmp_pts)
+	for(Int2& pt : tmpPts)
 		outside->h[pt.x + pt.y * (s + 1)] = sum;
-	tmp_pts.clear();
+	tmpPts.clear();
 
 	// it would be better to round only next to building...
 	terrain->RoundHeight();
@@ -151,13 +151,13 @@ void AcademyGenerator::Generate()
 			Int2 pt2(pt.x + xx, pt.y + yy);
 			++count;
 			sum += outside->h[pt2.x + pt2.y * (s + 1)];
-			tmp_pts.push_back(pt2);
+			tmpPts.push_back(pt2);
 		}
 	}
 	sum /= count;
-	for(Int2& pt : tmp_pts)
+	for(Int2& pt : tmpPts)
 		outside->h[pt.x + pt.y * (s + 1)] = sum;
-	tmp_pts.clear();
+	tmpPts.clear();
 
 	terrain->RemoveHeightMap();
 }

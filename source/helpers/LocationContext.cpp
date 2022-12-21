@@ -14,7 +14,7 @@ static ObjectPool<LocationContext> LevelAreaContextPool;
 //=================================================================================================
 // Get location parts for selected location and level (in multilevel dungeon not generated levels are ignored for -1)
 // Level have special meaning here
-// >= 0 (dungeon_level, building index)
+// >= 0 (dungeonLevel, building index)
 // -1 whole location
 // -2 outside part of city/village
 ForLocation::ForLocation(int loc, int level)

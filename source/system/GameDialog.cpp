@@ -52,7 +52,7 @@ void DialogScripts::GetFormattedCode(FUNC f, string& code)
 		code += " }\n}";
 		break;
 	case F_IF_SCRIPT:
-		code = "bool _if_script(int index) {\n switch(index) {\n";
+		code = "bool _ifScript(int index) {\n switch(index) {\n";
 		for(uint i = 0; i < s.size(); ++i)
 			code += Format("  case %d: return (%s);\n", i, s[i].c_str());
 		code += " }\n return false;\n}";
@@ -79,7 +79,7 @@ int DialogScripts::Build()
 	{
 		if(scripts[i].empty())
 			continue;
-		cstring name[F_MAX] = { "_script", "_if_script", "_format" };
+		cstring name[F_MAX] = { "_script", "_ifScript", "_format" };
 		GetFormattedCode((DialogScripts::FUNC)i, code.get_ref());
 #ifdef _DEBUG
 		output += (string&)code;
@@ -104,7 +104,7 @@ int DialogScripts::Build()
 void DialogScripts::Set(asITypeInfo* type)
 {
 	func[F_SCRIPT] = type->GetMethodByDecl("void _script(int)");
-	func[F_IF_SCRIPT] = type->GetMethodByDecl("bool _if_script(int)");
+	func[F_IF_SCRIPT] = type->GetMethodByDecl("bool _ifScript(int)");
 	func[F_FORMAT] = type->GetMethodByDecl("string _format(int)");
 }
 

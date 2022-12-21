@@ -79,7 +79,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		return false;
 
 	f >> levelShift;
-	const string& building_id = f.ReadString1();
+	const string& buildingId = f.ReadString1();
 	f >> xspherePos;
 	f >> enterRegion;
 	f >> exitRegion;
@@ -91,10 +91,10 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		Error("Broken packet for inside building.");
 		return false;
 	}
-	building = Building::Get(building_id);
+	building = Building::Get(buildingId);
 	if(!building || !building->insideMesh)
 	{
-		Error("Invalid building id '%s'.", building_id.c_str());
+		Error("Invalid building id '%s'.", buildingId.c_str());
 		return false;
 	}
 	offset = Vec2(512.f * levelShift.x + 256.f, 512.f * levelShift.y + 256.f);

@@ -84,9 +84,9 @@ void SortItems(vector<ItemSlot>& items)
 		items.pop_back();
 }
 
-char IsBetterColor(int old_value, int new_value)
+char IsBetterColor(int oldValue, int newValue)
 {
-	if(old_value >= new_value)
+	if(oldValue >= newValue)
 		return 'r';
 	else
 		return 'g';
@@ -148,19 +148,19 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				break;
 			}
 
-			int old_attack = (unit->HaveWeapon() ? (int)unit->CalculateAttack() : 0);
-			int new_attack = (int)unit->CalculateAttack(item);
-			cstring atk_desc;
-			if(old_attack == new_attack)
-				atk_desc = Format("%d", old_attack);
+			int oldAttack = (unit->HaveWeapon() ? (int)unit->CalculateAttack() : 0);
+			int newAttack = (int)unit->CalculateAttack(item);
+			cstring atkDesc;
+			if(oldAttack == newAttack)
+				atkDesc = Format("%d", oldAttack);
 			else
-				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
+				atkDesc = Format("$c%c%d -> %d$c-", IsBetterColor(oldAttack, newAttack), oldAttack, newAttack);
 
 			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				WeaponTypeInfo::info[weapon.weaponType].name,
 				txAttack,
 				weapon.dmg,
-				atk_desc,
+				atkDesc,
 				dmgType,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= weapon.reqStr ? '-' : 'r'),
@@ -176,18 +176,18 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			*/
 			const Bow& bow = item->ToBow();
 
-			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
-			int new_attack = (int)unit->CalculateAttack(item);
-			cstring atk_desc;
-			if(old_attack == new_attack)
-				atk_desc = Format("%d", old_attack);
+			int oldAttack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
+			int newAttack = (int)unit->CalculateAttack(item);
+			cstring atkDesc;
+			if(oldAttack == newAttack)
+				atkDesc = Format("%d", oldAttack);
 			else
-				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
+				atkDesc = Format("$c%c%d -> %d$c-", IsBetterColor(oldAttack, newAttack), oldAttack, newAttack);
 
 			str += Format("\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				txAttack,
 				bow.dmg,
-				atk_desc,
+				atkDesc,
 				txDTPierce,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= bow.reqStr ? '-' : 'r'),
@@ -203,40 +203,40 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Mobility: 50 (40 -> 50)
 			*/
 			const Armor& armor = item->ToArmor();
-			cstring mob_str, armor_type_text;
+			cstring mobilityStr, armorTypeText;
 
 			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
 			if(unit->data->armorType == armor.armorUnitType)
-				armor_type_text = skill;
+				armorTypeText = skill;
 			else
-				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);
+				armorTypeText = Format("%s (%s)", skill, txInvalidArmor);
 
-			int old_mob = (int)unit->CalculateMobility();
-			int new_mob = (int)unit->CalculateMobility(&armor);
-			if(old_mob == new_mob)
-				mob_str = Format("%d", new_mob);
+			int oldMobility = (int)unit->CalculateMobility();
+			int newMobility = (int)unit->CalculateMobility(&armor);
+			if(oldMobility == newMobility)
+				mobilityStr = Format("%d", newMobility);
 			else
-				mob_str = Format("$c%c%d -> %d$c-", IsBetterColor(old_mob, new_mob), old_mob, new_mob);
+				mobilityStr = Format("$c%c%d -> %d$c-", IsBetterColor(oldMobility, newMobility), oldMobility, newMobility);
 
-			int old_def = (int)unit->CalculateDefense();
-			int new_def = (int)unit->CalculateDefense(item);
-			cstring def_desc;
-			if(old_def == new_def)
-				def_desc = Format("%d", old_def);
+			int oldDef = (int)unit->CalculateDefense();
+			int newDef = (int)unit->CalculateDefense(item);
+			cstring defDesc;
+			if(oldDef == newDef)
+				defDesc = Format("%d", oldDef);
 			else
-				def_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_def, new_def), old_def, new_def);
+				defDesc = Format("$c%c%d -> %d$c-", IsBetterColor(oldDef, newDef), oldDef, newDef);
 
 			str += Format(" - %s\n%s: %d (%s)\n%s: $c%c%d$c-\n%s: %d (%s)\n",
-				armor_type_text,
+				armorTypeText,
 				txDefense,
 				armor.def,
-				def_desc,
+				defDesc,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= armor.reqStr ? '-' : 'r'),
 				armor.reqStr,
 				txMobility,
 				armor.mobility,
-				mob_str);
+				mobilityStr);
 		}
 		break;
 	case IT_SHIELD:
@@ -248,23 +248,23 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			*/
 			const Shield& shield = item->ToShield();
 
-			cstring block_desc;
-			int new_block = (int)unit->CalculateBlock(item);
+			cstring blockDesc;
+			int newBlock = (int)unit->CalculateBlock(item);
 			if(unit->HaveShield())
 			{
-				int old_block = (int)unit->CalculateBlock();
-				if(old_block == new_block)
-					block_desc = Format("%d", new_block);
+				int oldBlock = (int)unit->CalculateBlock();
+				if(oldBlock == newBlock)
+					blockDesc = Format("%d", newBlock);
 				else
-					block_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_block, new_block), old_block, new_block);
+					blockDesc = Format("$c%c%d -> %d$c-", IsBetterColor(oldBlock, newBlock), oldBlock, newBlock);
 			}
 			else
-				block_desc = Format("%d", new_block);
+				blockDesc = Format("%d", newBlock);
 
 			str += Format("\n%s: %d (%s)\n%s: $c%c%d$c-\n",
 				txBlock,
 				shield.block,
-				block_desc,
+				blockDesc,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= shield.reqStr ? '-' : 'r'),
 				shield.reqStr);
@@ -349,13 +349,13 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 	}
 	else
 	{
-		vector<ItemSlot> v_copy(items.begin(), it);
-		v_copy.reserve(items.size() + slot.count);
+		vector<ItemSlot> vCopy(items.begin(), it);
+		vCopy.reserve(items.size() + slot.count);
 
 		// add new
 		while(slot.count)
 		{
-			v_copy.push_back(slot2);
+			vCopy.push_back(slot2);
 			if(slot.teamCount)
 			{
 				slot2.teamCount = 1;
@@ -368,9 +368,9 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 
 		// add old at right
 		for(vector<ItemSlot>::iterator end = items.end(); it != end; ++it)
-			v_copy.push_back(*it);
+			vCopy.push_back(*it);
 
-		items.swap(v_copy);
+		items.swap(vCopy);
 	}
 }
 

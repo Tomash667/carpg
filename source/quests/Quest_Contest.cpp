@@ -356,87 +356,87 @@ void Quest_Contest::Update(float dt)
 	else if(state == CONTEST_IN_PROGRESS)
 	{
 		bool talking = true;
-		cstring next_text = nullptr, next_drink = nullptr;
+		cstring nextText = nullptr, nextDrink = nullptr;
 
 		switch(state2)
 		{
 		case 0:
-			next_text = txContestTalk[1];
+			nextText = txContestTalk[1];
 			break;
 		case 1:
-			next_text = txContestTalk[2];
+			nextText = txContestTalk[2];
 			break;
 		case 2:
-			next_text = txContestTalk[3];
+			nextText = txContestTalk[3];
 			break;
 		case 3:
-			next_drink = "beer";
+			nextDrink = "beer";
 			break;
 		case 4:
 			talking = false;
-			next_text = txContestTalk[4];
+			nextText = txContestTalk[4];
 			break;
 		case 5:
-			next_drink = "beer";
+			nextDrink = "beer";
 			break;
 		case 6:
 			talking = false;
-			next_text = txContestTalk[5];
+			nextText = txContestTalk[5];
 			break;
 		case 7:
-			next_drink = "beer";
+			nextDrink = "beer";
 			break;
 		case 8:
 			talking = false;
-			next_text = txContestTalk[6];
+			nextText = txContestTalk[6];
 			break;
 		case 9:
-			next_drink = "vodka";
+			nextDrink = "vodka";
 			break;
 		case 10:
 			talking = false;
-			next_text = txContestTalk[7];
+			nextText = txContestTalk[7];
 			break;
 		case 11:
-			next_drink = "vodka";
+			nextDrink = "vodka";
 			break;
 		case 12:
 			talking = false;
-			next_text = txContestTalk[8];
+			nextText = txContestTalk[8];
 			break;
 		case 13:
-			next_drink = "vodka";
+			nextDrink = "vodka";
 			break;
 		case 14:
 			talking = false;
-			next_text = txContestTalk[9];
+			nextText = txContestTalk[9];
 			break;
 		case 15:
-			next_text = txContestTalk[10];
+			nextText = txContestTalk[10];
 			break;
 		case 16:
-			next_drink = "spirit";
+			nextDrink = "spirit";
 			break;
 		case 17:
 			talking = false;
-			next_text = txContestTalk[11];
+			nextText = txContestTalk[11];
 			break;
 		case 18:
-			next_drink = "spirit";
+			nextDrink = "spirit";
 			break;
 		case 19:
 			talking = false;
-			next_text = txContestTalk[12];
+			nextText = txContestTalk[12];
 			break;
 		default:
 			if((state2 - 20) % 2 == 0)
 			{
 				if(state2 != 20)
 					talking = false;
-				next_text = txContestTalk[13];
+				nextText = txContestTalk[13];
 			}
 			else
-				next_drink = "spirit";
+				nextDrink = "spirit";
 			break;
 		}
 
@@ -444,13 +444,13 @@ void Quest_Contest::Update(float dt)
 		{
 			if(innkeeper.CanAct())
 			{
-				if(next_text)
-					innkeeper.Talk(next_text);
+				if(nextText)
+					innkeeper.Talk(nextText);
 				else
 				{
-					assert(next_drink);
+					assert(nextDrink);
 					time = 0.f;
-					const Consumable& drink = Item::Get(next_drink)->ToConsumable();
+					const Consumable& drink = Item::Get(nextDrink)->ToConsumable();
 					for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}
@@ -465,8 +465,8 @@ void Quest_Contest::Update(float dt)
 			{
 				if(units.size() >= 2)
 				{
-					assert(next_text);
-					innkeeper.Talk(next_text);
+					assert(nextText);
+					innkeeper.Talk(nextText);
 					++state2;
 				}
 				else if(units.size() == 1)

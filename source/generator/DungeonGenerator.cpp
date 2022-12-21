@@ -331,16 +331,16 @@ void DungeonGenerator::GenerateUnits()
 	const bool canSpawnSlime = (baseLevel >= 3 && baseLevel <= 5);
 
 	// chance for spawning units
-	const int chance_for_none = 10,
-		chance_for_1 = 20,
-		chance_for_2 = 30,
-		chance_for_3 = 40,
-		chance_in_corridor = 25;
+	const int chanceForNone = 10,
+		chanceFor1 = 20,
+		chanceFor2 = 30,
+		chanceFor3 = 40,
+		chanceInCorridor = 25;
 
-	assert(InRange(chance_for_none, 0, 100) && InRange(chance_for_1, 0, 100) && InRange(chance_for_2, 0, 100) && InRange(chance_for_3, 0, 100)
-		&& InRange(chance_in_corridor, 0, 100) && chance_for_none + chance_for_1 + chance_for_2 + chance_for_3 == 100);
+	assert(InRange(chanceForNone, 0, 100) && InRange(chanceFor1, 0, 100) && InRange(chanceFor2, 0, 100) && InRange(chanceFor3, 0, 100)
+		&& InRange(chanceInCorridor, 0, 100) && chanceForNone + chanceFor1 + chanceFor2 + chanceFor3 == 100);
 
-	const int chance[3] = { chance_for_none, chance_for_none + chance_for_1, chance_for_none + chance_for_1 + chance_for_2 };
+	const int chance[3] = { chanceForNone, chanceForNone + chanceFor1, chanceForNone + chanceFor1 + chanceFor2 };
 
 	// spawn units
 	InsideLocation* inside = (InsideLocation*)gameLevel->location;
@@ -358,7 +358,7 @@ void DungeonGenerator::GenerateUnits()
 		if(group.target == RoomTarget::Corridor)
 		{
 			assert(group.rooms.size() == 1u);
-			if(Rand() % 100 < chance_in_corridor)
+			if(Rand() % 100 < chanceInCorridor)
 				count = 1;
 			else
 				continue;
@@ -444,7 +444,7 @@ void DungeonGenerator::GenerateDungeonItems()
 		*shelves = BaseObject::Get("shelves");
 	const Item* plate = Item::Get("plate");
 	const Item* cup = Item::Get("cup");
-	bool spawn_golden_cup = Rand() % 100 == 0;
+	bool spawnGoldenCup = Rand() % 100 == 0;
 
 	// spawn food
 	LocationPart& locPart = *gameLevel->localPart;
@@ -454,9 +454,9 @@ void DungeonGenerator::GenerateDungeonItems()
 		if(obj.base == table)
 		{
 			gameLevel->PickableItemBegin(locPart, obj);
-			if(spawn_golden_cup)
+			if(spawnGoldenCup)
 			{
-				spawn_golden_cup = false;
+				spawnGoldenCup = false;
 				gameLevel->PickableItemAdd(Item::Get("golden_cup"));
 			}
 			else

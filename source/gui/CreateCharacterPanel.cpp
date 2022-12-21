@@ -560,7 +560,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			if(mode == Mode::PickClass)
 			{
 				mode = Mode::PickSkillPerk;
-				if(reset_skills_perks)
+				if(resetSkillsPerks)
 					ResetSkillsPerks();
 			}
 			else
@@ -916,7 +916,7 @@ void CreateCharacterPanel::Show(bool enterName)
 	ClassChanged();
 	RandomAppearance();
 
-	reset_skills_perks = true;
+	resetSkillsPerks = true;
 	this->enterName = enterName;
 	mode = Mode::PickClass;
 
@@ -940,7 +940,7 @@ void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter
 	RebuildPerksFlow();
 	UpdateInventory();
 
-	reset_skills_perks = false;
+	resetSkillsPerks = false;
 	enterName = false;
 	mode = Mode::PickAppearance;
 
@@ -979,7 +979,7 @@ void CreateCharacterPanel::OnChangeClass(int index)
 {
 	clas = reinterpret_cast<Class*>(lbClasses.GetItem()->value);
 	ClassChanged();
-	reset_skills_perks = true;
+	resetSkillsPerks = true;
 	ResetDoll(false);
 }
 
@@ -1009,9 +1009,9 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id, bool refresh)
+void CreateCharacterPanel::GetTooltip(TooltipController* ptrTool, int group, int id, bool refresh)
 {
-	TooltipController& tool = *ptr_tool;
+	TooltipController& tool = *ptrTool;
 
 	switch((Group)group)
 	{
@@ -1159,7 +1159,7 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 	}
 
 	// update buttons image / text
-	FlowItem* find_item = nullptr;
+	FlowItem* findItem = nullptr;
 	for(FlowItem* item : flowSkills.items)
 	{
 		if(item->type == FlowItem::Button)
@@ -1167,19 +1167,19 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 			if(!cc.s[item->id].add)
 			{
 				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
-				item->tex_id = 0;
+				item->texId = 0;
 			}
 			else
 			{
 				item->state = Button::NONE;
-				item->tex_id = 1;
+				item->texId = 1;
 			}
 		}
 		else if(item->type == FlowItem::Item && item->id == id)
-			find_item = item;
+			findItem = item;
 	}
 
-	flowSkills.UpdateText(find_item, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value));
+	flowSkills.UpdateText(findItem, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value));
 
 	UpdateInventory();
 }
@@ -1314,8 +1314,8 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		flowPerks.Add()->Set(txAvailablePerks);
 		for(Perk* perk : availablePerks)
 		{
-			bool can_pick = (cc.perks == 0 && !IsSet(perk->flags, Perk::Flaw));
-			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
+			bool canPick = (cc.perks == 0 && !IsSet(perk->flags, Perk::Flaw));
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, canPick);
 			flowPerks.Add()->Set(perk->name.c_str(), (int)Group::Perk, (int)perk);
 		}
 	}
@@ -1335,7 +1335,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 //=================================================================================================
 void CreateCharacterPanel::ResetSkillsPerks()
 {
-	reset_skills_perks = false;
+	resetSkillsPerks = false;
 	cc.Clear(clas);
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
@@ -1346,7 +1346,7 @@ void CreateCharacterPanel::ResetSkillsPerks()
 //=================================================================================================
 void CreateCharacterPanel::PickAttribute(cstring text, Perk* perk)
 {
-	picked_perk = perk;
+	pickedPerk = perk;
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickAttributeForPerk);
@@ -1363,7 +1363,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk* perk)
 //=================================================================================================
 void CreateCharacterPanel::PickSkill(cstring text, Perk* perk)
 {
-	picked_perk = perk;
+	pickedPerk = perk;
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickSkillForPerk);
@@ -1398,7 +1398,7 @@ void CreateCharacterPanel::OnPickAttributeForPerk(int id)
 	int group, selected;
 	pickItemDialog->GetSelected(group, selected);
 
-	AddPerk(picked_perk, selected);
+	AddPerk(pickedPerk, selected);
 }
 
 //=================================================================================================
@@ -1409,7 +1409,7 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 
 	int group, selected;
 	pickItemDialog->GetSelected(group, selected);
-	AddPerk(picked_perk, selected);
+	AddPerk(pickedPerk, selected);
 	UpdateInventory();
 }
 
@@ -1423,12 +1423,12 @@ void CreateCharacterPanel::UpdateSkillButtons()
 			if(!cc.s[item->id].add)
 			{
 				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
-				item->tex_id = 0;
+				item->texId = 0;
 			}
 			else
 			{
 				item->state = Button::NONE;
-				item->tex_id = 1;
+				item->texId = 1;
 			}
 		}
 	}
@@ -1479,11 +1479,11 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 //=================================================================================================
 void CreateCharacterPanel::UpdateInventory()
 {
-	array<const Item*, SLOT_MAX> old_items = items;
+	array<const Item*, SLOT_MAX> oldItems = items;
 
 	cc.GetStartingItems(items);
 
-	if(items == old_items)
+	if(items == oldItems)
 		return;
 
 	unit->ReplaceItems(items);

@@ -901,7 +901,7 @@ void Game::UpdateAi(float dt)
 						// check if unit have required item
 						const Item* reqItem = ironVein->item;
 						if(reqItem && !u.HaveItem(reqItem) && u.GetEquippedItem(SLOT_WEAPON) != reqItem)
-							goto normal_idle_action;
+							goto normalIdleAction;
 						// find closest ore vein
 						Usable* usable = nullptr;
 						float range = 20.1f;
@@ -926,7 +926,7 @@ void Game::UpdateAi(float dt)
 							ai.timer = Random(5.f, 10.f);
 						}
 						else
-							goto normal_idle_action;
+							goto normalIdleAction;
 					}
 					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE)
 						&& questMgr->questMages2->magesState >= Quest_Mages2::State::OldMageJoined
@@ -940,7 +940,7 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-					normal_idle_action:
+					normalIdleAction:
 						// random ai action
 						int what = AI_NOT_SET;
 						float dist;
@@ -2711,7 +2711,7 @@ void Game::UpdateAi(float dt)
 						if(Int2::Distance(myLocalTile, localTile) > 32)
 						{
 							moveTarget = Vec3(targetPos.x, 0, targetPos.z);
-							goto skip_localpf;
+							goto skipLocalpf;
 						}
 						else
 							isEndPoint = true;
@@ -2786,7 +2786,7 @@ void Game::UpdateAi(float dt)
 					moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
 				}
 
-			skip_localpf:
+			skipLocalpf:
 
 				if(move != 0)
 				{

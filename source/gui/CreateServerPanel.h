@@ -27,6 +27,6 @@ public:
 
 	TextBox textbox[3];
 	CheckBox checkbox;
-	cstring txCreateServer, textbox_text[3], txEnterServerName, txInvalidPlayersCount, txConfirmMaxPlayers;
+	cstring txCreateServer, txEnterServerName, txInvalidPlayersCount, txConfirmMaxPlayers;
 	GuiContainer cont;
 };

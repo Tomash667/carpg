@@ -25,7 +25,7 @@ Location::~Location()
 //=================================================================================================
 bool Location::CheckUpdate(int& daysPassed, int worldtime)
 {
-	bool need_reset = reset;
+	bool needReset = reset;
 	reset = false;
 	if(lastVisit == -1)
 		daysPassed = -1;
@@ -34,7 +34,7 @@ bool Location::CheckUpdate(int& daysPassed, int worldtime)
 	lastVisit = worldtime;
 	if(dontClean)
 		daysPassed = 0;
-	return need_reset;
+	return needReset;
 }
 
 //=================================================================================================

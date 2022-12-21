@@ -171,10 +171,10 @@ void AbilityLoader::LoadEntity(int top, const string& id)
 void AbilityLoader::ParseAbility(const string& id)
 {
 	int hash = Hash(id);
-	Ability* existing_ability = Ability::Get(hash);
-	if(existing_ability)
+	Ability* existingAbility = Ability::Get(hash);
+	if(existingAbility)
 	{
-		if(existing_ability->id == id)
+		if(existingAbility->id == id)
 			t.Throw("Id must be unique.");
 		else
 			t.Throw("Id hash collision.");
@@ -251,11 +251,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				ability->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				ability->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(!ability->mesh)
-					t.Throw("Missing mesh '%s'.", mesh_id.c_str());
-				crc.Update(mesh_id);
+					t.Throw("Missing mesh '%s'.", meshId.c_str());
+				crc.Update(meshId);
 				t.Next();
 				ability->size = t.MustGetFloat();
 				if(ability->size <= 0.f)
@@ -266,11 +266,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->tex = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->tex = resMgr->TryGet<Texture>(texId);
 				if(!ability->tex)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 				ability->size = t.MustGetFloat();
 				if(ability->size <= 0.f)
@@ -281,11 +281,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX_PARTICLE:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->texParticle = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->texParticle = resMgr->TryGet<Texture>(texId);
 				if(!ability->texParticle)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 				ability->sizeParticle = t.MustGetFloat();
 				if(ability->sizeParticle <= 0.f)
@@ -296,21 +296,21 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX_EXPLODE:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->texExplode.diffuse = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->texExplode.diffuse = resMgr->TryGet<Texture>(texId);
 				if(!ability->texExplode.diffuse)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 			}
 			break;
 		case K_SOUND_CAST:
 			{
-				const string& sound_id = t.MustGetString();
-				ability->soundCast = resMgr->TryGet<Sound>(sound_id);
+				const string& soundId = t.MustGetString();
+				ability->soundCast = resMgr->TryGet<Sound>(soundId);
 				if(!ability->soundCast)
-					t.Throw("Missing sound '%s'.", sound_id.c_str());
-				crc.Update(sound_id);
+					t.Throw("Missing sound '%s'.", soundId.c_str());
+				crc.Update(soundId);
 				t.Next();
 				ability->soundCastDist = t.MustGetFloat();
 				if(ability->soundCastDist <= 0.f)
@@ -321,11 +321,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_SOUND_HIT:
 			{
-				const string& sound_id = t.MustGetString();
-				ability->soundHit = resMgr->TryGet<Sound>(sound_id);
+				const string& soundId = t.MustGetString();
+				ability->soundHit = resMgr->TryGet<Sound>(soundId);
 				if(!ability->soundHit)
-					t.Throw("Missing sound '%s'.", sound_id.c_str());
-				crc.Update(sound_id);
+					t.Throw("Missing sound '%s'.", soundId.c_str());
+				crc.Update(soundId);
 				t.Next();
 				ability->soundHitDist = t.MustGetFloat();
 				if(ability->soundHitDist <= 0.f)
@@ -465,8 +465,8 @@ void AbilityLoader::ParseAlias(const string& id)
 		t.Throw("Missing ability '%s'.", id.c_str());
 	t.Next();
 
-	const string& alias_id = t.MustGetItemKeyword();
-	int hash = Hash(alias_id);
+	const string& aliasId = t.MustGetItemKeyword();
+	int hash = Hash(aliasId);
 	if(Ability::Get(hash))
 		t.Throw("Alias or ability already exists.");
 

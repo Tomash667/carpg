@@ -315,8 +315,8 @@ Quest::LoadResult Quest_Mine::Load(GameReader& f)
 	f >> daysRequired;
 	if(LOAD_VERSION < V_0_18)
 	{
-		int days_gold;
-		f >> days_gold;
+		int daysGold;
+		f >> daysGold;
 		if(mineState == State::Shares || mineState == State::BigShares)
 			team->AddInvestment(questMgr->txQuest[131], id, mineState == State::Shares ? PAYMENT : PAYMENT2);
 	}
@@ -383,7 +383,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	Cave& cave = *(Cave*)gameLevel->location;
 	cave.loadedResources = false;
 	InsideLocationLevel& lvl = cave.GetLevelData();
-	int update_flags = 0;
+	int updateFlags = 0;
 
 	// remove old units & blood
 	if(mineState3 <= State3::GeneratedMine && mineState2 >= State2::InBuild)
@@ -392,25 +392,25 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		DeleteElements(game->ais);
 		cave.units.clear();
 		cave.bloods.clear();
-		update_flags |= LocationGenerator::PREVENT_RESPAWN_UNITS;
+		updateFlags |= LocationGenerator::PREVENT_RESPAWN_UNITS;
 	}
 
-	bool generate_veins = false;
-	int gold_chance, resize = 0;
+	bool generateVeins = false;
+	int goldChance, resize = 0;
 	bool redraw = false;
 
 	// at first entry just generate iron veins
 	if(mineState3 == State3::None)
 	{
-		generate_veins = true;
-		gold_chance = 0;
+		generateVeins = true;
+		goldChance = 0;
 	}
 
 	// resize cave
 	if(mineState2 >= State2::InBuild && mineState3 < State3::GeneratedBuilt)
 	{
-		generate_veins = true;
-		gold_chance = 0;
+		generateVeins = true;
+		goldChance = 0;
 		++resize;
 		redraw = true;
 	}
@@ -418,14 +418,14 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	// more cave resize
 	if(mineState2 >= State2::InExpand && mineState3 < State3::GeneratedExpanded)
 	{
-		generate_veins = true;
-		gold_chance = 4;
+		generateVeins = true;
+		goldChance = 4;
 		++resize;
 		redraw = true;
 	}
 
 	// resize if required
-	vector<Int2> new_tiles;
+	vector<Int2> newTiles;
 	for(int i = 0; i < resize; ++i)
 	{
 		for(int y = 1; y < lvl.h - 1; ++y)
@@ -438,26 +438,26 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 					if(Rand() % 2 == 0 && (!IsBlocking2(A(-1, 0)) || !IsBlocking2(A(1, 0)) || !IsBlocking2(A(0, -1)) || !IsBlocking2(A(0, 1)))
 						&& (A(-1, -1) != ENTRY_PREV && A(-1, 1) != ENTRY_PREV && A(1, -1) != ENTRY_PREV && A(1, 1) != ENTRY_PREV))
 					{
-						new_tiles.push_back(Int2(x, y));
+						newTiles.push_back(Int2(x, y));
 					}
 #undef A
 				}
 			}
 		}
 
-		for(vector<Int2>::iterator it = new_tiles.begin(), end = new_tiles.end(); it != end; ++it)
+		for(vector<Int2>::iterator it = newTiles.begin(), end = newTiles.end(); it != end; ++it)
 			lvl.map[it->x + it->y * lvl.w].type = EMPTY;
 	}
 
 	// generate portal
 	if(mineState2 >= State2::FoundPortal && mineState3 < State3::GeneratedPortal)
 	{
-		generate_veins = true;
-		gold_chance = 7;
+		generateVeins = true;
+		goldChance = 7;
 		redraw = true;
 
 		// search for good position
-		vector<Int2> good_pts;
+		vector<Int2> goodPts;
 		for(int y = 1; y < lvl.h - 5; ++y)
 		{
 			for(int x = 1; x < lvl.w - 5; ++x)
@@ -471,31 +471,31 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 					}
 				}
 
-				good_pts.push_back(Int2(x, y));
+				goodPts.push_back(Int2(x, y));
 			skip:
 				;
 			}
 		}
 
-		if(good_pts.empty())
+		if(goodPts.empty())
 		{
 			if(lvl.prevEntryPt.x / 26 == 1)
 			{
 				if(lvl.prevEntryPt.y / 26 == 1)
-					good_pts.push_back(Int2(1, 1));
+					goodPts.push_back(Int2(1, 1));
 				else
-					good_pts.push_back(Int2(1, lvl.h - 6));
+					goodPts.push_back(Int2(1, lvl.h - 6));
 			}
 			else
 			{
 				if(lvl.prevEntryPt.y / 26 == 1)
-					good_pts.push_back(Int2(lvl.w - 6, 1));
+					goodPts.push_back(Int2(lvl.w - 6, 1));
 				else
-					good_pts.push_back(Int2(lvl.w - 6, lvl.h - 6));
+					goodPts.push_back(Int2(lvl.w - 6, lvl.h - 6));
 			}
 		}
 
-		Int2 pt = good_pts[Rand() % good_pts.size()];
+		Int2 pt = goodPts[Rand() % goodPts.size()];
 
 		// prepare room
 		// BBZBB
@@ -539,7 +539,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		// add entance - find nearest empty point
 		const Int2 center(pt.x + 2, pt.y + 2);
 		Int2 closest;
-		int best_dist = 999;
+		int bestDist = 999;
 		for(int y = 1; y < lvl.h - 1; ++y)
 		{
 			for(int x = 1; x < lvl.w - 1; ++x)
@@ -547,9 +547,9 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 				if(lvl.map[x + y * lvl.w].type == EMPTY)
 				{
 					int dist = Int2::Distance(Int2(x, y), center);
-					if(dist < best_dist && dist > 2)
+					if(dist < bestDist && dist > 2)
 					{
-						best_dist = dist;
+						bestDist = dist;
 						closest = Int2(x, y);
 					}
 				}
@@ -557,31 +557,31 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		}
 
 		// find path from point to room
-		Int2 end_pt;
+		Int2 endPt;
 		while(true)
 		{
 			if(abs(closest.x - center.x) > abs(closest.y - center.y))
 			{
-			po_x:
+			byX:
 				if(closest.x > center.x)
 				{
 					--closest.x;
 					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
-						end_pt = closest;
+						endPt = closest;
 						break;
 					}
 					else if(p.type == BLOCKADE)
 					{
 						++closest.x;
-						goto po_y;
+						goto byY;
 					}
 					else
 					{
 						p.type = EMPTY;
 						p.flags = 0;
-						new_tiles.push_back(closest);
+						newTiles.push_back(closest);
 					}
 				}
 				else
@@ -590,44 +590,44 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
-						end_pt = closest;
+						endPt = closest;
 						break;
 					}
 					else if(p.type == BLOCKADE)
 					{
 						--closest.x;
-						goto po_y;
+						goto byY;
 					}
 					else
 					{
 						p.type = EMPTY;
 						p.flags = 0;
-						new_tiles.push_back(closest);
+						newTiles.push_back(closest);
 					}
 				}
 			}
 			else
 			{
-			po_y:
+			byY:
 				if(closest.y > center.y)
 				{
 					--closest.y;
 					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
-						end_pt = closest;
+						endPt = closest;
 						break;
 					}
 					else if(p.type == BLOCKADE)
 					{
 						++closest.y;
-						goto po_x;
+						goto byX;
 					}
 					else
 					{
 						p.type = EMPTY;
 						p.flags = 0;
-						new_tiles.push_back(closest);
+						newTiles.push_back(closest);
 					}
 				}
 				else
@@ -636,19 +636,19 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 					Tile& p = lvl.map[closest.x + closest.y * lvl.w];
 					if(p.type == USED)
 					{
-						end_pt = closest;
+						endPt = closest;
 						break;
 					}
 					else if(p.type == BLOCKADE)
 					{
 						--closest.y;
-						goto po_x;
+						goto byX;
 					}
 					else
 					{
 						p.type = EMPTY;
 						p.flags = 0;
-						new_tiles.push_back(closest);
+						newTiles.push_back(closest);
 					}
 				}
 			}
@@ -674,7 +674,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 				p.flags = Tile::F_SECOND_TEXTURE;
 			}
 		}
-		Tile& p = lvl.map[end_pt(lvl.w)];
+		Tile& p = lvl.map[endPt(lvl.w)];
 		p.type = DOORS;
 		p.flags = 0;
 
@@ -693,7 +693,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		{
 			Object* o = new Object;
 			o->mesh = gameRes->aDoorWall;
-			o->pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
+			o->pos = Vec3(float(endPt.x * 2) + 1, 0, float(endPt.y * 2) + 1);
 			o->scale = 1;
 			o->base = nullptr;
 			cave.objects.push_back(o);
@@ -704,38 +704,38 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 			room->type = nullptr;
 			lvl.rooms.push_back(room);
 
-			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y * lvl.w].type))
+			if(IsBlocking(lvl.map[endPt.x - 1 + endPt.y * lvl.w].type))
 			{
 				o->rot = Vec3(0, 0, 0);
-				if(end_pt.y > center.y)
+				if(endPt.y > center.y)
 				{
 					o->pos.z -= 0.8229f;
-					lvl.At(end_pt + Int2(0, 1)).room = 1;
+					lvl.At(endPt + Int2(0, 1)).room = 1;
 				}
 				else
 				{
 					o->pos.z += 0.8229f;
-					lvl.At(end_pt + Int2(0, -1)).room = 1;
+					lvl.At(endPt + Int2(0, -1)).room = 1;
 				}
 			}
 			else
 			{
 				o->rot = Vec3(0, PI / 2, 0);
-				if(end_pt.x > center.x)
+				if(endPt.x > center.x)
 				{
 					o->pos.x -= 0.8229f;
-					lvl.At(end_pt + Int2(1, 0)).room = 1;
+					lvl.At(endPt + Int2(1, 0)).room = 1;
 				}
 				else
 				{
 					o->pos.x += 0.8229f;
-					lvl.At(end_pt + Int2(-1, 0)).room = 1;
+					lvl.At(endPt + Int2(-1, 0)).room = 1;
 				}
 			}
 
 			Door* door = new Door;
 			door->Register();
-			door->pt = end_pt;
+			door->pt = endPt;
 			door->pos = o->pos;
 			door->rot = o->rot.y;
 			door->state = Door::Closed;
@@ -774,16 +774,16 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		// portal
 		{
 			float rot;
-			if(end_pt.y == center.y)
+			if(endPt.y == center.y)
 			{
-				if(end_pt.x > center.x)
+				if(endPt.x > center.x)
 					rot = PI * 3 / 2;
 				else
 					rot = PI / 2;
 			}
 			else
 			{
-				if(end_pt.y > center.y)
+				if(endPt.y > center.y)
 					rot = 0;
 				else
 					rot = PI;
@@ -807,15 +807,15 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
 			loc->state = LS_HIDDEN;
-			int loc_id = world->AddLocation(loc);
-			dungeonLoc = loc_id;
+			int locId = world->AddLocation(loc);
+			dungeonLoc = locId;
 			sub.targetLoc = loc;
 
 			// portal info
 			cave.portal = new Portal;
 			cave.portal->atLevel = 0;
 			cave.portal->index = 0;
-			cave.portal->targetLoc = loc_id;
+			cave.portal->targetLoc = locId;
 			cave.portal->rot = rot;
 			cave.portal->nextPortal = nullptr;
 			cave.portal->pos = pos;
@@ -829,17 +829,17 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		}
 	}
 
-	if(!new_tiles.empty())
+	if(!newTiles.empty())
 		caveGen->RegenerateFlags();
 
 	if(redraw && game->devmode)
 		caveGen->DebugDraw();
 
 	// generate veins
-	if(generate_veins)
+	if(generateVeins)
 	{
-		auto iron_vein = BaseUsable::Get("iron_vein"),
-			gold_vein = BaseUsable::Get("gold_vein");
+		auto ironVein = BaseUsable::Get("iron_vein"),
+			goldVein = BaseUsable::Get("gold_vein");
 
 		// remove old veins
 		if(mineState3 != State3::None)
@@ -847,7 +847,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		if(!first)
 		{
 			gameLevel->RecreateObjects();
-			update_flags |= LocationGenerator::PREVENT_RECREATE_OBJECTS;
+			updateFlags |= LocationGenerator::PREVENT_RECREATE_OBJECTS;
 		}
 
 		// add new
@@ -916,14 +916,14 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 						}
 
 						float rot = Clip(DirToRot(dir) + PI);
-						static float radius = max(iron_vein->size.x, iron_vein->size.y) * SQRT_2;
+						static float radius = max(ironVein->size.x, ironVein->size.y) * SQRT_2;
 
 						Level::IgnoreObjects ignore = { 0 };
 						ignore.ignoreBlocks = true;
 						gameLevel->globalCol.clear();
 						gameLevel->GatherCollisionObjects(cave, gameLevel->globalCol, pos, radius, &ignore);
 
-						Box2d box(pos.x - iron_vein->size.x, pos.z - iron_vein->size.y, pos.x + iron_vein->size.x, pos.z + iron_vein->size.y);
+						Box2d box(pos.x - ironVein->size.x, pos.z - ironVein->size.y, pos.x + ironVein->size.x, pos.z + ironVein->size.y);
 
 						if(!gameLevel->Collide(gameLevel->globalCol, box, 0.f, rot))
 						{
@@ -931,23 +931,23 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 							u->Register();
 							u->pos = pos;
 							u->rot = rot;
-							u->base = (Rand() % 10 < gold_chance ? gold_vein : iron_vein);
+							u->base = (Rand() % 10 < goldChance ? goldVein : ironVein);
 							cave.usables.push_back(u);
 
 							CollisionObject& c = Add1(cave.lvlPart->colliders);
 							btCollisionObject* cobj = new btCollisionObject;
-							cobj->setCollisionShape(iron_vein->shape);
+							cobj->setCollisionShape(ironVein->shape);
 							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 
 							btTransform& tr = cobj->getWorldTransform();
-							Vec3 pos2 = Vec3::TransformZero(*iron_vein->matrix);
+							Vec3 pos2 = Vec3::TransformZero(*ironVein->matrix);
 							pos2 += pos;
 							tr.setOrigin(ToVector3(pos2));
 							tr.setRotation(btQuaternion(rot, 0, 0));
 
 							c.pos = pos2;
-							c.w = iron_vein->size.x;
-							c.h = iron_vein->size.y;
+							c.w = ironVein->size.x;
+							c.h = ironVein->size.y;
 							if(NotZero(rot))
 							{
 								c.type = CollisionObject::RECTANGLE_ROT;
@@ -968,13 +968,13 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	}
 
 	// generate new objects
-	if(!new_tiles.empty())
+	if(!newTiles.empty())
 	{
 		BaseObject* rock = BaseObject::Get("rock"),
 			*plant = BaseObject::Get("plant2"),
 			*mushrooms = BaseObject::Get("mushrooms");
 
-		for(vector<Int2>::iterator it = new_tiles.begin(), end = new_tiles.end(); it != end; ++it)
+		for(vector<Int2>::iterator it = newTiles.begin(), end = newTiles.end(); it != end; ++it)
 		{
 			if(Rand() % 10 == 0)
 			{
@@ -996,10 +996,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	}
 
 	// spawn units
-	bool position_units = true;
+	bool positionUnits = true;
 	if(mineState3 < State3::GeneratedInBuild && mineState2 >= State2::InBuild)
 	{
-		position_units = false;
+		positionUnits = false;
 
 		// miner leader in front of entrance
 		Int2 pt = lvl.GetPrevEntryFrontTile();
@@ -1031,10 +1031,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	}
 
 	// position units
-	if(!position_units && mineState3 >= State3::GeneratedInBuild)
+	if(!positionUnits && mineState3 >= State3::GeneratedInBuild)
 	{
 		UnitData* miner = UnitData::Get("gornik"),
-			* miner_leader = UnitData::Get("gornik_szef");
+			*minerLeader = UnitData::Get("gornik_szef");
 		for(vector<Unit*>::iterator it = cave.units.begin(), end = cave.units.end(); it != end; ++it)
 		{
 			Unit* u = *it;
@@ -1053,7 +1053,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 						}
 					}
 				}
-				else if(u->data == miner_leader)
+				else if(u->data == minerLeader)
 				{
 					Int2 pt = lvl.GetPrevEntryFrontTile();
 					int dist = 1;
@@ -1095,7 +1095,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		break;
 	}
 
-	return update_flags;
+	return updateFlags;
 }
 
 //=================================================================================================

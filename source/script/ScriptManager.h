@@ -103,7 +103,7 @@ private:
 	std::map<string, int> varTypeMap;
 	std::unordered_map<int, Vars*> unitVars;
 	ScriptContext ctx;
-	vector<SuspendedScript> suspended_scripts;
+	vector<SuspendedScript> suspendedScripts;
 	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
 	bool gatherOutput;
 };

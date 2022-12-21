@@ -28,7 +28,7 @@ EntityType<Bullet>::Impl EntityType<Bullet>::impl;
 bool Bullet::Update(float dt, LocationPart& locPart)
 {
 	// update position
-	Vec3 prev_pos = pos;
+	Vec3 prevPos = pos;
 	pos += Vec3(sin(rot.y) * speed, yspeed, cos(rot.y) * speed) * dt;
 	if(ability && ability->type == Ability::Ball)
 		yspeed -= 10.f * dt;
@@ -59,14 +59,14 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 		shape = ability->shape;
 	assert(shape->isConvex());
 
-	btTransform tr_from, tr_to;
-	tr_from.setOrigin(ToVector3(prev_pos));
-	tr_from.setRotation(btQuaternion(rot.y, rot.x, rot.z));
-	tr_to.setOrigin(ToVector3(pos));
-	tr_to.setRotation(tr_from.getRotation());
+	btTransform trFrom, trTo;
+	trFrom.setOrigin(ToVector3(prevPos));
+	trFrom.setRotation(btQuaternion(rot.y, rot.x, rot.z));
+	trTo.setOrigin(ToVector3(pos));
+	trTo.setRotation(trFrom.getRotation());
 
 	BulletCallback callback(owner ? owner->cobj : nullptr);
-	phyWorld->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, trFrom, trTo, callback);
 	if(!callback.hasHit())
 		return false;
 
@@ -419,9 +419,9 @@ void Bullet::Load(GameReader& f)
 	Register();
 	f >> pos;
 	f >> rot;
-	const string& mesh_id = f.ReadString1();
-	if(!mesh_id.empty())
-		mesh = resMgr->Load<Mesh>(mesh_id);
+	const string& meshId = f.ReadString1();
+	if(!meshId.empty())
+		mesh = resMgr->Load<Mesh>(meshId);
 	else
 		mesh = nullptr;
 	f >> speed;
@@ -445,27 +445,27 @@ void Bullet::Load(GameReader& f)
 	}
 	else
 	{
-		const string& ability_id = f.ReadString1();
-		if(!ability_id.empty())
+		const string& abilityId = f.ReadString1();
+		if(!abilityId.empty())
 		{
-			ability = Ability::Get(ability_id);
+			ability = Ability::Get(abilityId);
 			if(!ability)
-				throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
+				throw Format("Missing ability '%s' for bullet.", abilityId.c_str());
 		}
 		else
 			ability = nullptr;
 	}
-	const string& tex_name = f.ReadString1();
-	if(!tex_name.empty())
-		tex = resMgr->Load<Texture>(tex_name);
+	const string& texName = f.ReadString1();
+	if(!texName.empty())
+		tex = resMgr->Load<Texture>(texName);
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
 	if(LOAD_VERSION < V_0_13)
 	{
-		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
-		if(old_trail)
-			old_trail->destroy = true;
+		TrailParticleEmitter* oldTrail = TrailParticleEmitter::GetById(f.Read<int>());
+		if(oldTrail)
+			oldTrail->destroy = true;
 	}
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	if(LOAD_VERSION < V_0_16)

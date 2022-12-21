@@ -89,7 +89,7 @@ void GameMessages::Draw()
 //=================================================================================================
 void GameMessages::Update(float dt)
 {
-	int h = 0, total_h = msgsHeight;
+	int h = 0, totalH = msgsHeight;
 
 	for(list<GameMsg>::iterator it = msgs.begin(), end = msgs.end(); it != end; ++it)
 	{
@@ -118,8 +118,8 @@ void GameMessages::Update(float dt)
 			}
 		}
 
-		float target_h = float(gui->wndSize.y) / 2 - float(total_h) / 2 + h;
-		m.pos.y += (target_h - m.pos.y) * dt * 2;
+		float targetH = float(gui->wndSize.y) / 2 - float(totalH) / 2 + h;
+		m.pos.y += (targetH - m.pos.y) * dt * 2;
 	}
 }
 

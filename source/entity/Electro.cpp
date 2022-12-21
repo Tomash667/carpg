@@ -52,7 +52,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 
 		const Vec3 dir = line.to - line.from;
 		const Vec3 step = dir / float(steps);
-		Vec3 prev_off(0.f, 0.f, 0.f);
+		Vec3 prevOff(0.f, 0.f, 0.f);
 
 		trail->parts[0].exists = true;
 		trail->parts[0].next = 1;
@@ -63,10 +63,10 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		{
 			Vec3 p = line.from + step * (float(i) + Random(-0.25f, 0.25f));
 			Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
-			prev_off = (r + prev_off) / 2;
+			prevOff = (r + prevOff) / 2;
 			trail->parts[i].exists = true;
 			trail->parts[i].next = i + 1;
-			trail->parts[i].pt = p + prev_off;
+			trail->parts[i].pt = p + prevOff;
 			trail->parts[i].t = 0;
 		}
 
@@ -267,10 +267,10 @@ Unit* Electro::FindNextTarget()
 	for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 	{
 		Vec3 hitpoint;
-		Unit* new_hitted;
-		if(gameLevel->RayTest(targetPos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+		Unit* newHitted;
+		if(gameLevel->RayTest(targetPos, it2->first->GetCenter(), target, hitpoint, newHitted))
 		{
-			if(new_hitted == it2->first)
+			if(newHitted == it2->first)
 			{
 				newTarget = it2->first;
 				break;
@@ -342,17 +342,17 @@ void Electro::Load(GameReader& f)
 	f >> owner;
 	if(LOAD_VERSION >= V_0_13)
 	{
-		int ability_hash = f.Read<int>();
-		ability = Ability::Get(ability_hash);
+		int abilityHash = f.Read<int>();
+		ability = Ability::Get(abilityHash);
 		if(!ability)
-			throw Format("Missing ability %u for electro.", ability_hash);
+			throw Format("Missing ability %u for electro.", abilityHash);
 	}
 	else
 	{
-		const string& ability_id = f.ReadString1();
-		ability = Ability::Get(ability_id);
+		const string& abilityId = f.ReadString1();
+		ability = Ability::Get(abilityId);
 		if(!ability)
-			throw Format("Missing ability '%s' for electro.", ability_id.c_str());
+			throw Format("Missing ability '%s' for electro.", abilityId.c_str());
 	}
 	f >> valid;
 	f >> hitsome;

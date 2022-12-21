@@ -34,9 +34,9 @@ public:
 // Need to create alchemic potion to recover his memory.
 // After that we can go to enemy mage tower and kill him.
 //-----------------------------------------------------------------------------
-// start_loc = location with guard captain
+// startLoc = location with guard captain
 // mageLoc = location with drunk mage
-// target_loc = drunk mage tower, evil mage tower
+// targetLoc = drunk mage tower, evil mage tower
 class Quest_Mages2 final : public Quest_Dungeon, public UnitEventHandler
 {
 public:

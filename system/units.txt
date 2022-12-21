@@ -3428,6 +3428,11 @@ unit q_main_ill_villager : villager {
 	idle_dialog ill_idle
 }
 
+unit q_main_villager_def : villager {
+	dialog "main_village3/villager"
+	flags {human ai_stay}
+}
+
 unit q_main_ill_villager_attack : q_main_ill_villager {
 	level 5
 	group undead
@@ -3773,6 +3778,10 @@ group random {
 group plague {
 	q_main_plague_villager 2
 	q_main_plague_guard 1
+}
+
+group plague_villagers {
+	q_main_villager_def 1
 }
 
 //------------------------------------------------------------------------------

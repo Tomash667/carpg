@@ -1007,10 +1007,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 	case CMD_WHISPER:
 		if(t.Next())
 		{
-			const string& player_nick = t.MustGetText();
-			PlayerInfo* info = net->FindPlayer(player_nick);
+			const string& playerNick = t.MustGetText();
+			PlayerInfo* info = net->FindPlayer(playerNick);
 			if(!info)
-				Msg("No player with nick '%s'.", player_nick.c_str());
+				Msg("No player with nick '%s'.", playerNick.c_str());
 			else if(t.NextLine())
 			{
 				const string& text = t.MustGetItem();
@@ -1069,8 +1069,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 				else
 				{
-					const string& class_id = t.MustGetItem();
-					Class* clas = Class::TryGet(class_id);
+					const string& classId = t.MustGetItem();
+					Class* clas = Class::TryGet(classId);
 					if(clas)
 					{
 						if(clas->IsPickable())
@@ -1079,10 +1079,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 							Msg("You picked random character.");
 						}
 						else
-							Msg("Class '%s' is not pickable by players.", class_id.c_str());
+							Msg("Class '%s' is not pickable by players.", classId.c_str());
 					}
 					else
-						Msg("Invalid class id '%s'. Use 'random ?' for list of classes.", class_id.c_str());
+						Msg("Invalid class id '%s'. Use 'random ?' for list of classes.", classId.c_str());
 				}
 			}
 			else
@@ -1217,18 +1217,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(t.Next())
 		{
 			int w = t.MustGetInt(), h = -1;
-			bool pick_h = true, valid = false;
+			bool pickH = true, valid = false;
 			if(t.Next())
 			{
 				h = t.MustGetInt();
-				pick_h = false;
+				pickH = false;
 			}
 			const vector<Resolution>& resolutions = render->GetResolutions();
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
 				{
-					if(pick_h)
+					if(pickH)
 					{
 						if((int)res.size.y >= h)
 						{
@@ -1419,10 +1419,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			Effect e;
 
-			const string& effect_id = t.MustGetItem();
-			e.effect = EffectInfo::TryGet(effect_id);
+			const string& effectId = t.MustGetItem();
+			e.effect = EffectInfo::TryGet(effectId);
 			if(e.effect == EffectId::None)
-				t.Throw("Invalid effect '%s'.", effect_id.c_str());
+				t.Throw("Invalid effect '%s'.", effectId.c_str());
 			t.Next();
 
 			EffectInfo& info = EffectInfo::effects[(int)e.effect];
@@ -1451,43 +1451,43 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			e.power = t.MustGetFloat();
 			if(t.Next())
 			{
-				const string& source_name = t.MustGetItem();
-				if(source_name == "permanent")
+				const string& sourceName = t.MustGetItem();
+				if(sourceName == "permanent")
 				{
 					e.source = EffectSource::Permanent;
 					e.sourceId = -1;
 					e.time = 0;
 				}
-				else if(source_name == "perk")
+				else if(sourceName == "perk")
 				{
 					e.source = EffectSource::Perk;
 					t.Next();
-					const string& perk_id = t.MustGetItem();
-					Perk* perk = Perk::Get(perk_id);
+					const string& perkId = t.MustGetItem();
+					Perk* perk = Perk::Get(perkId);
 					if(!perk)
-						t.Throw("Invalid perk source '%s'.", perk_id.c_str());
+						t.Throw("Invalid perk source '%s'.", perkId.c_str());
 					e.sourceId = perk->hash;
 					e.time = 0;
 				}
-				else if(source_name == "temporary")
+				else if(sourceName == "temporary")
 				{
 					e.source = EffectSource::Temporary;
 					e.sourceId = -1;
 					t.Next();
 					e.time = t.MustGetFloat();
 				}
-				else if(source_name == "item")
+				else if(sourceName == "item")
 				{
 					e.source = EffectSource::Item;
 					t.Next();
-					const string slot_id = t.MustGetItem();
-					e.sourceId = ItemSlotInfo::Find(slot_id);
+					const string slotId = t.MustGetItem();
+					e.sourceId = ItemSlotInfo::Find(slotId);
 					if(e.sourceId == SLOT_INVALID)
-						t.Throw("Invalid item source '%s'.", slot_id.c_str());
+						t.Throw("Invalid item source '%s'.", slotId.c_str());
 					e.time = 0;
 				}
 				else
-					t.Throw("Invalid effect source '%s'.", source_name.c_str());
+					t.Throw("Invalid effect source '%s'.", sourceName.c_str());
 			}
 			else
 			{
@@ -1537,8 +1537,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				source = EffectSource::Perk;
 				if(t.Next())
 				{
-					const string& perk_name = t.MustGetItem();
-					Perk* perk = Perk::Get(perk_name);
+					const string& perkName = t.MustGetItem();
+					Perk* perk = Perk::Get(perkName);
 					if(perk)
 					{
 						sourceId = perk->hash;
@@ -1551,8 +1551,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				source = EffectSource::Item;
 				if(t.Next())
 				{
-					const string slot_id = t.MustGetItem();
-					ITEM_SLOT slot = ItemSlotInfo::Find(slot_id);
+					const string slotId = t.MustGetItem();
+					ITEM_SLOT slot = ItemSlotInfo::Find(slotId);
 					if(slot != SLOT_INVALID)
 					{
 						sourceId = slot;
@@ -1563,34 +1563,34 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 
 			if(t.IsItem())
 			{
-				const string& effect_name = t.MustGetItem();
-				effect = EffectInfo::TryGet(effect_name);
+				const string& effectName = t.MustGetItem();
+				effect = EffectInfo::TryGet(effectName);
 				if(effect == EffectId::None)
 				{
-					Msg("Invalid effect or source '%s'.", effect_name.c_str());
+					Msg("Invalid effect or source '%s'.", effectName.c_str());
 					break;
 				}
 
 				EffectInfo& info = EffectInfo::effects[(int)effect];
 				if(info.valueType != EffectInfo::None && t.Next())
 				{
-					const string& value_str = t.MustGetItem();
+					const string& valueStr = t.MustGetItem();
 					if(info.valueType == EffectInfo::Attribute)
 					{
-						Attribute* attrib = Attribute::Find(value_str);
+						Attribute* attrib = Attribute::Find(valueStr);
 						if(!attrib)
 						{
-							Msg("Invalid effect attribute '%s'.", value_str.c_str());
+							Msg("Invalid effect attribute '%s'.", valueStr.c_str());
 							break;
 						}
 						value = (int)attrib->attribId;
 					}
 					else
 					{
-						const Skill* skill = Skill::Find(value_str);
+						const Skill* skill = Skill::Find(valueStr);
 						if(!skill)
 						{
-							Msg("Invalid effect skill '%s'.", value_str.c_str());
+							Msg("Invalid effect skill '%s'.", valueStr.c_str());
 							break;
 						}
 						value = (int)skill->skillId;
@@ -1640,11 +1640,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Perk '%s' require 'attribute' value.", perk->id.c_str());
 					break;
 				}
-				const string& attrib_name = t.MustGetItem();
-				Attribute* attrib = Attribute::Find(attrib_name);
+				const string& attribName = t.MustGetItem();
+				Attribute* attrib = Attribute::Find(attribName);
 				if(!attrib)
 				{
-					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
+					Msg("Invalid attribute '%s' for perk '%s'.", attribName.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)attrib->attribId;
@@ -1656,11 +1656,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Perk '%s' require 'skill' value.", perk->id.c_str());
 					break;
 				}
-				const string& skill_name = t.MustGetItem();
-				const Skill* skill = Skill::Find(skill_name);
+				const string& skillName = t.MustGetItem();
+				const Skill* skill = Skill::Find(skillName);
 				if(!skill)
 				{
-					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
+					Msg("Invalid skill '%s' for perk '%s'.", skillName.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)skill->skillId;
@@ -1700,11 +1700,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Perk '%s' require 'attribute' value.", perk->id.c_str());
 					break;
 				}
-				const string& attrib_name = t.MustGetItem();
-				Attribute* attrib = Attribute::Find(attrib_name);
+				const string& attribName = t.MustGetItem();
+				Attribute* attrib = Attribute::Find(attribName);
 				if(!attrib)
 				{
-					Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), perk->id.c_str());
+					Msg("Invalid attribute '%s' for perk '%s'.", attribName.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)attrib->attribId;
@@ -1716,11 +1716,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					Msg("Perk '%s' require 'skill' value.", perk->id.c_str());
 					break;
 				}
-				const string& skill_name = t.MustGetItem();
-				const Skill* skill = Skill::Find(skill_name);
+				const string& skillName = t.MustGetItem();
+				const Skill* skill = Skill::Find(skillName);
 				if(!skill)
 				{
-					Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), perk->id.c_str());
+					Msg("Invalid skill '%s' for perk '%s'.", skillName.c_str(), perk->id.c_str());
 					break;
 				}
 				value = (int)skill->skillId;
@@ -1818,16 +1818,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		break;
 	case CMD_CLEAN_LEVEL:
 		{
-			int building_id = -2;
+			int buildingId = -2;
 			if(t.Next())
-				building_id = t.MustGetInt();
+				buildingId = t.MustGetInt();
 			if(Net::IsLocal())
-				gameLevel->CleanLevel(building_id);
+				gameLevel->CleanLevel(buildingId);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CLEAN_LEVEL;
-				c.id = building_id;
+				c.id = buildingId;
 			}
 		}
 		break;
@@ -2033,14 +2033,14 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			}
 
 			EffectInfo& info = EffectInfo::effects[(int)e.effect];
-			bool ok_value;
+			bool okValue;
 			if(info.valueType == EffectInfo::None)
-				ok_value = (e.value == -1);
+				okValue = (e.value == -1);
 			else if(info.valueType == EffectInfo::Attribute)
-				ok_value = (e.value >= 0 && e.value < (int)AttributeId::MAX);
+				okValue = (e.value >= 0 && e.value < (int)AttributeId::MAX);
 			else
-				ok_value = (e.value >= 0 && e.value < (int)SkillId::MAX);
-			if(!ok_value)
+				okValue = (e.value >= 0 && e.value < (int)SkillId::MAX);
+			if(!okValue)
 			{
 				Error("CommandParser CMD_ADD_EFFECT: Invalid value %d for effect %s.", e.value, info.id);
 				return false;
@@ -2104,14 +2104,14 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 			if((int)effect >= 0)
 			{
 				EffectInfo& info = EffectInfo::effects[(int)effect];
-				bool ok_value;
+				bool okValue;
 				if(info.valueType == EffectInfo::None)
-					ok_value = (value == -1);
+					okValue = (value == -1);
 				else if(info.valueType == EffectInfo::Attribute)
-					ok_value = (value >= 0 && value < (int)AttributeId::MAX);
+					okValue = (value >= 0 && value < (int)AttributeId::MAX);
 				else
-					ok_value = (value >= 0 && value < (int)SkillId::MAX);
-				if(!ok_value)
+					okValue = (value >= 0 && value < (int)SkillId::MAX);
+				if(!okValue)
 				{
 					Error("CommandParser CMD_REMOVE_EFFECT: Invalid value %d for effect %s.", value, info.id);
 					return false;
@@ -2137,10 +2137,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 	case CMD_ADD_PERK:
 		{
 			int id, value;
-			int perk_hash;
+			int perkHash;
 
 			f >> id;
-			f >> perk_hash;
+			f >> perkHash;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = gameLevel->FindUnit(id);
@@ -2154,10 +2154,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				Error("CommandParser CMD_ADD_PERK: Unit %d is not player.", id);
 				return false;
 			}
-			Perk* perk = Perk::Get(perk_hash);
+			Perk* perk = Perk::Get(perkHash);
 			if(!perk)
 			{
-				Error("CommandParser CMD_ADD_PERK: Invalid perk %u.", perk_hash);
+				Error("CommandParser CMD_ADD_PERK: Invalid perk %u.", perkHash);
 				return false;
 			}
 			if(perk->valueType == Perk::None)
@@ -2191,10 +2191,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 	case CMD_REMOVE_PERK:
 		{
 			int id, value;
-			int perk_hash;
+			int perkHash;
 
 			f >> id;
-			f >> perk_hash;
+			f >> perkHash;
 			f.ReadCasted<char>(value);
 
 			Unit* unit = gameLevel->FindUnit(id);
@@ -2208,10 +2208,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				Error("CommandParser CMD_REMOVE_PERK: Unit %d is not player.", id);
 				return false;
 			}
-			Perk* perk = Perk::Get(perk_hash);
+			Perk* perk = Perk::Get(perkHash);
 			if(!perk)
 			{
-				Error("CommandParser CMD_REMOVE_PERK: Invalid perk %u.", perk_hash);
+				Error("CommandParser CMD_REMOVE_PERK: Invalid perk %u.", perkHash);
 				return false;
 			}
 			if(perk->valueType == Perk::None)
@@ -2847,7 +2847,7 @@ void CommandParser::CmdList()
 {
 	if(!t.Next())
 	{
-		Msg("Display list of items/units/quests (item/items, itemn/item_names, unit/units, unitn/unit_names, quest(s), effect(s), perk(s)). Examples:");
+		Msg("Display list of items/units/quests (item/items, itemn/itemNames, unit/units, unitn/unitNames, quest(s), effect(s), perk(s)). Examples:");
 		Msg("'list item' - list of items ordered by id");
 		Msg("'list itemn' - list of items ordered by name");
 		Msg("'list unit t' - list of units ordered by id starting from t");
@@ -2865,22 +2865,22 @@ void CommandParser::CmdList()
 		LIST_PERK
 	};
 
-	LIST_TYPE list_type;
+	LIST_TYPE listType;
 	const string& lis = t.MustGetItem();
 	if(lis == "item" || lis == "items")
-		list_type = LIST_ITEM;
-	else if(lis == "itemn" || lis == "item_names")
-		list_type = LIST_ITEM_NAME;
+		listType = LIST_ITEM;
+	else if(lis == "itemn" || lis == "itemNames")
+		listType = LIST_ITEM_NAME;
 	else if(lis == "unit" || lis == "units")
-		list_type = LIST_UNIT;
-	else if(lis == "unitn" || lis == "unit_names")
-		list_type = LIST_UNIT_NAME;
+		listType = LIST_UNIT;
+	else if(lis == "unitn" || lis == "unitNames")
+		listType = LIST_UNIT_NAME;
 	else if(lis == "quest" || lis == "quests")
-		list_type = LIST_QUEST;
+		listType = LIST_QUEST;
 	else if(lis == "effect" || lis == "effects")
-		list_type = LIST_EFFECT;
+		listType = LIST_EFFECT;
 	else if(lis == "perk" || lis == "perks")
-		list_type = LIST_PERK;
+		listType = LIST_PERK;
 	else
 	{
 		Msg("Unknown list type '%s'!", lis.c_str());
@@ -2891,7 +2891,7 @@ void CommandParser::CmdList()
 	if(t.Next())
 		match = t.MustGetText();
 
-	switch(list_type)
+	switch(listType)
 	{
 	case LIST_ITEM:
 		{
@@ -3054,7 +3054,7 @@ void CommandParser::CmdList()
 			LocalString s = Format("Quests list (%d):\n", quests.size());
 			Msg("Quests list (%d):", quests.size());
 
-			cstring quest_type[] = {
+			cstring questType[] = {
 				"mayor",
 				"captain",
 				"random",
@@ -3063,7 +3063,7 @@ void CommandParser::CmdList()
 
 			for(auto quest : quests)
 			{
-				cstring s2 = Format("%s (%s)", quest->name, quest_type[(int)quest->type]);
+				cstring s2 = Format("%s (%s)", quest->name, questType[(int)quest->type]);
 				Msg(s2);
 				s += s2;
 				s += "\n";

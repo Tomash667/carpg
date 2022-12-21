@@ -351,24 +351,24 @@ void InventoryPanel::Draw()
 {
 	GamePanel::Draw();
 
-	int cells_w = (size.x - 48) / 63;
-	int cells_h = (size.y - 64 - 34) / 63;
-	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
-	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
+	int cellsW = (size.x - 48) / 63;
+	int cellsH = (size.y - 64 - 34) / 63;
+	int shiftX = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shiftY = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
 	// scrollbar
 	scrollbar.Draw();
 
 	// place for gold & carry capacity
-	int bar_size = (cells_w * 63 - 8) / 2;
-	int bar_y = shift_y + cells_h * 63 + 8;
+	int barSize = (cellsW * 63 - 8) / 2;
+	int barY = shiftY + cellsH * 63 + 8;
 	float load = 0.f;
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		load = unit->GetLoad();
-		gui->DrawItem(base.tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), Color::White, 12);
-		gui->DrawItem(base.tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load) * bar_size), 32), Color::White, 12);
-		gui->DrawItem(base.tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), Color::White, 12);
+		gui->DrawItem(base.tItemBar, Int2(shiftX, barY), Int2(barSize, 32), Color::White, 12);
+		gui->DrawItem(base.tEquipped, Int2(shiftX + barSize + 10, barY), Int2(int(min(1.f, load) * barSize), 32), Color::White, 12);
+		gui->DrawItem(base.tItemBar, Int2(shiftX + barSize + 10, barY), Int2(barSize, 32), Color::White, 12);
 	}
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
@@ -385,45 +385,45 @@ void InventoryPanel::Draw()
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		// gold icon
-		gui->DrawSprite(base.tGold, Int2(shift_x, bar_y));
+		gui->DrawSprite(base.tGold, Int2(shiftX, barY));
 
 		// gold value
-		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
+		rect = Rect::Create(Int2(shiftX, barY), Int2(barSize, 32));
 		gui->DrawText(GameGui::font, Format("%d", unit->gold), DTF_CENTER | DTF_VCENTER, Color::Black, rect);
 
 		// carry capacity
-		rect.Left() = shift_x + bar_size + 10;
-		rect.Right() = rect.Left() + bar_size;
-		cstring weight_str = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weightMax) / 10);
-		int w = GameGui::font->LineWidth(weight_str);
-		gui->DrawText(GameGui::font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weightMax) / 10) : weight_str),
+		rect.Left() = shiftX + barSize + 10;
+		rect.Right() = rect.Left() + barSize;
+		cstring weightStr = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weightMax) / 10);
+		int w = GameGui::font->LineWidth(weightStr);
+		gui->DrawText(GameGui::font, (w > barSize ? Format("%g/%g", float(unit->weight) / 10, float(unit->weightMax) / 10) : weightStr),
 			DTF_CENTER | DTF_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
 	}
 
 	// draw tiles
-	for(int y = 0; y < cells_h; ++y)
+	for(int y = 0; y < cellsH; ++y)
 	{
-		for(int x = 0; x < cells_w; ++x)
-			gui->DrawSprite(base.tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
+		for(int x = 0; x < cellsW; ++x)
+			gui->DrawSprite(base.tItemBar, Int2(shiftX + x * 63, shiftY + y * 63));
 	}
 
 	// draw items
-	bool have_team = team->GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
-	int shift = int(scrollbar.offset / 63) * cells_w;
-	for(int i = 0, cells = min(cells_w * cells_h, (int)indices->size() - shift); i < cells; ++i)
+	bool haveTeam = team->GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
+	int shift = int(scrollbar.offset / 63) * cellsW;
+	for(int i = 0, cells = min(cellsW * cellsH, (int)indices->size() - shift); i < cells; ++i)
 	{
-		int i_item = indices->at(i + shift);
+		int iItem = indices->at(i + shift);
 		const Item* item;
 		int count, isTeam;
-		if(i_item < 0)
+		if(iItem < 0)
 		{
-			item = equipped->at(-i_item - 1);
+			item = equipped->at(-iItem - 1);
 			count = 1;
 			isTeam = (mode == LOOT_OTHER ? 2 : 0);
 		}
 		else
 		{
-			ItemSlot& slot = items->at(i_item);
+			ItemSlot& slot = items->at(iItem);
 			item = slot.item;
 			count = slot.count;
 			if(slot.count == slot.teamCount)
@@ -437,16 +437,16 @@ void InventoryPanel::Draw()
 		if(!item)
 		{
 			// temporary fix
-			game->ReportError(11, Format("Null item in inventory (mode:%d, i_item:%d, unit:%s)", mode, i_item, unit->data->id.c_str()), true);
+			game->ReportError(11, Format("Null item in inventory (mode:%d, iItem:%d, unit:%s)", mode, iItem, unit->data->id.c_str()), true);
 			continue;
 		}
 
-		int x = i % cells_w,
-			y = i / cells_w;
+		int x = i % cellsW,
+			y = i / cellsW;
 
 		// equipped item effect
-		if(i_item < 0)
-			gui->DrawSprite(base.tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
+		if(iItem < 0)
+			gui->DrawSprite(base.tEquipped, Int2(shiftX + x * 63, shiftY + y * 63));
 
 		// item icon
 		if(!item->icon)
@@ -455,7 +455,7 @@ void InventoryPanel::Draw()
 			game->ReportError(12, Format("Null item icon '%s'", item->id.c_str()));
 			gameRes->GenerateItemIcon(const_cast<Item&>(*item));
 		}
-		gui->DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
+		gui->DrawSprite(item->icon, Int2(shiftX + x * 63, shiftY + y * 63));
 
 		// item quality icon
 		Texture* icon;
@@ -468,16 +468,16 @@ void InventoryPanel::Draw()
 		else
 			icon = nullptr;
 		if(icon)
-			gui->DrawSprite(icon, Int2(shift_x + (x + 1) * 63 - 25, shift_y + (y + 1) * 63 - 25));
+			gui->DrawSprite(icon, Int2(shiftX + (x + 1) * 63 - 25, shiftY + (y + 1) * 63 - 25));
 
 		// team item icon
-		if(have_team && isTeam != 0)
-			gui->DrawSprite(base.tTeamItem, Int2(shift_x + x * 63 + 2, shift_y + y * 63 + 2), Color::Alpha(isTeam == 2 ? 255 : 128));
+		if(haveTeam && isTeam != 0)
+			gui->DrawSprite(base.tTeamItem, Int2(shiftX + x * 63 + 2, shiftY + y * 63 + 2), Color::Alpha(isTeam == 2 ? 255 : 128));
 
 		// count
 		if(count > 1)
 		{
-			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 5, shift_y + y * 63 - 3), Int2(64, 63));
+			Rect rect3 = Rect::Create(Int2(shiftX + x * 63 + 5, shiftY + y * 63 - 3), Int2(64, 63));
 			gui->DrawText(GameGui::font, Format("%d", count), DTF_BOTTOM | DTF_OUTLINE, Color::White, rect3);
 		}
 	}
@@ -516,26 +516,26 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	int cells_w = (size.x - 48) / 63;
-	int cells_h = (size.y - 64 - 34) / 63;
-	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
-	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
+	int cellsW = (size.x - 48) / 63;
+	int cellsH = (size.y - 64 - 34) / 63;
+	int shiftX = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shiftY = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
-	int new_index = INDEX_INVALID;
+	int newIndex = INDEX_INVALID;
 
 	Int2 cursorPos = gui->cursorPos;
 
-	bool have_focus = (mode == INVENTORY ? focus : mouseFocus);
+	bool haveFocus = (mode == INVENTORY ? focus : mouseFocus);
 
-	if(have_focus && input->Focus() && IsInside(gui->cursorPos))
+	if(haveFocus && input->Focus() && IsInside(gui->cursorPos))
 		scrollbar.ApplyMouseWheel();
 	if(focus)
 	{
-		scrollbar.mouseFocus = have_focus;
+		scrollbar.mouseFocus = haveFocus;
 		scrollbar.Update(dt);
 	}
 
-	int shift = int(scrollbar.offset / 63) * cells_w;
+	int shift = int(scrollbar.offset / 63) * cellsW;
 
 	if(lastIndex >= 0)
 	{
@@ -560,33 +560,33 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	if(have_focus && !gameGui->levelGui->IsDragAndDrop())
+	if(haveFocus && !gameGui->levelGui->IsDragAndDrop())
 	{
 		// item
-		if(cursorPos.x >= shift_x && cursorPos.y >= shift_y)
+		if(cursorPos.x >= shiftX && cursorPos.y >= shiftY)
 		{
-			int x = (cursorPos.x - shift_x) / 63,
-				y = (cursorPos.y - shift_y) / 63;
-			if(x >= 0 && x < cells_w && y >= 0 && y < cells_h)
+			int x = (cursorPos.x - shiftX) / 63,
+				y = (cursorPos.y - shiftY) / 63;
+			if(x >= 0 && x < cellsW && y >= 0 && y < cellsH)
 			{
-				int i = x + y * cells_w;
+				int i = x + y * cellsW;
 				if(i < (int)indices->size() - shift)
-					new_index = i + shift;
+					newIndex = i + shift;
 			}
 		}
 
-		int bar_size = (cells_w * 63 - 8) / 2;
-		int bar_y = shift_y + cells_h * 63 + 8;
+		int barSize = (cellsW * 63 - 8) / 2;
+		int barY = shiftY + cellsH * 63 + 8;
 
 		// bar with gold or carry capacity
 		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 		{
-			if(cursorPos.y >= bar_y && cursorPos.y < bar_y + 32)
+			if(cursorPos.y >= barY && cursorPos.y < barY + 32)
 			{
-				if(cursorPos.x >= shift_x && cursorPos.x < shift_x + bar_size)
-					new_index = INDEX_GOLD;
-				else if(cursorPos.x >= shift_x + bar_size + 10 && cursorPos.x < shift_x + bar_size + 10 + bar_size)
-					new_index = INDEX_CARRY;
+				if(cursorPos.x >= shiftX && cursorPos.x < shiftX + barSize)
+					newIndex = INDEX_GOLD;
+				else if(cursorPos.x >= shiftX + barSize + 10 && cursorPos.x < shiftX + barSize + 10 + barSize)
+					newIndex = INDEX_CARRY;
 			}
 		}
 
@@ -607,15 +607,15 @@ void InventoryPanel::Update(float dt)
 
 	// update box
 	if(mode == INVENTORY)
-		base.tooltip.UpdateTooltip(dt, new_index, -1);
+		base.tooltip.UpdateTooltip(dt, newIndex, -1);
 	else
 	{
-		bool old_for_unit = forUnit;
+		bool oldForUnit = forUnit;
 		if(AllowForUnit())
 			forUnit = input->Down(Key::Shift);
 		else
 			forUnit = false;
-		UpdateBoxIndex(dt, new_index, -1, old_for_unit != forUnit);
+		UpdateBoxIndex(dt, newIndex, -1, oldForUnit != forUnit);
 		if(boxState == BOX_NOT_VISIBLE)
 			itemVisible = nullptr;
 	}
@@ -631,10 +631,10 @@ void InventoryPanel::Update(float dt)
 		{
 			if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)))
 			{
-				if(new_index >= 0)
+				if(newIndex >= 0)
 				{
 					const Item* item;
-					int iIndex = indices->at(new_index);
+					int iIndex = indices->at(newIndex);
 					if(iIndex < 0)
 						item = equipped->at(IIndexToSlot(iIndex));
 					else
@@ -654,24 +654,24 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	if(new_index >= 0)
+	if(newIndex >= 0)
 	{
 		// get item
 		const Item* item;
 		ItemSlot* slot;
-		ITEM_SLOT slot_type;
-		int iIndex = indices->at(new_index);
+		ITEM_SLOT slotType;
+		int iIndex = indices->at(newIndex);
 		if(iIndex < 0)
 		{
 			slot = nullptr;
-			slot_type = IIndexToSlot(iIndex);
-			item = equipped->at(slot_type);
+			slotType = IIndexToSlot(iIndex);
+			item = equipped->at(slotType);
 		}
 		else
 		{
 			slot = &items->at(iIndex);
 			item = slot->item;
-			slot_type = SLOT_INVALID;
+			slotType = SLOT_INVALID;
 		}
 
 		lastItem = item;
@@ -689,17 +689,17 @@ void InventoryPanel::Update(float dt)
 			{
 				if(!slot)
 				{
-					if(unit->SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slotType))
 					{
 						// drop item after hiding it
 						unit->HideWeapon();
 						unit->player->nextAction = NA_DROP;
-						unit->player->nextActionData.slot = slot_type;
+						unit->player->nextActionData.slot = slotType;
 						if(Net::IsClient())
 							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
 					else
-						DropSlotItem(slot_type);
+						DropSlotItem(slotType);
 				}
 				else
 				{
@@ -749,17 +749,17 @@ void InventoryPanel::Update(float dt)
 				if(!slot)
 				{
 					// unequip item
-					if(unit->SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slotType))
 					{
 						// hide weapon & add next action to unequip
 						unit->HideWeapon();
 						unit->player->nextAction = NA_REMOVE;
-						unit->player->nextActionData.slot = slot_type;
+						unit->player->nextActionData.slot = slotType;
 						if(Net::IsClient())
 							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
 					else
-						RemoveSlotItem(slot_type);
+						RemoveSlotItem(slotType);
 				}
 				else
 				{
@@ -821,15 +821,15 @@ void InventoryPanel::Update(float dt)
 					gui->SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
-					if(unit->SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slotType))
 					{
 						// hide equipped item and sell it
 						unit->HideWeapon();
 						unit->player->nextAction = NA_SELL;
-						unit->player->nextActionData.slot = slot_type;
+						unit->player->nextActionData.slot = slotType;
 					}
 					else
-						SellSlotItem(slot_type);
+						SellSlotItem(slotType);
 				}
 				else
 				{
@@ -915,15 +915,15 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					if(unit->SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slotType))
 					{
 						// hide equipped item and put it in container
 						unit->HideWeapon();
 						unit->player->nextAction = NA_PUT;
-						unit->player->nextActionData.slot = slot_type;
+						unit->player->nextActionData.slot = slotType;
 					}
 					else
-						PutSlotItem(slot_type);
+						PutSlotItem(slotType);
 				}
 				break;
 			case LOOT_OTHER:
@@ -980,7 +980,7 @@ void InventoryPanel::Update(float dt)
 					if(!game->pc->unit->AddItem(item, 1u, 1u))
 						UpdateGrid(true);
 					// remove equipped item
-					unit->RemoveEquippedItem(slot_type);
+					unit->RemoveEquippedItem(slotType);
 					UpdateGrid(false);
 					// sound
 					soundMgr->PlaySound2d(gameRes->GetItemSound(item));
@@ -1171,15 +1171,15 @@ void InventoryPanel::Update(float dt)
 						{
 							if(t->CanTake(item))
 							{
-								if(unit->SlotRequireHideWeapon(slot_type))
+								if(unit->SlotRequireHideWeapon(slotType))
 								{
 									// hide equipped item and give it
 									unit->HideWeapon();
 									unit->player->nextAction = NA_GIVE;
-									unit->player->nextActionData.slot = slot_type;
+									unit->player->nextActionData.slot = slotType;
 								}
 								else
-									GiveSlotItem(slot_type);
+									GiveSlotItem(slotType);
 							}
 							else
 								gui->SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
@@ -1194,7 +1194,7 @@ void InventoryPanel::Update(float dt)
 					}
 					else
 					{
-						base.lock.Lock(slot_type, true);
+						base.lock.Lock(slotType, true);
 						base.lockDialog = nullptr;
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IS_BETTER_ITEM;
@@ -1205,7 +1205,7 @@ void InventoryPanel::Update(float dt)
 			}
 		}
 	}
-	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock && game->pc->unit->IsStanding() && game->pc->unit->action == A_NONE)
+	else if(newIndex == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock && game->pc->unit->IsStanding() && game->pc->unit->action == A_NONE)
 	{
 		// give/drop/put gold
 		if(input->PressedRelease(Key::LeftButton))
@@ -1237,14 +1237,14 @@ void InventoryPanel::Event(GuiEvent e)
 	else if(e == GuiEvent_Resize || e == GuiEvent_GainFocus || e == GuiEvent_Show)
 	{
 		UpdateScrollbar();
-		int cells_w = (size.x - 48) / 63;
-		int cells_h = (size.y - 64 - 34) / 63;
-		int shift_x = 12 + (size.x - 48) % 63 / 2;
-		int shift_y = 48 + (size.y - 64 - 34) % 63 / 2;
-		int bar_size = (cells_w * 63 - 8) / 2;
-		int bar_y = shift_y + cells_h * 63 + 8;
-		bt.pos = Int2(shift_x + bar_size + 10, bar_y);
-		bt.size = Int2(bar_size, 36);
+		int cellsW = (size.x - 48) / 63;
+		int cellsH = (size.y - 64 - 34) / 63;
+		int shiftX = 12 + (size.x - 48) % 63 / 2;
+		int shiftY = 48 + (size.y - 64 - 34) % 63 / 2;
+		int barSize = (cellsW * 63 - 8) / 2;
+		int barY = shiftY + cellsH * 63 + 8;
+		bt.pos = Int2(shiftX + barSize + 10, barY);
+		bt.size = Int2(barSize, 36);
 		bt.globalPos = globalPos + bt.pos;
 		if(e == GuiEvent_Show)
 		{
@@ -1624,16 +1624,16 @@ void InventoryPanel::UpdateScrollbar()
 	if(!indices)
 		return;
 
-	int cells_w = (size.x - 48) / 63;
-	int cells_h = (size.y - 64 - 34) / 63;
-	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
-	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
+	int cellsW = (size.x - 48) / 63;
+	int cellsH = (size.y - 64 - 34) / 63;
+	int shiftX = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shiftY = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 	int count = indices->size();
-	int s = ((count + cells_w - 1) / cells_w) * 63;
-	scrollbar.size = Int2(16, cells_h * 63);
+	int s = ((count + cellsW - 1) / cellsW) * 63;
+	scrollbar.size = Int2(16, cellsH * 63);
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
-	scrollbar.pos = Int2(shift_x + cells_w * 63 + 8 - pos.x, shift_y - pos.y);
+	scrollbar.pos = Int2(shiftX + cellsW * 63 + 8 - pos.x, shiftY - pos.y);
 	scrollbar.globalPos = globalPos + scrollbar.pos;
 	if(scrollbar.offset + scrollbar.part > scrollbar.total)
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -1708,7 +1708,7 @@ void InventoryPanel::SellItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint teamCount = min(count, slot.teamCount);
-	uint normal_count = count - teamCount;
+	uint normalCount = count - teamCount;
 
 	// sound
 	soundMgr->PlaySound2d(gameRes->GetItemSound(slot.item));
@@ -1720,8 +1720,8 @@ void InventoryPanel::SellItem(int index, uint count)
 		game->pc->Train(TrainWhat::Trade, (float)price, 0);
 		if(teamCount)
 			team->AddGold(price * teamCount);
-		if(normal_count)
-			unit->gold += price * normal_count;
+		if(normalCount)
+			unit->gold += price * normalCount;
 	}
 	// add item to trader
 	if(!InsertItem(*unit->player->chestTrade, slot.item, count, teamCount))
@@ -2137,19 +2137,19 @@ void InventoryPanel::OnGiveItem(int id)
 		base.tooltip.Clear();
 	const Item* item;
 	ItemSlot* slot;
-	ITEM_SLOT slot_type;
+	ITEM_SLOT slotType;
 
 	if(iindex >= 0)
 	{
 		slot = &items->at(iindex);
-		slot_type = SLOT_INVALID;
+		slotType = SLOT_INVALID;
 		item = slot->item;
 	}
 	else
 	{
 		slot = nullptr;
-		slot_type = IIndexToSlot(iindex);
-		item = equipped->at(slot_type);
+		slotType = IIndexToSlot(iindex);
+		item = equipped->at(slotType);
 	}
 
 	// add
@@ -2181,7 +2181,7 @@ void InventoryPanel::OnGiveItem(int id)
 	if(slot)
 		items->erase(items->begin() + iindex);
 	else
-		unit->RemoveEquippedItem(slot_type);
+		unit->RemoveEquippedItem(slotType);
 	UpdateGrid(true);
 	// setup inventory
 	if(Net::IsLocal())
@@ -2346,19 +2346,19 @@ void InventoryPanel::IsBetterItemResponse(bool isBetter)
 		else
 		{
 			// equipped item
-			ITEM_SLOT slot_type = IIndexToSlot(iindex);
-			const Item* item = unit->GetEquippedItem(slot_type);
+			ITEM_SLOT slotType = IIndexToSlot(iindex);
+			const Item* item = unit->GetEquippedItem(slotType);
 			if(!t->CanTake(item))
 				gui->SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
-			else if(unit->SlotRequireHideWeapon(slot_type))
+			else if(unit->SlotRequireHideWeapon(slotType))
 			{
 				// hide equipped item and give it
 				unit->HideWeapon();
 				unit->player->nextAction = NA_GIVE;
-				unit->player->nextActionData.slot = slot_type;
+				unit->player->nextActionData.slot = slotType;
 			}
 			else
-				GiveSlotItem(slot_type);
+				GiveSlotItem(slotType);
 		}
 	}
 }

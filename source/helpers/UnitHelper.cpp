@@ -82,7 +82,7 @@ UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 	static const ItemList& lis = ItemList::Get("amulets");
 	const Item* amulet = unit.GetEquippedItem(SLOT_AMULET);
 	float prevValue = amulet ? unit.GetItemAiValue(amulet) : 0.f;
-	float best_value = prevValue;
+	float bestValue = prevValue;
 	itemsToPick.clear();
 	for(const ItemList::Entry& e : lis.items)
 	{
@@ -92,17 +92,17 @@ UnitHelper::BetterItem UnitHelper::GetBetterAmulet(const Unit& unit)
 		if(item->value > unit.gold)
 			continue;
 		float value = unit.GetItemAiValue(item);
-		if(value > best_value)
+		if(value > bestValue)
 		{
-			best_value = value;
+			bestValue = value;
 			itemsToPick.clear();
 			itemsToPick.push_back(item);
 		}
-		else if(value == best_value && value != 0 && !itemsToPick.empty())
+		else if(value == bestValue && value != 0 && !itemsToPick.empty())
 			itemsToPick.push_back(item);
 	}
-	const Item* best_item = (itemsToPick.empty() ? nullptr : RandomItem(itemsToPick));
-	return { best_item, best_value, prevValue };
+	const Item* bestItem = (itemsToPick.empty() ? nullptr : RandomItem(itemsToPick));
+	return { bestItem, bestValue, prevValue };
 }
 
 array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
@@ -112,19 +112,19 @@ array<UnitHelper::BetterItem, 2> UnitHelper::GetBetterRings(const Unit& unit)
 		rings[0] ? unit.GetItemAiValue(rings[0]) : 0,
 		rings[1] ? unit.GetItemAiValue(rings[1]) : 0
 	};
-	array<pair<const Item*, float>, 2> inner_result = GetBetterRingsInternal(unit, Min(value));
+	array<pair<const Item*, float>, 2> innerResult = GetBetterRingsInternal(unit, Min(value));
 	array<BetterItem, 2> result;
-	if(inner_result[0].first)
+	if(innerResult[0].first)
 	{
-		if(value[0] > inner_result[0].second)
+		if(value[0] > innerResult[0].second)
 		{
-			result[0] = { inner_result[0].first, inner_result[0].second, value[1] };
+			result[0] = { innerResult[0].first, innerResult[0].second, value[1] };
 			result[1] = { nullptr, 0.f, 0.f };
 		}
 		else
 		{
-			result[0] = { inner_result[0].first, inner_result[0].second, value[0] };
-			result[1] = { inner_result[1].first, inner_result[1].second, value[1] };
+			result[0] = { innerResult[0].first, innerResult[0].second, value[0] };
+			result[1] = { innerResult[1].first, innerResult[1].second, value[1] };
 		}
 	}
 	else
@@ -141,8 +141,8 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 	const Item* rings[2] = { unit.GetEquippedItem(SLOT_RING1), unit.GetEquippedItem(SLOT_RING2) };
 
 	itemsToPick.clear();
-	const Item* second_best_item = nullptr;
-	float second_best_value = 0.f;
+	const Item* secondBestItem = nullptr;
+	float secondBestValue = 0.f;
 	for(const ItemList::Entry& e : lis.items)
 	{
 		const Item* item = e.item;
@@ -155,8 +155,8 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 		{
 			if(!itemsToPick.empty())
 			{
-				second_best_item = RandomItem(itemsToPick);
-				second_best_value = minValue;
+				secondBestItem = RandomItem(itemsToPick);
+				secondBestValue = minValue;
 				itemsToPick.clear();
 			}
 			itemsToPick.push_back(item);
@@ -166,10 +166,10 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 		{
 			if(value == minValue)
 				itemsToPick.push_back(item);
-			else if(!second_best_item)
+			else if(!secondBestItem)
 			{
-				second_best_item = item;
-				second_best_value = value;
+				secondBestItem = item;
+				secondBestValue = value;
 			}
 		}
 	}
@@ -183,11 +183,11 @@ array<pair<const Item*, float>, 2> UnitHelper::GetBetterRingsInternal(const Unit
 	else if(!itemsToPick.empty())
 	{
 		result[0] = { itemsToPick.back(), minValue };
-		result[1] = { second_best_item, second_best_value };
+		result[1] = { secondBestItem, secondBestValue };
 	}
 	else
 	{
-		result[0] = { second_best_item, second_best_value };
+		result[0] = { secondBestItem, secondBestValue };
 		result[1] = { nullptr, 0.f };
 	}
 	return result;
