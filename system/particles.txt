@@ -21,13 +21,27 @@ CreateSpellParticleEffect ability->texParticle
 spellHit ability.texParticle
 hitMelee tSpark
 bloodAltar tBlood[BLOOD_RED] (0.5)
+
+pe->emissionInterval = 0.f;
+pe->life = 5.f;
+pe->particleLife = 0.5f;
+pe->emissions = 1;
+pe->spawn = Int2(10, 15);
+pe->maxParticles = 15;
+pe->pos = hitpoint;
+pe->speedMin = Vec3(-1, 0, -1);
+pe->speedMax = Vec3(1, 1, 1);
+pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
+pe->size = Vec2(0.3f, 0.f);
+pe->alpha = Vec2(0.9f, 0.f);
 */
 
 effect hit {
 	tex "iskra.png"
 	emissions 1
-	emissionInterval 0.01
-	life 5
+	emissionInterval 0
+	life 0
 	particleLife 0.5
 	spawn {10 15}
 	maxParticles 15
@@ -97,6 +111,21 @@ effect magicfire {
 	mode addOne
 }
 
+effect smoke {
+	tex "smoke.png"
+	emissionInterval 0.1
+	particleLife 2.5
+	spawn {2 4}
+	maxParticles 100
+	speedMin {-0.5 3 -0.5}
+	speedMax {0.5 4 0.5}
+	posMin {-0.5 0 -0.5}
+	posMax {0.5 0 0.5}
+	alpha {0.25 0}
+	size {1 4}
+	gravity 0
+}
+
 effect spawnUnit {
 	tex "spawn_fog.png"
 	emissions 5
@@ -116,7 +145,7 @@ effect spawnUnit {
 effect raise {
 	tex "czarna_iskra.png"
 	emissions 1
-	emissionInterval 0.01
+	emissionInterval 0
 	life 0
 	particleLife 0.5
 	spawn {16 25}
@@ -134,7 +163,7 @@ effect raise {
 effect heal {
 	tex "heal_effect.png"
 	emissions 1
-	emissionInterval 0.01
+	emissionInterval 0
 	life 0
 	particleLife 0.5
 	spawn {16 25}
@@ -152,7 +181,7 @@ effect heal {
 effect fireTrap {
 	tex "fire_spark.png"
 	emissions 1
-	emissionInterval 0.01
+	emissionInterval 0
 	life 0
 	particleLife 0.5
 	spawn 12
@@ -169,7 +198,7 @@ effect fireTrap {
 effect bearTrap {
 	tex "dust.png"
 	emissions 1
-	emissionInterval 0.01
+	emissionInterval 0
 	life 0
 	particleLife 0.5
 	spawn 12

@@ -1112,22 +1112,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tSpark;
-				pe->emissionInterval = 0.f;
-				pe->life = 5.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawn = Int2(10, 15);
-				pe->maxParticles = 15;
-				pe->pos = hitpoint;
-				pe->speedMin = Vec3(-1, 0, -1);
-				pe->speedMax = Vec3(1, 1, 1);
-				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = Vec2(0.3f, 0.f);
-				pe->alpha = Vec2(0.9f, 0.f);
-				pe->mode = 0;
-				pe->Init();
+				pe->Init(ParticleEffect::Get("hit"), hitpoint);
 				lvlPart->pes.push_back(pe);
 
 				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);

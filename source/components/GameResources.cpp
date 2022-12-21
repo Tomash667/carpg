@@ -129,14 +129,8 @@ void GameResources::LoadData()
 	tBloodSplat[BLOOD_IRON] = nullptr;
 	tBloodSplat[BLOOD_SLIME] = nullptr;
 	tBloodSplat[BLOOD_YELLOW] = resMgr->Load<Texture>("krew_slad4.png");
-	tSpark = resMgr->Load<Texture>("iskra.png");
-	tSpawn = resMgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
-	tFlare = resMgr->Load<Texture>("flare.png");
-	tFlare2 = resMgr->Load<Texture>("flare2.png");
-	tWater = resMgr->Load<Texture>("water.png");
 	tVignette = resMgr->Load<Texture>("vignette.jpg");
-	tSmoke = resMgr->Load<Texture>("smoke.png");
 
 	// preload terrain textures
 	resMgr->AddTaskCategory(txLoadTerrainTextures);
