@@ -39,7 +39,7 @@ public:
 	void SetException(cstring ex) { lastException = ex; }
 	void RunScript(cstring code);
 	asIScriptFunction* PrepareScript(cstring name, cstring code);
-	void RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
+	void RunScript(asIScriptFunction* func, void* instance = nullptr, Quest2* quest = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
@@ -105,5 +105,8 @@ private:
 	ScriptContext ctx;
 	vector<SuspendedScript> suspendedScripts;
 	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
+	vector<Quest2*> questsStack;
+	std::set<Quest2*> updatedQuests;
+	int callDepth;
 	bool gatherOutput;
 };

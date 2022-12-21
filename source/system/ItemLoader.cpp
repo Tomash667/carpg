@@ -159,7 +159,7 @@ void ItemLoader::InitTokenizer()
 		{ "defense", P_DEFENSE },
 		{ "mobility", P_MOBILITY },
 		{ "unit_type", P_UNIT_TYPE },
-		{ "texOverrideverride", P_TEX_OVERRIDE },
+		{ "tex_override", P_TEX_OVERRIDE },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },

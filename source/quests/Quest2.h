@@ -32,6 +32,7 @@ struct Quest2 : public Quest
 	int GetTimeout() const;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
+	virtual bool PostRun() { return false; }
 
 protected:
 	asIScriptObject* CreateInstance(bool shared);

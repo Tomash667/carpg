@@ -74,7 +74,7 @@ int Class::InitLists()
 	heroes = UnitGroup::Get("heroes");
 	errors += VerifyGroup(heroes, false);
 
-	evilHeroes = UnitGroup::Get("evilHeroes");
+	evilHeroes = UnitGroup::Get("evil_heroes");
 	errors += VerifyGroup(evilHeroes, false);
 
 	crazies = UnitGroup::Get("crazies");

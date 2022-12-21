@@ -675,29 +675,32 @@ void DialogContext::UpdateLoop()
 				ScriptContext& ctx = scriptMgr->GetContext();
 				ctx.pc = pc;
 				ctx.target = talker;
+
 				DialogScripts* scripts;
+				Quest2* quest;
 				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
+
 				int index = de.value;
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, [index](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, quest, [index](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
 						CHECKED(ctx->SetArgDWord(0, index));
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.target = nullptr;
 				ctx.pc = nullptr;
 			}
@@ -705,24 +708,27 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_SCRIPT:
 			{
 				ScriptContext& ctx = scriptMgr->GetContext();
-				DialogScripts* scripts;
-				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
+
+				DialogScripts* scripts;
+				Quest2* quest;
+				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
+
 				int index = de.value;
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmpResult](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, quest, [index, &cmpResult](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -733,7 +739,7 @@ void DialogContext::UpdateLoop()
 						cmpResult = (ctx->GetReturnByte() != 0);
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
 				if(de.op == OP_NOT_EQUAL)
@@ -831,23 +837,26 @@ cstring DialogContext::GetText(int index, bool multi)
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
 				ScriptContext& ctx = scriptMgr->GetContext();
-				DialogScripts* scripts;
-				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
+
+				Quest2* quest;
+				DialogScripts* scripts;
+				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, quest, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -859,7 +868,7 @@ cstring DialogContext::GetText(int index, bool multi)
 						dialogString += *result;
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
 				i = pos;
@@ -871,6 +880,7 @@ cstring DialogContext::GetText(int index, bool multi)
 					strPart.push_back(str[i]);
 					++i;
 				}
+
 				if(dialogQuest)
 					dialogString += dialogQuest->FormatString(strPart);
 				else

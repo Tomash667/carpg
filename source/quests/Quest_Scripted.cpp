@@ -21,7 +21,7 @@
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), callDepth(0), inUpgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), journalState(JournalState::None), journalChanges(0), inUpgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -56,11 +56,11 @@ void Quest_Scripted::Start(Vars* vars)
 	// call Startup
 	if(!scheme->fStartup)
 		return;
-	BeforeCall();
+
 	if(scheme->startupUseVars)
 	{
 		assert(vars);
-		scriptMgr->RunScript(scheme->fStartup, instance, [vars](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fStartup, instance, this, [vars](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgAddress(0, vars));
@@ -69,9 +69,8 @@ void Quest_Scripted::Start(Vars* vars)
 	else
 	{
 		assert(!vars);
-		scriptMgr->RunScript(scheme->fStartup, instance);
+		scriptMgr->RunScript(scheme->fStartup, instance, this);
 	}
-	AfterCall();
 }
 
 //=================================================================================================
@@ -398,62 +397,29 @@ GameDialog* Quest_Scripted::GetDialog(const string& dialogId)
 }
 
 //=================================================================================================
-void Quest_Scripted::BeforeCall()
-{
-	if(callDepth == 0)
-	{
-		journalState = JournalState::None;
-		journalChanges = 0;
-		scriptMgr->GetContext().SetQuest(this);
-	}
-	++callDepth;
-}
-
-//=================================================================================================
-void Quest_Scripted::AfterCall()
-{
-	--callDepth;
-	if(callDepth != 0)
-		return;
-	if(journalChanges || journalState == JournalState::Changed)
-	{
-		gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
-		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.id = id;
-			c.type = NetChange::UPDATE_QUEST;
-			c.count = journalChanges;
-		}
-	}
-	scriptMgr->GetContext().SetQuest(nullptr);
-}
-
-//=================================================================================================
 void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
+	
 	if(inUpgrade)
 	{
 		prog = prog2;
 		return;
 	}
+
 	int prev = prog;
 	prog = prog2;
-	BeforeCall();
 	if(scheme->setProgressUsePrev)
 	{
-		scriptMgr->RunScript(scheme->fProgress, instance, [prev](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fProgress, instance, this, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		scriptMgr->RunScript(scheme->fProgress, instance);
-	AfterCall();
+		scriptMgr->RunScript(scheme->fProgress, instance, this);
 }
 
 //=================================================================================================
@@ -506,13 +472,12 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 {
 	if(!scheme->fEvent)
 		return;
-	BeforeCall();
-	scriptMgr->RunScript(scheme->fEvent, instance, [&event](asIScriptContext* ctx, int stage)
+
+	scriptMgr->RunScript(scheme->fEvent, instance, this, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
 	});
-	AfterCall();
 }
 
 //=================================================================================================
@@ -527,14 +492,6 @@ string Quest_Scripted::GetString(int index)
 	if(!text.formatted)
 		return str;
 
-	ScriptContext& ctx = scriptMgr->GetContext();
-	bool restoreQuest = false;
-	if(ctx.quest != this)
-	{
-		ctx.SetQuest(this);
-		restoreQuest = true;
-	}
-
 	LocalString strPart, dialogString;
 	for(uint i = 0, len = str.length(); i < len; ++i)
 	{
@@ -546,7 +503,7 @@ string Quest_Scripted::GetString(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, this, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -573,9 +530,6 @@ string Quest_Scripted::GetString(int index)
 		else
 			dialogString += str[i];
 	}
-
-	if(restoreQuest)
-		ctx.SetQuest(nullptr);
 
 	return dialogString.c_str();
 }
@@ -619,12 +573,34 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	// call method
 	inUpgrade = true;
-	BeforeCall();
-	scriptMgr->RunScript(scheme->fUpgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fUpgrade, instance, this, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
-	AfterCall();
-	inUpgrade = false;
+}
+
+//=================================================================================================
+bool Quest_Scripted::PostRun()
+{
+	bool showMessage = false;
+	if(journalChanges || journalState == JournalState::Changed)
+	{
+		gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
+		showMessage = true;
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.id = id;
+			c.type = NetChange::UPDATE_QUEST;
+			c.count = journalChanges;
+		}
+	}
+	else if(journalState == JournalState::Added)
+		showMessage = true;
+
+	journalState = JournalState::None;
+	journalChanges = 0;
+	return showMessage;
 }

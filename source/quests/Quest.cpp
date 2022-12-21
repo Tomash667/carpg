@@ -59,7 +59,8 @@ void Quest::OnStart(cstring name)
 	questMgr->quests.push_back(this);
 	RemoveElement<Quest*>(questMgr->unacceptedQuests, this);
 	gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
-	gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	if(!isNew)
+		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
