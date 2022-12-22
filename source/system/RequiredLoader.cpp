@@ -248,7 +248,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_QUEST_LIST:
 		{
-			const bool notNone = IsPrefix("notNone");
+			const bool notNone = IsPrefix("not_none");
 			QuestList* list = QuestList::TryGet(id);
 			if(!list)
 			{

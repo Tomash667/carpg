@@ -134,7 +134,7 @@ cstring Quest2::GetText(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, this, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -225,7 +225,7 @@ asIScriptObject* Quest2::CreateInstance(bool shared)
 
 	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
 	asIScriptObject* instance;
-	scriptMgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(factory, nullptr, this, [&](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 1)
 		{

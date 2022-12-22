@@ -2476,11 +2476,11 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					array<int>@ quests = { 1, 2, 3 /*, 4*/ };
+					array<int>@ quests = { 1, 2, 3, 4 };
 					quests.shuffle();
-					villages.resize(3);
+					villages.resize(4);
 					
-					for(int i = 0; i < 3; ++i)
+					for(int i = 0; i < 4; ++i)
 					{
 						vars["index"] = i;
 						Quest::Find("main_village" + quests[i]).Start(vars);
@@ -2790,7 +2790,10 @@ quest main_village2
 					if(progress == P_MAIN_V2_ENTER)
 						progress = P_MAIN_V2_PICKED;
 					else if(progress == P_MAIN_V2_CLEARED)
+					{
+						quest.AddEntry(TEXT(5));
 						progress = P_MAIN_V2_CLEARED_PICKED;
+					}
 					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
@@ -2929,7 +2932,10 @@ quest main_village3
 					if(progress == P_MAIN_V3_ENTER)
 						progress = P_MAIN_V3_PICKED;
 					else if(progress == P_MAIN_V3_CLEARED)
+					{
+						quest.AddEntry(TEXT(6));
 						progress = P_MAIN_V3_CLEARED_PICKED;
+					}
 					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
@@ -2973,6 +2979,95 @@ quest main_village3
 			target.OrderLeave();
 			Team::AddExp(1000);
 			quest.AddEntry(TEXT(4));
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 4 (old man)
+//=============================================================================
+quest main_village4
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V4_NONE
+		P_MAIN_V4_START
+		P_MAIN_V4_ENTER
+		P_MAIN_V4_CLEARED
+		P_MAIN_V4_PICKED
+		P_MAIN_V4_CLEARED_PICKED
+		P_MAIN_V4_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		int locQuadrant;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V4_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V4_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V4_ENTER:
+				{
+					// enemies
+					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					
+					// inn villager
+					/*LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					unit.AddDialog(quest, "inn_villager");
+					unit.OrderAutoTalk();*/
+					
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V4_CLEARED:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_MAIN_V4_PICKED:
+				quest.AddEntry(TEXT(6));
+				break;
+			case P_MAIN_V4_CLEARED_PICKED:
+				quest.AddEntry(TEXT(7));
+				break;
+			case P_MAIN_V4_DONE:
+				quest.AddEntry(TEXT(8));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
+				Team::AddReward(5000, 15000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V4_ENTER;
 		}
 	}
 }

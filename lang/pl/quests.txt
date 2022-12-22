@@ -434,7 +434,7 @@ quest main {
 		11 "Dobrze ¿e jesteœ. Musimy porozmawiaæ o zarazie..."
 		12 "Zbada³em ludzi ale jeszcze nic nie uda³o mi siê ustaliæ... Potrzebujê wiêcej informacji ¿eby znaleŸæ Ÿród³o tej zarazy."
 		13 "Mam informacje o czterech wioskach w których te¿ wybuch³a zaraza. Ktoœ musi siê tam udaæ i potwierdziæ te plotki. So³tys stwierdzi³ ¿e to zadanie dla ciebie."
-		14 "Udaj siê w dowolnej kolejnoœci do $(villages[0].name), $(villages[1].name), $(villages[2].name) i z."
+		14 "Udaj siê w dowolnej kolejnoœci do $(villages[0].name), $(villages[1].name), $(villages[2].name) i $(villages[3].name)."
 		15 "Ja w tym czasie wracam do badañ. Liczymy na ciebie!"
 		16 "Wróæ do mnie gdy uda ci siê zdobyæ jakieœ informacje."
 		17 "Witaj z powrotem! Masz jakieœ nowe informacje?"
@@ -469,7 +469,7 @@ quest main {
 		13 "Odnalaz³em $(cleric.realName) w podziemiach, by³ ledwo ¿ywy a jego stra¿nicy zostali zabici przez nieumar³ych. Chce ¿ebym doprowadzi³ go do kapliczki w $(shrineLoc.name), wtedy mi pomo¿e."
 		14 "Przyprowadzi³em $(cleric.realName) do kapliczki. Potrzebuje czasu, $(Str(quest.timeout)) dni. Po tym czasie powinienem go znaleŸæ w $(village.name)."
 		15 "Kleryk powinien byæ ju¿ w $(village.name)."
-		16 "Po rozmowie z klerykiem wys³a³ mnie by sprawdziæ plotki o zarazie w czterech wioskach. S¹ to: $(villages[0].name), $(villages[1].name), $(villages[2].name) i z."
+		16 "Po rozmowie z klerykiem wys³a³ mnie by sprawdziæ plotki o zarazie w czterech wioskach. S¹ to: $(villages[0].name), $(villages[1].name), $(villages[2].name) i $(villages[3].name)."
 	}
 }
 
@@ -547,6 +547,22 @@ quest main_village3 {
 		2 "Wynoszê siê st¹d póki jeszcze mam szansê!"
 	}
 
+	texts {
+		0 "ród³o zarazy w $(village.name)"
+		1 "Rozpoczêto dnia $date$."
+		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
+		3 "Po dotarciu do wioski zasta³ mnie widok walki. Muszê szybko pomóc mieszkañcom wioski którzy jeszcze nie zachorowali odeprzeæ atak. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
+		4 "Jeden z wieœniaków schowa³ siê w karczmie. Powiedzia³ ¿e jednym z pierwszych zara¿onych by³ alchemik. Mo¿e przy nim znajdê jakiœ dowód."
+		5 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
+		6 "Znalaz³em jakieœ dziwne zio³a. Czy to one wywo³a³y tê zarazê?"
+		7 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
+		8 "Odda³em dziwne zio³a $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+	}
+}
+
+
+//=============================================================================
+quest main_village4 {
 	texts {
 		0 "ród³o zarazy w $(village.name)"
 		1 "Rozpoczêto dnia $date$."

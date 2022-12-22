@@ -34,15 +34,14 @@ public:
 	void AddRumor(const string& str);
 	void RemoveRumor();
 	void Upgrade(Quest* quest);
+	bool PostRun() override;
 
 private:
-	void BeforeCall();
-	void AfterCall();
 	void SaveVar(GameWriter& f, Var::Type varType, void* ptr);
 	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
 
 	asIScriptObject* instance;
 	JournalState journalState;
-	int journalChanges, callDepth;
+	int journalChanges;
 	bool inUpgrade;
 };

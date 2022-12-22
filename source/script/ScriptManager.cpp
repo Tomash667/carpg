@@ -7,6 +7,8 @@
 #include "DungeonMapGenerator.h"
 #include "Encounter.h"
 #include "Game.h"
+#include "GameGui.h"
+#include "GameMessages.h"
 #include "InsideLocation.h"
 #include "ItemHelper.h"
 #include "LocationHelper.h"
@@ -57,7 +59,7 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 	scriptMgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
 
-ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
+ScriptManager::ScriptManager() : engine(nullptr), module(nullptr), callDepth(0)
 {
 }
 
@@ -1102,9 +1104,10 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 	return func;
 }
 
-void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
+void ScriptManager::RunScript(asIScriptFunction* func, void* instance, Quest2* quest, delegate<void(asIScriptContext*, int)> clbk)
 {
 	// run
+	++callDepth;
 	asIScriptContext* tmpContext = engine->RequestContext();
 	int r = tmpContext->Prepare(func);
 	if(r >= 0)
@@ -1123,6 +1126,13 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
 		engine->ReturnContext(tmpContext);
 		return;
+	}
+
+	if(quest)
+	{
+		updatedQuests.insert(quest);
+		questsStack.push_back(quest);
+		ctx.quest = quest;
 	}
 
 	lastException = nullptr;
@@ -1149,6 +1159,25 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 	}
 
 	engine->ReturnContext(tmpContext);
+	if(quest)
+	{
+		questsStack.pop_back();
+		if(questsStack.empty())
+			ctx.quest = nullptr;
+		else
+			ctx.quest = questsStack.back();
+	}
+
+	if(--callDepth == 0)
+	{
+		bool showMessage = false;
+		for(Quest2* quest : updatedQuests)
+			showMessage = quest->PostRun() || showMessage;
+		updatedQuests.clear();
+
+		if(showMessage)
+			gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	}
 }
 
 string& ScriptManager::OpenOutput()

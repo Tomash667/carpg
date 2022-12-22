@@ -100,7 +100,7 @@ void BuildingLoader::InitTokenizer()
 {
 	t.AddKeywords(G_TOP, {
 		{ "building", T_BUILDING },
-		{ "buildingGroup", T_BUILDING_GROUP },
+		{ "building_group", T_BUILDING_GROUP },
 		{ "building_script", T_BUILDING_SCRIPT }
 		});
 
