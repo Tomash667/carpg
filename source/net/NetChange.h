@@ -60,7 +60,7 @@ struct NetChange
 		CHANGE_FLAGS, // change of game flags [byte-flags (auto 0x01-bandit, 0x02-crazies attack, 0x04-anyone talking)
 		FALL, // unit falls on ground [int(id)-unit]
 		DIE, // unit dies [int(id)-unit]
-		SPAWN_BLOOD, // spawn blood [byte(id)-type, Vec3(pos)]
+		SPAWN_BLOOD, // spawn blood [byte(id)-type, byte(extraId)-flags, Vec3(pos)]
 		UPDATE_HP, // update unit hp [int(id)-unit, auto: float-hpp]
 		UPDATE_MP, // update unit mp, only send for team members [int(id)-unit, auto: float-mpp]
 		UPDATE_STAMINA, // update unit stamina, only send for team members [int(id)-unit, auto: float-staminap]

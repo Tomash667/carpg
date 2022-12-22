@@ -809,31 +809,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// spawn blood
 		case NetChange::SPAWN_BLOOD:
 			{
-				byte type;
+				byte type, flags;
 				Vec3 pos;
 				f >> type;
+				f >> flags;
 				f >> pos;
 				if(!f)
 					Error("Update client: Broken SPAWN_BLOOD.");
 				else if(game->gameState == GS_LEVEL)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tBlood[type];
-					pe->emissionInterval = 0.f;
-					pe->life = 5.f;
-					pe->particleLife = 0.5f;
-					pe->emissions = 1;
-					pe->spawn = Int2(10, 15);
-					pe->maxParticles = 15;
-					pe->pos = pos;
-					pe->speedMin = Vec3(-1, 0, -1);
-					pe->speedMax = Vec3(1, 1, 1);
-					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-					pe->size = Vec2(0.3f, 0.f);
-					pe->alpha = Vec2(0.9f, 0.f);
-					pe->mode = 0;
-					pe->Init();
+					pe->Init(ParticleEffect::Get(IsSet(flags, Unit::DMG_SPREAD) ? "bloodSpread" : "blood"), pos);
+					pe->SetTexture(gameRes->tBlood[type]);
 					gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 				}
 			}
@@ -2096,22 +2083,15 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				resMgr->Load(obj->mesh);
 
 				// remove particles
-				float bestDist = 999.f;
-				ParticleEmitter* bestPe = nullptr;
+				ParticleEffect* effect = ParticleEffect::Get("altarBlood");
 				for(ParticleEmitter* pe : gameLevel->localPart->lvlPart->pes)
 				{
-					if(pe->tex == gameRes->tBlood[BLOOD_RED])
+					if(pe->GetEffect() == effect)
 					{
-						float dist = Vec3::Distance(pe->pos, obj->pos);
-						if(dist < bestDist)
-						{
-							bestDist = dist;
-							bestPe = pe;
-						}
+						pe->Destroy();
+						break;
 					}
 				}
-				assert(bestPe);
-				bestPe->destroy = true;
 			}
 			break;
 		// add new location
@@ -2323,25 +2303,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				bullet->owner = unit;
 				bullet->yspeed = speedY;
 
-				if(ability.texParticle)
+				if(ability.particleEffect)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.texParticle;
-					pe->emissionInterval = 0.1f;
-					pe->life = -1;
-					pe->particleLife = 0.5f;
-					pe->emissions = -1;
-					pe->spawn = Int2(3, 4);
-					pe->maxParticles = 50;
-					pe->pos = bullet->pos;
-					pe->speedMin = Vec3(-1, -1, -1);
-					pe->speedMax = Vec3(1, 1, 1);
-					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = Vec2(ability.sizeParticle, 0.f);
-					pe->alpha = Vec2(1.f, 0.f);
-					pe->mode = 1;
-					pe->Init();
+					pe->Init(ability.particleEffect, bullet->pos);
 					locPart.lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
 				}
@@ -2397,8 +2362,6 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							drain.pe = lvlPart.pes.back();
 							drain.t = 0.f;
 							drain.pe->manualDelete = 1;
-							drain.pe->speedMin = Vec3(-3, 0, -3);
-							drain.pe->speedMax = Vec3(3, 3, 3);
 						}
 					}
 				}
@@ -2467,26 +2430,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						soundMgr->PlaySound3d(ability->soundHit, pos, ability->soundHitDist);
 
 					// particles
-					if(ability->texParticle)
+					if(ability->particleEffect)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = ability->texParticle;
-						pe->emissionInterval = 0.f;
-						pe->life = 0.f;
-						pe->particleLife = 0.5f;
-						pe->emissions = 1;
-						pe->spawn = Int2(8, 12);
-						pe->maxParticles = 12;
-						pe->pos = pos;
-						pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-						pe->posMax = Vec3(ability->size, ability->size, ability->size);
-						pe->size = Vec2(ability->sizeParticle, 0.f);
-						pe->alpha = Vec2(1.f, 0.f);
-						pe->mode = 1;
-						pe->Init();
-
+						pe->Init(ability->particleEffect, pos);
 						gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 					}
 				}

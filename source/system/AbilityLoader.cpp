@@ -35,7 +35,6 @@ enum Keyword
 	K_EXPLODE_RANGE,
 	K_MESH,
 	K_TEX,
-	K_TEX_PARTICLE,
 	K_TEX_EXPLODE,
 	K_SOUND_CAST,
 	K_SOUND_HIT,
@@ -56,7 +55,8 @@ enum Keyword
 	K_TIME,
 	K_COLOR,
 	K_TRAP_ID,
-	K_CAST_TIME
+	K_CAST_TIME,
+	K_PARTICLE_EFFECT
 };
 
 //=================================================================================================
@@ -90,7 +90,6 @@ void AbilityLoader::InitTokenizer()
 		{ "explode_range", K_EXPLODE_RANGE },
 		{ "mesh", K_MESH },
 		{ "tex", K_TEX },
-		{ "tex_particle", K_TEX_PARTICLE },
 		{ "tex_explode", K_TEX_EXPLODE },
 		{ "sound_cast", K_SOUND_CAST },
 		{ "sound_hit", K_SOUND_HIT },
@@ -111,8 +110,10 @@ void AbilityLoader::InitTokenizer()
 		{ "time", K_TIME },
 		{ "color", K_COLOR },
 		{ "trap_id", K_TRAP_ID },
-		{ "cast_time", K_CAST_TIME }
+		{ "cast_time", K_CAST_TIME },
+		//{ "particle_effect", K_PARTICLE_EFFECT }
 		});
+	FIXME;
 
 	t.AddKeywords(G_TYPE, {
 		{ "point", Ability::Point },
@@ -276,21 +277,6 @@ void AbilityLoader::ParseAbility(const string& id)
 				if(ability->size <= 0.f)
 					t.Throw("Invalid texture size %g.", ability->size);
 				crc.Update(ability->size);
-				t.Next();
-			}
-			break;
-		case K_TEX_PARTICLE:
-			{
-				const string& texId = t.MustGetString();
-				ability->texParticle = resMgr->TryGet<Texture>(texId);
-				if(!ability->texParticle)
-					t.Throw("Missing texture '%s'.", texId.c_str());
-				crc.Update(texId);
-				t.Next();
-				ability->sizeParticle = t.MustGetFloat();
-				if(ability->sizeParticle <= 0.f)
-					t.Throw("Invalid particle texture size %g.", ability->sizeParticle);
-				crc.Update(ability->sizeParticle);
 				t.Next();
 			}
 			break;

@@ -2986,6 +2986,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::SPAWN_BLOOD:
 			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.extraId);
 			f << c.pos;
 			break;
 		case NetChange::DIE:

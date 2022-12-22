@@ -6784,25 +6784,10 @@ void Unit::CastSpell()
 					bullet->yspeed = h / t;
 				}
 
-				if(ability.texParticle)
+				if(ability.particleEffect)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = ability.texParticle;
-					pe->emissionInterval = 0.1f;
-					pe->life = -1;
-					pe->particleLife = 0.5f;
-					pe->emissions = -1;
-					pe->spawn = Int2(3, 4);
-					pe->maxParticles = 50;
-					pe->pos = bullet->pos;
-					pe->speedMin = Vec3(-1, -1, -1);
-					pe->speedMax = Vec3(1, 1, 1);
-					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = Vec2(ability.sizeParticle, 0.f);
-					pe->alpha = Vec2(1.f, 0.f);
-					pe->mode = 1;
-					pe->Init();
+					pe->Init(ability.particleEffect, bullet->pos);
 					locPart->lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
 				}
@@ -6893,13 +6878,11 @@ void Unit::CastSpell()
 					Drain& drain = Add1(locPart->lvlPart->drains);
 					drain.target = this;
 
-					hitted->GiveDmg(dmg, this, nullptr, DMG_MAGICAL);
+					hitted->GiveDmg(dmg, this, nullptr, DMG_MAGICAL | DMG_SPREAD);
 
 					drain.pe = locPart->lvlPart->pes.back();
 					drain.t = 0.f;
 					drain.pe->manualDelete = 1;
-					drain.pe->speedMin = Vec3(-3, 0, -3);
-					drain.pe->speedMax = Vec3(3, 3, 3);
 
 					dmg *= hitted->CalculateMagicResistance();
 					hp += dmg;
@@ -7069,7 +7052,7 @@ void Unit::CastSpell()
 			trap->attack = ability.dmg + ability.dmgBonus * (level + CalculateMagicPower());
 
 			// particle effect
-			if(ability.texParticle)
+			if(ability.particleEffect)
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, targetPos, Vec2::Zero);
 		}
 		break;
@@ -8778,28 +8761,16 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 	if(!IsSet(dmgFlags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = gameRes->tBlood[data->blood];
-		pe->emissionInterval = 0.f;
-		pe->life = 5.f;
-		pe->particleLife = 0.5f;
-		pe->emissions = 1;
-		pe->spawn = Int2(10, 15);
-		pe->maxParticles = 15;
+		Vec3 effectPos;
 		if(hitpoint)
-			pe->pos = *hitpoint;
+			effectPos = *hitpoint;
 		else
 		{
-			pe->pos = pos;
-			pe->pos.y += GetUnitHeight() * 2.f / 3;
+			effectPos = pos;
+			effectPos.y += GetUnitHeight() * 2.f / 3;
 		}
-		pe->speedMin = Vec3(-1, 0, -1);
-		pe->speedMax = Vec3(1, 1, 1);
-		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = Vec2(0.3f, 0.f);
-		pe->alpha = Vec2(0.9f, 0.f);
-		pe->mode = 0;
-		pe->Init();
+		pe->Init(ParticleEffect::Get(IsSet(dmgFlags, DMG_SPREAD) ? "bloodSpread" : "blood"), effectPos);
+		pe->SetTexture(gameRes->tBlood[data->blood]);
 		locPart->lvlPart->pes.push_back(pe);
 
 		if(Net::IsOnline())
@@ -8807,6 +8778,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPAWN_BLOOD;
 			c.id = data->blood;
+			c.extraId = dmgFlags;
 			c.pos = pe->pos;
 		}
 	}

@@ -309,8 +309,6 @@ void GameResources::PreloadAbilities()
 			resMgr->Load(ability.soundHit);
 		if(ability.tex)
 			resMgr->Load(ability.tex);
-		if(ability.texParticle)
-			resMgr->Load(ability.texParticle);
 		if(ability.texExplode.diffuse)
 			resMgr->Load(ability.texExplode.diffuse);
 		if(ability.texIcon)

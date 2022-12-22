@@ -21,21 +21,39 @@ CreateSpellParticleEffect ability->texParticle
 spellHit ability.texParticle
 hitMelee tSpark
 bloodAltar tBlood[BLOOD_RED] (0.5)
-
-pe->emissionInterval = 0.f;
-pe->life = 5.f;
-pe->particleLife = 0.5f;
-pe->emissions = 1;
-pe->spawn = Int2(10, 15);
-pe->maxParticles = 15;
-pe->pos = hitpoint;
-pe->speedMin = Vec3(-1, 0, -1);
-pe->speedMax = Vec3(1, 1, 1);
-pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-pe->size = Vec2(0.3f, 0.f);
-pe->alpha = Vec2(0.9f, 0.f);
 */
+
+effect blood {
+	tex "krew.png"
+	emissions 1
+	emissionInterval 0
+	life 0
+	particleLife 0.5
+	spawn {10 15}
+	maxParticles 15
+	speedMin {-1 0 -1}
+	speedMax {1 1 1}
+	posMin {-0.1 -0.1 -0.1}
+	posMax {0.1 0.1 0.1}
+	size {0.3 0}
+	alpha {0.9 0}
+}
+
+effect bloodSpread {
+	tex "krew.png"
+	emissions 1
+	emissionInterval 0
+	life 0
+	particleLife 0.5
+	spawn {10 15}
+	maxParticles 15
+	speedMin {-3 0 -3}
+	speedMax {3 3 3}
+	posMin {-0.1 -0.1 -0.1}
+	posMax {0.1 0.1 0.1}
+	size {0.3 0}
+	alpha {0.9 0}
+}
 
 effect hit {
 	tex "iskra.png"
@@ -212,191 +230,64 @@ effect bearTrap {
 	mode addOne
 }
 
-/* bullet effect1
-			pe = new ParticleEmitter;
-			pe->tex = ability->texParticle;
-			pe->emissionInterval = 0.1f;
-			pe->life = -1;
-			pe->particleLife = 0.5f;
-			pe->emissions = -1;
-			pe->spawnMin = 3;
-			pe->spawnMax = 4;
-			pe->maxParticles = 50;
-			pe->pos = pos;
-			pe->speedMin = Vec3(-1, -1, -1);
-			pe->speedMax = Vec3(1, 1, 1);
-			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->sizeParticle;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 1.f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->mode = 1;
-			
-electro effect1
-ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
-				pe->maxParticles = 12;
-				pe->pos = target_pos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-			
-abilityHit
-pe = new ParticleEmitter;
-			pe->tex = ability->texParticle;
-			pe->emissionInterval = 0.1f;
-			pe->life = -1;
-			pe->particleLife = 0.5f;
-			pe->emissions = -1;
-			pe->spawnMin = 3;
-			pe->spawnMax = 4;
-			pe->maxParticles = 50;
-			pe->pos = pos;
-			pe->speedMin = Vec3(-1, -1, -1);
-			pe->speedMax = Vec3(1, 1, 1);
-			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->sizeParticle;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 1.f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->mode = 1;
-			pe->Init();
-			
-electroHit
-ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
-				pe->maxParticles = 12;
-				pe->pos = target_pos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				
-torch
-ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particleLife = 0.5f;
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
-			pe->speedMin = Vec3(-1, 3, -1);
-			pe->speedMax = Vec3(1, 4, 1);
-			pe->mode = 1;
-			pe->Init();
-			pe->tex = gameRes->tFlare;
-			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				pe->size = 0.7f;
-			else
-			{
-				pe->size = 0.5f;
-				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					pe->tex = gameRes->tFlare2;
-			}
-			
-altarBlood
-ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->particleLife = 0.5f;
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
-			pe->speedMin = Vec3(-1, 4, -1);
-			pe->speedMax = Vec3(1, 6, 1);
-			pe->mode = 0;
-			pe->tex = gameRes->tBlood[BLOOD_RED];
-			pe->size = 0.5f;
-			pe->Init();*/
-			
+effect magicBolt {
+	tex "mpp.png"
+	emissionInterval 0.1
+	particleLife 0.5
+	spawn {3 4}
+	maxParticles 50
+	speedMin {-1 -1 -1}
+	speedMax {1 1 1}
+	posMin {-0.05 -0.05 -0.05}
+	posMax {0.05 0.05 0.05}
+	alpha {1 0}
+	size {0.02 0}
+	mode addOne
+}
 
-			
-/*magicfire
-ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tFlare2;
-					pe->alpha = 1.0f;
-					pe->size = 1.0f;
-					pe->emissionInterval = 0.1f;
-					pe->emissions = -1;
-					pe->life = -1;
-					pe->maxParticles = 50;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->particleLife = 0.5f;
-					pe->pos = pos;
-					if(locPart.partType == LocationPart::Type::Outside)
-						pe->pos.y += terrain->GetH(pos);
-					pe->posMin = Vec3(0, 0, 0);
-					pe->posMax = Vec3(0, 0, 0);
-					pe->spawnMin = 2;
-					pe->spawnMax = 4;
-					pe->speedMin = Vec3(-1, 3, -1);
-					pe->speedMax = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
-					
-spawnUnit
-ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = gameRes->tSpawn;
-	pe->emissionInterval = 0.1f;
-	pe->life = 5.f;
-	pe->particleLife = 0.5f;
-	pe->emissions = 5;
-	pe->spawnMin = 10;
-	pe->spawnMax = 15;
-	pe->maxParticles = 15 * 5;
-	pe->pos = unit.pos;
-	pe->speedMin = Vec3(-1, 0, -1);
-	pe->speedMax = Vec3(1, 1, 1);
-	pe->posMin = Vec3(-0.75f, 0, -0.75f);
-	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
-	pe->size = 0.3f;
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->alpha = 0.5f;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->mode = 0;
-	pe->Init();
-	*/
-	
+effect xmagicBolt : magicBolt {
+	tex "xmp.png"
+}
+
+effect fireball : magicBolt {
+	tex "flare.png"
+	posMin {-0.2 -0.2 -0.2}
+	posMax {0.2 0.2 0.2}
+	size {0.075 0}
+}
+
+effect splitPoison : magicBolt {
+	tex "spitp.png"
+	posMin {-0.1 -0.1 -0.1}
+	posMax {0.1 0.1 0.1}
+	size {0.03 0}
+}
+
+effect explodingSkull : magicBolt {
+	tex "flare.png"
+	posMin {-0.13 -0.13 -0.13}
+	posMax {0.13 0.13 0.13}
+	size {0.075 0}
+}
+
+effect mysticBall : magicBolt {
+	tex "flare2.png"
+	posMin {-0.2 -0.2 -0.2}
+	posMax {0.2 0.2 0.2}
+	size {0.075 0}
+}
+
+effect thunderBoltHit {
+	tex "iskra.png"
+	emissions 1
+	emissionInterval 0
+	life 0
+	particleLife 0.5
+	spawn {8 12}
+	maxParticles 12
+	speedMin {-1.5 -1.5 -1.5}
+	speedMax {1.5 1.5 1.5}
+	size {0.03 0}
+	alpha {1 0}
+	mode addOne
+}

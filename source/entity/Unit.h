@@ -971,7 +971,8 @@ public:
 	enum DamageFlags
 	{
 		DMG_NO_BLOOD = 1 << 0,
-		DMG_MAGICAL = 1 << 1
+		DMG_MAGICAL = 1 << 1,
+		DMG_SPREAD = 1 << 2
 	};
 	void GiveDmg(float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmgFlags = 0);
 	void AttackReaction(Unit& attacker);

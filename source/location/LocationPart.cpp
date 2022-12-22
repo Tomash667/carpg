@@ -991,25 +991,10 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 	else
 	{
 		// particles
-		if(ability.texParticle && ability.type == Ability::Ball)
+		if(ability.particleEffect && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = ability.texParticle;
-			pe->emissionInterval = 0.f;
-			pe->life = 0.f;
-			pe->particleLife = 0.5f;
-			pe->emissions = 1;
-			pe->spawn = Int2(8, 12);
-			pe->maxParticles = 12;
-			pe->pos = pos;
-			pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-			pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-			pe->posMax = Vec3(ability.size, ability.size, ability.size);
-			pe->size = Vec2(ability.size / 2, 0.f);
-			pe->alpha = Vec2(1.f, 0.f);
-			pe->mode = 1;
-			pe->Init();
+			pe->Init(ability.particleEffect, pos);
 			lvlPart->pes.push_back(pe);
 		}
 	}

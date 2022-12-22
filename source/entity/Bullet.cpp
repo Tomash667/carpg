@@ -559,10 +559,10 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		trail = nullptr;
 		pe = nullptr;
 
-		if(ability->effect1)
+		if(ability->particleEffect)
 		{
 			pe = new ParticleEmitter;
-			pe->Init(ability->effect1, pos);
+			pe->Init(ability->particleEffect, pos);
 			lvlPart.pes.push_back(pe);
 		}
 	}

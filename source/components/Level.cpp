@@ -4986,7 +4986,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->Init(ability->effect1, pos);
+	pe->Init(ability->particleEffect, pos);
 	if(bounds != Vec2::Zero)
 		pe->SetArea(Box(-bounds.x, -bounds.y / 2, -bounds.x, bounds.x, bounds.y / 2, bounds.x));
 	locPart->lvlPart->pes.push_back(pe);

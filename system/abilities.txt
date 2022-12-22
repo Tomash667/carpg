@@ -8,7 +8,7 @@ ability magic_bolt {
 	range 50
 	speed 20
 	tex "mp.png" 0.05
-	tex_particle "mpp.png" 0.02
+	particleEffect magicBolt
 	sound_cast "flaunch.wav" 0.5
 	sound_hit "punch1.wav" 1
 }
@@ -20,7 +20,7 @@ ability xmagic_bolt {
 	range 50
 	speed 20
 	tex "xmp.png" 0.05
-	tex_particle "xmpp.png" 0.02
+	particleEffect xmagicBolt
 	sound_cast "flaunch.wav" 0.5
 	sound_hit "punch1.wav" 1
 }
@@ -36,7 +36,7 @@ ability fireball {
 	explode_range 2
 	mana 75
 	tex "flare.png" 0.2
-	tex_particle "flare.png" 0.075
+	particleEffect fireball
 	tex_explode "explosion.jpg"
 	sound_cast "rlaunch.mp3" 1
 	sound_hit "explode.mp3" 3
@@ -53,7 +53,7 @@ ability spit_poison {
 	range 20
 	speed 12
 	tex "spit.png" 0.1
-	tex_particle "spitp.png" 0.03
+	particleEffect splitPoison
 	sound_cast "splash1.wav" 0.5
 	sound_hit "splash2.mp3" 1
 }
@@ -78,7 +78,7 @@ ability thunder_bolt {
 	cooldown {7.5 12.5}
 	range 50
 	mana 200
-	tex_particle "iskra.png" 0.03
+	particleEffect thunderBoltHit
 	sound_cast "lighting_bolt.mp3" 3
 	sound_hit "zap.mp3" 1
 	icon
@@ -113,7 +113,7 @@ ability exploding_skull {
 	speed 12
 	explode_range 2.5
 	mesh "czaszka.qmsh" 0.13
-	tex_particle "flare.png" 0.075
+	particleEffect explodingSkull
 	tex_explode "explosion.jpg"
 	sound_cast "evil_laught.mp3" 1
 	sound_hit "explode.mp3" 3
@@ -142,7 +142,7 @@ ability mystic_ball {
 	speed 18
 	explode_range 3
 	tex "flare2.png" 0.2
-	tex_particle "flare2.png" 0.075
+	particleEffect mysticBall
 	tex_explode "rainbow.jpg"
 	sound_cast "rlaunch.mp3" 1
 	sound_hit "explode.mp3" 3
