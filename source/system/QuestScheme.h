@@ -10,8 +10,7 @@ struct QuestScheme
 	enum Flags
 	{
 		DONT_COUNT = 1 << 0,
-		NOT_SCRIPTED = 1 << 1,
-		RECREATE = 1 << 2
+		RECREATE = 1 << 1
 	};
 
 	string id;
@@ -22,7 +21,7 @@ struct QuestScheme
 	asITypeInfo* scriptType;
 	asIScriptFunction* fStartup, *fProgress, *fEvent, *fUpgrade;
 	DialogScripts scripts;
-	string properties, code;
+	string code;
 	int flags;
 	bool setProgressUsePrev, startupUseVars;
 

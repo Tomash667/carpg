@@ -31,7 +31,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == scriptMgr->GetVarType(type) || this->type == Type::Magic);
+	assert(this->type == scriptMgr->GetVarType(type));
 	*(void**)ptr = this->ptr;
 }
 
@@ -126,7 +126,6 @@ void Vars::Save(GameWriter& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
-		case Var::Type::Magic:
 		case Var::Type::Array:
 			assert(0); // TODO
 			break;
@@ -223,7 +222,6 @@ void Vars::Load(GameReader& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
-		case Var::Type::Magic:
 		case Var::Type::Array:
 			assert(0); // TODO
 			break;

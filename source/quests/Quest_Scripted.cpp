@@ -50,8 +50,7 @@ void Quest_Scripted::Start(Vars* vars)
 {
 	prog = 0;
 	startLoc = world->GetCurrentLocation();
-
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// call Startup
 	if(!scheme->fStartup)
@@ -71,6 +70,21 @@ void Quest_Scripted::Start(Vars* vars)
 		assert(!vars);
 		scriptMgr->RunScript(scheme->fStartup, instance, this);
 	}
+}
+
+//=================================================================================================
+void Quest_Scripted::CreateInstance()
+{
+	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
+	scriptMgr->RunScript(factory, nullptr, this, [&](asIScriptContext* ctx, int stage)
+	{
+		if(stage == 1)
+		{
+			void* ptr = ctx->GetAddressOfReturnValue();
+			instance = *(asIScriptObject**)ptr;
+			instance->AddRef();
+		}
+	});
 }
 
 //=================================================================================================
@@ -186,8 +200,6 @@ void Quest_Scripted::SaveVar(GameWriter& f, Var::Type varType, void* ptr)
 				f.Write0();
 		}
 		break;
-	case Var::Type::Magic:
-		break;
 	case Var::Type::Array:
 		{
 			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
@@ -225,7 +237,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(prog == -1)
 		return LoadResult::Ok;
 
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// properties
 	if(LOAD_VERSION >= V_0_14)
@@ -367,8 +379,6 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 				*(UnitGroup**)ptr = nullptr;
 		}
 		break;
-	case Var::Type::Magic:
-		break;
 	case Var::Type::Array:
 		{
 			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
@@ -401,7 +411,7 @@ void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
-	
+
 	if(inUpgrade)
 	{
 		prog = prog2;
@@ -569,7 +579,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	type = Q_SCRIPTED;
 	category = scheme->category;
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// call method
 	inUpgrade = true;
@@ -578,6 +588,7 @@ void Quest_Scripted::Upgrade(Quest* quest)
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
+	inUpgrade = false;
 }
 
 //=================================================================================================

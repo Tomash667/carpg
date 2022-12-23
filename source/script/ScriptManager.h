@@ -78,12 +78,6 @@ public:
 	void StopAllScripts();
 	asIScriptContext* SuspendScript();
 	void ResumeScript(asIScriptContext* ctx);
-	void RegisterSharedInstance(QuestScheme* scheme, asIScriptObject* instance)
-	{
-		assert(scheme && instance);
-		sharedInstances.push_back(std::make_pair(scheme, instance));
-	}
-	asIScriptObject* GetSharedInstance(QuestScheme* scheme);
 
 private:
 	struct ScriptTypeInfo
@@ -104,7 +98,6 @@ private:
 	std::unordered_map<int, Vars*> unitVars;
 	ScriptContext ctx;
 	vector<SuspendedScript> suspendedScripts;
-	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
 	vector<Quest2*> questsStack;
 	std::set<Quest2*> updatedQuests;
 	int callDepth;

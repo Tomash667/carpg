@@ -33,7 +33,6 @@ enum Property
 	P_CODE,
 	P_DIALOG,
 	P_FLAGS,
-	P_PROPERTIES,
 	P_ALIAS
 };
 
@@ -79,7 +78,6 @@ void QuestLoader::InitTokenizer()
 		{ "code", P_CODE },
 		{ "dialog", P_DIALOG },
 		{ "flags", P_FLAGS },
-		{ "properties", P_PROPERTIES },
 		{ "alias", P_ALIAS }
 		});
 
@@ -92,7 +90,6 @@ void QuestLoader::InitTokenizer()
 
 	t.AddKeywords(G_FLAGS, {
 		{ "dont_count", QuestScheme::DONT_COUNT },
-		{ "not_scripted", QuestScheme::NOT_SCRIPTED },
 		{ "recreate", QuestScheme::RECREATE }
 		});
 }
@@ -175,44 +172,6 @@ void QuestLoader::ParseQuest(const string& id)
 			break;
 		case P_FLAGS:
 			t.ParseFlags(G_FLAGS, quest->flags);
-			break;
-		case P_PROPERTIES:
-			{
-				if(!quest->properties.empty())
-					t.Throw("Properties already declared.");
-				int offset = 0;
-				t.AssertSymbol('{');
-				t.Next();
-				while(!t.IsSymbol('}'))
-				{
-					string type = t.MustGetItem();
-					t.Next();
-					bool isPointer;
-					if(t.IsSymbol('@'))
-					{
-						isPointer = true;
-						t.Next();
-					}
-					else
-						isPointer = false;
-					if(!isPointer)
-						t.Throw("Not implemented property type.");
-					while(true)
-					{
-						const string& name = t.MustGetItem();
-						quest->properties += Format("%s%s get_%s() property { return quest.GetValue(%d); }\n",
-							type.c_str(), isPointer ? "@" : "", name.c_str(), offset);
-						offset += 4;
-						t.Next();
-						if(t.IsSymbol(','))
-							t.Next();
-						else
-							break;
-					}
-					t.AssertSymbol(';');
-					t.Next();
-				}
-			}
 			break;
 		case P_ALIAS:
 			{
@@ -508,11 +467,8 @@ void QuestLoader::Finalize()
 
 		if(!scheme->fProgress)
 		{
-			if(!IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
-			{
-				Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
-				++content.errors;
-			}
+			Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
+			++content.errors;
 		}
 		if(scheme->category != QuestCategory::Unique && !scheme->GetDialog("start"))
 		{
@@ -559,12 +515,6 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		"int get_progress() property { return quest.progress; }\n"
 		"void set_progress(int value) property { quest.SetProgress(value); }\n"
 		"string TEXT(int index) { return quest.GetString(index); }\n", scheme->id.c_str());
-	if(!scheme->properties.empty())
-	{
-		code += "// properties\n"
-			"Location@ get_startLoc() property { return quest.startLoc; }\n";
-		code += scheme->properties;
-	}
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)
 	{
 		scheme->scripts.GetFormattedCode((DialogScripts::FUNC)i, str.get_ref());

@@ -65,8 +65,6 @@ ScriptManager::ScriptManager() : engine(nullptr), module(nullptr), callDepth(0)
 
 ScriptManager::~ScriptManager()
 {
-	for(pair<QuestScheme*, asIScriptObject*>& p : sharedInstances)
-		p.second->Release();
 	if(engine)
 		engine->ShutDownAndRelease();
 	DeleteElements(unitVars);
@@ -698,7 +696,6 @@ void ScriptManager::RegisterGame()
 		.Method("void SetProgress(int)", asMETHOD(Quest_Scripted, SetProgress))
 		.Method("string GetString(int)", asMETHOD(Quest_Scripted, GetString))
 		.Method("Dialog@ GetDialog(const string& in)", asMETHODPR(Quest_Scripted, GetDialog, (const string&), GameDialog*))
-		.Method("Var@ GetValue(int offset)", asMETHOD(Quest2, GetValue))
 		.Method("void AddRumor(const string& in)", asMETHOD(Quest_Scripted, AddRumor))
 		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
@@ -916,6 +913,7 @@ void ScriptManager::RegisterGame()
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
 		.Method("Unit@ GetMayor()", asFUNCTION(LocationHelper::GetMayor))
 		.Method("Unit@ GetCaptain()", asFUNCTION(LocationHelper::GetCaptain))
+		.Method("Unit@ GetUnit(UnitData@)", asFUNCTION(LocationHelper::GetUnit))
 		.Method("LocationPart@ GetLocationPart(int)", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*, int), LocationPart*))
 		.Method("LocationPart@ GetBuildingLocationPart(const string& in)", asFUNCTION(LocationHelper::GetBuildingLocationPart))
 		.Method("int GetRandomLevel()", asMETHOD(Location, GetRandomLevel))
@@ -949,7 +947,6 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void set_startDate(const Date& in) property", asMETHOD(World, SetStartDate))
 		.AddFunction("Box2d GetArea()", asMETHOD(World, GetArea))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
-		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("string GetDirName(Location@, Location@)", asFUNCTION(World_GetDirName2)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("float GetTravelDays(float)", asMETHOD(World, GetTravelDays))
@@ -958,6 +955,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Vec2 FindPlace(const Box2d& in)", asMETHODPR(World, FindPlace, (const Box2d&), Vec2))
 		.AddFunction("bool TryFindPlace(Vec2&, float, bool = false)", asMETHOD(World, TryFindPlace))
 		.AddFunction("Vec2 GetRandomPlace()", asMETHOD(World, GetRandomPlace))
+		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
+		.AddFunction("Location@ GetLocationByType(LOCATION, LOCATION_TARGET = LOCATION_TARGET(-1))", asMETHOD(World, GetLocationByType))
 		.AddFunction("Location@ GetRandomCity()", asMETHOD(World, GetRandomCity))
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*) const, Location*))
@@ -1138,27 +1137,27 @@ void ScriptManager::RunScript(asIScriptFunction* func, void* instance, Quest2* q
 	lastException = nullptr;
 	r = tmpContext->Execute();
 
-	if(r == asEXECUTION_SUSPENDED)
-		return;
-
-	if(r == asEXECUTION_FINISHED)
+	switch(r)
 	{
+	case asEXECUTION_FINISHED:
 		if(clbk)
 			clbk(tmpContext, 1);
-	}
-	else
-	{
-		if(r == asEXECUTION_EXCEPTION)
+		break;
+	case asEXECUTION_EXCEPTION:
 		{
 			cstring msg = lastException ? lastException : tmpContext->GetExceptionString();
 			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmpContext->GetExceptionFunction()->GetName(),
 				tmpContext->GetExceptionLineNumber()));
 		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
+		break;
+	case asEXECUTION_ERROR:
+		Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
+		break;
 	}
 
-	engine->ReturnContext(tmpContext);
+	if(r != asEXECUTION_SUSPENDED)
+		engine->ReturnContext(tmpContext);
+
 	if(quest)
 	{
 		questsStack.pop_back();
@@ -1410,6 +1409,7 @@ void ScriptManager::ScriptSleep(float time)
 
 void ScriptManager::UpdateScripts(float dt)
 {
+	assert(callDepth == 0);
 	LoopAndRemove(suspendedScripts, [&](SuspendedScript& ss)
 	{
 		if(ss.time < 0)
@@ -1484,15 +1484,4 @@ void ScriptManager::ResumeScript(asIScriptContext* ctx)
 			return;
 		}
 	}
-}
-
-asIScriptObject* ScriptManager::GetSharedInstance(QuestScheme* scheme)
-{
-	assert(scheme);
-	for(pair<QuestScheme*, asIScriptObject*>& p : sharedInstances)
-	{
-		if(p.first == scheme)
-			return p.second;
-	}
-	return nullptr;
 }

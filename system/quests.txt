@@ -2577,17 +2577,11 @@ quest side_cleric
 quest dire_wolf
 {
 	type unique
-	flags not_scripted
-
 	progress {
 		P_WOLF_NONE
 		P_WOLF_STARTED
 		P_WOLF_KILLED
 		P_WOLF_COMPLETE
-	}
-
-	properties {
-		Location@ forest;
 	}
 
 	dialog hunter {
@@ -2610,6 +2604,96 @@ quest dire_wolf
 			end
 		}
 		end
+	}
+	
+	code {
+		Location@ startLoc;
+		Location@ forest;
+		
+		void Startup()
+		{
+			@startLoc = World::GetLocationByType(L_OUTSIDE, HUNTERS_CAMP);
+			startLoc.AddEventHandler(quest, EVENT_ENTER);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_WOLF_STARTED:
+				@forest = World::GetClosestLocation(L_OUTSIDE, startLoc.pos, FOREST);
+				@forest.activeQuest = quest;
+				forest.AddEventHandler(quest, EVENT_ENTER);
+				forest.SetKnown();
+
+				quest.SetStarted(TEXT(0));
+				quest.AddEntry(TEXT(1));
+				quest.AddEntry(TEXT(2));
+				break;
+			case P_WOLF_KILLED:
+				@forest.activeQuest = null;
+				quest.AddEntry(TEXT(3));
+				break;
+			case P_WOLF_COMPLETE:
+				target.RemoveDialog(quest);
+				quest.AddEntry(TEXT(4));
+				quest.SetCompleted();
+				Team::AddReward(5000, 15000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				if(progress == P_WOLF_NONE)
+				{
+					// add dialog to hunters leader
+					UnitData@ ud = UnitData::Get("hunter_leader");
+					Unit@ unit = Level::FindUnit(ud);
+					unit.AddDialog(quest, "hunter");
+				}
+				else
+				{
+					// spawn dire wolf
+					UnitData@ ud = UnitData::Get("dire_wolf");
+					Unit@ unit = Level::SpawnUnitNearLocation(ud, Vec3(128, 0, 128));
+					unit.AddEventHandler(quest, EVENT_DIE);
+				}
+				e.location.RemoveEventHandler(quest, EVENT_ENTER);
+			}
+			else if(e.event == EVENT_DIE)
+			{
+				e.unit.RemoveEventHandler(quest, EVENT_DIE);
+				progress = P_WOLF_KILLED;
+			}
+		}
+		
+		void OnUpgrade(Vars@ vars)
+		{
+			@startLoc = vars["startLoc"];
+			@forest = vars["forest"];
+			
+			if(progress != P_WOLF_COMPLETE)
+			{
+				Unit@ unit = startLoc.GetUnit(UnitData::Get("hunter_leader"));
+				if(unit is null)
+					startLoc.AddEventHandler(quest, EVENT_ENTER);
+				else
+					unit.AddDialog(quest, "hunter");
+			}
+			
+			if(progress == P_WOLF_STARTED)
+			{
+				Unit@ unit = forest.GetUnit(UnitData::Get("dire_wolf"));
+				if(unit is null)
+					forest.AddEventHandler(quest, EVENT_ENTER);
+				else
+					unit.AddEventHandler(quest, EVENT_DIE);
+				@forest.activeQuest = quest;
+			}
+		}
 	}
 }
 

@@ -78,7 +78,6 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
-	infos.push_back(QuestInfo(Q_DIRE_WOLF, QuestCategory::Unique, "dire_wolf"));
 
 	// create pseudo quests
 	questContest = new Quest_Contest;
@@ -937,13 +936,7 @@ const Item* QuestManager::FindQuestItemClient(cstring itemId, int questId) const
 void QuestManager::AddScriptedQuest(QuestScheme* scheme)
 {
 	assert(scheme);
-	if(IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
-	{
-		QuestInfo* info = FindQuestInfo(scheme->id);
-		info->scheme = scheme;
-	}
-	else
-		infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
+	infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
 }
 
 //=================================================================================================

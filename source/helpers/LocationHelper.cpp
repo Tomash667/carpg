@@ -93,6 +93,13 @@ Unit* LocationHelper::GetCaptain(Location* loc)
 }
 
 //=================================================================================================
+Unit* LocationHelper::GetUnit(Location* loc, UnitData* ud)
+{
+	assert(loc && ud);
+	return ForLocation(loc)->FindUnit(ud);
+}
+
+//=================================================================================================
 Unit* LocationHelper::FindQuestUnit(Location* loc, Quest* quest)
 {
 	assert(loc && quest);

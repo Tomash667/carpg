@@ -51,5 +51,6 @@ namespace LocationHelper
 	LocationPart* GetBuildingLocationPart(Location* loc, const string& name);
 	Unit* GetMayor(Location* loc);
 	Unit* GetCaptain(Location* loc);
+	Unit* GetUnit(Location* loc, UnitData* ud);
 	Unit* FindQuestUnit(Location* loc, Quest* quest);
 }

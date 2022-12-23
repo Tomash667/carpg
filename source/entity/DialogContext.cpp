@@ -370,7 +370,7 @@ void DialogContext::UpdateLoop()
 				EndDialog();
 				return;
 			}
-			else if(questDialogIndex == QUEST_INDEX_NONE || questDialogIndex + 1 == (int)questDialogs.size())
+			else if(questDialogIndex == QUEST_INDEX_NONE || questDialogIndex + 1 >= (int)questDialogs.size())
 			{
 				// finished all quest dialogs, use normal dialog
 				Entry& p = prev.back();

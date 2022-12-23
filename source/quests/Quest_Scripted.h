@@ -37,6 +37,7 @@ public:
 	bool PostRun() override;
 
 private:
+	void CreateInstance();
 	void SaveVar(GameWriter& f, Var::Type varType, void* ptr);
 	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
 

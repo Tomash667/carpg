@@ -34,9 +34,12 @@ void ForLocation::Setup(Location* l, int level)
 	ctx = LevelAreaContextPool.Get();
 	ctx->entries.clear();
 
+	// if level not generated search will find nothing
+	if(l->lastVisit == -1)
+		return;
+
 	int loc = l->index;
 	bool active = (world->GetCurrentLocationIndex() == loc);
-	assert(l->lastVisit != -1);
 
 	switch(l->type)
 	{

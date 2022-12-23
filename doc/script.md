@@ -380,6 +380,7 @@ Method:
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from location.
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
+* Unit@ GetUnit(UnitData@) - return unit or null when not in city.
 * LocationPart@ GetLocationPart(int index) - get location part by index.
 * LocationPart@ GetBuildingLocationPart(const string& id) - get inside building location part (by building group id).
 * int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
@@ -687,7 +688,6 @@ Static methods:
 
 * Box2d GetArea() - return world area.
 * uint GetSettlements() - return count of settlements.
-* Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
 * string GetDirName(Location@ loc1, Location@ loc2) - get direction name string from loc1 to loc2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
@@ -696,6 +696,8 @@ Static methods:
 * Vec2 FindPlace(const Box2d& in box) - find place for location inside region.
 * bool TryFindPlace(Vec2& pos, float range, bool allowExact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
+* Location@ GetLocation(uint index) - return location by index.
+* Location@ GetLocationByType(LOCATION type, LOCATION_TARGET target = -1) - get first location by type.
 * Location@ GetRandomCity() - returns random city (not village).
 * Location@ GetRandomSettlementWithBuilding(const string& in buildingId) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.

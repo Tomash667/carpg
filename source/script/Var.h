@@ -20,7 +20,6 @@ struct Var
 		String,
 		Unit,
 		UnitGroup,
-		Magic,
 		Array
 	};
 	Type type;
