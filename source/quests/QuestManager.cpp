@@ -332,6 +332,7 @@ void QuestManager::Reset()
 	DeleteElements(questItemRequests);
 	questTimeouts.clear();
 	questTimeouts2.clear();
+	timers.clear();
 	questCounter = 0;
 	uniqueQuestsCompleted = 0;
 	uniqueCompletedShow = false;
@@ -383,6 +384,19 @@ void QuestManager::Update(int days)
 		if(quest->IsTimedout() && quest->OnTimeout(TIMEOUT2))
 		{
 			quest->timeout = true;
+			return true;
+		}
+		return false;
+	});
+
+	// quest timers
+	LoopAndRemove(timers, [=](pair<Quest2*, int>& p)
+	{
+		p.second -= days;
+		if(p.second <= 0)
+		{
+			ScriptEvent event(EVENT_TIMER);
+			p.first->FireEvent(event);
 			return true;
 		}
 		return false;
@@ -546,6 +560,13 @@ void QuestManager::Save(GameWriter& f)
 	for(Quest* q : questTimeouts2)
 		f << q->id;
 
+	f << timers.size();
+	for(pair<Quest2*, int>& timer : timers)
+	{
+		f << timer.first->id;
+		f << timer.second;
+	}
+
 	f << questItems.size();
 	for(Item* item : questItems)
 	{
@@ -616,6 +637,19 @@ void QuestManager::Load(GameReader& f)
 	questTimeouts2.resize(f.Read<uint>());
 	for(Quest*& q : questTimeouts2)
 		q = FindQuest(f.Read<int>(), false);
+
+	// timers
+	if(LOAD_VERSION >= V_DEV)
+	{
+		timers.resize(f.Read<uint>());
+		for(pair<Quest2*, int>& timer : timers)
+		{
+			timer.first = static_cast<Quest2*>(FindQuest(f.Read<int>(), false));
+			f >> timer.second;
+		}
+	}
+	else
+		timers.clear();
 
 	// quest items
 	questItems.resize(f.Read<uint>());
@@ -1578,4 +1612,11 @@ void QuestManager::CheckItemEventHandler(Unit* unit, const Item* item)
 			break;
 		}
 	}
+}
+
+//=================================================================================================
+void QuestManager::AddTimer(Quest2* quest, int days)
+{
+	assert(quest && days > 0);
+	timers.push_back(std::make_pair(quest, days));
 }

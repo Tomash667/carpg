@@ -163,6 +163,7 @@ unit xwokloiz {
 unit q_main_academy = "Nauczyciel z akademii"
 unit q_main_messenger = "Pos³aniec"
 unit q_main_villager_def {}
+unit q_main_oldman = "Stary mieszkaniec wioski"
 unit q_main_ill_villager = "Chory mieszkaniec wioski"
 unit q_main_ill_villager_attack {}
 unit q_main_plague_villager = "Zara¿ony wieœniak"

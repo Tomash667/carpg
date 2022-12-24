@@ -110,6 +110,7 @@ public:
 	void AddItemEventHandler(Quest2* quest, const Item* item) { itemEventHandlers.push_back(std::make_pair(quest, item)); }
 	void RemoveItemEventHandler(Quest2* quest, const Item* item);
 	void CheckItemEventHandler(Unit* unit, const Item* item);
+	void AddTimer(Quest2* quest, int days);
 
 	vector<Quest*> unacceptedQuests;
 	vector<Quest*> quests;
@@ -142,6 +143,7 @@ private:
 	vector<QuestItemRequest*> questItemRequests;
 	vector<QuestRequest> questRequests;
 	vector<Quest*> upgradeQuests;
+	vector<pair<Quest2*, int>> timers;
 	int questCounter, force;
 	QuestList* questsMayor, *questsCaptain, *questsRandom;
 	std::map<string, QuestHandler*> specialHandlers, specialIfHandlers, formatStrHandlers;

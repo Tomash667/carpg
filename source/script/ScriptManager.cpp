@@ -532,7 +532,8 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_DIE", EVENT_DIE },
 		{ "EVENT_CLEARED", EVENT_CLEARED },
 		{ "EVENT_GENERATE", EVENT_GENERATE },
-		{ "EVENT_USE", EVENT_USE }
+		{ "EVENT_USE", EVENT_USE },
+		{ "EVENT_TIMER", EVENT_TIMER }
 		});
 
 	AddEnum("LOCATION", {
@@ -645,6 +646,12 @@ void ScriptManager::RegisterGame()
 		{ "F_EXCLUDED", F_EXCLUDED }
 		});
 
+	AddEnum<HeroType>("HERO_TYPE", {
+		{ "HERO_NORMAL", HeroType::Normal },
+		{ "HERO_FREE", HeroType::Free },
+		{ "HERO_VISITOR", HeroType::Visitor }
+		});
+
 	AddType("Var")
 		.Method("bool opEquals(bool) const", asMETHODPR(Var, IsBool, (bool) const, bool))
 		.Method("bool opEquals(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
@@ -698,6 +705,7 @@ void ScriptManager::RegisterGame()
 		.Method("Dialog@ GetDialog(const string& in)", asMETHODPR(Quest_Scripted, GetDialog, (const string&), GameDialog*))
 		.Method("void AddRumor(const string& in)", asMETHOD(Quest_Scripted, AddRumor))
 		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
+		.Method("void AddTimer(int)", asMETHOD(Quest_Scripted, AddTimer))
 		.Method("void Start(Vars@)", asMETHODPR(Quest_Scripted, Start, (Vars*), void))
 		.WithInstance("Quest@ quest", &ctx.quest)
 		.WithNamespace(questMgr)
@@ -858,7 +866,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void AddExp(int)", asMETHOD(Team, AddExpS))
 		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
 		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
-		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddMember))
+		.AddFunction("void AddMember(Unit@, HERO_TYPE = HERO_NORMAL)", asMETHOD(Team, AddMember))
 		.AddFunction("void RemoveMember(Unit@)", asMETHOD(Team, RemoveMember))
 		.AddFunction("void Warp(const Vec3& in, const Vec3& in)", asMETHOD(Team, Warp))
 		.AddFunction("bool PersuasionCheck(int)", asMETHOD(Team, PersuasionCheck));

@@ -130,6 +130,12 @@ void Quest2::SetTimeout(int days)
 }
 
 //=================================================================================================
+void Quest2::AddTimer(int days)
+{
+	questMgr->AddTimer(this, days);
+}
+
+//=================================================================================================
 int Quest2::GetTimeout() const
 {
 	int days = world->GetWorldtime() - startTime;

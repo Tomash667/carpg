@@ -3433,6 +3433,14 @@ unit q_main_villager_def : villager {
 	flags {human ai_stay}
 }
 
+unit q_main_oldman : villager {
+	dialog "main_village4/oldman"
+	flags {human ai_stay hero peaceful specific_name}
+	appearance {
+		hair_color 0xDED5D0
+	}
+}
+
 unit q_main_ill_villager_attack : q_main_ill_villager {
 	level 5
 	group undead

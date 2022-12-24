@@ -2177,6 +2177,17 @@ quest main
 					restart
 				}
 			}
+			if script "Quest::Find(\"main_village4\").progress == P_MAIN_V4_LEAVE"
+			{
+				choice 28
+				{
+					do_once
+					talk 29
+					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE;"
+					talk 21
+					restart
+				}
+			}
 			if have_item q_infected_organ
 			{
 				choice 24
@@ -2437,7 +2448,7 @@ quest main
 					target.dontAttack = false;
 					target.knownName = true;
 					target.AddEventHandler(quest, EVENT_UPDATE);
-					Team::AddMember(target, 1);
+					Team::AddMember(target, HERO_FREE);
 					quest.AddEntry(TEXT(13));
 				}
 				break;
@@ -3079,15 +3090,66 @@ quest main_village4
 		P_MAIN_V4_START
 		P_MAIN_V4_ENTER
 		P_MAIN_V4_CLEARED
-		P_MAIN_V4_PICKED
-		P_MAIN_V4_CLEARED_PICKED
+		P_MAIN_V4_FOLLOW
+		P_MAIN_V4_LEAVE
 		P_MAIN_V4_DONE
+	}
+	
+	dialog oldman {
+		if quest_progress >= P_MAIN_V4_LEAVE
+		{
+			talk 10
+			end
+		}
+		if quest_progress == P_MAIN_V4_FOLLOW
+		{
+			if script "Level::IsSafeSettlement()"
+			{
+				set_quest_progress P_MAIN_V4_LEAVE
+				talk 8
+				talk 9
+			}
+			else
+				talk 7
+			end
+		}
+		if script "!talked"
+		{
+			talk 0
+			talk 1
+			if quest_progress == P_MAIN_V4_CLEARED
+			{
+				talk 3
+				set_quest_progress P_MAIN_V4_FOLLOW
+				talk 4
+			}
+			else
+			{
+				talk 2
+				script "talked = true; quest.AddEntry(TEXT(4));"
+			}
+		}
+		else
+		{
+			if quest_progress == P_MAIN_V4_CLEARED
+			{
+				talk 6
+				talk 3
+				set_quest_progress P_MAIN_V4_FOLLOW
+				talk 4
+			}
+			else
+				talk 5
+		}
+		end
 	}
 	
 	code {
 		Unit@ cleric;
+		Unit@ oldman;
 		Location@ village;
 		int locQuadrant;
+		bool talked;
 		
 		void Startup(Vars@ vars)
 		{
@@ -3118,11 +3180,12 @@ quest main_village4
 					// enemies
 					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
 					
-					// inn villager
-					/*LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					// inn people
+					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					@oldman = Level::SpawnUnit(locPart, UnitData::Get("q_main_oldman"));
+					oldman.OrderAutoTalk();
 					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
-					unit.AddDialog(quest, "inn_villager");
-					unit.OrderAutoTalk();*/
+					unit.OrderAutoTalk();
 					
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);
@@ -3131,18 +3194,24 @@ quest main_village4
 				}
 				break;
 			case P_MAIN_V4_CLEARED:
-				quest.AddEntry(TEXT(5));
+				quest.AddEntry(TEXT(talked ? 6 : 5));
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
 				break;
-			case P_MAIN_V4_PICKED:
-				quest.AddEntry(TEXT(6));
-				break;
-			case P_MAIN_V4_CLEARED_PICKED:
+			case P_MAIN_V4_FOLLOW:
 				quest.AddEntry(TEXT(7));
+				Team::AddMember(oldman, HERO_VISITOR);
+				oldman.AddEventHandler(quest, EVENT_ENTER);
+				break;
+			case P_MAIN_V4_LEAVE:
+				quest.AddEntry(TEXT(8));
+				quest.AddTimer(1);
+				Team::RemoveMember(oldman);
+				oldman.OrderGoToInn();
+				oldman.RemoveEventHandler(quest, EVENT_ENTER);
 				break;
 			case P_MAIN_V4_DONE:
-				quest.AddEntry(TEXT(8));
+				quest.AddEntry(TEXT(9));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
 				Team::AddReward(5000, 15000);
 				break;
 			}
@@ -3151,7 +3220,16 @@ quest main_village4
 		void OnEvent(Event@ e)
 		{
 			if(e.event == EVENT_ENTER)
-				progress = P_MAIN_V4_ENTER;
+			{
+				if(progress == P_MAIN_V4_START)
+					progress = P_MAIN_V4_ENTER;
+				else if(Level::IsSafeSettlement())
+					oldman.OrderAutoTalk();
+			}
+			else if(e.event == EVENT_CLEARED)
+				progress = P_MAIN_V4_CLEARED;
+			else if(e.event == EVENT_TIMER)
+				oldman.MoveOffscreen();
 		}
 	}
 }

@@ -12,7 +12,8 @@ enum EventType
 	EVENT_DIE,
 	EVENT_CLEARED,
 	EVENT_GENERATE,
-	EVENT_USE
+	EVENT_USE,
+	EVENT_TIMER
 };
 
 //-----------------------------------------------------------------------------
@@ -56,17 +57,11 @@ struct EventPtr
 struct ScriptEvent
 {
 	EventType type;
-	union
-	{
-		Location* location; // EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE
-		Unit* unit; // EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE
-	};
-	union
-	{
-		GroundItem* groundItem; // EVENT_PICKUP
-		MapSettings* mapSettings; // EVENT_GENERATE
-	};
+	Location* location; // EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE
+	Unit* unit; // EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE
+	GroundItem* groundItem; // EVENT_PICKUP
 	const Item* item; // EVENT_PICKUP, EVENT_USE
+	MapSettings* mapSettings; // EVENT_GENERATE
 	int stage; // EVENT_GENERATE
 	bool cancel;
 

@@ -63,13 +63,14 @@ Game enums & consts
 
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
-* EVENT_ENTER - for locations, send when player enter location.
+* EVENT_ENTER - for locations, send when player enter location. For units send when unit changes location.
 * EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
 * EVENT_CLEARED - for locations, send when location is cleared from enemies.
 * EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
 * EVENT_UPDATE - for units, send every frame.
 * EVENT_DIE - for units, send when unit dies.
 * EVENT_TIMEOUT - for quests, send when quest timeout expired.
+* EVENT_TIMER - for quests, send after passing x days.
 * EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
 * EVENT_USE - for item event handler, currently only works for books.
 
@@ -327,7 +328,7 @@ Properties:
 
 * EVENT event
 * Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
-* Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE.
+* Unit@ unit - used for: EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE.
 * GroundItem@ groundItem - used for EVENT_PICKUP.
 * Item@ item - used for: EVENT_PICKUP, EVENT_USE.
 * MapSettings@ mapSettings - used for EVENT_GENERATE.
@@ -451,9 +452,11 @@ Methods:
 * void SetCompleted() - mark quest as completed, can only be called when quest is started.
 * void SetFailed() - mark quest as failed, can only be called when quest is started.
 * void SetTimeout(int days) - register quest timeout, can only be called once (removed when quest is completed or failed).
+* void SetTimer(int days) - retgister quest timer, works like timer but work after finishing quest.
 * Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
 * void AddRumor(const string& in str) - add quest rumor to available dialogs.
 * void RemoveRumor() - remove quest rumor from available dialogs.
+* void AddTimer(int days) - register quest timer.
 * void Start(Vars@) - start quest.
 
 Static properties:
@@ -667,7 +670,7 @@ Static methods:
 * void AddExp(int exp) - add experience to team, nagative value is unmodified, otherwise it depends on team size (1 player-200%, 2-150%, 3-125%, 4-100%, 5-75%, 6-60%, 7-50%, 8-40%).
 * void AddReward(uint gold, uint exp = 0) - add gold and experience divided between team members.
 * uint RemoveItem(Item@, uint count = 1) - remove items from team (count 0 = all).
-* void AddMember(Unit@, int type = 0) - add team member, mode: 0-normal, 1-free (no gold), 2-visitor (no gold/exp).
+* void AddMember(Unit@, HERO_TYPE type = HERO_NORMAL) - add team member, mode: HERO_NORMAL-normal, HERO_FREE-free (no gold), HERO_VISITOR-visitor (no gold/exp).
 * void RemoveMember(Unit@) - remove team member.
 * void Warp(const Vec3& in pos, const Vec3& in lookTarget) - warp team to position rotated towards look target.
 * bool PersuasionCheck(int level) - do persuasion check, return true is succeeded.

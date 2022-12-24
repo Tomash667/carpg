@@ -448,6 +448,8 @@ quest main {
 		25 "Wiem ¿e nie jest to przyjemna robota ale tylko dziêki badaniami nad tymi organami mo¿emy znaleŸæ lekarstwo na zarazê."
 		26 "Oddaj dziwne zio³a"
 		27 "Nigdy nie widzia³em takich dziwnych zió³. Wygl¹daj¹ jak skrystalizowane. Poœlê po jakiegoœ doœwiadczonego alchemika ¿eby je zbada³."
+		28 "Przeka¿ informacje"
+		29 "Wiêc mówisz ¿e ten starzec straci³ pamieæ? Mam nadzieje ¿e to nie jest kolejny objaw choroby. W wolnym czasie pójdê z nim porozmawiaæ, mo¿e uda mi siê przywróciæ mu pamiêæ."
 		
 		//12 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
 	}
@@ -563,15 +565,30 @@ quest main_village3 {
 
 //=============================================================================
 quest main_village4 {
+	dialog oldman {
+		0 "Witaj m³odzieñcze."
+		1 "Dziêkuje za ratunek, nasza barykada by zbyt d³ugo nie wytrzyma³a."
+		2 "Wróæ do mnie gdy oczyœcisz wioskê z tych szaleñców. Mam ci coœ jeszcze do powiedzenia."
+		3 "Chcia³bym ci powiedzieæ sk¹d siê wziê³a tu ta zaraza niestety straci³em pamiêæ..."
+		4 "Czy móg³byœ mnie zabraæ ze sob¹ do jakiejœ bezpiecznej wioski lub miasta?"
+		5 "Czy ju¿ jest bezpiecznie?"
+		6 "S³yszê ¿e odg³osy walki ucich³y."
+		7 "Tak? Bêdê za wami szed³ a¿ dotrzemy do jakiejœ bezpiecznej wioski lub miasta."
+		8 "To miejsce wygl¹da na bezpieczne, dziêkujê."
+		9 "Niestety nie mam przy sobie nic cennego, bêdê siê modli³ za powodzenie twojej misji."
+		10 "Dziêkujê za pomoc."
+	}
+	
 	texts {
 		0 "ród³o zarazy w $(village.name)"
 		1 "Rozpoczêto dnia $date$."
 		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
-		3 "Po dotarciu do wioski zasta³ mnie widok walki. Muszê szybko pomóc mieszkañcom wioski którzy jeszcze nie zachorowali odeprzeæ atak. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
-		4 "Jeden z wieœniaków schowa³ siê w karczmie. Powiedzia³ ¿e jednym z pierwszych zara¿onych by³ alchemik. Mo¿e przy nim znajdê jakiœ dowód."
+		3 "Po dotarciu do wioski ju¿ z daleka widaæ ¿e coœ jest nie tak. Niestety muszê zabiæ wszystkich mieszkañców wioski którzy oszaleli, dla nich jest ju¿ za póŸno. Muszê te¿ znaleŸæ jakieœ informacje o Ÿródle zarazy."
+		4 "W karczmie spotka³em jakiegoœ starca. Chce ze mn¹ rozmawiaæ gdy oczyszczê okolicê z wrogów."
 		5 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz muszê poszukaæ jakichœ dowodów. Mo¿e w karczmie lub domu so³tysa coœ znajdê."
-		6 "Znalaz³em jakieœ dziwne zio³a. Czy to one wywo³a³y tê zarazê?"
-		7 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
-		8 "Odda³em dziwne zio³a $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+		6 "Zara¿eni mieszkañcy wioski nie ¿yj¹, teraz mogê wróciæ porozmawiaæ ze starcem w karczmie."
+		7 "Starzec twierdzi ¿e straci³ pamiêæ i poprosi³ ¿ebym go zaprowadzi³ do dowolnej wioski lub miasta."
+		8 "Doprowadzi³em starca do $(Level::location.name). Podziêkowa³ mi i ruszy³ w stronê karczmy. Czas wracaæ do $(cleric.realName)."
+		9 "Przekaza³em informacje $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }

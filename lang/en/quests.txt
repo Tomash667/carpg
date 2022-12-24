@@ -434,6 +434,8 @@ quest main {
 		25 "I know it's not a pleasant job, but only by researching these organs can we find a cure for the plague."
 		26 "Give the weird herbs"
 		27 "I have never seen such strange herbs. They look crystallized. I'll send for an experienced alchemist to examine them."
+		28 "Provide information"
+		29 "So you're saying this old man lost his memory? I hope this is not another symptom of the disease. In my spare time, I'll go talk to him, maybe I can restore his memory."
 		
 		//12 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
 	}
@@ -558,5 +560,35 @@ quest main_village4 {
 		6 "I found some strange herbs. Did they cause the plague?"
 		7 "I did all I could. Time to go back to $(cleric.realName)."
 		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+	}
+}
+
+//=============================================================================
+quest main_village4 {
+	dialog oldman {
+		0 "Hello young man."
+		1 "Thank you for the rescue, our barricade wouldn't last long."
+		2 "Come back to me when you've cleared the village of these madmen. I have something else to tell you."
+		3 "I would like to tell you where this plague came from, unfortunately I have lost my memory..."
+		4 "Could you take me with you to some safe village or town?"
+		5 "Is it safe now?"
+		6 "I hear the sounds of fighting have died down."
+		7 "Yes? I will follow you until we reach some safe village or town."
+		8 "The place looks safe, thank you."
+		9 "Unfortunately, I don't have anything valuable with me, I will pray for the success of your mission."
+		10 "Thank you for your help."
+	}
+	
+	texts {
+		0 "Source of the plague in $(village.name)"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
+		3 "After reaching the village, I saw a fight. I must quickly help the villagers who have not yet fallen ill to repel the attack. I also need to find some information on the source of the plague."
+		4 "I met an old man in the inn. He wants to talk to me when I clear the area of enemies."
+		5 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		6 "The infected villagers are dead, now I can go back and talk to the old man in the tavern."
+		7 "The old man claims he has lost his memory and asked me to take him to any village or town."
+		8 "I led the old man to $(Level::location.name). He thanked me and headed towards the inn. Time to go back to $(cleric.realName)."
+		9 "I passed $(cleric.realName) information and got rewarded for it. Quest done!"
 	}
 }
