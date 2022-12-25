@@ -3063,6 +3063,20 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
+		case NetChange::SET_CAN_ENTER:
+			{
+				int id;
+				bool canEnter;
+				f >> id;
+				f >> canEnter;
+				if(!f)
+					Error("Update client: Broken SET_CAN_ENTER.");
+				else if(gameLevel->cityCtx || id >= (int)gameLevel->cityCtx->insideBuildings.size())
+					Error("Update client: SET_CAN_ENTER, Invalid building %d.", id);
+				else
+					gameLevel->cityCtx->insideBuildings[id]->canEnter = canEnter;
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);

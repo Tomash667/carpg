@@ -153,7 +153,7 @@ struct Location
 	void SetNamePrefix(cstring prefix);
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
-	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void FireEvent(ScriptEvent& e);
 	bool IsVisited() const { return lastVisit != -1; }
 };
 

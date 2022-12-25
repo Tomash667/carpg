@@ -6,6 +6,7 @@
 #include "EntryPoint.h"
 #include "Content.h"
 #include "BuildingGroup.h"
+#include "CityBuilding.h"
 
 //-----------------------------------------------------------------------------
 enum CityTarget
@@ -16,21 +17,6 @@ enum CityTarget
 	VILLAGE_EMPTY,
 	VILLAGE_DESTROYED,
 	VILLAGE_DESTROYED2
-};
-
-//-----------------------------------------------------------------------------
-// Budynek w mieœcie
-struct CityBuilding
-{
-	Building* building;
-	Int2 pt, unitPt;
-	GameDirection dir;
-	Vec3 walkPt;
-
-	CityBuilding() {}
-	explicit CityBuilding(Building* building) : building(building) {}
-	Vec3 GetUnitPos();
-	float GetUnitRot();
 };
 
 //-----------------------------------------------------------------------------

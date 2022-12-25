@@ -13,7 +13,8 @@ enum EventType
 	EVENT_CLEARED,
 	EVENT_GENERATE,
 	EVENT_USE,
-	EVENT_TIMER
+	EVENT_TIMER,
+	EVENT_DESTROY
 };
 
 //-----------------------------------------------------------------------------
@@ -34,7 +35,8 @@ struct EventPtr
 	enum Source
 	{
 		LOCATION,
-		UNIT
+		UNIT,
+		USABLE
 	};
 
 	Source source;
@@ -43,6 +45,7 @@ struct EventPtr
 	{
 		Location* location;
 		Unit* unit;
+		Usable* usable;
 	};
 
 	bool operator == (const EventPtr& e) const
@@ -57,13 +60,48 @@ struct EventPtr
 struct ScriptEvent
 {
 	EventType type;
-	Location* location; // EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE
-	Unit* unit; // EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE
-	GroundItem* groundItem; // EVENT_PICKUP
-	const Item* item; // EVENT_PICKUP, EVENT_USE
-	MapSettings* mapSettings; // EVENT_GENERATE
-	int stage; // EVENT_GENERATE
-	bool cancel;
+	union
+	{
+		struct
+		{
+			Location* location;
+		} onCleared;
+		struct
+		{
+			Usable* usable;
+		} onDestroy;
+		struct
+		{
+			Unit* unit;
+		} onDie;
+		struct
+		{
+			Location* location;
+			Unit* unit;
+		} onEnter;
+		struct
+		{
+			Location* location;
+			MapSettings* mapSettings;
+			int stage;
+			bool cancel;
+		} onGenerate;
+		struct
+		{
+			Unit* unit;
+			GroundItem* groundItem;
+			const Item* item;
+		} onPickup;
+		struct
+		{
+			Unit* unit;
+		} onUpdate;
+		struct
+		{
+			Unit* unit;
+			const Item* item;
+		} onUse;
+	};
 
-	ScriptEvent(EventType type) : type(type), cancel(false) {}
+	ScriptEvent(EventType type) : type(type) {}
 };

@@ -140,6 +140,7 @@
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
     <ClInclude Include="entity\AITeam.h" />
+    <ClInclude Include="entity\CityBuilding.h" />
     <ClInclude Include="entity\Date.h" />
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="entity\Electro.h" />
@@ -346,6 +347,7 @@
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\AITeam.cpp" />
+    <ClCompile Include="entity\CityBuilding.cpp" />
     <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Electro.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />

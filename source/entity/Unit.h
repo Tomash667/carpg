@@ -12,6 +12,7 @@
 #include "Effect.h"
 #include "Buff.h"
 #include "Event.h"
+#include "GameDialog.h"
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -923,7 +924,6 @@ public:
 	void RemoveDialogS(Quest2* quest) { RemoveDialog(quest, false); }
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	void RemoveAllEventHandlers();
 	UnitOrder GetOrder() const
 	{

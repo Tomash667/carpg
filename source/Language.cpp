@@ -647,7 +647,7 @@ void Language::LoadLanguageFiles()
 	{
 		if(usable->name.empty())
 		{
-			Warn("Usables '%s': empty name.", usable->name.c_str());
+			Warn("Usables '%s': empty name.", usable->id.c_str());
 			++errors;
 		}
 	}

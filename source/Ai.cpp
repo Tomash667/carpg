@@ -126,15 +126,9 @@ void Game::UpdateAi(float dt)
 		if(u.toRemove)
 			continue;
 
-		for(Event& event : u.events)
-		{
-			if(event.type == EVENT_UPDATE)
-			{
-				ScriptEvent e(EVENT_UPDATE);
-				e.unit = &u;
-				event.quest->FireEvent(e);
-			}
-		}
+		ScriptEvent event(EVENT_UPDATE);
+		event.onUpdate.unit = &u;
+		u.FireEvent(event);
 
 		if(!u.IsStanding())
 		{

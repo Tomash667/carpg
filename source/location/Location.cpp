@@ -354,6 +354,19 @@ void Location::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 }
 
 //=================================================================================================
+void Location::FireEvent(ScriptEvent& e)
+{
+	if(events.empty())
+		return;
+
+	for(Event& event : events)
+	{
+		if(event.type == e.type)
+			event.quest->FireEvent(e);
+	}
+}
+
+//=================================================================================================
 // set if passed, returns prev value
 bool Location::RequireLoadingResources(bool* toSet)
 {

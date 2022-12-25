@@ -3425,21 +3425,13 @@ void Level::CheckIfLocationCleared()
 		if(location->state != LS_HIDDEN)
 			location->state = LS_CLEARED;
 
-		// events v1
+		// events
 		bool prevent = false;
 		if(eventHandler)
 			prevent = eventHandler->HandleLocationEvent(LocationEventHandler::CLEARED);
-
-		// events v2
-		for(Event& e : location->events)
-		{
-			if(e.type == EVENT_CLEARED)
-			{
-				ScriptEvent event(EVENT_CLEARED);
-				event.location = location;
-				e.quest->FireEvent(event);
-			}
-		}
+		ScriptEvent event(EVENT_CLEARED);
+		event.onCleared.location = location;
+		location->FireEvent(event);
 
 		// remove camp in 4-8 days
 		if(location->type == L_CAMP)
@@ -4702,6 +4694,20 @@ MeshInstance* Level::GetBowInstance(Mesh* mesh)
 		instance->mesh = mesh;
 		return instance;
 	}
+}
+
+//=================================================================================================
+CityBuilding* Level::GetBuilding(BuildingGroup* group)
+{
+	assert(group);
+	if(!cityCtx)
+		return nullptr;
+	for(CityBuilding& building : cityCtx->buildings)
+	{
+		if(building.building->group == group)
+			return &building;
+	}
+	return nullptr;
 }
 
 //=================================================================================================

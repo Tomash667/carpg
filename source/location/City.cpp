@@ -4,7 +4,6 @@
 #include "BitStreamFunc.h"
 #include "BuildingScript.h"
 #include "Content.h"
-#include "GameCommon.h"
 #include "GroundItem.h"
 #include "Level.h"
 #include "Object.h"
@@ -669,16 +668,4 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 		else if(tb.building->group == BuildingGroup::BG_ARENA)
 			flags |= HaveArena;
 	}
-}
-
-//=================================================================================================
-Vec3 CityBuilding::GetUnitPos()
-{
-	return Vec3(float(unitPt.x) * 2 + 1, 0, float(unitPt.y) * 2 + 1);
-}
-
-//=================================================================================================
-float CityBuilding::GetUnitRot()
-{
-	return DirToRot(dir);
 }

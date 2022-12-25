@@ -376,6 +376,7 @@ void GameResources::PreloadObjects()
 				assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
 				obj.matrix = &point->mat;
 				obj.size = point->size.XZ();
+				obj.h = point->size.y;
 
 				if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 					obj.shape = new btBoxShape(ToVector3(point->size));

@@ -120,7 +120,7 @@ quest global_init
 			{
 				if(Level::dungeonLevel == 1)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
 					Chest@ chest = Level::GetRandomChest(room);
 					chest.AddItem(Item::Get("am_gladiator"));
@@ -130,7 +130,7 @@ quest global_init
 			}
 			else if(Level::location is vault)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				BaseObject@ obj = BaseObject::Get("vault_door");
 				SpawnPoint point;
 				if(Level::FindPlaceNearWall(obj, point))
@@ -309,7 +309,7 @@ quest deliver_letter
 			}
 			else if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				Unit@ mayor = Level::GetMayor();
 				mayor.AddDialog(quest, "target");
 			}
@@ -504,7 +504,7 @@ quest deliver_resources
 		{
 			if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				Unit@ mayor = Level::GetMayor();
 				mayor.AddDialog(quest, "end");
 				if(progress != P_DELIVER_ENCOUNTER)
@@ -1193,7 +1193,7 @@ quest find_artifact
 			{
 				if(Level::dungeonLevel == targetLoc.levels - 1)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Chest@ chest = Level::GetTreasureChest();
 					chest.AddItem(item);
 					spawned = true;
@@ -1380,7 +1380,7 @@ quest lost_artifact
 			{
 				if(Level::dungeonLevel == atLevel)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Level::SpawnItemInsideAnyRoom(item);
 					spawned = true;
 				}
@@ -1581,7 +1581,7 @@ quest stolen_artifact
 			{
 				if(Level::dungeonLevel == atLevel)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					UnitData@ leader = group.GetLeader(st);
 					Unit@ unit;
 					if(Level::IsOutside())
@@ -1837,7 +1837,7 @@ quest alchemist_apprentice
 		{
 			if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				if(progress == P_ALCH_NONE)
 				{
 					Unit@ u = Level::FindUnit(UnitData::Get("alchemist"));
@@ -1857,23 +1857,24 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_UPDATE)
 			{
+				Unit@ me = e.onUpdate.unit;
 				if(lastItem is null)
 				{
-					@lastItem = Level::FindNearestItem(herb, e.unit.pos);
+					@lastItem = Level::FindNearestItem(herb, me.pos);
 					if(lastItem !is null)
 					{
 						// move to next herb
-						e.unit.OrderMove(lastItem.pos)
+						me.OrderMove(lastItem.pos)
 							.WithMoveType(MOVE_RUN_WHEN_NEAR_TEAM);
 					}
 				}
 				else if(lastItem.pos != lastPos)
 				{
-					float dist = Vec3::Distance(e.unit.pos, lastItem.pos);
+					float dist = Vec3::Distance(me.pos, lastItem.pos);
 					if(dist < 2)
 					{
-						e.unit.Talk(TEXT(9), 2);
-						e.unit.OrderLookAt(lastItem.pos)
+						me.Talk(TEXT(9), 2);
+						me.OrderLookAt(lastItem.pos)
 							.WithTimer(1);
 						lastPos = lastItem.pos;
 					}
@@ -1881,9 +1882,9 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.groundItem.base is herb)
+				if(e.onPickup.groundItem.base is herb)
 				{
-					if(lastItem is e.groundItem)
+					if(lastItem is e.onPickup.groundItem)
 						@lastItem = null;
 					GroundItem@ item = Level::FindItem(herb);
 					if(item is null)
@@ -1908,7 +1909,7 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_DIE)
 			{
-				e.unit.RemoveEventHandler(quest);
+				e.onDie.unit.RemoveEventHandler(quest);
 				alive = false;
 				quest.AddEntry(TEXT(10));
 			}
@@ -2302,12 +2303,12 @@ quest main
 						Room@ room = Level::GetRoom(ROOM_TREASURY);
 						Object@ obj = Level::FindObject(room, BaseObject::Get("book_holder"));
 						Level::SpawnItem(book, obj);
-						e.location.RemoveEventHandler(quest, EVENT_ENTER);
+						e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 					}
 				}
 				else
 				{
-					e.location.RemoveEventHandler(quest, EVENT_ENTER);
+					e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 					switch(progress)
 					{
 					case P_MAIN_NONE:
@@ -2337,7 +2338,7 @@ quest main
 							{
 								CityBuilding@ building = Level::GetRandomBuilding(group);
 								Unit@ spawned = Level::SpawnUnitNearLocation(ill, building.unitPos);
-								spawned.RotateTo(building.unitRot);
+								spawned.RotateTo(building.rot);
 							}
 						}
 						break;
@@ -2361,26 +2362,27 @@ quest main
 			{
 				if(Level::location is shrineLoc)
 				{
-					Unit@ unit = Level::FindUnit(UnitData::Get("cleric_seller"));
-					if(Vec3::Distance(e.unit.pos, unit.pos) < 10)
+					Unit@ me = e.onUpdate.unit;
+					Unit@ target = Level::FindUnit(UnitData::Get("cleric_seller"));
+					if(Vec3::Distance(me.pos, target.pos) < 10)
 					{
 						progress = P_MAIN_CLERIC_RETURNED;
-						Team::RemoveMember(e.unit);
-						e.unit.OrderMove(unit.pos)
+						Team::RemoveMember(me);
+						me.OrderMove(target.pos)
 							.WithRange(2)
 							.ThenAutoTalk();
-						e.unit.RemoveEventHandler(quest);
+						me.RemoveEventHandler(quest);
 					}
 				}
 			}
 			else if(e.event == EVENT_GENERATE)
 			{
-				if(Level::dungeonLevel == 0 && e.stage == 0)
+				if(Level::dungeonLevel == 0 && e.onGenerate.stage == 0)
 				{
-					e.mapSettings.prevEntryLoc = ENTRY_BORDER;
-					e.mapSettings.nextEntryLoc = ENTRY_FAR_FROM_PREV;
+					e.onGenerate.mapSettings.prevEntryLoc = ENTRY_BORDER;
+					e.onGenerate.mapSettings.nextEntryLoc = ENTRY_FAR_FROM_PREV;
 				}
-				else if(Level::dungeonLevel == 1 && e.stage == 1)
+				else if(Level::dungeonLevel == 1 && e.onGenerate.stage == 1)
 				{
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
 					@room.type = RoomType::Get("crypt_library");
@@ -2573,7 +2575,7 @@ quest side_cleric
 
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_PICKUP && e.groundItem.base is book)
+			if(e.event == EVENT_PICKUP && e.onPickup.groundItem.base is book)
 			{
 				progress = P_CLERIC_PICKED;
 				Level::location.RemoveEventHandler(quest);
@@ -2672,11 +2674,11 @@ quest dire_wolf
 					Unit@ unit = Level::SpawnUnitNearLocation(ud, Vec3(128, 0, 128));
 					unit.AddEventHandler(quest, EVENT_DIE);
 				}
-				e.location.RemoveEventHandler(quest, EVENT_ENTER);
+				e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 			}
 			else if(e.event == EVENT_DIE)
 			{
-				e.unit.RemoveEventHandler(quest, EVENT_DIE);
+				e.onDie.unit.RemoveEventHandler(quest, EVENT_DIE);
 				progress = P_WOLF_KILLED;
 			}
 		}
@@ -2880,7 +2882,7 @@ quest main_village2
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.item.id == "q_yellow_crystal")
+				if(e.onPickup.item.id == "q_yellow_crystal")
 				{
 					if(progress == P_MAIN_V2_ENTER)
 						progress = P_MAIN_V2_PICKED;
@@ -2889,7 +2891,7 @@ quest main_village2
 						quest.AddEntry(TEXT(5));
 						progress = P_MAIN_V2_CLEARED_PICKED;
 					}
-					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+					e.onPickup.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
 		}
@@ -2979,9 +2981,9 @@ quest main_village3
 					unit.OrderAutoTalk();
 					
 					// alchemist
-					CityBuilding@ building = Level::GetRandomBuilding(BuildingGroup::Get("alchemist"));
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("alchemist"));
 					@unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
-					unit.RotateTo(building.unitRot);
+					unit.RotateTo(building.rot);
 					unit.AddEventHandler(quest, EVENT_PICKUP);
 					
 					village.image = LI_VILLAGE_DESTROYED;
@@ -3022,7 +3024,7 @@ quest main_village3
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.item.id == "q_yellow_herbs")
+				if(e.onPickup.item.id == "q_yellow_herbs")
 				{
 					if(progress == P_MAIN_V3_ENTER)
 						progress = P_MAIN_V3_PICKED;
@@ -3031,7 +3033,7 @@ quest main_village3
 						quest.AddEntry(TEXT(6));
 						progress = P_MAIN_V3_CLEARED_PICKED;
 					}
-					e.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+					e.onPickup.unit.RemoveEventHandler(quest, EVENT_PICKUP);
 				}
 			}
 		}
@@ -3187,6 +3189,12 @@ quest main_village4
 					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
 					unit.OrderAutoTalk();
 					
+					// barricade
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("inn"));
+					building.canEnter = false;
+					Usable@ usable = Level::SpawnUsable(BaseObject::Get("barricade"), building.entryArea.Midpoint(), building.rot);
+					usable.AddEventHandler(quest, EVENT_DESTROY);
+					
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);
 					village.AddEventHandler(quest, EVENT_CLEARED);
@@ -3219,17 +3227,27 @@ quest main_village4
 		
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_ENTER)
+			switch(e.event)
 			{
+			case EVENT_ENTER:
 				if(progress == P_MAIN_V4_START)
 					progress = P_MAIN_V4_ENTER;
 				else if(Level::IsSafeSettlement())
 					oldman.OrderAutoTalk();
-			}
-			else if(e.event == EVENT_CLEARED)
+				break;
+			case EVENT_DESTROY:
+				{
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("inn"));
+					building.canEnter = true;
+				}
+				break;
+			case EVENT_CLEARED:
 				progress = P_MAIN_V4_CLEARED;
-			else if(e.event == EVENT_TIMER)
+				break;
+			case EVENT_TIMER:
 				oldman.MoveOffscreen();
+				break;
+			}
 		}
 	}
 }

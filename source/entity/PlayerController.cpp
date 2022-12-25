@@ -2767,7 +2767,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 		// usable objects in front of player
 		for(Usable* usable : locPart.usables)
 		{
-			if(!usable->user)
+			if(!usable->user && !IsSet(usable->base->useFlags, BaseUsable::DESTROYABLE))
 				CheckObjectDistance(usable->pos, usable, bestDist, BP_USABLE);
 		}
 	}
@@ -2949,17 +2949,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						c.count = (upAnim ? 1 : 0);
 					}
 
-					for(Event& event : gameLevel->location->events)
-					{
-						if(event.type == EVENT_PICKUP)
-						{
-							ScriptEvent e(EVENT_PICKUP);
-							e.unit = unit;
-							e.groundItem = groundItem;
-							e.item = groundItem->item;
-							event.quest->FireEvent(e);
-						}
-					}
+					ScriptEvent event(EVENT_PICKUP);
+					event.onPickup.unit = unit;
+					event.onPickup.groundItem = groundItem;
+					event.onPickup.item = groundItem->item;
+					gameLevel->location->FireEvent(event);
 
 					locPart.RemoveGroundItem(groundItem);
 				}

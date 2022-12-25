@@ -678,6 +678,9 @@
     <ClCompile Include="script\ScriptExtensions.cpp">
       <Filter>script</Filter>
     </ClCompile>
+    <ClCompile Include="entity\CityBuilding.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1336,6 +1339,9 @@
     </ClInclude>
     <ClInclude Include="script\ScriptExtensions.h">
       <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\CityBuilding.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

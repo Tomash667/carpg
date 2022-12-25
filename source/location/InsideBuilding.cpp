@@ -29,6 +29,7 @@ void InsideBuilding::Save(GameWriter& f)
 	f << region1;
 	f << region2;
 	f << enterY;
+	f << canEnter;
 
 	LocationPart::Save(f);
 }
@@ -50,6 +51,8 @@ void InsideBuilding::Load(GameReader& f)
 	f >> region1;
 	f >> region2;
 	f >> enterY;
+	if(LOAD_VERSION >= V_DEV)
+		f >> canEnter;
 
 	if(LOAD_VERSION >= V_0_11)
 		LocationPart::Load(f);
@@ -70,6 +73,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 	f << top;
 	f << xsphereRadius;
 	f << enterY;
+	f << canEnter;
 }
 
 //=================================================================================================
@@ -86,6 +90,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	f >> top;
 	f >> xsphereRadius;
 	f >> enterY;
+	f >> canEnter;
 	if(!f)
 	{
 		Error("Broken packet for inside building.");

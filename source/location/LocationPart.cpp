@@ -1144,6 +1144,50 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 		}
 	}
 
+	// destroyable objects
+	for(Usable* usable : usables)
+	{
+		BaseUsable& base = *usable->base;
+		if(IsSet(base.useFlags, BaseUsable::DESTROYABLE))
+		{
+			b.e = Vec3(base.size.x, base.h, base.size.y);
+			b.c = usable->pos;
+			b.c.y += base.h / 2;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				hitted = nullptr;
+
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tSpark;
+				pe->emissionInterval = 0.f;
+				pe->life = 5.f;
+				pe->particleLife = 0.5f;
+				pe->emissions = 1;
+				pe->spawn = Int2(10, 15);
+				pe->maxParticles = 15;
+				pe->pos = hitpoint;
+				pe->speedMin = Vec3(-1, 0, -1);
+				pe->speedMax = Vec3(1, 1, 1);
+				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
+				pe->size = Vec2(0.3f, 0.f);
+				pe->alpha = Vec2(0.9f, 0.f);
+				pe->mode = 0;
+				pe->Init();
+				lvlPart->pes.push_back(pe);
+
+				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+
+				if(Net::IsLocal() && unit.IsPlayer())
+					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
+
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 

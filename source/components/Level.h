@@ -98,6 +98,10 @@ public:
 	{
 		return SpawnObjectEntity(*localPart, obj, pos, rot);
 	}
+	Usable* SpawnUsable(BaseObject* obj, const Vec3& pos, float rot)
+	{
+		return SpawnObjectEntity(*localPart, obj, pos, rot);
+	}
 	void PickableItemBegin(LocationPart& locPart, Object& o);
 	bool PickableItemAdd(const Item* item);
 	void PickableItemsFromStock(LocationPart& locPart, Object& o, Stock& stock);
@@ -205,6 +209,7 @@ public:
 		bowInstances.push_back(meshInst);
 		meshInst = nullptr;
 	}
+	CityBuilding* GetBuilding(BuildingGroup* group);
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
 	Room* GetFarRoom();

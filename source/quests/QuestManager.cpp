@@ -1605,11 +1605,11 @@ void QuestManager::CheckItemEventHandler(Unit* unit, const Item* item)
 	{
 		if(p.second == item)
 		{
-			ScriptEvent e(EVENT_USE);
-			e.unit = unit;
-			e.item = item;
-			p.first->FireEvent(e);
-			break;
+			ScriptEvent event(EVENT_USE);
+			event.onUse.unit = unit;
+			event.onUse.item = item;
+			p.first->FireEvent(event);
+			break; // event will propably remove handler, need extra code to handle multiple handlers for single item
 		}
 	}
 }

@@ -1047,11 +1047,14 @@ void Game::ListAreas(LocationPart& locPart)
 			for(vector<InsideBuilding*>::const_iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
-				Area& a = Add1(drawBatch.areas);
-				a.v[0] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v2.y);
-				a.v[1] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v2.y);
-				a.v[2] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v1.y);
-				a.v[3] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v1.y);
+				if(ib.canEnter)
+				{
+					Area& a = Add1(drawBatch.areas);
+					a.v[0] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v2.y);
+					a.v[1] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v2.y);
+					a.v[2] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v1.y);
+					a.v[3] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v1.y);
+				}
 			}
 		}
 

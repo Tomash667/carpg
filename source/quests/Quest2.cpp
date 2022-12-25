@@ -107,6 +107,9 @@ void Quest2::Cleanup()
 		case EventPtr::UNIT:
 			e.unit->RemoveEventHandler(this, EVENT_ANY, true);
 			break;
+		case EventPtr::USABLE:
+			e.usable->RemoveEventHandler(this, EVENT_ANY, true);
+			break;
 		}
 	}
 	events.clear();

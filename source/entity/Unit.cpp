@@ -5373,15 +5373,9 @@ void Unit::Die(Unit* killer)
 		// event
 		if(eventHandler)
 			eventHandler->HandleUnitEvent(UnitEventHandler::DIE, this);
-		for(Event& event : events)
-		{
-			if(event.type == EVENT_DIE)
-			{
-				ScriptEvent e(EVENT_DIE);
-				e.unit = this;
-				event.quest->FireEvent(e);
-			}
-		}
+		ScriptEvent event(EVENT_DIE);
+		event.onDie.unit = this;
+		FireEvent(event);
 
 		// message
 		if(Net::IsOnline())
@@ -8395,17 +8389,16 @@ void Unit::Moved(bool warped, bool dash)
 
 			if(IsPlayer() && gameLevel->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
-				int id = 0;
-				for(vector<InsideBuilding*>::iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it, ++id)
+				for(InsideBuilding* insideBuilding : gameLevel->cityCtx->insideBuildings)
 				{
-					if((*it)->enterRegion.IsInside(pos))
+					if(insideBuilding->canEnter && insideBuilding->enterRegion.IsInside(pos))
 					{
 						if(Net::IsLocal())
 						{
 							// wejdŸ do budynku
 							game->fallbackType = FALLBACK::ENTER;
 							game->fallbackTimer = -1.f;
-							game->fallbackValue = id;
+							game->fallbackValue = insideBuilding->partId;
 							game->fallbackValue2 = -1;
 							frozen = FROZEN::YES;
 						}
@@ -8417,7 +8410,7 @@ void Unit::Moved(bool warped, bool dash)
 							frozen = FROZEN::YES;
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ENTER_BUILDING;
-							c.id = id;
+							c.id = insideBuilding->partId;
 						}
 						break;
 					}
@@ -9199,8 +9192,6 @@ void Unit::FireEvent(ScriptEvent& e)
 {
 	if(events.empty())
 		return;
-
-	e.unit = this;
 
 	for(Event& event : events)
 	{

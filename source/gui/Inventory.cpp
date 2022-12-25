@@ -985,9 +985,11 @@ void InventoryPanel::Update(float dt)
 					// sound
 					soundMgr->PlaySound2d(gameRes->GetItemSound(item));
 					// event
-					ScriptEvent e(EVENT_PICKUP);
-					e.item = item;
-					unit->FireEvent(e);
+					ScriptEvent event(EVENT_PICKUP);
+					event.onPickup.unit = unit;
+					event.onPickup.groundItem = nullptr;
+					event.onPickup.item = item;
+					unit->FireEvent(event);
 					// message
 					if(Net::IsClient())
 					{
@@ -1296,9 +1298,11 @@ void InventoryPanel::Event(GuiEvent e)
 
 				if(pickupEvent)
 				{
-					ScriptEvent e(EVENT_PICKUP);
-					e.item = equipped[i];
-					lootedUnit->FireEvent(e);
+					ScriptEvent event(EVENT_PICKUP);
+					event.onPickup.unit = lootedUnit;
+					event.onPickup.groundItem = nullptr;
+					event.onPickup.item = equipped[i];
+					lootedUnit->FireEvent(event);
 				}
 			}
 
@@ -1336,9 +1340,11 @@ void InventoryPanel::Event(GuiEvent e)
 
 				if(pickupEvent)
 				{
-					ScriptEvent e(EVENT_PICKUP);
-					e.item = it->item;
-					lootedUnit->FireEvent(e);
+					ScriptEvent event(EVENT_PICKUP);
+					event.onPickup.unit = lootedUnit;
+					event.onPickup.groundItem = nullptr;
+					event.onPickup.item = it->item;
+					lootedUnit->FireEvent(event);
 				}
 			}
 		}
@@ -1853,9 +1859,11 @@ void InventoryPanel::LootItem(int index, uint count)
 			}
 		}
 
-		ScriptEvent e(EVENT_PICKUP);
-		e.item = slot.item;
-		unit->FireEvent(e);
+		ScriptEvent event(EVENT_PICKUP);
+		event.onPickup.unit = unit;
+		event.onPickup.groundItem = nullptr;
+		event.onPickup.item = slot.item;
+		unit->FireEvent(event);
 	}
 	slot.count -= count;
 	if(slot.count == 0)

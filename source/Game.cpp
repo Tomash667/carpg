@@ -3890,17 +3890,14 @@ void Game::OnEnterLevelOrLocation()
 
 	// events v2
 	ScriptEvent event(EVENT_ENTER);
-	event.location = gameLevel->location;
-	for(Event& e : gameLevel->location->events)
-	{
-		if(e.type == EVENT_ENTER)
-		{
-			event.unit = nullptr;
-			e.quest->FireEvent(event);
-		}
-	}
+	event.onEnter.location = gameLevel->location;
+	event.onEnter.unit = nullptr;
+	gameLevel->location->FireEvent(event);
 	for(Unit& unit : team->members)
+	{
+		event.onEnter.unit = &unit;
 		unit.FireEvent(event);
+	}
 
 	for(LocationPart& locPart : gameLevel->ForEachPart())
 		locPart.BuildScene();

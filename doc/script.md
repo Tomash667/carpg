@@ -25,6 +25,8 @@ Core library
 * Box2d - 2d area with two Vec2 v1 and v2. Methods:
 	* float SizeX() const - return x size.
 	* float SizeY() const - return y size.
+* Box - 3d area with two Vec3 v1 and v2. Methods:
+	* Vec3 Midpoint() const - return mid point.
 * string
 	* string Upper() const - return string with first letter uppercase.
 
@@ -49,7 +51,7 @@ Static properties:
 
 * Vars@ globals -  global variables.
 
-Game enums & consts
+Game enums & constans
 -------------------------------------------------------------------------------------------------------------
 ### Funcdefs:
 * float GetLocationCallback(Location@)
@@ -63,15 +65,16 @@ Game enums & consts
 
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
-* EVENT_ENTER - for locations, send when player enter location. For units send when unit changes location.
-* EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
 * EVENT_CLEARED - for locations, send when location is cleared from enemies.
-* EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
-* EVENT_UPDATE - for units, send every frame.
 * EVENT_DIE - for units, send when unit dies.
+* EVENT_DESTROY - for usabled, send when destroyed.
+* EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
+* EVENT_ENTER - for locations and units. Send when player enter specified location or every time specified unit changes location.
+* EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
+* EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
 * EVENT_TIMEOUT - for quests, send when quest timeout expired.
 * EVENT_TIMER - for quests, send after passing x days.
-* EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
+* EVENT_UPDATE - for units, send every frame.
 * EVENT_USE - for item event handler, currently only works for books.
 
 ### Enum flags ITEM_FLAGS
@@ -304,8 +307,10 @@ Buildings inside city.
 
 Properties:
 
+* Box entryArea - readonly, building entry area, only some buildings have this.
 * Vec3 unitPos - readonly, unit spawn pos.
-* float unitRot - readonly, unit spawn rot.
+* float rot - readonly, building rotation.
+* bool canEnter - can player enter this building, only some buildings allow to change this (inn/hall).
 
 ### Encounter type
 Special encounter on world map.
@@ -327,13 +332,29 @@ Used in quests for event handling.
 Properties:
 
 * EVENT event
-* Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
-* Unit@ unit - used for: EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE, EVENT_USE.
-* GroundItem@ groundItem - used for EVENT_PICKUP.
-* Item@ item - used for: EVENT_PICKUP, EVENT_USE.
-* MapSettings@ mapSettings - used for EVENT_GENERATE.
-* int stage - used for EVENT_GENERATE, stage 0 is before generating (can use mapSettings), stage 1 is after.
-* bool cancel - set to true to cancel default handling of this event.
+* For EVENT_CLEARED:
+  * Location@ onCleared.location - cleared location.
+* For EVENT_DIE:
+  * Unit@ unit - unit that died.
+* For EVENT_DESTROY:
+  * Usable@ usable - destroyed usable.
+* For EVENT_ENTER:
+  * Location@ onEnter.location - entered location.
+  * Unit@ onEnter.unit - entering unit if unit event.
+* For EVENT_GENERATE:
+  * Location@ location - location that is generated.
+  * MapSettings@ mapSettings
+  * int stage - stage 0 is before generating (can use mapSettings), stage 1 is after.
+  * bool cancel - can be used in stage 0 to cancel some default logic.
+* For EVENT_PICKUP:
+  * Unit@ unit - unit picking item.
+  * GroundItem@ groundItem - picked ground item.
+  * Item@ item - picked item.
+* For EVENT_UPDATE:
+  * Unit@ unit - unit to update.
+* For EVENT_USE:
+  * Unit@ unit - unit using item.
+  * Item@ item - used item.
 
 ### GroundItem type
 Item on ground that can be picked up.
@@ -377,7 +398,7 @@ Method:
 * bool IsCity() - true if location is city.
 * bool IsVillage() - true if location is village.
 * void SetKnown() - mark location as known.
-* void AddEventHandler(Quest@, EVENT) - add event to location.
+* void AddEventHandler(Quest@, EVENT) - add event handler to location.
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from location.
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
@@ -531,8 +552,8 @@ Methods:
 * void ConsumeItem(Item@) - unit consume item (food or drink) if not busy.
 * void AddDialog(Quest@, const string& in dialogId, int priority = 0) - add quest dialog to unit.
 * void RemoveDialog(Quest@) - remove quest dialog from unit.
-* void AddEventHandler(Quest@, EVENT) - add event to unit.
-* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event from unit.
+* void AddEventHandler(Quest@, EVENT) - add event handler to unit.
+* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from unit.
 * void OrderClear() - remove all unit orders.
 * void OrderNext() - end current order and start next one.
 * void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dontAttack).
@@ -583,6 +604,14 @@ Methods:
 * UnitOrderBuilder@ ThenGuard(Unit@)
 * UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)
 
+### Usable type
+Object that can be used or destroyed.
+
+Methods:
+
+* void AddEventHandler(Quest@, EVENT) - add event handler to usable.
+* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from usable.
+
 Game components
 -------------------------------------------------------------------------------------------------------------
 ### Cutscene component
@@ -629,6 +658,7 @@ Static methods:
 * Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.
 * void SpawnUnits(UnitGroup@, int level) - spawn units all around location.
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
+* CityBuilding@ GetBuilding(BuildingGroup@ group) - return first building with selected group.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
 * Room@ GetFarRoom() - get random room far from entrance.
@@ -641,6 +671,7 @@ Static methods:
 * array<Unit@>@ GetNearbyUnits(const Vec3& in pos, float dist) - return nearby units.
 * bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
 * Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
+* Usable@ SpawnUsable(BaseObject@, const Vec3& in pos, float rot) - spawn usable at position.
 
 ### StockScript component
 Used in stock script - items to sell by shopkeepers.

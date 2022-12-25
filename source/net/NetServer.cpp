@@ -907,17 +907,11 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				// event
-				for(Event& event : gameLevel->location->events)
-				{
-					if(event.type == EVENT_PICKUP)
-					{
-						ScriptEvent e(EVENT_PICKUP);
-						e.unit = &unit;
-						e.groundItem = groundItem;
-						e.item = groundItem->item;
-						event.quest->FireEvent(e);
-					}
-				}
+				ScriptEvent event(EVENT_PICKUP);
+				event.onPickup.unit = &unit;
+				event.onPickup.groundItem = groundItem;
+				event.onPickup.item = groundItem->item;
+				gameLevel->location->FireEvent(event);
 
 				locPart->RemoveGroundItem(groundItem);
 			}
@@ -1119,7 +1113,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								}
 
 								ScriptEvent e(EVENT_PICKUP);
-								e.item = slot.item;
+								e.onPickup.unit = &unit;
+								e.onPickup.groundItem = nullptr;
+								e.onPickup.item = slot.item;
 								player.actionUnit->FireEvent(e);
 							}
 						}
@@ -1148,7 +1144,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					player.actionUnit->RemoveEquippedItem(type);
 
 					ScriptEvent e(EVENT_PICKUP);
-					e.item = item;
+					e.onPickup.unit = &unit;
+					e.onPickup.groundItem = nullptr;
+					e.onPickup.item = item;
 					player.actionUnit->FireEvent(e);
 				}
 			}
@@ -1339,7 +1337,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(pickupEvent)
 							{
 								ScriptEvent e(EVENT_PICKUP);
-								e.item = item;
+								e.onPickup.unit = &unit;
+								e.onPickup.groundItem = nullptr;
+								e.onPickup.item = item;
 								lootedUnit->FireEvent(e);
 							}
 						}
@@ -1367,7 +1367,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(pickupEvent)
 						{
 							ScriptEvent e(EVENT_PICKUP);
-							e.item = slot.item;
+							e.onPickup.unit = &unit;
+							e.onPickup.groundItem = nullptr;
+							e.onPickup.item = slot.item;
 							lootedUnit->FireEvent(e);
 						}
 					}
@@ -3344,6 +3346,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 			f << c.extraId;
 			f.WriteCasted<byte>(c.id);
 			f << c.pos;
+			break;
+		case NetChange::SET_CAN_ENTER:
+			f << c.id;
+			f << (c.count == 1);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);

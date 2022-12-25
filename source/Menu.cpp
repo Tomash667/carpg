@@ -1613,8 +1613,7 @@ void Game::UpdateServerTransfer(float dt)
 					if(centerUnit->locPart->partType == LocationPart::Type::Building)
 					{
 						InsideBuilding* inside = static_cast<InsideBuilding*>(centerUnit->locPart);
-						Vec2 p = inside->enterRegion.Midpoint();
-						pos = Vec3(p.x, inside->enterY, p.y);
+						pos = inside->insideSpawn;
 					}
 					else
 						pos = centerUnit->pos;

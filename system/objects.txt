@@ -602,7 +602,7 @@ usable gold_vein {
 usable throne {
 	mesh "tron.qmsh"
 	animation "siedzi_tron"
-	flags { allow_use_item near_wall }
+	flags {allow_use_item near_wall}
 	limit_rot 2
 }
 
@@ -618,4 +618,9 @@ usable bookshelf {
 	mesh "biblioteczka.qmsh"
 	flags {container near_wall blocks_camera}
 	limit_rot 1
+}
+
+usable barricade {
+	mesh "barricade.qmsh"
+	flags {blocks_camera destroyable}
 }

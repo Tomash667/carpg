@@ -420,6 +420,12 @@ void ScriptManager::RegisterCommon()
 		.Method("float SizeX() const", asMETHOD(Box2d, SizeX))
 		.Method("float SizeY() const", asMETHOD(Box2d, SizeY));
 
+	sb.AddStruct<Box>("Box", asOBJ_POD | asOBJ_APP_CLASS_ALLFLOATS)
+		.Constructor()
+		.Member("Vec3 v1", offsetof(Box, v1))
+		.Member("Vec3 v2", offsetof(Box, v2))
+		.Method("Vec3 Midpoint() const", asMETHOD(Box, Midpoint));
+
 	sb.ForType("string")
 		.Method("string Upper() const", asFUNCTION(String_Upper));
 
@@ -533,7 +539,8 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_CLEARED", EVENT_CLEARED },
 		{ "EVENT_GENERATE", EVENT_GENERATE },
 		{ "EVENT_USE", EVENT_USE },
-		{ "EVENT_TIMER", EVENT_TIMER }
+		{ "EVENT_TIMER", EVENT_TIMER },
+		{ "EVENT_DESTROY", EVENT_DESTROY }
 		});
 
 	AddEnum("LOCATION", {
@@ -686,8 +693,11 @@ void ScriptManager::RegisterGame()
 		.AddFunction("BuildingGroup@ Get(const string& in)", asFUNCTION(BuildingGroup::GetS));
 
 	AddType("CityBuilding")
+		.Method("Box get_entryArea() property", asMETHOD(CityBuilding, GetEntryArea))
+		.Method("float get_rot() property", asMETHOD(CityBuilding, GetRot))
 		.Method("Vec3 get_unitPos() property", asMETHOD(CityBuilding, GetUnitPos))
-		.Method("float get_unitRot() property", asMETHOD(CityBuilding, GetUnitRot));
+		.Method("bool get_canEnter() property", asMETHOD(CityBuilding, GetCanEnter))
+		.Method("void set_canEnter(bool) property", asMETHOD(CityBuilding, SetCanEnter));
 
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
@@ -799,7 +809,7 @@ void ScriptManager::RegisterGame()
 		.Method("void AddDialog(Quest@, const string& in, int priority = 0)", asMETHOD(Unit, AddDialogS))
 		.Method("void RemoveDialog(Quest@)", asMETHOD(Unit, RemoveDialogS))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Unit, AddEventHandler))
-		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY)", asMETHOD(Unit, RemoveEventHandlerS))
+		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Unit, RemoveEventHandler))
 		.Method("UNIT_ORDER get_order() const property", asMETHOD(Unit, GetOrder))
 		.Method("void OrderClear()", asMETHOD(Unit, OrderClear))
 		.Method("void OrderNext()", asMETHOD(Unit, OrderNext))
@@ -886,6 +896,10 @@ void ScriptManager::RegisterGame()
 
 	AddType("Object");
 
+	AddType("Usable")
+		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Usable, AddEventHandler))
+		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Usable, RemoveEventHandler));
+
 	AddType("Chest")
 		.Method("bool AddItem(Item@, uint = 1)", asMETHODPR(Chest, AddItem, (const Item*, uint), bool));
 
@@ -915,7 +929,7 @@ void ScriptManager::RegisterGame()
 		.Method("LocationPart@ get_locPart() const property", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*), LocationPart*))
 		.Method("int get_levels() const property", asFUNCTION(LocationHelper::GetLevels))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Location, AddEventHandler))
-		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY)", asMETHOD(Location, RemoveEventHandlerS))
+		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Location, RemoveEventHandler))
 		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
 		.Method("bool IsCity()", asFUNCTIONPR(LocationHelper::IsCity, (Location*), bool))
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool))
@@ -1010,6 +1024,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Unit@ SpawnUnit(Room@, UnitData@, int = -1)", asMETHOD(Level, SpawnUnitInsideRoomS))
 		.AddFunction("void SpawnUnits(UnitGroup@, int)", asMETHOD(Level, SpawnUnits))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
+		.AddFunction("CityBuilding@ GetBuilding(BuildingGroup@)", asMETHOD(Level, GetBuilding))
 		.AddFunction("CityBuilding@ GetRandomBuilding(BuildingGroup@)", asMETHOD(Level, GetRandomBuilding))
 		.AddFunction("Room@ GetRoom(ROOM_TARGET)", asMETHOD(Level, GetRoom))
 		.AddFunction("Room@ GetFarRoom()", asMETHOD(Level, GetFarRoom))
@@ -1021,7 +1036,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("array<Unit@>@ GetUnits(Room@)", asMETHODPR(Level, GetUnits, (Room&), CScriptArray*))
 		.AddFunction("array<Unit@>@ GetNearbyUnits(const Vec3& in, float)", asMETHOD(Level, GetNearbyUnits))
 		.AddFunction("bool FindPlaceNearWall(BaseObject@, SpawnPoint& out)", asMETHOD(Level, FindPlaceNearWall))
-		.AddFunction("Object@ SpawnObject(BaseObject@, const Vec3& in, float)", asMETHOD(Level, SpawnObject));
+		.AddFunction("Object@ SpawnObject(BaseObject@, const Vec3& in, float)", asMETHOD(Level, SpawnObject))
+		.AddFunction("Usable@ SpawnUsable(BaseObject@, const Vec3& in, float)", asMETHOD(Level, SpawnUsable));
 
 	WithNamespace("StockScript")
 		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1031,15 +1047,48 @@ void ScriptManager::RegisterGame()
 		.Member("ENTRY_LOCATION prevEntryLoc", offsetof(MapSettings, prevEntryLoc))
 		.Member("ENTRY_LOCATION nextEntryLoc", offsetof(MapSettings, nextEntryLoc));
 
+
+	AddType("OnClearedEvent")
+		.Member("Location@ location", offsetof(ScriptEvent, onCleared.location));
+
+	AddType("OnDestroyEvent")
+		.Member("Usable@ usable", offsetof(ScriptEvent, onDestroy.usable));
+
+	AddType("OnDieEvent")
+		.Member("Unit@ unit", offsetof(ScriptEvent, onDie.unit));
+
+	AddType("OnEnterEvent")
+		.Member("Location@ location", offsetof(ScriptEvent, onEnter.location))
+		.Member("Unit@ unit", offsetof(ScriptEvent, onEnter.unit));
+
+	AddType("OnGenerateEvent")
+		.Member("Location@ location", offsetof(ScriptEvent, onGenerate.location))
+		.Member("MapSettings@ mapSettings", offsetof(ScriptEvent, onGenerate.mapSettings))
+		.Member("int stage", offsetof(ScriptEvent, onGenerate.stage))
+		.Member("bool cancel", offsetof(ScriptEvent, onGenerate.cancel));
+
+	AddType("OnPickupEvent")
+		.Member("Unit@ unit", offsetof(ScriptEvent, onPickup.unit))
+		.Member("GroundItem@ groundItem", offsetof(ScriptEvent, onPickup.groundItem))
+		.Member("Item@ item", offsetof(ScriptEvent, onPickup.item));
+
+	AddType("OnUpdateEvent")
+		.Member("Unit@ unit", offsetof(ScriptEvent, onUpdate.unit));
+
+	AddType("OnUseEvent")
+		.Member("Unit@ unit", offsetof(ScriptEvent, onUse.unit))
+		.Member("Item@ item", offsetof(ScriptEvent, onUse.item));
+
 	AddType("Event")
 		.Member("EVENT event", offsetof(ScriptEvent, type))
-		.Member("Location@ location", offsetof(ScriptEvent, location))
-		.Member("Unit@ unit", offsetof(ScriptEvent, unit))
-		.Member("GroundItem@ groundItem", offsetof(ScriptEvent, groundItem))
-		.Member("Item@ item", offsetof(ScriptEvent, item))
-		.Member("MapSettings@ mapSettings", offsetof(ScriptEvent, mapSettings))
-		.Member("int stage", offsetof(ScriptEvent, stage))
-		.Member("bool cancel", offsetof(ScriptEvent, cancel));
+		.Member("OnClearedEvent onCleared", 0)
+		.Member("OnDestroyEvent onDestroy", 0)
+		.Member("OnDieEvent onDie", 0)
+		.Member("OnEnterEvent onEnter", 0)
+		.Member("OnGenerateEvent onGenerate", 0)
+		.Member("OnPickupEvent onPickup", 0)
+		.Member("OnUpdateEvent onUpdate", 0)
+		.Member("OnUseEvent onUse", 0);
 
 	WithNamespace("Cutscene", game)
 		.AddFunction("void Start(bool = true)", asMETHOD(Game, CutsceneStart))

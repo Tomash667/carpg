@@ -202,6 +202,7 @@ struct NetChange
 		UPDATE_INVESTMENT, // update investment [int(id)-questId, int(count)-gold]
 		ADD_UNIT_EFFECT, // add visible effect to unit [int(Unit->id), byte(id)-effect, float(extraFloat)-time]
 		REMOVE_UNIT_EFFECT, // remove visible effect from unit [int(Unit->id), byte(id)-effect]
+		SET_CAN_ENTER, // change inside building canEnter [int(id), bool(count)-canEnter]
 
 		MAX
 	} type;

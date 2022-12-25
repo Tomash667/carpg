@@ -2,8 +2,8 @@
 
 //-----------------------------------------------------------------------------
 #include "BaseUsable.h"
+#include "Event.h"
 #include "ItemContainer.h"
-#include "GameDialog.h"
 
 //-----------------------------------------------------------------------------
 struct Usable : EntityType<Usable>
@@ -14,6 +14,7 @@ struct Usable : EntityType<Usable>
 	Entity<Unit> user;
 	ItemContainer* container;
 	int variant;
+	vector<Event> events;
 
 	static const float SOUND_DIST;
 	static const int MIN_SIZE = 22;
@@ -27,6 +28,9 @@ struct Usable : EntityType<Usable>
 	bool Read(BitStreamReader& f);
 	Mesh* GetMesh() const;
 	Vec3 GetCenter() const;
+	void AddEventHandler(Quest2* quest, EventType type);
+	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
+	void FireEvent(ScriptEvent& e);
 };
 
 //-----------------------------------------------------------------------------
