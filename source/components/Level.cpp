@@ -393,14 +393,18 @@ Unit* Level::FindUnit(UnitData* ud)
 }
 
 //=================================================================================================
-Usable* Level::FindUsable(int id)
+Usable* Level::FindUsable(int id, LocationPart** outLocPart)
 {
 	for(LocationPart& locPart : locParts)
 	{
 		for(Usable* usable : locPart.usables)
 		{
 			if(usable->id == id)
+			{
+				if(outLocPart)
+					*outLocPart = &locPart;
 				return usable;
+			}
 		}
 	}
 	return nullptr;
@@ -705,6 +709,9 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 	{
 		// usable object
 		BaseUsable* baseUsable = (BaseUsable*)base;
+
+		if(ready)
+			baseUsable->EnsureIsLoaded();
 
 		Usable* u = new Usable;
 		u->Register();

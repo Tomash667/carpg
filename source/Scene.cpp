@@ -3,6 +3,7 @@
 
 #include "Ability.h"
 #include "City.h"
+#include "DestroyedObject.h"
 #include "DungeonMeshBuilder.h"
 #include "Explo.h"
 #include "GameGui.h"
@@ -301,8 +302,29 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
 				node->texOverride = &explo.ability->texExplode;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
+				node->addBlend = false;
 				drawBatch.Add(node);
 			}
+		}
+	}
+
+	// destroyed objects
+	for(DestroyedObject* obj : lvlPart.destroyedObjects)
+	{
+		Mesh* mesh = obj->base->mesh;
+		mesh->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(obj->pos, mesh->head.radius))
+		{
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(mesh);
+			node->center = obj->pos;
+			node->flags |= SceneNode::F_ALPHA_BLEND;
+			node->tint = Vec4(1, 1, 1, obj->timer);
+			node->mat = Matrix::RotationY(obj->rot) * Matrix::Translation(obj->pos);
+			node->addBlend = true;
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			drawBatch.Add(node);
 		}
 	}
 
@@ -348,6 +370,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
 				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
 				node->mat = Matrix::Rotation(0, portal->rot, -portalAnim * PI * 2) * Matrix::Translation(node->center);
+				node->addBlend = false;
 				drawBatch.Add(node);
 			}
 			portal = portal->nextPortal;
@@ -528,6 +551,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
 			node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(portalAnim * PI * 2) * Matrix::Translation(node->center);
+			node->addBlend = false;
 			drawBatch.Add(node);
 		}
 
@@ -561,6 +585,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visualPos);
 	node->texOverride = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
+	node->addBlend = false;
 
 	// light settings
 	if(drawBatch.gatherLights)

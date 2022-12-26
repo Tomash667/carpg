@@ -65,7 +65,7 @@ public:
 	Unit* FindUnit(int id);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	Unit* FindUnit(UnitData* ud);
-	Usable* FindUsable(int id);
+	Usable* FindUsable(int id, LocationPart** locPart = nullptr);
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
 	Trap* FindTrap(BaseTrap* base, const Vec3& pos);

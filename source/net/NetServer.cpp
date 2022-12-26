@@ -3090,6 +3090,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRIGGER_TRAP:
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
+		case NetChange::DESTROY_USABLE:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3350,6 +3351,10 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::SET_CAN_ENTER:
 			f << c.id;
 			f << (c.count == 1);
+			break;
+		case NetChange::HIT_OBJECT:
+			f << c.id;
+			f << c.pos;
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);

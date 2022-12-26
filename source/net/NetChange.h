@@ -203,6 +203,8 @@ struct NetChange
 		ADD_UNIT_EFFECT, // add visible effect to unit [int(Unit->id), byte(id)-effect, float(extraFloat)-time]
 		REMOVE_UNIT_EFFECT, // remove visible effect from unit [int(Unit->id), byte(id)-effect]
 		SET_CAN_ENTER, // change inside building canEnter [int(id), bool(count)-canEnter]
+		HIT_OBJECT, // hit object effect [int(id)-usable id or -1 for normal objects, Vec3(pos)]
+		DESTROY_USABLE, // destroy usable [int(id)-usable id]
 
 		MAX
 	} type;

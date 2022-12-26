@@ -5,6 +5,7 @@
 #include "AITeam.h"
 #include "BitStreamFunc.h"
 #include "Chest.h"
+#include "DestroyedObject.h"
 #include "Door.h"
 #include "Electro.h"
 #include "Explo.h"
@@ -88,6 +89,7 @@ void LocationPart::Update(float dt)
 	LoopAndRemove(lvlPart->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
 	LoopAndRemove(lvlPart->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
 	LoopAndRemove(lvlPart->drains, [dt](Drain& drain) { return drain.Update(dt); });
+	LoopAndRemove(lvlPart->destroyedObjects, [dt](DestroyedObject* obj) { return obj->Update(dt); });
 
 	// update blood spatters
 	for(Blood& blood : bloods)
@@ -1132,11 +1134,19 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
-				if(Net::IsLocal() && unit.IsPlayer())
+				if(unit.IsPlayer())
 				{
 					if(questMgr->questTutorial->inTutorial)
 						questMgr->questTutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
+				}
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::HIT_OBJECT;
+					c.id = -1;
+					c.pos = hitpoint;
 				}
 
 				return true;
@@ -1178,11 +1188,34 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 
-				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+				soundMgr->PlaySound3d(usable->base->sound, hitpoint, HIT_SOUND_DIST);
 
-				if(Net::IsLocal() && unit.IsPlayer())
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::HIT_OBJECT;
+					c.id = usable->id;
+					c.pos = hitpoint;
+				}
+
+				if(unit.IsPlayer())
+				{
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::DESTROY_USABLE;
+						c.id = usable->id;
+					}
+
+					// event
+					ScriptEvent event(EVENT_DESTROY);
+					event.onDestroy.usable = usable;
+					usable->FireEvent(event);
+
+					DestroyUsable(usable);
+				}
 				return true;
 			}
 		}
@@ -1212,4 +1245,44 @@ Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 	}
 
 	return explo;
+}
+
+//=================================================================================================
+void LocationPart::DestroyUsable(Usable* usable)
+{
+	assert(usable);
+
+	// fade out object
+	DestroyedObject* obj = new DestroyedObject;
+	obj->base = usable->base;
+	obj->pos = usable->pos;
+	obj->rot = usable->rot;
+	obj->timer = 1.f;
+	lvlPart->destroyedObjects.push_back(obj);
+
+	// remove collider
+	for(auto it = lvlPart->colliders.begin(), end = lvlPart->colliders.end(); it != end; ++it)
+	{
+		if(it->owner == usable)
+		{
+			lvlPart->colliders.erase(it);
+			break;
+		}
+	}
+
+	// remove physics
+	btCollisionObjectArray& colObjs = phyWorld->getCollisionObjectArray();
+	for(uint i = 0, count = colObjs.size(); i < count; ++i)
+	{
+		btCollisionObject* cobj = colObjs[i];
+		if(cobj->getUserPointer() == usable)
+		{
+			phyWorld->removeCollisionObject(cobj);
+			delete cobj;
+			break;
+		}
+	}
+
+	RemoveElement(usables, usable);
+	delete usable;
 }

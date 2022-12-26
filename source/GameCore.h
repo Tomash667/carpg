@@ -112,6 +112,7 @@ struct Class;
 struct CollisionObject;
 struct Consumable;
 struct CreatedCharacter;
+struct DestroyedObject;
 struct DialogContext;
 struct DialogEntry;
 struct DialogScripts;

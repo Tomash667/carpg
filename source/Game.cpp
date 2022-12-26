@@ -1468,14 +1468,6 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	else
 		EnterLevel(locGen);
 
-	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
-	LoadResources(txLoadingComplete, false);
-
-	l.lastVisit = world->GetWorldtime();
-	gameLevel->camera.Reset();
-	pc->data.rotBuf = 0.f;
-	SetMusic();
-
 	if(closePortal)
 	{
 		delete gameLevel->location->portal;
@@ -1489,6 +1481,14 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	}
 
 	gameLevel->CheckIfLocationCleared();
+
+	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
+	LoadResources(txLoadingComplete, false);
+
+	l.lastVisit = world->GetWorldtime();
+	gameLevel->camera.Reset();
+	pc->data.rotBuf = 0.f;
+	SetMusic();
 
 	if(Net::IsOnline())
 	{
@@ -3169,22 +3169,7 @@ void Game::PreloadResources(bool worldmap)
 
 				// load usables
 				for(Usable* use : locPart.usables)
-				{
-					BaseUsable* base = use->base;
-					if(base->state == ResourceState::NotLoaded)
-					{
-						if(base->variants)
-						{
-							for(Mesh* mesh : base->variants->meshes)
-								resMgr->Load(mesh);
-						}
-						else
-							resMgr->Load(base->mesh);
-						if(base->sound)
-							resMgr->Load(base->sound);
-						base->state = ResourceState::Loaded;
-					}
-				}
+					use->base->EnsureIsLoaded();
 			}
 
 			// load buildings

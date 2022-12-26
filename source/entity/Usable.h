@@ -17,7 +17,7 @@ struct Usable : EntityType<Usable>
 	vector<Event> events;
 
 	static const float SOUND_DIST;
-	static const int MIN_SIZE = 22;
+	static const int MIN_SIZE = 29;
 
 	Usable() : variant(-1), container(nullptr) {}
 	~Usable() { delete container; }

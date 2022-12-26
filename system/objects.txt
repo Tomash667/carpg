@@ -622,5 +622,6 @@ usable bookshelf {
 
 usable barricade {
 	mesh "barricade.qmsh"
-	flags {blocks_camera destroyable}
+	flags {blocks_camera destroyable physics_ptr}
+	sound "thud.wav"
 }

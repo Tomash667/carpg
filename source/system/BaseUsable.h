@@ -44,6 +44,7 @@ struct BaseUsable : public BaseObject
 	BaseUsable& operator = (BaseUsable& u);
 
 	bool IsContainer() const { return IsSet(useFlags, CONTAINER); }
+	void EnsureIsLoaded();
 
 	static vector<BaseUsable*> usables;
 	static BaseUsable* TryGet(int hash)

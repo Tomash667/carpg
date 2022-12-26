@@ -3,6 +3,7 @@
 
 #include "BitStreamFunc.h"
 #include "Bullet.h"
+#include "DestroyedObject.h"
 #include "Electro.h"
 #include "Explo.h"
 #include "GameResources.h"
@@ -28,6 +29,7 @@ LevelPart::~LevelPart()
 	DeleteElements(bullets);
 	DeleteElements(pes);
 	DeleteElements(tpes);
+	DeleteElements(destroyedObjects);
 }
 
 //=================================================================================================
@@ -56,6 +58,10 @@ void LevelPart::Save(GameWriter& f)
 	f << bullets.size();
 	for(Bullet* bullet : bullets)
 		bullet->Save(f);
+
+	f << destroyedObjects.size();
+	for(DestroyedObject* obj : destroyedObjects)
+		obj->Save(f);
 }
 
 //=================================================================================================
@@ -110,6 +116,18 @@ void LevelPart::Load(GameReader& f)
 		bullet = new Bullet;
 		bullet->Load(f);
 	}
+
+	if(LOAD_VERSION >= V_DEV)
+	{
+		destroyedObjects.resize(f.Read<uint>());
+		for(DestroyedObject* obj : destroyedObjects)
+		{
+			obj = new DestroyedObject;
+			obj->Load(f);
+		}
+	}
+	else
+		destroyedObjects.clear();
 }
 
 //=================================================================================================
@@ -129,6 +147,11 @@ void LevelPart::Write(BitStreamWriter& f)
 	f.Write(electros.size());
 	for(Electro* electro : electros)
 		electro->Write(f);
+
+	// destroyed objects
+	f.Write(destroyedObjects.size());
+	for(DestroyedObject* obj : destroyedObjects)
+		obj->Write(f);
 }
 
 //=================================================================================================
@@ -186,6 +209,24 @@ bool LevelPart::Read(BitStreamReader& f)
 		if(!electro->Read(f))
 		{
 			Error("Read level part: Broken electro.");
+			return false;
+		}
+	}
+
+	// destroyed objects
+	f >> count;
+	if(!f.Ensure(count * DestroyedObject::MIN_SIZE))
+	{
+		Error("Read level part: Broken destroyed objects.");
+		return false;
+	}
+	destroyedObjects.resize(count);
+	for(DestroyedObject*& obj : destroyedObjects)
+	{
+		obj = new DestroyedObject;
+		if(!obj->Read(f))
+		{
+			Error("Read level part: Broken destroyed object.");
 			return false;
 		}
 	}

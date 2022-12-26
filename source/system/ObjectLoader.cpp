@@ -42,7 +42,8 @@ enum UsableProperty
 	UP_REQUIRED_ITEM,
 	UP_ANIMATION,
 	UP_ANIMATION_SOUND,
-	UP_LIMIT_ROT
+	UP_LIMIT_ROT,
+	UP_SOUND
 };
 
 //=================================================================================================
@@ -107,7 +108,8 @@ void ObjectLoader::InitTokenizer()
 		{ "required_item", UP_REQUIRED_ITEM },
 		{ "animation", UP_ANIMATION },
 		{ "animation_sound", UP_ANIMATION_SOUND },
-		{ "limit_rot", UP_LIMIT_ROT }
+		{ "limit_rot", UP_LIMIT_ROT },
+		{ "sound", UP_SOUND }
 		});
 
 	t.AddKeywords(G_USABLE_FLAGS, {
@@ -316,12 +318,10 @@ void ObjectLoader::ParseUsable(const string& id)
 					use->item = Item::TryGet(itemId);
 					if(!use->item)
 						LoadError("Missing item '%s'.", itemId.c_str());
-					t.Next();
 				}
 				break;
 			case UP_ANIMATION:
 				use->anim = t.MustGetString();
-				t.Next();
 				break;
 			case UP_ANIMATION_SOUND:
 				{
@@ -337,16 +337,24 @@ void ObjectLoader::ParseUsable(const string& id)
 						LoadError("Invalid animation sound timer.");
 					t.Next();
 					t.AssertSymbol('}');
-					t.Next();
 				}
 				break;
 			case UP_LIMIT_ROT:
 				use->limitRot = t.MustGetInt();
 				if(use->limitRot < 0)
 					t.Throw("Invalid limit rot.");
-				t.Next();
+				break;
+			case UP_SOUND:
+				{
+					const string& soundId = t.MustGetString();
+					use->sound = resMgr->TryGet<Sound>(soundId);
+					if(!use->sound)
+						LoadError("Missing sound '%s'.", soundId.c_str());
+				}
 				break;
 			}
+
+			t.Next();
 		}
 		else
 			t.ThrowExpecting("usable property");

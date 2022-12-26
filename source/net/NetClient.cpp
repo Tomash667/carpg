@@ -3063,6 +3063,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
+		// change inside building canEnter
 		case NetChange::SET_CAN_ENTER:
 			{
 				int id;
@@ -3075,6 +3076,67 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: SET_CAN_ENTER, Invalid building %d.", id);
 				else
 					gameLevel->cityCtx->insideBuildings[id]->canEnter = canEnter;
+			}
+			break;
+		// hit object effect
+		case NetChange::HIT_OBJECT:
+			{
+				int id;
+				Vec3 pos;
+				f >> id;
+				f >> pos;
+				if(!f)
+					Error("Update client: Broken HIT_OBJECT.");
+				else
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					pe->tex = gameRes->tSpark;
+					pe->emissionInterval = 0.f;
+					pe->life = 5.f;
+					pe->particleLife = 0.5f;
+					pe->emissions = 1;
+					pe->spawn = Int2(10, 15);
+					pe->maxParticles = 15;
+					pe->pos = pos;
+					pe->speedMin = Vec3(-1, 0, -1);
+					pe->speedMax = Vec3(1, 1, 1);
+					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
+					pe->size = Vec2(0.3f, 0.f);
+					pe->alpha = Vec2(0.9f, 0.f);
+					pe->mode = 0;
+					pe->Init();
+					gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
+
+					if(id == -1)
+						soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), pos, HIT_SOUND_DIST);
+					else
+					{
+						Usable* usable = gameLevel->FindUsable(id);
+						if(usable)
+							soundMgr->PlaySound3d(usable->base->sound, pos, HIT_SOUND_DIST);
+						else
+							Error("Update client: HIT_OBJECT, missing usable %d.", id);
+					}
+				}
+			}
+			break;
+		// destroy usable
+		case NetChange::DESTROY_USABLE:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update client: Broken DESTROY_USABLE.");
+				else
+				{
+					LocationPart* locPart;
+					Usable* usable = gameLevel->FindUsable(id, &locPart);
+					if(!usable)
+						Error("Update client: DESTROY_USABLE, missing usable %d.", id);
+					else
+						locPart->DestroyUsable(usable);
+				}
 			}
 			break;
 		// invalid change

@@ -970,7 +970,6 @@ void Game::LoadGame(GameReader& f)
 	if(net->mpLoad)
 	{
 		gameState = GS_MAIN_MENU;
-		gameLevel->ready = false;
 		return;
 	}
 
@@ -984,10 +983,7 @@ void Game::LoadGame(GameReader& f)
 			gameGui->craft->Show();
 	}
 	else
-	{
 		SetMusic(MusicType::Travel);
-		gameLevel->ready = false;
-	}
 }
 
 //=================================================================================================

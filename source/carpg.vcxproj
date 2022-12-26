@@ -142,6 +142,7 @@
     <ClInclude Include="entity\AITeam.h" />
     <ClInclude Include="entity\CityBuilding.h" />
     <ClInclude Include="entity\Date.h" />
+    <ClInclude Include="entity\DestroyedObject.h" />
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="entity\Electro.h" />
     <ClInclude Include="entity\Explo.h" />
@@ -348,6 +349,7 @@
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\AITeam.cpp" />
     <ClCompile Include="entity\CityBuilding.cpp" />
+    <ClCompile Include="entity\DestroyedObject.cpp" />
     <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Electro.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
