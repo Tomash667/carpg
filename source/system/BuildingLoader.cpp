@@ -100,13 +100,13 @@ void BuildingLoader::InitTokenizer()
 {
 	t.AddKeywords(G_TOP, {
 		{ "building", T_BUILDING },
-		{ "building_group", T_BUILDING_GROUP },
-		{ "building_script", T_BUILDING_SCRIPT }
+		{ "buildingGroup", T_BUILDING_GROUP },
+		{ "buildingScript", T_BUILDING_SCRIPT }
 		});
 
 	t.AddKeywords(G_BUILDING, {
 		{ "mesh", BK_MESH },
-		{ "inside_mesh", BK_INSIDE_MESH },
+		{ "insideMesh", BK_INSIDE_MESH },
 		{ "flags", BK_FLAGS },
 		{ "scheme", BK_SCHEME },
 		{ "group", BK_GROUP },
@@ -115,12 +115,12 @@ void BuildingLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_BUILDING_FLAGS, {
-		{ "favor_center", Building::FAVOR_CENTER },
-		{ "favor_road", Building::FAVOR_ROAD },
-		{ "have_name", Building::HAVE_NAME },
+		{ "favorCenter", Building::FAVOR_CENTER },
+		{ "favorRoad", Building::FAVOR_ROAD },
+		{ "haveName", Building::HAVE_NAME },
 		{ "list", Building::LIST },
-		{ "favor_dist", Building::FAVOR_DIST },
-		{ "no_path", Building::NO_PATH }
+		{ "favorDist", Building::FAVOR_DIST },
+		{ "noPath", Building::NO_PATH }
 		});
 
 	t.AddKeywords(G_SIDE, {

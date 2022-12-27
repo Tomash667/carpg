@@ -1,15 +1,15 @@
 [Buffs]
-buff_poison = "Zatrucie"
-buff_alcohol = "Alkohol"
-buff_regeneration = "Regeneracja"
-buff_natural = "Naturalne leczenie"
-buff_food = "Jedzenie"
-buff_antimagic = "Antymagia"
-buff_stamina = "Przywracanie wytrzyma³oœci"
-buff_stun = "Og³uszony"
-buff_poison_res = "Odpornoœæ na trucizny"
-buff_rooted = "Zakorzeniony"
-buff_slow_move = "Spowolnienie ruchu"
+buffPoison = "Zatrucie"
+buffAlcohol = "Alkohol"
+buffRegeneration = "Regeneracja"
+buffNatural = "Naturalne leczenie"
+buffFood = "Jedzenie"
+buffAntimagic = "Antymagia"
+buffStamina = "Przywracanie wytrzyma³oœci"
+buffStun = "Og³uszony"
+buffPoisonRes = "Odpornoœæ na trucizny"
+buffRooted = "Zakorzeniony"
+buffSlowMove = "Spowolnienie ruchu"
 
 [Directions]
 dirN = "pó³noc"
@@ -293,20 +293,20 @@ perk traveling_merchant {
 
 //------------------------------------------------------------------------------
 // SKILLS
-skill_group weapon = "Walka broni¹"
-skill_group armor = "Tarcza & Pancerz"
-skill_group magic = "Magia"
-skill_group other = "Pozosta³e"
+skillGroup weapon = "Walka broni¹"
+skillGroup armor = "Tarcza & Pancerz"
+skillGroup magic = "Magia"
+skillGroup other = "Pozosta³e"
 
-skill one_handed_weapon {
+skill oneHandedWeapon {
 	name "Broñ jednorêczna"
 	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku przy u¿yciu ka¿dej broni jednorêcznej."
 }
-skill short_blade {
+skill shortBlade {
 	name "Krótkie ostrze"
 	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla sztyletów, krótkich mieczy, rapierów."
 }
-skill long_blade {
+skill longBlade {
 	name "D³ugie ostrze"
 	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugich mieczy i sejmitarów."
 }
@@ -330,27 +330,27 @@ skill shield {
 	name "Tarcza"
 	desc "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
 }
-skill light_armor {
+skill lightArmor {
 	name "Lekki pancerz"
 	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania lekkiego pancerza."
 }
-skill medium_armor {
+skill mediumArmor {
 	name "Œredni pancerz"
 	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania œredniego pancerza."
 }
-skill heavy_armor {
+skill heavyArmor {
 	name "Ciê¿ki pancerz"
 	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
 }
-skill nature_magic {
+skill natureMagic {
 	name "Magia natury"
 	desc "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
-skill gods_magic {
+skill godsMagic {
 	name "Magia bogów"
 	desc "Poprawia efekty czarów bogów i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
-skill mystic_magic {
+skill mysticMagic {
 	name "Magia mistyczna"
 	desc "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
@@ -382,7 +382,7 @@ skill steal {
 	name "Kradzie¿"
 	desc "Zwiêksza szansê na pomyœlne okradzenie postaci."
 }
-skill animal_empathy {
+skill animalEmpathy {
 	name "Zwierzêca empatia"
 	desc "Pozwala na zrozumienie, uspokojenie i zrekrutowanie napotkanych zwierz¹t."	
 }

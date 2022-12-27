@@ -1078,10 +1078,6 @@ item sekret_kartka2 {
 	name "Piece of paper"
 	desc "You can only go through this portal with real courage. Loading game will not help you."
 }
-item q_main_letter {
-	name "Documents"
-	desc "Documents that prove that you are admitted to the Academy."
-}
 item letter {
 	name "Letter"
 }

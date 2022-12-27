@@ -68,7 +68,7 @@ void LocationLoader::InitTokenizer()
 
 	t.AddKeywords(G_OBJECT_FLAG, {
 		{ "required", RoomType::Obj::F_REQUIRED },
-		{ "in_middle", RoomType::Obj::F_IN_MIDDLE }
+		{ "inMiddle", RoomType::Obj::F_IN_MIDDLE }
 		});
 }
 

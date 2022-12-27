@@ -47,12 +47,12 @@ void RequiredLoader::InitTokenizer()
 		{ "group", R_GROUP },
 		{ "ability", R_ABILITY },
 		{ "dialog", R_DIALOG },
-		{ "building_group", R_BUILDING_GROUP },
+		{ "buildingGroup", R_BUILDING_GROUP },
 		{ "building", R_BUILDING },
-		{ "building_script", R_BUILDING_SCRIPT },
+		{ "buildingScript", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
 		{ "usable", R_USABLE },
-		{ "quest_list", R_QUEST_LIST }
+		{ "questList", R_QUEST_LIST }
 		});
 }
 
@@ -248,7 +248,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_QUEST_LIST:
 		{
-			const bool notNone = IsPrefix("not_none");
+			const bool notNone = IsPrefix("notNone");
 			QuestList* list = QuestList::TryGet(id);
 			if(!list)
 			{

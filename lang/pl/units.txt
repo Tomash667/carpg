@@ -29,13 +29,13 @@ unit captive = "Porwany"
 unit traveler = "Podró¿ny"
 unit artur_drwal {
 	name "Drwal"
-	real_name "Artur Drwal"
+	realName "Artur Drwal"
 }
 unit poslaniec_tartak = "Pos³aniec"
 unit drwal = "Drwal"
 unit inwestor {
 	name "Inwestor"
-	real_name "Marco Bartoli"
+	realName "Marco Bartoli"
 }
 unit poslaniec_kopalnia = "Pos³aniec"
 unit gornik = "Górnik"
@@ -43,7 +43,7 @@ unit gornik_szef = "Szef górników"
 unit pijak = "Pijak"
 unit mistrz_agentow {
 	name "Nieznajomy"
-	real_name "Arto"
+	realName "Arto"
 }
 unit guard_q_bandyci = "Stra¿nik"
 unit agent = "Agent"
@@ -52,7 +52,7 @@ unit q_magowie_stary = "Stary mag"
 unit q_orkowie_straznik = "Stra¿nik"
 unit base_gorush {
 	name "Ork"
-	real_name "Gorush"
+	realName "Gorush"
 }
 unit q_orkowie_gorush {}
 unit q_orkowie_gorush_woj {}
@@ -68,13 +68,13 @@ unit q_orkowie_orc_chief = "Ork wódz"
 unit q_orkowie_orc_shaman = "Ork szaman"
 unit q_gobliny_szlachcic {
 	name "Szlachcic"
-	real_name "Sir Foltest Denhoff"
+	realName "Sir Foltest Denhoff"
 }
 unit q_gobliny_poslaniec = "Pos³aniec"
 unit q_gobliny_mag = "Wêdrowny mag"
 unit q_zlo_kaplan {
 	name "Kap³an"
-	real_name "Jozan"
+	realName "Jozan"
 }
 unit q_zlo_mag = "Mag"
 unit hunter = "£owca"
@@ -85,7 +85,7 @@ unit goblin_fighter = "Goblin zbrojny"
 unit goblin_chief = "Goblin wódz"
 unit q_gobliny_szlachcic2 {
 	name "Szlachcic"
-	real_name "Sir Foltest Denhoff"
+	realName "Sir Foltest Denhoff"
 }
 unit q_gobliny_ochroniarz = "Ochroniarz"
 unit tut_goblin = "Goblin"
@@ -150,7 +150,7 @@ unit hero_warrior = "Wojownik"
 unit hero_hunter = "£owca"
 unit hero_rogue = "£otrzyk"
 unit hero_tomir {
-	real_name "Tomir"
+	realName "Tomir"
 }
 unit hero_cleric = "Kap³an"
 unit tomashu = "Tomashu"
@@ -158,7 +158,7 @@ unit unk = "Nieznany"
 unit crazy_cook = "Szalony kucharz"
 unit xwokloiz {
 	name "Uczeñ alchemika"
-	real_name "£ukasz Zió³koski"
+	realName "£ukasz Zió³koski"
 }
 unit q_main_academy = "Nauczyciel z akademii"
 unit q_main_messenger = "Pos³aniec"
@@ -171,71 +171,71 @@ unit q_main_plague_soltys = "Zara¿ony so³tys"
 unit q_main_plague_alchemist = "Zara¿ony alchemik"
 unit q_main_plague_guard = "Zara¿ony stra¿nik"
 
-unit_group orcs {
+unitGroup orcs {
 	name "orkowie"
 	name2 "orków"
 	name3 "orkami"
-	encounter_text "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
+	encounterText "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
 }
-unit_group bandits {
+unitGroup bandits {
 	name "bandyci"
 	name2 "bandytów"
 	name3 "bandytami"
-	encounter_text "Podczas podró¿y natrafi³eœ na bandytów!"
+	encounterText "Podczas podró¿y natrafi³eœ na bandytów!"
 }
-unit_group goblins {
+unitGroup goblins {
 	name "gobliny"
 	name2 "goblinów"
 	name3 "goblinami"
-	encounter_text "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
+	encounterText "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
 }
-unit_group undead {
+unitGroup undead {
 	name "nieumarli"
 	name2 "nieumar³ych"
 	name3 "nieumar³ymi"
 }
-unit_group necromancers {
+unitGroup necromancers {
 	name "nekromanci"
 	name2 "nekromantów"
 	name3 "nekromantami"
 }
-unit_group evil {
+unitGroup evil {
 	name "Ÿli kap³ani"
 	name2 "z³ych kap³anów"
 	name3 "z³ymi kap³anami"
 }
-unit_group mages {
+unitGroup mages {
 	name "magowie"
 	name2 "magów"
 	name3 "magami"
 }
-unit_group golems {
+unitGroup golems {
 	name "golemy"
 	name2 "golemów"
 	name3 "golemami"
 }
-unit_group mages_and_golems {
+unitGroup mages_and_golems {
 	name "magowie i golemy"
 	name2 "magów i golemów"
 	name3 "magami i golemami"
 }
-unit_group unk {
+unitGroup unk {
 	name "dziwne stwory"
 	name2 "dziwnych stworów"
 	name3 "dziwnymi stworami"
 }
-unit_group challange {
+unitGroup challange {
 	name "potê¿ni wrogowie"
 	name2 "potê¿nych wrogów"
 	name3 "potê¿nymi wrogami"
 }
-unit_group forest {
+unitGroup forest {
 	name "zwierzêta"
 	name2 "zwierz¹t"
 	name3 "zwierzêtami"
-	encounter_text "Nagle z zaroœli wyskoczy³y zwierzêta!"
+	encounterText "Nagle z zaroœli wyskoczy³y zwierzêta!"
 }
-unit_group cave {
+unitGroup cave {
 	name "zwierzêta"
 	name2 "zwierz¹t"
 	name3 "zwierzêtami"

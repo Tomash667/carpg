@@ -13,11 +13,11 @@ vector<string> nameRandom, nicknameRandom, crazyName;
 //=================================================================================================
 void NameHelper::SetHeroNames()
 {
-	txNameFrom = Str("name_from");
-	txNameSonOf = Str("name_sonOf");
-	txNameSonOfPost = Str("name_sonOfPost");
-	txNameSonOfInvalid = Str("name_sonOfInvalid");
-	txNamePrefix = Str("name_prefix");
+	txNameFrom = Str("nameFrom");
+	txNameSonOf = Str("nameSonOf");
+	txNameSonOfPost = Str("nameSonOfPost");
+	txNameSonOfInvalid = Str("nameSonOfInvalid");
+	txNamePrefix = Str("namePrefix");
 }
 
 //=================================================================================================

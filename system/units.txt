@@ -132,16 +132,16 @@ profile cleric {
 	wisdom 60
 	charisma 70
 
-	one_handed_weapon 10
-	short_blade 10
-	long_blade 5
+	oneHandedWeapon 10
+	shortBlade 10
+	longBlade 5
 	axe 5
 	blunt 15
 	bow 5
 	shield 10
-	light_armor 10
-	medium_armor 15
-	gods_magic 20
+	lightArmor 10
+	mediumArmor 15
+	godsMagic 20
 	concentration 15
 	persuasion 15
 	alchemy 10
@@ -149,10 +149,10 @@ profile cleric {
 	subprofile cleric {
 		weapon blunt
 		armor {
-			medium_armor 3
-			light_armor 2
+			mediumArmor 3
+			lightArmor 2
 		}
-		tag gods_magic
+		tag godsMagic
 		tag weapon
 		tag armor
 		tag shield
@@ -174,7 +174,7 @@ profile cleric {
 			cleric 1.5
 		}
 		perk talent charisma
-		perk skill_focus gods_magic
+		perk skill_focus godsMagic
 		items {
 			$-2weapon
 			$-1armor
@@ -251,27 +251,27 @@ profile hunter {
 	wisdom 60
 	charisma 45
 
-	one_handed_weapon 15
-	short_blade 15
-	long_blade 15
+	oneHandedWeapon 15
+	shortBlade 15
+	longBlade 15
 	axe 15
 	blunt 10
 	bow 20
 	shield 10
-	light_armor 20
-	medium_armor 10
+	lightArmor 20
+	mediumArmor 10
 	alchemy 5
 
 	subprofile bow {
 		weapon {
-			short_blade 3
-			long_blade 2
+			shortBlade 3
+			longBlade 2
 		}
-		armor light_armor
+		armor lightArmor
 		tag bow
-		tag light_armor
+		tag lightArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		priority {
 			bow 1
 			armor 0.9
@@ -351,12 +351,12 @@ profile hunter {
 	}
 	subprofile weapon {
 		weapon {
-			short_blade 3
-			long_blade 2
+			shortBlade 3
+			longBlade 2
 		}
-		armor light_armor
+		armor lightArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		tag armor
 		tag bow
 		priority {
@@ -439,12 +439,12 @@ profile hunter {
 	subprofile weapon_medium {
 		weapon {
 			axe 3
-			long_blade 2
+			longBlade 2
 			blunt 1
 		}
-		armor medium_armor
+		armor mediumArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		tag armor
 		tag shield
 		priority {
@@ -535,26 +535,26 @@ profile mage {
 	wisdom 60
 	charisma 50
 
-	one_handed_weapon 5
-	short_blade 5
-	long_blade 5
+	oneHandedWeapon 5
+	shortBlade 5
+	longBlade 5
 	axe 0
 	blunt 5
 	bow 0
 	shield 0
-	light_armor 10
+	lightArmor 10
 	persuasion 0
 	concentration 15
-	mystic_magic 20
+	mysticMagic 20
 	alchemy 10
 
 	subprofile mage {
 		weapon blunt
-		armor light_armor
-		tag mystic_magic
+		armor lightArmor
+		tag mysticMagic
 		tag concentration
 		tag armor
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		priority {
 			weapon 1
 			armor 1
@@ -573,7 +573,7 @@ profile mage {
 			cleric 0
 		}
 		perk talent inteligence
-		perk skill_focus mystic_magic
+		perk skill_focus mysticMagic
 		items {
 			!wand
 			!mage_armor
@@ -649,26 +649,26 @@ profile rogue {
 	wisdom 50
 	charisma 55
 
-	one_handed_weapon 20
-	short_blade 20
-	long_blade 15
+	oneHandedWeapon 20
+	shortBlade 20
+	longBlade 15
 	axe 10
 	blunt 10
 	bow 15
 	shield 0
-	light_armor 15
-	medium_armor 0
+	lightArmor 15
+	mediumArmor 0
 	persuasion 10
 	alchemy 0
 
 	subprofile weapon {
 		weapon {
-			short_blade 2
-			long_blade 1
+			shortBlade 2
+			longBlade 1
 		}
-		armor light_armor
+		armor lightArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		tag armor
 		tag shield
 		priority {
@@ -749,14 +749,14 @@ profile rogue {
 	}
 	subprofile bow {
 		weapon {
-			short_blade 2
-			long_blade 1
+			shortBlade 2
+			longBlade 1
 		}
-		armor light_armor
+		armor lightArmor
 		tag bow
 		tag armor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		priority {
 			bow 1
 			armor 0.9
@@ -843,16 +843,16 @@ profile warrior {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 15
-	short_blade 10
-	long_blade 15
+	oneHandedWeapon 15
+	shortBlade 10
+	longBlade 15
 	axe 15
 	blunt 15
 	bow 15
 	shield 15
-	light_armor 10
-	medium_armor 15
-	heavy_armor 15
+	lightArmor 10
+	mediumArmor 15
+	heavyArmor 15
 	persuasion 0
 	alchemy 0
 
@@ -860,13 +860,13 @@ profile warrior {
 		weapon {
 			axe 3
 			blunt 3
-			long_blade 1
+			longBlade 1
 		}
-		armor heavy_armor
+		armor heavyArmor
 		tag armor
 		tag shield
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		priority {
 			armor 1
 			shield 1
@@ -948,11 +948,11 @@ profile warrior {
 		weapon {
 			axe 3
 			blunt 3
-			long_blade 1
+			longBlade 1
 		}
-		armor heavy_armor
+		armor heavyArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		tag armor
 		tag shield
 		priority {
@@ -1035,14 +1035,14 @@ profile warrior {
 	}
 	subprofile medium {
 		weapon {
-			short_blade 1
-			long_blade 3
+			shortBlade 1
+			longBlade 3
 			axe 2
 			blunt 2
 		}
-		armor medium_armor
+		armor mediumArmor
 		tag weapon
-		tag one_handed_weapon
+		tag oneHandedWeapon
 		tag armor
 		tag bow
 		priority {
@@ -1133,16 +1133,16 @@ profile ai_fighter {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 25
-	short_blade 25
-	long_blade 25
+	oneHandedWeapon 25
+	shortBlade 25
+	longBlade 25
 	axe 25
 	blunt 25
 	bow 15
 	shield 25
-	light_armor 25
-	medium_armor 25
-	heavy_armor 25
+	lightArmor 25
+	mediumArmor 25
+	heavyArmor 25
 }
 
 profile ai_archer {
@@ -1153,16 +1153,16 @@ profile ai_archer {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 15
-	short_blade 15
-	long_blade 15
+	oneHandedWeapon 15
+	shortBlade 15
+	longBlade 15
 	axe 15
 	blunt 15
 	bow 25
 	shield 25
-	light_armor 25
-	medium_armor 25
-	heavy_armor 25
+	lightArmor 25
+	mediumArmor 25
+	heavyArmor 25
 }
 
 profile ai_assassin {
@@ -1173,16 +1173,16 @@ profile ai_assassin {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 35
-	short_blade 35
-	long_blade 35
+	oneHandedWeapon 35
+	shortBlade 35
+	longBlade 35
 	axe 35
 	blunt 35
 	bow 30
 	shield 15
-	light_armor 15
-	medium_armor 15
-	heavy_armor 15
+	lightArmor 15
+	mediumArmor 15
+	heavyArmor 15
 }
 
 profile ai_tank {
@@ -1193,16 +1193,16 @@ profile ai_tank {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 15
-	short_blade 15
-	long_blade 15
+	oneHandedWeapon 15
+	shortBlade 15
+	longBlade 15
 	axe 15
 	blunt 15
 	bow 15
 	shield 35
-	light_armor 35
-	medium_armor 35
-	heavy_armor 35
+	lightArmor 35
+	mediumArmor 35
+	heavyArmor 35
 }
 
 profile ai_shaman {
@@ -1213,17 +1213,17 @@ profile ai_shaman {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 20
-	short_blade 20
-	long_blade 20
+	oneHandedWeapon 20
+	shortBlade 20
+	longBlade 20
 	axe 20
 	blunt 20
 	bow 20
 	shield 20
-	light_armor 25
-	medium_armor 25
-	heavy_armor 25
-	mystic_magic 15
+	lightArmor 25
+	mediumArmor 25
+	heavyArmor 25
+	mysticMagic 15
 	concentration 15
 }
 
@@ -1235,17 +1235,17 @@ profile ai_mage {
 	wisdom 50
 	charisma 50
 
-	one_handed_weapon 10
-	short_blade 10
-	long_blade 10
+	oneHandedWeapon 10
+	shortBlade 10
+	longBlade 10
 	axe 10
 	blunt 10
 	bow 10
 	shield 10
-	light_armor 10
-	medium_armor 10
-	heavy_armor 10
-	mystic_magic 20
+	lightArmor 10
+	mediumArmor 10
+	heavyArmor 10
+	mysticMagic 20
 	concentration 20
 }
 
@@ -1257,26 +1257,26 @@ unit base_human {
 	flags human
 	group citizens
 	profile ai_fighter
-	walk_speed 1.5
-	run_speed 5
-	rot_speed 4.5
+	walkSpeed 1.5
+	runSpeed 5
+	rotSpeed 4.5
 	blood red
 	sounds {
-		see_enemy "hey.mp3"
+		seeEnemy "hey.mp3"
 		pain "aahhzz.mp3"
 		death "ahhh.mp3"
 		talk {"hello-3.mp3" "hello-4.mp3" "hmph.wav" "huh-2.mp3"}
 	}
 	frames {
 		attacks {
-			{0.33 0.7 {short_blade long_blade axe blunt}}
-			{0.3 0.73 {long_blade axe blunt}}
-			{0.23 0.7 {short_blade long_blade blunt}}
-			{0.36 0.7 {long_blade axe blunt}}
-			{0.36 0.72 {short_blade long_blade}}
+			{0.33 0.7 {shortBlade longBlade axe blunt}}
+			{0.3 0.73 {longBlade axe blunt}}
+			{0.23 0.7 {shortBlade longBlade blunt}}
+			{0.36 0.7 {longBlade axe blunt}}
+			{0.36 0.72 {shortBlade longBlade}}
 		}
 		cast 0.85
-		take_weapon 0.4
+		takeWeapon 0.4
 		bash 0.8
 	}
 	idles {
@@ -1285,8 +1285,8 @@ unit base_human {
 		"drapie"
 	}
 	width 0.3
-	attack_range 1
-	armor_type human
+	attackRange 1
+	armorType human
 	items {
 		if chance 40
 			random {al_clothes2 al_clothes2b}
@@ -1295,7 +1295,7 @@ unit base_human {
 		random {!-2short_blade !-2axe !-2blunt}
 		random 1 3 !normal_food
 	}
-	idle_dialog citizen_idle
+	idleDialog citizen_idle
 }
 
 unit base_player : base_human {
@@ -1358,7 +1358,7 @@ unit base_mage : base_player {
 //------------------------------------------------------------------------------
 unit blacksmith : base_human {
 	level 5
-	flags | {ai_stay dont_eat limited_rot}
+	flags | {aiStay dontEat limitedRot}
 	items {
 		al_blacksmith
 		blacksmith_hammer
@@ -1374,7 +1374,7 @@ unit blacksmith : base_human {
 
 unit merchant : base_human {
 	level 4
-	flags | {ai_stay ai_guard dont_eat limited_rot}
+	flags | {aiStay aiGuard dontEat limitedRot}
 	items {
 		random {al_clothes2 al_clothes2b}
 		!short_blade
@@ -1425,13 +1425,13 @@ unit alchemist : merchant {
 
 unit citizen : base_human {
 	level 3
-	flags | {ai_wanders ai_drunkman contest_25}
+	flags | {aiWanders aiDrunkman contest25}
 	gold {30 60}
 	dialog citizen
 }
 
 unit tut_czlowiek : citizen {
-	flags | {ai_stay ~ai_wanders limited_rot}
+	flags | {aiStay ~aiWanders limitedRot}
 	trader {
 		stock merchant
 		groups {weapon bow shield armor amulet ring consumable other book}
@@ -1445,7 +1445,7 @@ unit villager : citizen {
 
 unit mayor : base_human {
 	level 4
-	flags | {ai_clerk ai_stay dont_eat limited_rot}
+	flags | {aiClerk aiStay dontEat limitedRot}
 	items {
 		random {al_clothes3 al_clothes3b}
 		random {dagger_sword dagger_rapier sword_long sword_scimitar}
@@ -1461,14 +1461,14 @@ unit soltys : mayor {
 
 unit base_guard : base_human {
 	level {5 6}
-	flags | {dont_eat guard}
+	flags | {dontEat guard}
 	items guard
 	gold {{50 100} {60 120}}
 	dialog guard
 }
 
 unit guard : base_guard {
-	flags | {ai_guard ai_stay limited_rot}
+	flags | {aiGuard aiStay limitedRot}
 }
 
 unit guard_wagon : base_guard {
@@ -1479,12 +1479,12 @@ unit guard_merchant : base_guard {
 }
 
 unit guard_move : base_guard {
-	flags | {ai_wanders ai_train}
+	flags | {aiWanders aiTrain}
 }
 
 unit guard_captain : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat limited_rot guard}
+	flags | {aiGuard aiStay dontEat limitedRot guard}
 	items guard
 	gold {100 200}
 	dialog guard_captain
@@ -1492,20 +1492,20 @@ unit guard_captain : base_human {
 
 unit trainer : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat limited_rot}
+	flags | {aiGuard aiStay dontEat limitedRot}
 	items guard
 	gold {250 500}
 	dialog trainer
 }
 
 unit clerk : citizen {
-	flags | {~ai_wanders ai_clerk ai_stay dont_eat limited_rot}
+	flags | {~aiWanders aiClerk aiStay dontEat limitedRot}
 	gold {150 250}
 	dialog clerk
 }
 
 unit innkeeper : merchant {
-	flags | {limited_rot talk_at_competition}
+	flags | {limitedRot talkAtCompetition}
 	items {
 		al_innkeeper
 		random {blunt_mace axe_small sword_long}
@@ -1525,7 +1525,7 @@ unit innkeeper : merchant {
 unit mage_seller : base_human {
 	level 10
 	profile ai_mage
-	flags | {ai_stay ai_guard dont_eat limited_rot mage mp_bar}
+	flags | {aiStay aiGuard dontEat limitedRot mage mpBar}
 	items mage
 	trader {
 		stock mage_seller
@@ -1540,14 +1540,14 @@ unit mage_seller : base_human {
 unit cleric_seller : base_human {
 	level 10
 	profile cleric
-	flags | {ai_stay ai_guard dont_eat limited_rot mp_bar}
+	flags | {aiStay aiGuard dontEat limitedRot mpBar}
 	items {
 		!-2blunt
 		!-1medium_armor
 		!-2shield
 	}
 	abilities {
-		non_combat 1
+		nonCombat 1
 		{heal 0}
 	}
 	gold {1000 2000}
@@ -1556,20 +1556,20 @@ unit cleric_seller : base_human {
 
 unit arena_master : base_human {
 	level 15
-	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
+	flags | {aiGuard aiStay limitedRot dontEat talkAtCompetition}
 	items guard
 	gold {150 300}
 	dialog arena_master
 }
 
 unit viewer : citizen {
-	flags | {~ai_wanders ai_guard ai_stay limited_rot dont_eat}
+	flags | {~aiWanders aiGuard aiStay limitedRot dontEat}
 	dialog viewer
 }
 
 unit captive : base_human {
 	level 4
-	flags | {ai_wanders hero specific_name peaceful}
+	flags | {aiWanders hero specificName peaceful}
 	items {
 		if chance 40
 			random {al_clothes3 al_clothes3b}
@@ -1584,7 +1584,7 @@ unit captive : base_human {
 
 unit traveler : base_human {
 	level {4 8}
-	flags | {ai_wanders contest_25}
+	flags | {aiWanders contest25}
 	items {
 		!light_armor
 		random {!long_blade !blunt !axe}
@@ -1599,7 +1599,7 @@ unit traveler : base_human {
 
 unit artur_drwal : base_human {
 	level 6
-	flags | {ai_stay hero specific_name contest_50}
+	flags | {aiStay hero specificName contest50}
 	items {
 		!light_armor
 		axe_battle
@@ -1612,7 +1612,7 @@ unit artur_drwal : base_human {
 
 unit messenger : base_human {
 	level 4
-	flags | ai_wanders
+	flags | aiWanders
 	items {
 		al_clothes
 		random {!-1short_blade !-1axe !-1blunt !-1long_blade}
@@ -1638,7 +1638,7 @@ unit drwal : base_human {
 
 unit inwestor : base_human {
 	level 10
-	flags | {ai_stay hero specific_name}
+	flags | {aiStay hero specificName}
 	items {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
@@ -1667,7 +1667,7 @@ unit gornik : base_human {
 
 unit gornik_szef : gornik {
 	level 6
-	flags | {ai_stay ~miner limited_rot}
+	flags | {aiStay ~miner limitedRot}
 	hp 600
 	gold {60 120}
 	dialog q_mine
@@ -1676,7 +1676,7 @@ unit gornik_szef : gornik {
 unit pijak : base_human {
 	level {3 20}
 	profile ai_fighter
-	flags | {contest drunkman_after_contest}
+	flags | {contest drunkmanAfterContest}
 	items {
 		al_clothes
 		random {dagger_short sword_long axe_small blunt_mace}
@@ -1688,21 +1688,21 @@ unit pijak : base_human {
 
 unit mistrz_agentow : base_human {
 	level 12
-	flags | {ai_stay hero specific_name backstab dont_eat}
+	flags | {aiStay hero specificName backstab dontEat}
 	items rogue
 	gold {120 240}
 	dialog q_bandits
 }
 
 unit guard_q_bandyci : base_guard {
-	flags | {ai_wanders ai_train}
+	flags | {aiWanders aiTrain}
 	items q_guard
 	dialog q_bandits
 }
 
 unit agent : base_human {
 	level 8
-	flags | {ai_stay dont_eat hero specific_name}
+	flags | {aiStay dontEat hero specificName}
 	items rogue
 	gold {80 160}
 	dialog q_bandits
@@ -1715,26 +1715,26 @@ unit q_magowie_uczony : mayor {
 unit q_magowie_stary : base_human {
 	level 15
 	profile ai_mage
-	flags | {mage hero drunk_mage}
+	flags | {mage hero drunkMage}
 	items mage
 	gold {150 300}
 	abilities mage
 	dialog q_mages2
-	idle_dialog drunk_mage_idle
+	idleDialog drunk_mage_idle
 	class mage
 	appearance {
-		hair_color 0xDED5D0
+		hairColor 0xDED5D0
 	}
 }
 
 unit q_orkowie_straznik : base_guard {
-	flags | dont_eat
+	flags | dontEat
 	dialog q_orcs
 }
 
 unit q_gobliny_szlachcic : mayor {
 	level 14
-	flags | {hero specific_name}
+	flags | {hero specificName}
 	hp 1400
 	attack -60
 	gold {250 500}
@@ -1748,7 +1748,7 @@ unit q_gobliny_poslaniec : messenger {
 unit q_gobliny_mag : base_human {
 	level 10
 	profile ai_mage
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	items mage
 	gold {100 200}
 	abilities mage
@@ -1758,7 +1758,7 @@ unit q_gobliny_mag : base_human {
 unit q_zlo_kaplan : base_human {
 	level {5 20}
 	profile cleric
-	flags | {hero ai_stay ai_train specific_name fast_learner}
+	flags | {hero aiStay aiTrain specificName fastLearner}
 	items {
 		blunt_morningstar
 		shield_iron
@@ -1769,7 +1769,7 @@ unit q_zlo_kaplan : base_human {
 	}
 	gold {{50 100}{200 400}}
 	abilities {
-		non_combat 1
+		nonCombat 1
 		{heal 0}
 	}
 	dialog q_evil
@@ -1779,7 +1779,7 @@ unit q_zlo_kaplan : base_human {
 unit q_zlo_mag : base_human {
 	level 10
 	profile ai_mage
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	items mage
 	gold {100 200}
 	abilities mage
@@ -1789,7 +1789,7 @@ unit q_zlo_mag : base_human {
 unit hunter : base_human {
 	level 5
 	profile ai_archer
-	flags | {archer ai_train}
+	flags | {archer aiTrain}
 	class hunter
 	items {
 		!light_armor
@@ -1816,40 +1816,40 @@ unit hunter_leader : hunter {
 unit base_goblin {
 	mesh "goblin.qmsh"
 	mat body
-	flags {humanoid coward orc_food}
+	flags {humanoid coward orcFood}
 	profile ai_fighter
 	group goblins
-	walk_speed 1.75
-	run_speed 6
-	rot_speed 4.6
+	walkSpeed 1.75
+	runSpeed 6
+	rotSpeed 4.6
 	blood red
 	sounds {
-		see_enemy "goblin-3.wav"
+		seeEnemy "goblin-3.wav"
 		pain "goblin-11.wav"
 		death "goblin-15.wav"
 		talk "goblin-7.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.33 0.66}
 			{0.33 0.66}
 		}
-		take_weapon 0.5
+		takeWeapon 0.5
 		bash 0.66
 	}
 	idles {
 		"rozglada"
 	}
 	width 0.3
-	attack_range 0.8
-	armor_type goblin
-	idle_dialog goblin_idle
+	attackRange 0.8
+	armorType goblin
+	idleDialog goblin_idle
 }
 
 unit goblin : base_goblin {
 	level {3 4}
 	def 25
-	flags | ai_train
+	flags | aiTrain
 	items {
 		chance 25 !shield
 		chance 5 p_hp
@@ -1869,7 +1869,7 @@ unit goblin_hunter : base_goblin {
 	level {4 5}
 	profile ai_archer
 	def 30
-	flags | {archer ai_train}
+	flags | {archer aiTrain}
 	items {
 		!bow
 		chance 5 p_hp
@@ -1883,7 +1883,7 @@ unit goblin_hunter : base_goblin {
 unit goblin_fighter : base_goblin {
 	level {4 5}
 	def 30
-	flags | ai_train
+	flags | aiTrain
 	items {
 		random {!long_blade !axe !blunt !short_blade}
 		!shield
@@ -1909,7 +1909,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders specific_name boss sit_on_throne rooted_res}
+	flags | {archer hero aiWanders specificName boss sitOnThrone rootedRes}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -1928,7 +1928,7 @@ unit q_gobliny_szlachcic2 : base_human {
 
 unit q_gobliny_ochroniarz : base_human {
 	level 8
-	flags | ai_train
+	flags | aiTrain
 	items guard
 	gold {80 160}
 	dialog bodyguard
@@ -1936,7 +1936,7 @@ unit q_gobliny_ochroniarz : base_human {
 }
 
 unit tut_goblin : goblin {
-	flags | {ai_stay ai_guard ~ai_train}
+	flags | {aiStay aiGuard ~aiTrain}
 }
 
 //------------------------------------------------------------------------------
@@ -1945,48 +1945,48 @@ unit tut_goblin : goblin {
 unit base_orc {
 	mesh "ork.qmsh"
 	mat body
-	flags {humanoid orc_food}
+	flags {humanoid orcFood}
 	group orcs
 	profile ai_fighter
-	walk_speed 1.5
-	run_speed 5
-	rot_speed 4
+	walkSpeed 1.5
+	runSpeed 5
+	rotSpeed 4
 	blood red
 	sounds {
-		see_enemy "ogre2.wav"
+		seeEnemy "ogre2.wav"
 		pain "ogre5.wav"
 		death "ogre3.wav"
 		talk "ogre1.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.35 0.65}
 			{0.35 0.65}
 		}
 		cast 1
-		take_weapon 0.5
+		takeWeapon 0.5
 		bash 0.71
 	}
 	idles {
 		"rozglada"
 	}
 	width 0.41
-	attack_range 1
-	armor_type orc
-	idle_dialog orc_idle
+	attackRange 1
+	armorType orc
+	idleDialog orc_idle
 }
 
 unit base_gorush : base_orc {
-	flags | {hero ai_train specific_name tournament peaceful}
+	flags | {hero aiTrain specificName tournament peaceful}
 	dialog q_orcs2
 	gold {10 30}
 	group citizens
-	idle_dialog citizen_idle
+	idleDialog citizen_idle
 }
 
 unit q_orkowie_gorush : base_gorush {
 	level 10
-	flags | contest_50
+	flags | contest50
 	def 50
 	items {
 		p_hp
@@ -2001,7 +2001,7 @@ unit q_orkowie_gorush : base_gorush {
 
 unit q_orkowie_gorush_woj : base_gorush {
 	level 15
-	flags | {melee contest sit_on_throne}
+	flags | {melee contest sitOnThrone}
 	def 100
 	items {
 		p_hp2
@@ -2017,7 +2017,7 @@ unit q_orkowie_gorush_woj : base_gorush {
 
 unit q_orkowie_gorush_lowca : base_gorush {
 	level 15
-	flags | {archer contest_50 sit_on_throne}
+	flags | {archer contest50 sitOnThrone}
 	def 75
 	items {
 		p_hp2
@@ -2033,7 +2033,7 @@ unit q_orkowie_gorush_lowca : base_gorush {
 
 unit q_orkowie_gorush_szaman : base_gorush {
 	level 15
-	flags | {mage sit_on_throne}
+	flags | {mage sitOnThrone}
 	def 60
 	items {
 		p_hp
@@ -2056,7 +2056,7 @@ unit q_orkowie_gorush_szaman : base_gorush {
 unit orc : base_orc {
 	level {5 7}
 	def 51
-	flags | ai_train
+	flags | aiTrain
 	items {
 		chance 5 p_hp
 		chance 33 al_orc
@@ -2088,7 +2088,7 @@ unit q_orkowie_slaby : base_orc {
 unit orc_hunter : base_orc {
 	level {8 10}
 	profile ai_archer
-	flags | {archer ai_train}
+	flags | {archer aiTrain}
 	def 73
 	items {
 		!bow
@@ -2108,7 +2108,7 @@ unit q_orkowie_orc_hunter : orc_hunter {
 
 unit orc_fighter : base_orc {
 	level {8 10}
-	flags | {ai_train melee}
+	flags | {aiTrain melee}
 	def 52
 	items {
 		random {!long_blade !axe !blunt}
@@ -2126,7 +2126,7 @@ unit q_orkowie_orc_fighter : orc_fighter {
 }
 
 unit q_orkowie_kowal : q_orkowie_orc_fighter {
-	flags | ai_stay
+	flags | aiStay
 	trader {
 		stock orc_blacksmith
 		groups {weapon bow shield armor}
@@ -2138,7 +2138,7 @@ unit orc_warius : base_orc {
 	level {9 12}
 	profile ai_tank
 	def 55
-	flags | {ai_train melee}
+	flags | {aiTrain melee}
 	items {
 		random {!axe !blunt}
 		am_orc
@@ -2177,7 +2177,7 @@ unit orc_shaman : base_orc {
 	level {8 10}
 	profile ai_shaman
 	def 60
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	items {
 		al_orc_shaman
 		blunt_orcish_shaman
@@ -2200,7 +2200,7 @@ unit q_orkowie_orc_shaman : orc_shaman {
 
 unit q_orkowie_boss : base_orc {
 	level 16
-	flags | {melee boss sit_on_throne yell guarded rooted_res}
+	flags | {melee boss sitOnThrone yell guarded rootedRes}
 	hp 1600
 	attack -40
 	def 110
@@ -2215,7 +2215,7 @@ unit q_orkowie_boss : base_orc {
 	}
 	gold {1000 2000}
 	sounds {
-		see_enemy "snarl.mp3"
+		seeEnemy "snarl.mp3"
 		pain "ogre5.wav"
 		death "ogre3.wav"
 	}
@@ -2224,30 +2224,30 @@ unit q_orkowie_boss : base_orc {
 unit ogre {
 	mesh "ogre.qmsh"
 	mat body
-	flags {humanoid fixed_stats rooted_res}
+	flags {humanoid fixedStats rootedRes}
 	level 14
 	hp 1400
 	stamina 250
 	attack 140 // 300
 	def 280
 	group orcs
-	walk_speed 2
-	run_speed 6
-	rot_speed 4
+	walkSpeed 2
+	runSpeed 6
+	rotSpeed 4
 	blood red
-	blood_size 1.5
+	bloodSize 1.5
 	sounds {
-		see_enemy "giant3.wav"
+		seeEnemy "giant3.wav"
 		pain "giant1.wav"
 		death "giant5.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.25 0.58}
 			{0.30 0.64}
 		}
 		cast 1
-		take_weapon 0.56
+		takeWeapon 0.56
 		bash 0.71
 	}
 	idles {
@@ -2259,8 +2259,8 @@ unit ogre {
 	}
 	gold {140 180}
 	width 0.5
-	attack_range 1.5
-	idle_dialog ogre_idle
+	attackRange 1.5
+	idleDialog ogre_idle
 }
 
 //------------------------------------------------------------------------------
@@ -2269,22 +2269,22 @@ unit ogre {
 unit base_zombie {
 	mesh "zombie.qmsh"
 	mat body
-	flags {fixed_stats undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat stun_res dont_talk}
+	flags {fixedStats undead dontEscape slow pierceRes25 bluntRes25 dontOpen poisonRes noPowerAttack ignoreBlock backstabRes dontEat stunRes dontTalk}
 	stamina 150
 	group undead
-	dmg_type blunt
-	walk_speed 1.5
-	run_speed 0
-	rot_speed 2.5
+	dmgType blunt
+	walkSpeed 1.5
+	runSpeed 0
+	rotSpeed 2.5
 	blood green
 	sounds {
-		see_enemy "zombie groan 1.wav"
+		seeEnemy "zombie groan 1.wav"
 		pain "zombie.mp3"
 		death "zombie2.mp3"
 		attack "zombie attack.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.75 1}
 			{0.6 1}
 		}
@@ -2294,7 +2294,7 @@ unit base_zombie {
 		"wygina"
 	}
 	width 0.3
-	attack_range 1
+	attackRange 1
 }
 
 unit zombie : base_zombie {
@@ -2321,12 +2321,12 @@ unit zombie_rotting : base_zombie {
 
 unit zombie_ancient : base_zombie {
 	level 12
-	flags | magic_res25
+	flags | magicRes25
 	hp 1440
 	attack 240
 	def 288
-	walk_speed 1.3
-	rot_speed 2.2
+	walkSpeed 1.3
+	rotSpeed 2.2
 	blood black
 	tex {
 		"zombif.jpg"
@@ -2338,27 +2338,27 @@ unit zombie_ancient : base_zombie {
 unit base_skeleton {
 	mesh "skeleton.qmsh"
 	mat bone
-	flags {fixed_stats humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat dont_talk}
+	flags {fixedStats humanoid undead dontEscape pierceRes25 bluntWeak25 poisonRes bloodless backstabRes dontEat dontTalk}
 	stamina 300
 	group undead
-	dmg_type slash
-	walk_speed 1.5
-	run_speed 5
-	rot_speed 4.5
+	dmgType slash
+	walkSpeed 1.5
+	runSpeed 5
+	rotSpeed 4.5
 	blood bone
 	sounds {
-		see_enemy "skeleton_alert.mp3"
+		seeEnemy "skeleton_alert.mp3"
 		pain "bone_break.mp3"
 		death "falling-bones.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.4 1}
 			{0.47 1}
 			{0.47 1}
 		}
 		cast 1
-		take_weapon 0.5
+		takeWeapon 0.5
 		bash 0.66
 	}
 	idles {
@@ -2367,7 +2367,7 @@ unit base_skeleton {
 		"wygina"
 	}
 	width 0.3
-	attack_range 1
+	attackRange 1
 }
 
 unit skeleton : base_skeleton {
@@ -2408,12 +2408,12 @@ unit skeleton_fighter : base_skeleton {
 
 unit skeleton_mage : base_skeleton {
 	level 7
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	hp 600
 	mp 150
 	attack 60 // 70
 	def 140
-	spell_power 140
+	spellPower 140
 	items {
 		wand_novice
 	}
@@ -2426,7 +2426,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	items {
 		al_necromancer
 		!wand
@@ -2434,7 +2434,7 @@ unit necromancer : base_human {
 	}
 	gold {{50 100} {80 160}}
 	abilities {
-		non_combat 1
+		nonCombat 1
 		{magic_bolt 0}
 		{raise 9}
 		{exploding_skull 13}
@@ -2448,7 +2448,7 @@ unit necromancer : base_human {
 		null
 	}
 	appearance {
-		hair_color grayscale
+		hairColor grayscale
 	}
 }
 
@@ -2464,12 +2464,12 @@ unit necromancer3 : necromancer {
 
 unit base_undead : base_human {
 	level {8 12}
-	flags | {undead dont_escape blunt_res25 poison_res dont_eat dont_talk}
+	flags | {undead dontEscape bluntRes25 poisonRes dontEat dontTalk}
 	gold {{40 80} {60 120}}
 	group undead
 	blood black
 	sounds {
-		see_enemy "shade8.wav"
+		seeEnemy "shade8.wav"
 		pain "shade5.wav"
 		death "shade12.wav"
 	}
@@ -2479,7 +2479,7 @@ unit base_undead : base_human {
 		null
 	}
 	appearance {
-		hair_color grayscale
+		hairColor grayscale
 	}
 }
 
@@ -2503,7 +2503,7 @@ unit undead_archer : base_undead {
 
 unit evil_cleric : base_human {
 	level {8 12}
-	flags | ai_train
+	flags | aiTrain
 	items {
 		!blunt
 		!shield
@@ -2513,7 +2513,7 @@ unit evil_cleric : base_human {
 	}
 	gold {{80 160}{120 240}}
 	abilities {
-		non_combat 1
+		nonCombat 1
 		null
 		{drain 5}
 		{raise 12}
@@ -2527,7 +2527,7 @@ unit evil_cleric : base_human {
 	}
 	dialog mage_idle
 	appearance {
-		hair_color grayscale
+		hairColor grayscale
 	}
 }
 
@@ -2545,7 +2545,7 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {dont_escape poison_res melee boss xar magic_res25 backstab_res dont_eat stun_res rooted_res dont_talk}
+	flags | {dontEscape poisonRes melee boss xar magicRes25 backstabRes dontEat stunRes rootedRes dontTalk}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -2566,7 +2566,7 @@ unit q_zlo_boss : base_human {
 	group undead
 	blood black
 	sounds {
-		see_enemy "shade8.wav"
+		seeEnemy "shade8.wav"
 		pain "shade5.wav"
 		death "scream.wav"
 		talk "shade8.wav"
@@ -2578,7 +2578,7 @@ unit q_zlo_boss : base_human {
 	}
 	appearance {
 		hair -1
-		hair_color grayscale
+		hairColor grayscale
 	}
 }
 
@@ -2587,14 +2587,14 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 unit base_bandit : base_human {
 	dialog bandit
-	idle_dialog bandit_idle
+	idleDialog bandit_idle
 	group bandits
 }
 
 unit thief : base_bandit {
 	level {3 5}
 	profile ai_assassin
-	flags | ai_train
+	flags | aiTrain
 	items {
 		!short_blade
 		!light_armor
@@ -2608,7 +2608,7 @@ unit thief : base_bandit {
 
 unit bandit : base_bandit {
 	level {6 8}
-	flags | ai_train
+	flags | aiTrain
 	items {
 		if chance 50 {
 			!medium_armor
@@ -2629,7 +2629,7 @@ unit bandit : base_bandit {
 unit bandit_archer : base_bandit {
 	level {6 8}
 	profile ai_archer
-	flags | {archer ai_train}
+	flags | {archer aiTrain}
 	items {
 		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
 		!light_armor
@@ -2658,7 +2658,7 @@ unit bandit_chief : base_bandit {
 unit ruffian : base_bandit {
 	level {8 10}
 	profile ai_tank
-	flags | ai_train
+	flags | aiTrain
 	items {
 		random {!axe !blunt}
 		!heavy_armor
@@ -2672,7 +2672,7 @@ unit ruffian : base_bandit {
 unit assassin : base_bandit {
 	level {9 11}
 	profile ai_assassin
-	flags | {ai_train backstab}
+	flags | {aiTrain backstab}
 	items {
 		if chance 75 {
 			!short_blade
@@ -2692,7 +2692,7 @@ unit assassin : base_bandit {
 unit ruffian_hegemon : ruffian {
 	level {10 12}
 	profile ai_tank
-	flags | ~ai_train
+	flags | ~aiTrain
 	gold {{100 200} {120 240}}
 }
 
@@ -2700,7 +2700,7 @@ unit q_bandyci_szef : base_bandit {
 	level 15
 	hp 750
 	attack -30 // too good weapon
-	flags | {ai_wanders melee boss backstab guarded rooted_res}
+	flags | {aiWanders melee boss backstab guarded rootedRes}
 	items {
 		dagger_spinesheath
 		!light_armor
@@ -2721,7 +2721,7 @@ unit q_bandyci_szef : base_bandit {
 unit mage : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage mp_bar}
+	flags | {mage mpBar}
 	items {
 		!wand
 		!mage_armor
@@ -2767,7 +2767,7 @@ unit mage : base_human {
 	gold {{50 100}{80 160}}
 	abilities mage
 	dialog mage_bodyguard
-	idle_dialog mage_idle
+	idleDialog mage_idle
 	group mages
 }
 
@@ -2783,7 +2783,7 @@ unit mage3 : mage {
 
 unit mage_guard : base_human {
 	level {5 8}
-	flags | ai_train
+	flags | aiTrain
 	items {
 		if chance 33 {
 			!light_armor
@@ -2805,26 +2805,26 @@ unit mage_guard : base_human {
 	}
 	gold {{25 50}{40 80}}
 	dialog mage_bodyguard
-	idle_dialog generic_idle
+	idleDialog generic_idle
 	group mages
 }
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res rooted_res dont_talk construct}
+	flags {fixedStats dontEscape pierceRes25 slashRes25 dontSuffer poisonRes bloodless ignoreBlock dontEat backstabRes stunRes rootedRes dontTalk construct}
 	stamina 150
 	group mages
-	dmg_type blunt
-	walk_speed 1.5
-	run_speed 3
-	rot_speed 2
+	dmgType blunt
+	walkSpeed 1.5
+	runSpeed 3
+	rotSpeed 2
 	sounds {
-		see_enemy "golem_alert.mp3"
+		seeEnemy "golem_alert.mp3"
 		death "earthquake.wav"
 		talk "golem_alert.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.5 0.75}
 			{0.5 0.75}
 		}
@@ -2833,13 +2833,13 @@ unit base_golem {
 		"idle"
 	}
 	width 0.5
-	attack_range 1.2
+	attackRange 1.2
 }
 
 unit golem_stone : base_golem {
 	level 8
 	mat rock
-	flags | {blunt_weak25 magic_res25}
+	flags | {bluntWeak25 magicRes25}
 	hp 960
 	attack 160
 	def 192
@@ -2849,13 +2849,13 @@ unit golem_stone : base_golem {
 unit golem_iron : base_golem {
 	level 12
 	mat metal
-	flags | magic_res25
+	flags | magicRes25
 	hp 1440
 	attack 240
 	def 288
 	blood iron
 	sounds {
-		see_enemy "golem_alert.mp3"
+		seeEnemy "golem_alert.mp3"
 		death "irongolem_break.mp3"
 		talk "golem_alert.mp3"
 	}
@@ -2868,7 +2868,7 @@ unit golem_iron : base_golem {
 
 unit golem_adamantine : golem_iron {
 	level 20
-	flags | {blunt_res25 magic_res50 ~magic_res25}
+	flags | {bluntRes25 magicRes50 ~magicRes25}
 	hp 2400
 	attack 400
 	def 480
@@ -2882,7 +2882,7 @@ unit golem_adamantine : golem_iron {
 unit q_magowie_boss : base_human {
 	level 18
 	profile ai_mage
-	flags | {mage boss guarded mp_bar rooted_res}
+	flags | {mage boss guarded mpBar rootedRes}
 	hp 1440
 	def 150
 	items {
@@ -2903,10 +2903,10 @@ unit q_magowie_boss : base_human {
 		{thunder_bolt 0}
 	}
 	dialog q_mages2
-	idle_dialog mage_idle
+	idleDialog mage_idle
 	group mages
 	appearance {
-		hair_color 0xDED5D0
+		hairColor 0xDED5D0
 	}
 }
 
@@ -2917,7 +2917,7 @@ unit wolf {
 	mesh "wolf.qmsh"
 	mat skin
 	level 3
-	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk aggro}
+	flags {fixedStats dontOpen noPowerAttack ignoreBlock dontEat dontTalk aggro}
 	hp 250
 	stamina 300
 	attack 50
@@ -2928,20 +2928,20 @@ unit wolf {
 		chance 50 tallow
 	}
 	group animals
-	dmg_type slash
-	walk_speed 1.5
-	run_speed 6
-	rot_speed 4.5
+	dmgType slash
+	walkSpeed 1.5
+	runSpeed 6
+	rotSpeed 4.5
 	blood red
 	sounds {
-		see_enemy "wolf_x.mp3"
+		seeEnemy "wolf_x.mp3"
 		pain "dog_whine.mp3"
 		death "dog_whine.mp3"
 		attack "wolf_attack.mp3"
 		aggro "wolf_growl.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.4 0.6}
 			{0.3 0.8}
 		}
@@ -2952,7 +2952,7 @@ unit wolf {
 		"siad"
 	}
 	width 0.4
-	attack_range 1
+	attackRange 1
 }
 
 unit worg : wolf {
@@ -2984,7 +2984,7 @@ unit white_wolf_sum : wolf {
 	}
 	items null
 	group citizens
-	flags | {hero specific_name}
+	flags | {hero specificName}
 }
 
 unit dire_wolf : wolf {
@@ -2992,7 +2992,7 @@ unit dire_wolf : wolf {
 	hp 2000
 	attack 200
 	def 200
-	flags | {~aggro boss dont_escape stun_res rooted_res}
+	flags | {~aggro boss dontEscape stunRes rootedRes}
 	scale 2
 	abilities {
 		{howl_aggro 0}
@@ -3009,26 +3009,26 @@ unit dire_wolf : wolf {
 		dire_wolf_pelt
 	}
 	width 0.8
-	attack_range 1.8
+	attackRange 1.8
 }
 
 unit spider_base {
 	mesh "pajak.qmsh"
 	mat body
-	flags {fixed_stats poison_attack dont_open poison_res no_power_attack ignore_block dont_eat slight dont_talk}
+	flags {fixedStats poisonAttack dontOpen poisonRes noPowerAttack ignoreBlock dontEat slight dontTalk}
 	group animals
-	dmg_type pierce
-	walk_speed 1
-	run_speed 4
-	rot_speed 4.5
+	dmgType pierce
+	walkSpeed 1
+	runSpeed 4
+	rotSpeed 4.5
 	blood green
-	blood_size 0.8
+	bloodSize 0.8
 	sounds {
-		see_enemy "spider_tarantula_hiss.mp3"
+		seeEnemy "spider_tarantula_hiss.mp3"
 		attack "spider_bite_and_suck.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.25 0.5}
 		}
 	}
@@ -3065,24 +3065,24 @@ unit rat {
 	mesh "szczur.qmsh"
 	mat body
 	level 1
-	flags {fixed_stats coward dont_open slight no_power_attack ignore_block dont_eat dont_talk}
+	flags {fixedStats coward dontOpen slight noPowerAttack ignoreBlock dontEat dontTalk}
 	hp 100
 	stamina 300
 	attack 20
 	def 20
 	group animals
-	dmg_type pierce
-	walk_speed 1
-	run_speed 5
-	rot_speed 4.5
+	dmgType pierce
+	walkSpeed 1
+	runSpeed 5
+	rotSpeed 4.5
 	blood red
-	blood_size 0.6
+	bloodSize 0.6
 	sounds {
-		see_enemy "rat.wav"
+		seeEnemy "rat.wav"
 		death "ratdeath.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.46 0.66}
 		}
 	}
@@ -3091,14 +3091,14 @@ unit rat {
 		"idle2"
 	}
 	width 0.2
-	attack_range 0.4
+	attackRange 0.4
 }
 
 unit bear {
 	mesh "bear.qmsh"
 	mat skin
 	level 8
-	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk}
+	flags {fixedStats dontOpen noPowerAttack ignoreBlock dontEat dontTalk}
 	hp 800
 	stamina 300
 	attack 160
@@ -3109,20 +3109,20 @@ unit bear {
 		random 1 2 tallow
 	}
 	group animals
-	dmg_type {slash blunt}
-	walk_speed 1.5
-	run_speed 5.5
-	rot_speed 4
+	dmgType {slash blunt}
+	walkSpeed 1.5
+	runSpeed 5.5
+	rotSpeed 4
 	blood red
-	blood_size 1.5
+	bloodSize 1.5
 	sounds {
-		see_enemy "bear_enemy.mp3"
+		seeEnemy "bear_enemy.mp3"
 		pain "bear_pain.mp3"
 		death "bear_die.mp3"
 		attack "bear_attack.mp3"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.33 0.46}
 			{0.66 0.75 1.5}
 		}
@@ -3132,7 +3132,7 @@ unit bear {
 		"idle_look"
 	}
 	width 0.9
-	attack_range 1.5
+	attackRange 1.5
 }
 
 unit bear_black : bear {
@@ -3154,24 +3154,24 @@ unit slime {
 	mesh "slime.qmsh"
 	mat slime
 	level 5
-	flags {fixed_stats slow dont_escape dont_open no_power_attack ignore_block dont_eat dont_talk poison_res bloodless backstab_res stun_res alpha_blend}
+	flags {fixedStats slow dontEscape dontOpen noPowerAttack ignoreBlock dontEat dontTalk poisonRes bloodless backstabRes stunRes alphaBlend}
 	hp 300
 	stamina 200
 	attack 75
 	def 150
 	group animals
-	dmg_type blunt
-	walk_speed 2
-	run_speed 0
-	rot_speed 4
+	dmgType blunt
+	walkSpeed 2
+	runSpeed 0
+	rotSpeed 4
 	blood slime
 	sounds {
-		see_enemy "slime_alert.wav"
+		seeEnemy "slime_alert.wav"
 		attack "slime_alert.wav"
 		death "slime_die.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.55 0.7}
 		}
 	}
@@ -3179,7 +3179,7 @@ unit slime {
 		"idle"
 	}
 	width 0.4
-	attack_range 0.4
+	attackRange 0.4
 }
 
 unit wild_hunter : base_human {
@@ -3201,7 +3201,7 @@ unit wild_hunter : base_human {
 		"crazy_hunter.jpg"
 		null
 	}
-	idle_dialog wild_hunter_idle
+	idleDialog wild_hunter_idle
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
@@ -3224,19 +3224,19 @@ unit q_szaleni_szaleniec : wild_hunter {
 //------------------------------------------------------------------------------
 unit base_crazy : base_human {
 	level {5 20}
-	flags | {crazy hero tournament ai_wanders}
+	flags | {crazy hero tournament aiWanders}
 	dialog crazy
-	idle_dialog crazy_idle
+	idleDialog crazy_idle
 	group crazies
 	gold {{50 100}{200 400}}
 	appearance {
-		hair_color random_color
+		hairColor random_color
 	}
 }
 
 unit crazy_mage : base_crazy {
 	profile mage
-	flags | {mage contest_25}
+	flags | {mage contest25}
 	items mage
 	abilities mage_hero
 	class mage
@@ -3244,19 +3244,19 @@ unit crazy_mage : base_crazy {
 
 unit crazy_warrior : base_crazy {
 	profile warrior
-	flags | {ai_train contest melee}
+	flags | {aiTrain contest melee}
 	class warrior
 }
 
 unit crazy_hunter : base_crazy {
 	profile hunter
-	flags | {archer ai_train contest_50}
+	flags | {archer aiTrain contest50}
 	class hunter
 }
 
 unit crazy_rogue : base_crazy {
 	profile rogue
-	flags | {ai_train contest_50 melee_50 backstab}
+	flags | {aiTrain contest50 melee50 backstab}
 	class rogue
 }
 
@@ -3280,14 +3280,14 @@ unit crazy_cook : base_crazy {
 //------------------------------------------------------------------------------
 unit base_hero : base_human {
 	level {5 20}
-	flags | {hero ai_wanders tournament}
+	flags | {hero aiWanders tournament}
 	dialog hero
 	gold {{50 100}{200 400}}
 }
 
 unit hero_mage : base_hero {
 	profile mage
-	flags | {mage contest_25}
+	flags | {mage contest25}
 	items mage
 	abilities mage_hero
 	class mage
@@ -3295,32 +3295,32 @@ unit hero_mage : base_hero {
 
 unit hero_warrior : base_hero {
 	profile warrior
-	flags | {ai_train contest melee}
+	flags | {aiTrain contest melee}
 	class warrior
 }
 
 unit hero_hunter : base_hero {
 	profile hunter
-	flags | {archer ai_train contest_50}
+	flags | {archer aiTrain contest50}
 	class hunter
 }
 
 unit hero_rogue : base_hero {
 	profile rogue
-	flags | {ai_train contest_50 melee_50 backstab}
+	flags | {aiTrain contest50 melee50 backstab}
 	class rogue
 }
 
 unit hero_tomir : hero_warrior {
-	flags | {fast_learner loner}
+	flags | {fastLearner loner}
 }
 
 unit hero_cleric : base_hero {
 	profile cleric
-	flags | {ai_train contest_50}
+	flags | {aiTrain contest50}
 	class cleric
 	abilities {
-		non_combat 1
+		nonCombat 1
 		{heal 0}
 	}
 }
@@ -3330,7 +3330,7 @@ unit hero_cleric : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res rooted_res dont_talk}
+	flags | {dontEscape secret immortal sitOnThrone melee magicRes50 backstabRes poisonRes dontEat stunRes rootedRes dontTalk}
 	profile ai_fighter
 	hp 2500
 	items {
@@ -3351,7 +3351,7 @@ unit tomashu : base_human {
 		beard 4
 		mustache -1
 		hair 0
-		hair_color 0x000000
+		hairColor 0x000000
 		height 1.1
 	}
 }
@@ -3360,16 +3360,16 @@ unit unk {
 	mesh "unk.qmsh"
 	mat rock
 	level 13
-	flags {fixed_stats dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat dont_talk}
+	flags {fixedStats dontEscape noPowerAttack dontSuffer poisonRes pierceRes25 bloodless ignoreBlock magicRes25 backstab dontEat dontTalk}
 	hp 1300
 	stamina 350
 	attack 280
 	def 240
 	group undead
-	dmg_type slash
-	walk_speed 0.5
-	run_speed 10
-	rot_speed 8
+	dmgType slash
+	walkSpeed 0.5
+	runSpeed 10
+	rotSpeed 8
 	blood black
 	sounds {
 		pain "mnstr15.wav"
@@ -3377,7 +3377,7 @@ unit unk {
 		attack "mnstr2.wav"
 	}
 	frames {
-		simple_attacks {
+		simpleAttacks {
 			{0.53 1}
 			{0.54 1}
 		}
@@ -3386,7 +3386,7 @@ unit unk {
 		"idle"
 	}
 	width 0.4
-	attack_range 1.2
+	attackRange 1.2
 }
 
 //------------------------------------------------------------------------------
@@ -3395,7 +3395,7 @@ unit unk {
 unit xwokloiz : base_human {
 	level 8
 	def 25
-	flags | {ai_stay hero}
+	flags | {aiStay hero}
 	items {
 		al_studded_hq
 		axe_small
@@ -3419,25 +3419,25 @@ unit q_main_messenger : messenger {
 
 unit q_main_ill_villager : villager {
 	dialog "main/ill_villager"
-	flags {human ai_stay dont_eat dont_escape}
+	flags {human aiStay dontEat dontEscape}
 	tex {
 		null
 		"head_ill.jpg"
 		null
 	}
-	idle_dialog ill_idle
+	idleDialog ill_idle
 }
 
 unit q_main_villager_def : villager {
 	dialog "main_village3/villager"
-	flags {human ai_stay}
+	flags {human aiStay}
 }
 
 unit q_main_oldman : villager {
 	dialog "main_village4/oldman"
-	flags {human ai_stay hero peaceful specific_name}
+	flags {human aiStay hero peaceful specificName}
 	appearance {
-		hair_color 0xDED5D0
+		hairColor 0xDED5D0
 	}
 }
 
@@ -3447,7 +3447,7 @@ unit q_main_ill_villager_attack : q_main_ill_villager {
 }
 
 unit q_main_plague_villager : q_main_ill_villager_attack {
-	flags {human dont_eat dont_escape}
+	flags {human dontEat dontEscape}
 	attack 20
 	def 20
 	blood yellow
@@ -3466,9 +3466,9 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 		null
 	}
 	appearance {
-		hair_color {255 216 0}
+		hairColor {255 216 0}
 	}
-	idle_dialog plague_idle
+	idleDialog plague_idle
 }
 
 unit q_main_plague_soltys : q_main_plague_villager {
@@ -3521,7 +3521,7 @@ unit q_main_plague_guard : q_main_plague_villager {
 // Unit groups
 //------------------------------------------------------------------------------
 group empty {
-	food_mod -1
+	foodMod -1
 	special 1
 }
 
@@ -3531,9 +3531,9 @@ group goblins {
 	goblin_fighter 7
 	goblin_chief leader 2
 
-	orc_food 1
-	have_camps 1
-	encounter_chance 2
+	orcFood 1
+	haveCamps 1
+	encounterChance 2
 	gender 1
 }
 
@@ -3546,15 +3546,15 @@ group orcs {
 	orc_shaman 3
 	ogre 2
 
-	orc_food 1
-	have_camps 1
-	encounter_chance 2
+	orcFood 1
+	haveCamps 1
+	encounterChance 2
 }
 
 group ogres {
 	ogre 1
 
-	orc_food 1
+	orcFood 1
 }
 
 group bandits {
@@ -3566,8 +3566,8 @@ group bandits {
 	assassin 2
 	ruffian_hegemon leader 1
 
-	have_camps 1
-	encounter_chance 3
+	haveCamps 1
+	encounterChance 3
 }
 
 group crazies {
@@ -3586,7 +3586,7 @@ group undead {
 	zombie_rotting 8
 	zombie_ancient 6
 
-	food_mod -2
+	foodMod -2
 }
 
 group necromancers {
@@ -3597,7 +3597,7 @@ group necromancers {
 	undead_archer 6
 	group undead
 
-	food_mod -1
+	foodMod -1
 }
 
 group evil {
@@ -3605,7 +3605,7 @@ group evil {
 	evil_cleric2 leader 3
 	group undead
 
-	food_mod -1
+	foodMod -1
 }
 
 group mages {
@@ -3619,7 +3619,7 @@ group golems {
 	golem_stone 1
 	golem_iron 1
 
-	food_mod -2
+	foodMod -2
 	gender 1
 }
 
@@ -3627,7 +3627,7 @@ group mages_and_golems {
 	group mages
 	group golems
 
-	food_mod -1
+	foodMod -1
 }
 
 group wolfs {
@@ -3695,7 +3695,7 @@ group wagon_guards {
 group unk {
 	unk 1
 
-	food_mod -2
+	foodMod -2
 }
 
 group q_magowie_golems {
@@ -3767,7 +3767,7 @@ group forest {
 		bears
 		animals encounter
 	}
-	encounter_chance 1
+	encounterChance 1
 	gender 1
 }
 

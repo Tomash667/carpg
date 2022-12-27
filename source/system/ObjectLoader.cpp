@@ -72,51 +72,51 @@ void ObjectLoader::InitTokenizer()
 	t.AddKeywords(G_OBJECT_PROPERTY, {
 		{ "mesh", OP_MESH },
 		{ "cylinder", OP_CYLINDER },
-		{ "center_y", OP_CENTER_Y },
+		{ "centerY", OP_CENTER_Y },
 		{ "flags", OP_FLAGS },
 		{ "alpha", OP_ALPHA },
 		{ "variants", OP_VARIANTS },
-		{ "extra_dist", OP_EXTRA_DIST }
+		{ "extraDist", OP_EXTRA_DIST }
 		});
 
 	t.AddKeywords(G_OBJECT_FLAGS, {
-		{ "near_wall", OBJ_NEAR_WALL },
-		{ "no_physics", OBJ_NO_PHYSICS },
+		{ "nearWall", OBJ_NEAR_WALL },
+		{ "noPhysics", OBJ_NO_PHYSICS },
 		{ "high", OBJ_HIGH },
-		{ "is_chest", OBJ_IS_CHEST },
-		{ "on_wall", OBJ_ON_WALL },
+		{ "isChest", OBJ_IS_CHEST },
+		{ "onWall", OBJ_ON_WALL },
 		{ "preload", OBJ_PRELOAD },
 		{ "light", OBJ_LIGHT },
-		{ "table_spawner", OBJ_TABLE_SPAWNER },
-		{ "campfire_effect", OBJ_CAMPFIRE_EFFECT },
+		{ "tableSpawner", OBJ_TABLE_SPAWNER },
+		{ "campfireEffect", OBJ_CAMPFIRE_EFFECT },
 		{ "important", OBJ_IMPORTANT },
-		{ "tmp_physics", OBJ_TMP_PHYSICS },
+		{ "tmpPhysics", OBJ_TMP_PHYSICS },
 		{ "scaleable", OBJ_SCALEABLE },
-		{ "physics_ptr", OBJ_PHYSICS_PTR },
+		{ "physicsPtr", OBJ_PHYSICS_PTR },
 		{ "building", OBJ_BUILDING },
-		{ "double_physics", OBJ_DOUBLE_PHYSICS },
-		{ "blood_effect", OBJ_BLOOD_EFFECT },
-		{ "blocks_camera", OBJ_PHY_BLOCKS_CAM },
-		{ "rotate_physics", OBJ_PHY_ROT },
-		{ "water_effect", OBJ_WATER_EFFECT },
-		{ "multiple_physics", OBJ_MULTI_PHYSICS },
-		{ "camera_colliders", OBJ_CAM_COLLIDERS },
-		{ "no_culling", OBJ_NO_CULLING }
+		{ "doublePhysics", OBJ_DOUBLE_PHYSICS },
+		{ "bloodEffect", OBJ_BLOOD_EFFECT },
+		{ "blocksCamera", OBJ_PHY_BLOCKS_CAM },
+		{ "rotatePhysics", OBJ_PHY_ROT },
+		{ "waterEffect", OBJ_WATER_EFFECT },
+		{ "multiplePhysics", OBJ_MULTI_PHYSICS },
+		{ "cameraColliders", OBJ_CAM_COLLIDERS },
+		{ "noCulling", OBJ_NO_CULLING }
 		});
 
 	t.AddKeywords(G_USABLE_PROPERTY, {
-		{ "required_item", UP_REQUIRED_ITEM },
+		{ "requiredItem", UP_REQUIRED_ITEM },
 		{ "animation", UP_ANIMATION },
-		{ "animation_sound", UP_ANIMATION_SOUND },
-		{ "limit_rot", UP_LIMIT_ROT },
+		{ "animationSound", UP_ANIMATION_SOUND },
+		{ "limitRot", UP_LIMIT_ROT },
 		{ "sound", UP_SOUND }
 		});
 
 	t.AddKeywords(G_USABLE_FLAGS, {
-		{ "allow_use_item", BaseUsable::ALLOW_USE_ITEM },
-		{ "slow_stamina_restore", BaseUsable::SLOW_STAMINA_RESTORE },
+		{ "allowUseItem", BaseUsable::ALLOW_USE_ITEM },
+		{ "slowStaminaRestore", BaseUsable::SLOW_STAMINA_RESTORE },
 		{ "container", BaseUsable::CONTAINER },
-		{ "is_bench", BaseUsable::IS_BENCH },
+		{ "isBench", BaseUsable::IS_BENCH },
 		{ "alchemy", BaseUsable::ALCHEMY },
 		{ "destroyable", BaseUsable::DESTROYABLE }
 		});

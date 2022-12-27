@@ -68,7 +68,7 @@ void QuestLoader::InitTokenizer()
 
 	t.AddKeywords(G_TOP, {
 		{ "quest", TK_QUEST },
-		{ "quest_list", TK_QUEST_LIST },
+		{ "questList", TK_QUEST_LIST },
 		{ "code", TK_CODE }
 		});
 
@@ -89,7 +89,7 @@ void QuestLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_FLAGS, {
-		{ "dont_count", QuestScheme::DONT_COUNT },
+		{ "dontCount", QuestScheme::DONT_COUNT },
 		{ "recreate", QuestScheme::RECREATE }
 		});
 }

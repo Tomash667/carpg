@@ -87,15 +87,15 @@ void AbilityLoader::InitTokenizer()
 		{ "cooldown", K_COOLDOWN },
 		{ "range", K_RANGE },
 		{ "speed", K_SPEED },
-		{ "explode_range", K_EXPLODE_RANGE },
+		{ "explodeRange", K_EXPLODE_RANGE },
 		{ "mesh", K_MESH },
 		{ "tex", K_TEX },
-		{ "tex_particle", K_TEX_PARTICLE },
-		{ "tex_explode", K_TEX_EXPLODE },
-		{ "sound_cast", K_SOUND_CAST },
-		{ "sound_hit", K_SOUND_HIT },
+		{ "texParticle", K_TEX_PARTICLE },
+		{ "texExplode", K_TEX_EXPLODE },
+		{ "soundCast", K_SOUND_CAST },
+		{ "soundHit", K_SOUND_HIT },
 		{ "mana", K_MANA },
-		{ "move_range", K_MOVE_RANGE },
+		{ "moveRange", K_MOVE_RANGE },
 		{ "icon", K_ICON },
 		{ "charges", K_CHARGES },
 		{ "recharge", K_RECHARGE },
@@ -103,15 +103,15 @@ void AbilityLoader::InitTokenizer()
 		{ "stamina", K_STAMINA },
 		{ "unit", K_UNIT },
 		{ "effect", K_EFFECT },
-		{ "learning_points", K_LEARNING_POINTS },
+		{ "learningPoints", K_LEARNING_POINTS },
 		{ "skill", K_SKILL },
 		{ "level", K_LEVEL },
 		{ "animation", K_ANIMATION },
 		{ "count", K_COUNT },
 		{ "time", K_TIME },
 		{ "color", K_COLOR },
-		{ "trap_id", K_TRAP_ID },
-		{ "cast_time", K_CAST_TIME }
+		{ "trapId", K_TRAP_ID },
+		{ "castTime", K_CAST_TIME }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -122,8 +122,8 @@ void AbilityLoader::InitTokenizer()
 		{ "charge", Ability::Charge },
 		{ "summon", Ability::Summon },
 		{ "aggro", Ability::Aggro },
-		{ "summon_away", Ability::SummonAway },
-		{ "ranged_attack", Ability::RangedAttack },
+		{ "summonAway", Ability::SummonAway },
+		{ "rangedAttack", Ability::RangedAttack },
 		{ "trap", Ability::Trap }
 		});
 
@@ -140,16 +140,16 @@ void AbilityLoader::InitTokenizer()
 		{ "explode", Ability::Explode },
 		{ "poison", Ability::Poison },
 		{ "triple", Ability::Triple },
-		{ "non_combat", Ability::NonCombat },
+		{ "nonCombat", Ability::NonCombat },
 		{ "cleric", Ability::Cleric },
-		{ "ignore_units", Ability::IgnoreUnits },
-		{ "pick_dir", Ability::PickDir },
-		{ "use_cast", Ability::UseCast },
+		{ "ignoreUnits", Ability::IgnoreUnits },
+		{ "pickDir", Ability::PickDir },
+		{ "useCast", Ability::UseCast },
 		{ "mage", Ability::Mage },
 		{ "strength", Ability::Strength },
 		{ "boss50hp", Ability::Boss50Hp },
-		{ "default_attack", Ability::DefaultAttack },
-		{ "use_kneel", Ability::UseKneel }
+		{ "defaultAttack", Ability::DefaultAttack },
+		{ "useKneel", Ability::UseKneel }
 		});
 }
 

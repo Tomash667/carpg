@@ -4,8 +4,8 @@
 perk bad_back {
 	flags {start flaw}
 	required {
-		no_perk strong_back
-		can_mod str
+		noPerk strong_back
+		canMod str
 	}
 	effect {
 		carry 0.75
@@ -15,8 +15,8 @@ perk bad_back {
 perk chronic_disease {
 	flags {start flaw}
 	required {
-		no_perk perfect_health
-		can_mod end
+		noPerk perfect_health
+		canMod end
 	}
 	effect {
 		natural_healing_mod 0.5
@@ -26,8 +26,8 @@ perk chronic_disease {
 perk sluggish {
 	flags {start flaw}
 	required {
-		no_perk mobility
-		can_mod dex
+		noPerk mobility
+		canMod dex
 	}
 	effect {
 		mobility -25
@@ -37,8 +37,8 @@ perk sluggish {
 perk slow_learner {
 	flags {start flaw}
 	required {
-		no_perk skilled
-		can_mod int
+		noPerk skilled
+		canMod int
 	}
 	effect {
 		aptitude -1
@@ -48,8 +48,8 @@ perk slow_learner {
 perk asocial {
 	flags {start flaw}
 	required {
-		no_perk leader
-		can_mod cha
+		noPerk leader
+		canMod cha
 	}
 	effect {
 		cha -5
@@ -59,9 +59,9 @@ perk asocial {
 perk poor {
 	flags {start flaw}
 	required {
-		no_perk wealthy
-		no_perk very_wealthy
-		no_perk heirloom
+		noPerk wealthy
+		noPerk very_wealthy
+		noPerk heirloom
 	}
 	effect {
 		// worse items
@@ -75,22 +75,22 @@ perk poor {
 perk talent {
 	flags start
 	effect {
-		picked_attribute 5
+		pickedAttribute 5
 	}
 }
 perk skilled {
 	flags start
 	required {
-		no_perk slow_learner
+		noPerk slow_learner
 	}
 	effect {
-		skill_point 3
+		skillPoint 3
 	}
 }
 perk skill_focus {
 	flags start
 	effect {
-		picked_skill 5
+		pickedSkill 5
 	}
 }
 perk alchemist_apprentice {
@@ -104,8 +104,8 @@ perk alchemist_apprentice {
 perk wealthy {
 	flags start
 	required {
-		no_perk poor
-		no_perk very_wealthy
+		noPerk poor
+		noPerk very_wealthy
 	}
 	effect {
 		gold 2500
@@ -116,7 +116,7 @@ perk very_wealthy {
 	flags start
 	required {
 		perk wealthy
-		no_perk poor
+		noPerk poor
 	}
 	effect {
 		gold 50000
@@ -125,7 +125,7 @@ perk very_wealthy {
 perk heirloom {
 	flags start
 	required {
-		no_perk poor
+		noPerk poor
 	}
 	effect {
 		// start with good item
@@ -134,7 +134,7 @@ perk heirloom {
 perk leader {
 	flags start
 	required {
-		no_perk asocial
+		noPerk asocial
 	}
 	effect {
 		// starts with npc in team
@@ -159,7 +159,7 @@ perk strong_back {
 	cost 2
 	required {
 		str 60
-		no_perk bad_back
+		noPerk bad_back
 	}
 	effect {
 		carry 1.25
@@ -169,7 +169,7 @@ perk aggressive {
 	cost 2
 	required {
 		str 60
-		no_perk bad_back
+		noPerk bad_back
 	}
 	effect {
 		melee_attack 10
@@ -179,7 +179,7 @@ perk mobility {
 	cost 2
 	required {
 		dex 60
-		no_perk sluggish
+		noPerk sluggish
 	}
 	effect {
 		mobility 20
@@ -189,7 +189,7 @@ perk finesse {
 	cost 2
 	required {
 		dex 60
-		no_perk sluggish
+		noPerk sluggish
 	}
 	effect {
 		ranged_attack 10
@@ -226,7 +226,7 @@ perk perfect_health {
 	cost 5
 	required {
 		end 90
-		no_perk chronic_disease
+		noPerk chronic_disease
 	}
 	effect {
 		regeneration 5

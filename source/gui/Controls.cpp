@@ -304,8 +304,8 @@ void Controls::LoadLanguage()
 	bts[1].text = gui->txOk;
 
 	grid.AddColumn(Grid::TEXT, 220, s.Get("action"));
-	grid.AddColumn(Grid::TEXT, 200, s.Get("key_1"));
-	grid.AddColumn(Grid::TEXT, 200, s.Get("key_2"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key1"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("key2"));
 	grid.Init();
 
 	txResetConfirm = s.Get("resetConfirm");

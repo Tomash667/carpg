@@ -33,27 +33,6 @@ item sekret_kartka
 item sekret_kartka2
 item q_szaleni_kamien
 item sword_forbidden
-// artifacts for 0.4 compability
-item a_amulet
-item a_amulet2
-item a_amulet3
-item a_brosza
-item a_butelka
-item a_cos
-item a_czaszka
-item a_figurka
-item a_figurka2
-item a_figurka3
-item a_ksiega
-item a_maska
-item a_maska2
-item a_misa
-item a_moneta
-item a_pierscien
-item a_pierscien2
-item a_pierscien3
-item a_talizman
-item a_talizman2
 // potions autobuy
 item p_hp
 item p_hp2
@@ -85,8 +64,6 @@ item ladle
 item healing_herb
 item mana_herb
 item green_herb
-// pre 0.5 quest item
-item q_main_letter
 // small chance to generate on dungeon table
 item golden_cup
 item plate
@@ -333,70 +310,41 @@ dialog crazies_encounter
 //------------------------------------------------------------------------------
 // Required buildings
 // Important: hall is not required but no hall = no quests from mayor/soltys
-// Only required buildings are in building_script requirements below
+// Only required buildings are in buildingScript requirements below
 //------------------------------------------------------------------------------
 // hardcoded
-building_group inn
-building_group hall
-building_group training_grounds
-building_group arena
-building_group food_seller
-building_group alchemist
-building_group blacksmith
-building_group merchant
-// compability with pre 0.5 saves
-building merchant
-building blacksmith
-building alchemist
-building training_grounds
-building inn
-building city_hall
-building village_hall
-building barracks
-building house
-building house2
-building house3
-building arena
-building food_seller
-building cottage
-building cottage2
-building cottage3
-building village_inn
-building village_hall_old
+buildingGroup inn
+buildingGroup hall
+buildingGroup training_grounds
+buildingGroup arena
+buildingGroup food_seller
+buildingGroup alchemist
+buildingGroup blacksmith
+buildingGroup merchant
 // required building script
-building_script capital {
+buildingScript capital {
 	inn
 	arena
 }
-building_script city {
+buildingScript city {
 	inn
 	arena
 }
-building_script village {
+buildingScript village {
 	inn
+}
+buildingScript village_destroyed {
+	hall
+	inn
+}
+buildingScript village_destroyed {
+	alchemist
 }
 
 //------------------------------------------------------------------------------
 // Objects / usables
 // some objects are required by building too (not listed here)
 //------------------------------------------------------------------------------
-// pre 0.2.20 convert tombstone to tombstone_1
-object tombstone_1
-// pre 0.3 remove walls, gate
-object to_remove
-// pre 0.2.20 convert bench into bench_dir
-usable bench
-usable bench_dir
-// pre 0.7
-usable chair
-usable bench
-usable anvil
-usable cauldron
-usable iron_vein
-usable gold_vein
-usable throne
-usable stool
-usable bench_dir
 // table spawner
 object table
 object table2
@@ -479,7 +427,6 @@ object campfire
 object firewood
 object emblem
 object grave
-object tombstone
 object chest_r
 object portal
 // cave
@@ -514,38 +461,10 @@ usable gold_vein
 // random encounter
 object wagon
 object chest
-// hardcoded random tombstones
-object tombstone_1
-object tombstone_x1
-object tombstone_x2
-object tombstone_x3
-object tombstone_x4
-object tombstone_x5
-object tombstone_x6
-object tombstone_x7
-object tombstone_x8
-object tombstone_x9
-// hardcoded random painting
-object painting1
-object painting2
-object painting3
-object painting4
-object painting5
-object painting6
-object painting7
-object painting8
-object painting_x1
-object painting_x2
-object painting_x3
-object painting_x4
-// hardcoded random objects around cottage
-object wheel
-object rope
-object woodpile
 
 //------------------------------------------------------------------------------
 // Quest lists
 //------------------------------------------------------------------------------
-quest_list mayor
-quest_list captain
-quest_list not_none random
+questList mayor
+questList captain
+questList notNone random

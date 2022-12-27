@@ -1225,7 +1225,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			int count = countof(game->txRumor);
 			if(drunkman)
-				count += countof(game->txRumorD);
+				count += countof(game->txRumorDrunk);
 			cstring rumor;
 			do
 			{
@@ -1233,7 +1233,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				if(what < countof(game->txRumor))
 					rumor = game->txRumor[what];
 				else
-					rumor = game->txRumorD[what - countof(game->txRumor)];
+					rumor = game->txRumorDrunk[what - countof(game->txRumor)];
 			}
 			while(lastRumor == rumor);
 			lastRumor = rumor;

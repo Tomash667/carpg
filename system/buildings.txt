@@ -1,25 +1,25 @@
 //================================================================================
 // Building group
 //================================================================================
-building_group alchemist
-building_group arena
-building_group barracks
-building_group blacksmith
-building_group cottage
-building_group food_seller
-building_group hall
-building_group house
-building_group inn
-building_group merchant
-building_group training_grounds
-building_group destroyed_cottage
+buildingGroup alchemist
+buildingGroup arena
+buildingGroup barracks
+buildingGroup blacksmith
+buildingGroup cottage
+buildingGroup food_seller
+buildingGroup hall
+buildingGroup house
+buildingGroup inn
+buildingGroup merchant
+buildingGroup training_grounds
+buildingGroup destroyed_cottage
 
 //================================================================================
 // Building
 //================================================================================
 building merchant {
 	mesh "kupiec.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -39,7 +39,7 @@ building merchant {
 
 building blacksmith {
 	mesh "kowal.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -53,7 +53,7 @@ building blacksmith {
 
 building alchemist {
 	mesh "alchemik.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -67,7 +67,7 @@ building alchemist {
 
 building training_grounds {
 	mesh "pola.qmsh"
-	flags {have_name list favor_road}
+	flags {haveName list favorRoad}
 	scheme {
 		" .||. "
 		".||||."
@@ -92,8 +92,8 @@ building training_grounds {
 
 building inn {
 	mesh "karczma.qmsh"
-	inside_mesh "karczma_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "karczma_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"######"
 		"######"
@@ -114,8 +114,8 @@ building inn {
 
 building city_hall {
 	mesh "ratusz.qmsh"
-	inside_mesh "ratusz_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "ratusz_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"#####"
 		"#####"
@@ -137,8 +137,8 @@ building city_hall {
 
 building village_hall {
 	mesh "soltys.qmsh"
-	inside_mesh "soltys_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "soltys_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -158,7 +158,7 @@ building village_hall {
 
 building barracks {
 	mesh "baraki.qmsh"
-	flags {have_name favor_road}
+	flags {haveName favorRoad}
 	scheme {
 		"######"
 		"######"
@@ -188,7 +188,7 @@ building barracks {
 
 building house {
 	mesh "dom.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"###"
 		"###"
@@ -207,7 +207,7 @@ building house {
 
 building house2 {
 	mesh "dom2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"####"
 		"####"
@@ -220,7 +220,7 @@ building house2 {
 
 building house3 {
 	mesh "dom3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"###"
 		"###"
@@ -239,8 +239,8 @@ building house3 {
 
 building arena {
 	mesh "arena.qmsh"
-	inside_mesh "arena_srodek.qmsh"
-	flags {favor_center have_name list favor_road}
+	insideMesh "arena_srodek.qmsh"
+	flags {favorCenter haveName list favorRoad}
 	scheme {
 		"  ||||||  "
 		" |||||||| "
@@ -266,7 +266,7 @@ building arena {
 
 building food_seller {
 	mesh "food_seller.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -286,7 +286,7 @@ building food_seller {
 
 building cottage {
 	mesh "chata.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -306,7 +306,7 @@ building cottage {
 
 building cottage2 {
 	mesh "chata2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||||"
 		"||||||||"
@@ -326,7 +326,7 @@ building cottage2 {
 
 building cottage3 {
 	mesh "chata3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||"
 		"||||||"
@@ -341,8 +341,8 @@ building cottage3 {
 
 building village_inn {
 	mesh "karczma2.qmsh"
-	inside_mesh "karczma2_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "karczma2_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"|||||||||||||||"
 		"|||||||||||||||"
@@ -363,30 +363,9 @@ building village_inn {
 	}
 }
 
-building village_hall_old {
-	mesh "soltys_old.qmsh"
-	inside_mesh "soltys_srodek_old.qmsh"
-	flags {favor_center favor_road have_name list}
-	scheme {
-		"####"
-		"####"
-		"####"
-		"### "
-		"### "
-		" +  "
-	}
-	group hall
-	shift {
-		bottom {1 2}
-		left {0 1}
-		top {1 0}
-		right {2 1}
-	}
-}
-
 building mages_tower {
 	mesh "mages_tower.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		" ||||| "
 		"|||||||"
@@ -408,7 +387,7 @@ building mages_tower {
 
 building shrine {
 	mesh "shrine.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		" |||| "
 		"||||||"
@@ -429,7 +408,7 @@ building shrine {
 
 building windmill {
 	mesh "windmill.qmsh"
-	flags {favor_dist no_path}
+	flags {favorDist noPath}
 	scheme {
 		"        "
 		"        "
@@ -443,7 +422,7 @@ building windmill {
 
 building destroyed_cottage {
 	mesh "chata_zniszczona.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -463,7 +442,7 @@ building destroyed_cottage {
 
 building destroyed_cottage2 {
 	mesh "chata_zniszczona2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||||"
 		"||||||||"
@@ -483,7 +462,7 @@ building destroyed_cottage2 {
 
 building destroyed_cottage3 {
 	mesh "chata_zniszczona3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||"
 		"||||||"
@@ -499,7 +478,7 @@ building destroyed_cottage3 {
 //================================================================================
 // Building script
 //================================================================================
-building_script capital {
+buildingScript capital {
 	city_hall
 	shuffle start
 		arena
@@ -520,7 +499,7 @@ building_script capital {
 	group house
 }
 
-building_script city {
+buildingScript city {
 	city_hall
 	shuffle start
 		arena
@@ -545,7 +524,7 @@ building_script city {
 	group house
 }
 
-building_script village {
+buildingScript village {
 	village_hall
 	set citizens = 5 + random(0,2)
 	shuffle start
@@ -577,7 +556,7 @@ building_script village {
 	group cottage
 }
 
-building_script village_empty {
+buildingScript village_empty {
 	village_hall
 	set citizens = 5 + random(0,2)
 	shuffle start
@@ -610,7 +589,7 @@ building_script village_empty {
 	set citizens = 0
 }
 
-building_script village_destroyed {
+buildingScript village_destroyed {
 	village_hall
 	set citizens = 5 + random(0,2)
 	shuffle start
@@ -643,7 +622,7 @@ building_script village_destroyed {
 	set citizens = 0
 }
 
-building_script village_destroyed2 {
+buildingScript village_destroyed2 {
 	village_hall
 	set citizens = 6 + random(0,2)
 	shuffle start

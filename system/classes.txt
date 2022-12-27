@@ -11,7 +11,7 @@ class cleric {
 	hero hero_cleric
 	icon "icon_cleric.png"
 	ability heal
-	flags {mp_bar autoheal}
+	flags {mpBar autoheal}
 	level {
 		str 1
 		end 1
@@ -20,10 +20,10 @@ class cleric {
 		cha 1
 		weapon 1
 		armor 1
-		one_handed_weapon 1
+		oneHandedWeapon 1
 		bow 0.9
 		shield 1
-		gods_magic required 1
+		godsMagic required 1
 		concentration required 0.5
 	}
 	potions {
@@ -69,14 +69,14 @@ class hunter {
 	crazy crazy_hunter
 	icon "icon_hunter.png"
 	ability summon_wolf
-	flags from_forest
+	flags fromForest
 	level {
 		str 1
 		end 1
 		dex 1
 		weapon 1
 		armor 1
-		one_handed_weapon 1
+		oneHandedWeapon 1
 		bow 1.1
 		shield 1
 	}
@@ -112,7 +112,7 @@ class mage {
 	crazy crazy_mage
 	icon "icon_mage.png"
 	ability fireball
-	flags {mp_bar mage_items}
+	flags {mpBar mageItems}
 	level {
 		str 0.5
 		end 1
@@ -121,9 +121,9 @@ class mage {
 		wis 0.5
 		weapon 0.5
 		armor 1
-		one_handed_weapon 0.5
+		oneHandedWeapon 0.5
 		shield 0.5
-		mystic_magic required 1
+		mysticMagic required 1
 		concentration required 0.75
 	}
 	potions {
@@ -179,7 +179,7 @@ class rogue {
 		dex 1.1
 		weapon 1
 		armor 1
-		one_handed_weapon 1
+		oneHandedWeapon 1
 		bow 1
 		shield 1
 	}
@@ -221,7 +221,7 @@ class warrior {
 		dex 1
 		weapon 1
 		armor 1
-		one_handed_weapon 1
+		oneHandedWeapon 1
 		bow 1
 		shield 1
 	}

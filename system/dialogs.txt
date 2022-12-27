@@ -16,7 +16,7 @@ dialog blacksmith
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 4
 		{
@@ -26,7 +26,7 @@ dialog blacksmith
 	}
 	escape choice 6
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -51,14 +51,14 @@ dialog merchant
 		}
 		escape choice 15
 			restart
-		show_choices
+		showChoices
 	}
 	choice 2
 	{
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 4
 		{
@@ -74,12 +74,12 @@ dialog merchant
 				talk 9
 				restart
 			}
-			show_choices
+			showChoices
 		}
 	}
 	escape choice 10
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -96,7 +96,7 @@ dialog traveling_merchant
 	}
 	escape choice 4
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -106,7 +106,7 @@ dialog alchemist
 		if script "pc.HavePerk(\"alchemist_apprentice\")"
 		{
 			talk 10
-			do_once
+			doOnce
 		}
 	if once
 		talk 0
@@ -138,14 +138,14 @@ dialog alchemist
 		}
 		escape choice 14
 			restart
-		show_choices
+		showChoices
 	}
 	choice 5
 	{
 		talk 6
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 7
 		{
@@ -155,52 +155,52 @@ dialog alchemist
 	}
 	escape choice 9
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog mayor
 {
-	check_quest_timeout 0
+	checkQuestTimeout 0
 	if once
 		talk 0
 	if special "q_zlo_burmistrz"
 	{
 		choice 1
 		{
-			do_quest2 "zlo"
+			doQuest2 "zlo"
 			restart
 		}
 	}
-	if have_quest_item "$parcel"
+	if haveQuestItem "$parcel"
 	{
 		choice 3
 		{
-			do_quest_item "$parcel"
+			doQuestItem "$parcel"
 			restart
 		}
 	}
-	if have_quest_item "$stolen_parcel"
+	if haveQuestItem "$stolen_parcel"
 	{
 		choice 4
 		{
-			do_quest_item "$stolen_parcel"
+			doQuestItem "$stolen_parcel"
 			restart
 		}
 	}
-	if need_talk "tell_news"
+	if needTalk "tell_news"
 	{
 		choice 5
 		{
-			do_quest "tell_news"
+			doQuest "tell_news"
 			restart
 		}
 	}
-	if need_talk "tell_news_end"
+	if needTalk "tell_news_end"
 	{
 		choice 6
 		{
-			do_quest "tell_news_end"
+			doQuest "tell_news_end"
 			restart
 		}
 	}
@@ -225,7 +225,7 @@ dialog mayor
 			}
 			escape choice 2
 				restart
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -238,7 +238,7 @@ dialog mayor
 		talk 9
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 10
 		{
@@ -248,7 +248,7 @@ dialog mayor
 	}
 	escape choice 12
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -274,7 +274,7 @@ dialog citizen
 			special "gossip"
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 4
 		{
@@ -284,7 +284,7 @@ dialog citizen
 	}
 	escape choice 6
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -329,7 +329,7 @@ dialog trainer
 			}
 			escape choice 8
 				restart
-			show_choices
+			showChoices
 		}
 		choice 9
 		{
@@ -385,7 +385,7 @@ dialog trainer
 			}
 			escape choice 8
 				restart
-			show_choices
+			showChoices
 		}
 		choice 20
 		{
@@ -397,24 +397,24 @@ dialog trainer
 			}
 			escape choice 8
 				restart
-			show_choices
+			showChoices
 		}
 		escape choice 8
 			restart
-		show_choices
+		showChoices
 	}
 	choice 22
 	{
 		talk 23
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 24
 		{
 			if special "crazies_need_talk"
 			{
-				do_quest2 "szaleni"
+				doQuest2 "szaleni"
 				restart
 			}
 			else
@@ -424,23 +424,23 @@ dialog trainer
 	}
 	escape choice 26
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog guard_captain
 {
-	if need_talk "captive"
+	if needTalk "captive"
 	{
-		do_quest "captive"
-		do_once
+		doQuest "captive"
+		doOnce
 	}
-	if need_talk "wanted"
+	if needTalk "wanted"
 	{
-		do_quest "wanted"
-		do_once
+		doQuest "wanted"
+		doOnce
 	}
-	check_quest_timeout 1
+	checkQuestTimeout 1
 	if special "q_magowie_to_miasto"
 	{
 		if special "q_magowie_nie_ukonczono"
@@ -455,7 +455,7 @@ dialog guard_captain
 		}
 		choice 2
 		{
-			do_quest2 "magowie2"
+			doQuest2 "magowie2"
 			restart
 		}
 	}
@@ -473,7 +473,7 @@ dialog guard_captain
 		}
 		choice 5
 		{
-			do_quest2 "orkowie"
+			doQuest2 "orkowie"
 			restart
 		}
 	}
@@ -481,7 +481,7 @@ dialog guard_captain
 	{
 		choice 6
 		{
-			do_quest2 "zlo"
+			doQuest2 "zlo"
 			restart
 		}
 	}
@@ -491,7 +491,7 @@ dialog guard_captain
 	{
 		choice 8
 		{
-			do_quest2 "magowie2"
+			doQuest2 "magowie2"
 			restart
 		}
 	}
@@ -499,7 +499,7 @@ dialog guard_captain
 	{
 		choice 9
 		{
-			do_quest2 "bandyci"
+			doQuest2 "bandyci"
 			restart
 		}
 	}
@@ -529,7 +529,7 @@ dialog guard_captain
 			}
 			escape choice 21
 				restart
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -542,7 +542,7 @@ dialog guard_captain
 		talk 13
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 14
 		{
@@ -552,7 +552,7 @@ dialog guard_captain
 	}
 	escape choice 16
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -569,7 +569,7 @@ dialog innkeeper
 	{
 		choice 2
 		{
-			do_quest2 "gobliny"
+			doQuest2 "gobliny"
 			restart
 		}
 	}
@@ -603,7 +603,7 @@ dialog innkeeper
 				talk 10
 				end
 			}
-			show_choices
+			showChoices
 		}
 	}
 	choice 11
@@ -621,7 +621,7 @@ dialog innkeeper
 			}
 			escape choice 17
 				restart
-			show_choices
+			showChoices
 		}
 		choice 18
 		{
@@ -633,7 +633,7 @@ dialog innkeeper
 			}
 			escape choice 21
 				restart
-			show_choices
+			showChoices
 		}
 		choice 22
 		{
@@ -645,7 +645,7 @@ dialog innkeeper
 			}
 			escape choice 25
 				restart
-			show_choices
+			showChoices
 		}
 		choice 26
 		{
@@ -657,11 +657,11 @@ dialog innkeeper
 			}
 			escape choice 29
 				restart
-			show_choices
+			showChoices
 		}
 		escape choice 30
 			restart
-		show_choices
+		showChoices
 	}
 	choice 31
 	{
@@ -687,7 +687,7 @@ dialog innkeeper
 					talk 38
 					restart
 				}
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -711,7 +711,7 @@ dialog innkeeper
 		special "gossip"
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 44
 		{
@@ -721,7 +721,7 @@ dialog innkeeper
 	}
 	escape choice 46
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -760,7 +760,7 @@ dialog arena_master
 				talk 6
 				end
 			}
-			show_choices
+			showChoices
 		}
 	}
 	if special "ironfist_started"
@@ -816,7 +816,7 @@ dialog arena_master
 			}
 			escape choice 20
 				restart
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -896,7 +896,7 @@ dialog arena_master
 				escape choice 32
 					restart
 			}
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -929,7 +929,7 @@ dialog arena_master
 				}
 				escape choice 42
 					restart
-				show_choices
+				showChoices
 			}
 		}
 		choice 43
@@ -968,7 +968,7 @@ dialog arena_master
 		}
 		escape choice 56
 			restart
-		show_choices
+		showChoices
 	}
 	choice 57
 	{
@@ -976,7 +976,7 @@ dialog arena_master
 		talk 59
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 60
 		{
@@ -986,7 +986,7 @@ dialog arena_master
 	}
 	escape choice 62
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1110,7 +1110,7 @@ dialog hero
 					}
 					escape choice 55
 						restart
-					show_choices
+					showChoices
 				}
 				talk 21
 				choice 22
@@ -1124,7 +1124,7 @@ dialog hero
 					talk 25
 					restart
 				}
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -1134,19 +1134,19 @@ dialog hero
 		}
 		escape choice 27
 			end
-		show_choices
+		showChoices
 	}
 	else
 	{
 		if script "!target.knownName"
 		{
-			do_once
+			doOnce
 			script "target.knownName = true;"
 			talk 28
 		}
 		if once
 			talk 29
-		if have_quest_item not_active "$wanted_letter"
+		if haveQuestItem notActive "$wanted_letter"
 		{
 			choice 30
 			{
@@ -1180,7 +1180,7 @@ dialog hero
 				}
 				escape choice 48
 					restart
-				show_choices
+				showChoices
 			}
 			else if script "!target.hero.wantJoin"
 			{
@@ -1200,7 +1200,7 @@ dialog hero
 				}
 				escape choice 48
 					restart
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -1217,7 +1217,7 @@ dialog hero
 					}
 					escape choice 38
 						restart
-					show_choices
+					showChoices
 				}
 				talk 39
 				choice 40
@@ -1236,7 +1236,7 @@ dialog hero
 				}
 				escape choice 43
 					restart
-				show_choices
+				showChoices
 			}
 		}
 		choice 44
@@ -1246,7 +1246,7 @@ dialog hero
 		}
 		escape choice 45
 			end
-		show_choices
+		showChoices
 	}
 }
 
@@ -1267,7 +1267,7 @@ dialog hero_get_item
 		talk 5
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1287,7 +1287,7 @@ dialog hero_buy_item
 		talk 5
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1421,7 +1421,7 @@ dialog crazy
 					}
 					escape choice 58
 						restart
-					show_choices
+					showChoices
 				}
 				talk 21
 				choice 22
@@ -1441,7 +1441,7 @@ dialog crazy
 					talk 26
 					restart
 				}
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -1451,19 +1451,19 @@ dialog crazy
 		}
 		escape choice 28
 			end
-		show_choices
+		showChoices
 	}
 	else
 	{
 		if script "!target.knownName"
 		{
-			do_once
+			doOnce
 			script "target.knownName = true;"
 			talk 29
 		}
 		if once
 			talk 30
-		if have_quest_item not_active "$wanted_letter"
+		if haveQuestItem notActive "$wanted_letter"
 		{
 			choice 31
 			{
@@ -1504,7 +1504,7 @@ dialog crazy
 				}
 				escape choice 52
 					restart
-				show_choices
+				showChoices
 			}
 			else if script "!target.hero.wantJoin"
 			{
@@ -1524,7 +1524,7 @@ dialog crazy
 				}
 				escape choice 52
 					restart
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -1546,7 +1546,7 @@ dialog crazy
 				}
 				escape choice 41
 					restart
-				show_choices
+				showChoices
 			}
 		}
 		choice 42
@@ -1567,7 +1567,7 @@ dialog crazy
 				end
 			}
 		}
-		if have_item q_szaleni_kamien
+		if haveItem q_szaleni_kamien
 		{
 			choice 47
 			{
@@ -1577,7 +1577,7 @@ dialog crazy
 		}
 		escape choice 49
 			end
-		show_choices
+		showChoices
 	}
 }
 
@@ -1606,7 +1606,7 @@ dialog crazy_get_item
 		}
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1634,7 +1634,7 @@ dialog crazy_buy_item
 		}
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1717,7 +1717,7 @@ dialog bandits
 		script "target.OrderAttack()"
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1788,7 +1788,7 @@ dialog crazy_mage_encounter
 		script "target.OrderAttack()"
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -1822,7 +1822,7 @@ dialog captive
 			{
 				if script "Level::IsSafeSettlement()"
 				{
-					do_quest "captive"
+					doQuest "captive"
 					talk 8
 					end
 				}
@@ -1835,17 +1835,17 @@ dialog captive
 				talk 11
 				end
 			}
-			show_choices
+			showChoices
 		}
 		escape choice 12
 			end
-		show_choices
+		showChoices
 	}
 	else
 	{
-		if need_talk "captive"
+		if needTalk "captive"
 		{
-			do_quest "captive"
+			doQuest "captive"
 			end
 		}
 		else
@@ -1868,7 +1868,7 @@ dialog captive
 				talk 18
 				end
 			}
-			show_choices
+			showChoices
 		}
 	}
 }
@@ -1905,19 +1905,19 @@ dialog traveler
 		end
 	if choices 0
 	{
-		check_quest_timeout 2
+		checkQuestTimeout 2
 		talk 2
 		end
 	}
 	escape choice 3
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_sawmill
 {
-	do_quest2 "tartak"
+	doQuest2 "tartak"
 	end
 }
 
@@ -1931,7 +1931,7 @@ dialog woodcutter
 //==============================================================================
 dialog q_mine
 {
-	do_quest2 "kopalnia"
+	doQuest2 "kopalnia"
 	end
 }
 
@@ -1952,49 +1952,49 @@ dialog drunkman
 //==============================================================================
 dialog q_bandits
 {
-	do_quest2 "bandyci"
+	doQuest2 "bandyci"
 	end
 }
 
 //==============================================================================
 dialog q_mages
 {
-	do_quest2 "magowie"
+	doQuest2 "magowie"
 	end
 }
 
 //==============================================================================
 dialog q_mages2
 {
-	do_quest2 "magowie2"
+	doQuest2 "magowie2"
 	end
 }
 
 //==============================================================================
 dialog q_orcs
 {
-	do_quest2 "orkowie"
+	doQuest2 "orkowie"
 	end
 }
 
 //==============================================================================
 dialog q_orcs2
 {
-	do_quest2 "orkowie2"
+	doQuest2 "orkowie2"
 	end
 }
 
 //==============================================================================
 dialog q_goblins
 {
-	do_quest2 "gobliny"
+	doQuest2 "gobliny"
 	end
 }
 
 //==============================================================================
 dialog q_evil
 {
-	do_quest2 "zlo"
+	doQuest2 "zlo"
 	end
 }
 
@@ -2013,7 +2013,7 @@ dialog q_tutorial
 		trade
 	escape choice 5
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -2081,7 +2081,7 @@ dialog crazies_encounter
 						talk 10
 					end
 				}
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -2131,7 +2131,7 @@ dialog crazies_encounter
 				talk 27
 				end
 			}
-			show_choices
+			showChoices
 		}
 	}
 }
@@ -2185,7 +2185,7 @@ dialog tomashu
 				talk 17
 				restart
 			}
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -2202,7 +2202,7 @@ dialog tomashu
 		talk 22
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -2231,7 +2231,7 @@ dialog foodseller
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 4
 		{
@@ -2241,13 +2241,13 @@ dialog foodseller
 	}
 	escape choice 6
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_bandits_master
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		script "target.knownName = true;"
 		talk 0
@@ -2258,24 +2258,24 @@ dialog q_bandits_master
 		talk 5
 		choice 6
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			restart
 		}
 		escape choice 7
 		{
-			set_quest_progress 1
+			setQuestProgress 1
 			talk 8
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 1
+	if questProgress 1
 	{
 		talk 9
 		talk 10
 		choice 11
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			restart
 		}
 		escape choice 12
@@ -2283,62 +2283,62 @@ dialog q_bandits_master
 			talk 13
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
 		talk 14
 		talk 15
 		talk 16
 		talk 17
-		set_quest_progress 3
+		setQuestProgress 3
 		talk 18
 		talk 19
 		talk 20
 		talk 21
 		end
 	}
-	if quest_progress 3
+	if questProgress 3
 	{
-		if have_item q_bandyci_list
+		if haveItem q_bandyci_list
 		{
 			talk 22
 			choice 23
 			{
-				set_quest_progress 5
+				setQuestProgress 5
 				restart
 			}
 			escape choice 24
 				end
-			show_choices
+			showChoices
 		}
 		talk 25
 		talk 26
 		talk 27
 		end
 	}
-	if quest_progress 4
+	if questProgress 4
 	{
 		talk 28
-		if have_item q_bandyci_list
+		if haveItem q_bandyci_list
 		{
 			choice 29
 			{
-				set_quest_progress 5
+				setQuestProgress 5
 				restart
 			}
 		}
 		choice 30
 		{
 			talk 31
-			if have_item q_bandyci_paczka
+			if haveItem q_bandyci_paczka
 			{
-				set_quest_progress 3
+				setQuestProgress 3
 				talk 32
 			}
 			else
 			{
-				set_quest_progress 3
+				setQuestProgress 3
 				talk 33
 			}
 			talk 34
@@ -2346,37 +2346,37 @@ dialog q_bandits_master
 		}
 		escape choice 35
 			end
-		show_choices
+		showChoices
 	}
-	if quest_progress 5
+	if questProgress 5
 	{
 		talk 36
 		talk 37
 		talk 38
 		talk 39
 		talk 40
-		set_quest_progress 6
+		setQuestProgress 6
 		talk 41
 		talk 42
 		talk 43
 		end
 	}
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 44
 		end
 	}
-	if quest_progress 7
+	if questProgress 7
 	{
 		talk 45
 		end
 	}
-	if quest_progress 8
+	if questProgress 8
 	{
 		talk 46
 		end
 	}
-	if quest_progress 9
+	if questProgress 9
 	{
 		talk 47
 		talk 48
@@ -2384,17 +2384,17 @@ dialog q_bandits_master
 		talk 50
 		end
 	}
-	if quest_progress 10
+	if questProgress 10
 	{
 		talk 51
 		talk 52
 		talk 53
 		talk 54
 		talk 55
-		set_quest_progress 11
+		setQuestProgress 11
 		end
 	}
-	if quest_progress 11
+	if questProgress 11
 	{
 		talk 56
 		talk 57
@@ -2406,14 +2406,14 @@ dialog q_bandits_master
 //==============================================================================
 dialog q_bandits_encounter
 {
-	set_quest_progress 4
+	setQuestProgress 4
 	talk 0
 	talk 1
-	if have_item q_bandyci_paczka
+	if haveItem q_bandyci_paczka
 	{
 		choice 2
 		{
-			quest_special "bandyci_daj_paczke"
+			questSpecial "bandyci_daj_paczke"
 			talk 3
 			talk 4
 			script "target.OrderAttack()"
@@ -2451,7 +2451,7 @@ dialog q_bandits_encounter
 		script "target.OrderAttack()"
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -2460,14 +2460,14 @@ dialog q_bandits_captain
 	talk 0
 	talk 1
 	talk 2
-	set_quest_progress 7
+	setQuestProgress 7
 	end
 }
 
 //==============================================================================
 dialog q_bandits_guard
 {
-	if quest_progress 7
+	if questProgress 7
 		talk 0
 	else
 		talk 1
@@ -2477,11 +2477,11 @@ dialog q_bandits_guard
 //==============================================================================
 dialog q_bandits_agent
 {
-	if quest_progress 8
+	if questProgress 8
 	{
 		talk 0
 		talk 1
-		set_quest_progress 9
+		setQuestProgress 9
 		talk 2
 		talk 3
 		talk 4
@@ -2507,7 +2507,7 @@ dialog q_crazies_trainer
 	talk 0
 	talk 1
 	talk 2
-	set_quest_progress 1
+	setQuestProgress 1
 	talk 3
 	talk 4
 	end
@@ -2522,36 +2522,36 @@ dialog q_deliver_parcel_start
 		talk 2
 		talk 3
 		talk 4
-		set_quest_progress 1
+		setQuestProgress 1
 		end
 	}
 	escape choice 5
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_deliver_parcel_give
 {
 	talk 0
-	if quest_timeout
+	if questTimeout
 	{
-		if quest_special "q_deliver_parcel_after"
+		if questSpecial "q_deliver_parcel_after"
 		{
 			talk 1
 			talk 2
-			set_quest_progress 2
+			setQuestProgress 2
 			end
 		}
 		else
 		{
 			talk 3
-			set_quest_progress 3
+			setQuestProgress 3
 			end
 		}
 	}
 	talk 4
-	set_quest_progress 4
+	setQuestProgress 4
 	end
 }
 
@@ -2559,36 +2559,36 @@ dialog q_deliver_parcel_give
 dialog q_deliver_parcel_timeout
 {
 	talk 0
-	set_quest_progress 3
+	setQuestProgress 3
 	end
 }
 
 //==============================================================================
 dialog q_deliver_parcel_bandits
 {
-	if quest_progress 1
+	if questProgress 1
 	{
-		if have_quest_item "$parcel"
+		if haveQuestItem "$parcel"
 		{
 			talk 0
 			talk 1
 			choice 2
 			{
 				talk 3
-				set_quest_progress 6
+				setQuestProgress 6
 				end
 			}
 			choice 4
 			{
 				script "target.OrderAttack()"
-				set_quest_progress 5
+				setQuestProgress 5
 				end
 			}
-			show_choices
+			showChoices
 		}
 		else
 		{
-			set_quest_progress 7
+			setQuestProgress 7
 			script "target.OrderAttack()"
 			end
 		}
@@ -2603,27 +2603,27 @@ dialog q_deliver_parcel_bandits
 //==============================================================================
 dialog q_evil_cleric
 {
-	if quest_event
+	if questEvent
 	{
-		if quest_special "q_zlo_clear1"
+		if questSpecial "q_zlo_clear1"
 		{
 			talk 0
-			set_quest_progress 11
+			setQuestProgress 11
 		}
-		else if quest_special "q_zlo_clear2"
+		else if questSpecial "q_zlo_clear2"
 		{
 			talk 1
-			set_quest_progress 11
+			setQuestProgress 11
 		}
 		else
 		{
 			talk 2
 			talk 3
-			set_quest_progress 12
+			setQuestProgress 12
 		}
 		end
 	}
-	if quest_progress 0
+	if questProgress 0
 	{
 		talk 4
 		talk 5
@@ -2631,23 +2631,23 @@ dialog q_evil_cleric
 		talk 7
 		choice 8
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			restart
 		}
 		choice 9
 		{
-			set_quest_progress 1
+			setQuestProgress 1
 			talk 10
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 1
+	if questProgress 1
 	{
 		talk 11
 		choice 12
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			restart
 		}
 		escape choice 13
@@ -2655,38 +2655,38 @@ dialog q_evil_cleric
 			talk 14
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
 		talk 15
-		set_quest_progress 3
+		setQuestProgress 3
 		talk 16
 		talk 17
 		script "target.knownName = true;"
 		talk 18
 		end
 	}
-	if quest_progress 3
+	if questProgress 3
 	{
 		talk 19
 		end
 	}
-	if quest_progress 4
+	if questProgress 4
 	{
 		talk 20
 		talk 21
-		set_quest_progress 5
+		setQuestProgress 5
 		talk 22
 		talk 23
 		end
 	}
-	if quest_progress between 5 and 9
+	if questProgress between 5 and 9
 	{
-		if have_item q_zlo_ksiega
+		if haveItem q_zlo_ksiega
 		{
 			talk 24
-			set_quest_progress 10
+			setQuestProgress 10
 			talk 25
 			talk 26
 			talk 27
@@ -2698,28 +2698,28 @@ dialog q_evil_cleric
 			talk 31
 		end
 	}
-	if quest_progress 10
+	if questProgress 10
 	{
-		if quest_special "q_zlo_tutaj"
+		if questSpecial "q_zlo_tutaj"
 			talk 32
 		else
 			talk 33
 		end
 	}
-	if quest_progress 12
+	if questProgress 12
 	{
-		if quest_special "q_zlo_tutaj"
+		if questSpecial "q_zlo_tutaj"
 			talk 34
 		else
 			talk 35
 		end
 	}
-	if quest_progress 13
+	if questProgress 13
 	{
 		talk 36
 		talk 37
 		talk 38
-		set_quest_progress 14
+		setQuestProgress 14
 		end
 	}
 	talk 39
@@ -2729,7 +2729,7 @@ dialog q_evil_cleric
 //==============================================================================
 dialog q_evil_mage
 {
-	if quest_progress 5
+	if questProgress 5
 	{
 		talk 0
 		choice 1
@@ -2741,12 +2741,12 @@ dialog q_evil_mage
 			talk 3
 			talk 4
 			talk 5
-			set_quest_progress 6
+			setQuestProgress 6
 			end
 		}
 		escape choice 6
 			end
-		show_choices
+		showChoices
 	}
 	talk 7
 	end
@@ -2755,24 +2755,24 @@ dialog q_evil_mage
 //==============================================================================
 dialog q_evil_captain
 {
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 0
 		talk 1
 		talk 2
-		set_quest_progress 7
+		setQuestProgress 7
 		end
 	}
-	if quest_progress 7
+	if questProgress 7
 	{
 		talk 3
 		end
 	}
-	if quest_progress 8
+	if questProgress 8
 	{
 		talk 4
 		talk 5
-		set_quest_progress 9
+		setQuestProgress 9
 		end
 	}
 	end
@@ -2783,7 +2783,7 @@ dialog q_evil_mayor
 {
 	talk 0
 	talk 1
-	set_quest_progress 8
+	setQuestProgress 8
 	end
 }
 
@@ -2799,7 +2799,7 @@ dialog q_evil_boss
 //==============================================================================
 dialog q_goblins_nobleman
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		talk 0
 		script "target.knownName = true;"
@@ -2810,7 +2810,7 @@ dialog q_goblins_nobleman
 		talk 5
 		choice 6
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			talk 7
 			talk 8
 			talk 9
@@ -2820,18 +2820,18 @@ dialog q_goblins_nobleman
 		{
 			talk 11
 			talk 12
-			set_quest_progress 1
+			setQuestProgress 1
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 1
+	if questProgress 1
 	{
 		talk 13
 		talk 14
 		choice 15
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			talk 16
 			talk 17
 			talk 18
@@ -2843,35 +2843,35 @@ dialog q_goblins_nobleman
 			talk 21
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
 		talk 22
 		end
 	}
-	if quest_progress 3
+	if questProgress 3
 	{
 		talk 23
 		choice 24
 		{
-			set_quest_progress 4
+			setQuestProgress 4
 			talk 25
 			talk 26
 			end
 		}
 		escape choice 27
 			end
-		show_choices
+		showChoices
 	}
-	if quest_progress 4
+	if questProgress 4
 	{
 		talk 28
 		end
 	}
-	if quest_progress 5
+	if questProgress 5
 	{
-		if have_item q_gobliny_luk
+		if haveItem q_gobliny_luk
 		{
 			talk 29
 			choice 30
@@ -2880,12 +2880,12 @@ dialog q_goblins_nobleman
 				talk 32
 				talk 33
 				talk 34
-				set_quest_progress 6
+				setQuestProgress 6
 				end
 			}
 			escape choice 35
 				end
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -2893,7 +2893,7 @@ dialog q_goblins_nobleman
 			end
 		}
 	}
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 37
 		end
@@ -2904,7 +2904,7 @@ dialog q_goblins_nobleman
 //==============================================================================
 dialog q_goblins_encounter
 {
-	set_quest_progress 3
+	setQuestProgress 3
 	talk 0
 	talk 1
 	script "target.OrderAttack()"
@@ -2914,12 +2914,12 @@ dialog q_goblins_encounter
 //==============================================================================
 dialog q_goblins_messenger
 {
-	if quest_progress 4
+	if questProgress 4
 	{
 		talk 0
 		talk 1
 		talk 2
-		set_quest_progress 5
+		setQuestProgress 5
 		talk 3
 		talk 4
 	}
@@ -2931,7 +2931,7 @@ dialog q_goblins_messenger
 //==============================================================================
 dialog q_goblins_mage
 {
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 0
 		talk 1
@@ -2940,18 +2940,18 @@ dialog q_goblins_mage
 		{
 			talk 4
 			talk 5
-			set_quest_progress 8
+			setQuestProgress 8
 			end
 		}
 		choice 6
 		{
-			set_quest_progress 7
+			setQuestProgress 7
 			talk 7
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 7
+	if questProgress 7
 	{
 		talk 8
 		talk 9
@@ -2962,7 +2962,7 @@ dialog q_goblins_mage
 			info:
 				talk 11
 				talk 5
-				set_quest_progress 9
+				setQuestProgress 9
 			}
 			else
 				talk 13
@@ -2980,7 +2980,7 @@ dialog q_goblins_mage
 		}
 		escape choice 14
 			end
-		show_choices
+		showChoices
 	}
 	talk 15
 	end
@@ -2991,7 +2991,7 @@ dialog q_goblins_innkeeper
 {
 	talk 0
 	talk 1
-	set_quest_progress 10
+	setQuestProgress 10
 	talk 2
 	talk 3
 	end
@@ -3010,7 +3010,7 @@ dialog q_goblins_boss
 //==============================================================================
 dialog q_mages_scholar
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		talk 0
 		talk 1
@@ -3019,7 +3019,7 @@ dialog q_mages_scholar
 		talk 4
 		choice 5
 		{
-			set_quest_progress 1
+			setQuestProgress 1
 			talk 6
 			talk 7
 			end
@@ -3029,16 +3029,16 @@ dialog q_mages_scholar
 			talk 9
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 1
+	if questProgress 1
 	{
 		talk 10
-		if have_item q_magowie_kula
+		if haveItem q_magowie_kula
 		{
 			choice 11
 			{
-				set_quest_progress 2
+				setQuestProgress 2
 				talk 12
 				talk 13
 				end
@@ -3048,7 +3048,7 @@ dialog q_mages_scholar
 				talk 15
 				end
 			}
-			show_choices
+			showChoices
 		}
 		else
 		{
@@ -3063,9 +3063,9 @@ dialog q_mages_scholar
 //==============================================================================
 dialog q_mages_golem
 {
-	if quest_progress 2
-		set_quest_progress 3
-	if quest_special "q_magowie_zaplacono"
+	if questProgress 2
+		setQuestProgress 3
+	if questSpecial "q_magowie_zaplacono"
 	{
 		talk 0
 		end
@@ -3073,7 +3073,7 @@ dialog q_mages_golem
 	talk 1
 	choice 2
 	{
-		quest_special "q_magowie_zaplac"
+		questSpecial "q_magowie_zaplac"
 		talk 3
 		end
 	}
@@ -3083,66 +3083,66 @@ dialog q_mages_golem
 		script "target.OrderAttack()"
 		end
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_mages2_captain
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		talk 0
 		talk 1
 		talk 2
-		set_quest_progress 1
+		setQuestProgress 1
 		talk 3
 		end
 	}
-	if quest_progress 1
+	if questProgress 1
 	{
 		talk 4
 		end
 	}
-	if quest_progress between 2 and 4
+	if questProgress between 2 and 4
 	{
 		talk 5
 		talk 6
 		talk 7
 		end
 	}
-	if quest_progress 5
+	if questProgress 5
 	{
 		talk 8
 		end
 	}
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 9
 		talk 10
 		talk 11
-		set_quest_progress 7
+		setQuestProgress 7
 		end
 	}
-	if quest_progress between 7 and 9
+	if questProgress between 7 and 9
 	{
 		talk 12
 		end
 	}
-	if quest_progress between 10 and 11
+	if questProgress between 10 and 11
 	{
 		talk 13
 		talk 14
 		end
 	}
-	if quest_progress between 12 and 13
+	if questProgress between 12 and 13
 	{
 		talk 15
 		talk 16
 		talk 17
-		set_quest_progress 14
+		setQuestProgress 14
 		end
 	}
-	if quest_progress 14
+	if questProgress 14
 	{
 		talk 18
 		end
@@ -3153,22 +3153,22 @@ dialog q_mages2_captain
 //==============================================================================
 dialog q_mages2_mage
 {
-	if quest_progress between 13 and 14
+	if questProgress between 13 and 14
 	{
 		talk 0
 		end
 	}
-	if quest_progress 12
+	if questProgress 12
 	{
 		talk 1
 		talk 2
 		talk 3
-		set_quest_progress 13
+		setQuestProgress 13
 		end
 	}
-	if quest_progress 11
+	if questProgress 11
 	{
-		if quest_special "q_magowie_u_bossa"
+		if questSpecial "q_magowie_u_bossa"
 		{
 			talk 4
 			end
@@ -3176,12 +3176,12 @@ dialog q_mages2_mage
 		talk 5
 		end
 	}
-	if quest_progress 10
+	if questProgress 10
 	{
 		talk 6
 		choice 7
 		{
-			set_quest_progress 11
+			setQuestProgress 11
 			talk 8
 			end
 		}
@@ -3191,9 +3191,9 @@ dialog q_mages2_mage
 			talk 11
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 9
+	if questProgress 9
 	{
 		talk 12
 		talk 13
@@ -3203,48 +3203,48 @@ dialog q_mages2_mage
 		talk 17
 		choice 18
 		{
-			set_quest_progress 11
+			setQuestProgress 11
 			talk 19
 			end
 		}
 		escape choice 20
 		{
-			set_quest_progress 10
+			setQuestProgress 10
 			talk 21
 			talk 22
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress between 6 and 8
+	if questProgress between 6 and 8
 	{
 		talk 23
-		if have_item q_magowie_potion
+		if haveItem q_magowie_potion
 		{
 			choice 24
 			{
 				talk 25
-				set_quest_progress 9
+				setQuestProgress 9
 				talk 26
 				talk 27
 				restart
 			}
 			escape choice 28
 				end
-			show_choices
+			showChoices
 		}
 		end
 	}
-	if quest_progress 5
+	if questProgress 5
 	{
-		if quest_special "q_magowie_u_siebie"
+		if questSpecial "q_magowie_u_siebie"
 		{
-			if quest_special "q_magowie_czas"
+			if questSpecial "q_magowie_czas"
 			{
 				talk 29
 				talk 30
 				talk 31
-				set_quest_progress 6
+				setQuestProgress 6
 			}
 			else
 				talk 32
@@ -3259,33 +3259,33 @@ dialog q_mages2_mage
 		{
 			script "target.knownName = true;"
 			talk 34
-			do_once
+			doOnce
 		}
 		if once
 			talk 35
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
-		if have_item beer
+		if haveItem beer
 		{
 			choice 36
 			{
 				talk 37
-				set_quest_progress 3
+				setQuestProgress 3
 				talk 38
 				talk 39
 				end
 			}
 		}
 	}
-	if quest_progress 3
+	if questProgress 3
 	{
-		if have_item vodka
+		if haveItem vodka
 		{
 			choice 40
 			{
 				talk 41
-				set_quest_progress 4
+				setQuestProgress 4
 				talk 42
 				restart
 			}
@@ -3293,23 +3293,23 @@ dialog q_mages2_mage
 	}
 	choice 43
 	{
-		if quest_progress 1
+		if questProgress 1
 		{
 			talk 44
-			set_quest_progress 2
+			setQuestProgress 2
 			end
 		}
-		if quest_progress 2
+		if questProgress 2
 		{
 			talk 45
 			end
 		}
-		if quest_progress 3
+		if questProgress 3
 		{
 			talk 46
 			end
 		}
-		if quest_progress 4
+		if questProgress 4
 		{
 			talk 47
 			talk 48
@@ -3319,14 +3319,14 @@ dialog q_mages2_mage
 			talk 52
 			choice 53
 			{
-				set_quest_progress 5
+				setQuestProgress 5
 				talk 54
 				talk 55
 				end
 			}
 			escape choice 56
 				end
-			show_choices
+			showChoices
 		}
 		end
 	}
@@ -3337,14 +3337,14 @@ dialog q_mages2_mage
 	}
 	escape choice 59
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_mages2_boss
 {
 	talk 0
-	if quest_progress 11
+	if questProgress 11
 		talk 1
 	talk 2
 	script "target.OrderAttack()"
@@ -3354,11 +3354,11 @@ dialog q_mages2_boss
 //==============================================================================
 dialog q_mine_investor
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		if script "!target.knownName"
 		{
-			do_once
+			doOnce
 			script "target.knownName = true;"
 			talk 0
 			talk 1
@@ -3376,7 +3376,7 @@ dialog q_mine_investor
 			talk 7
 			choice 8
 			{
-				set_quest_progress 1
+				setQuestProgress 1
 				talk 9
 				talk 10
 				end
@@ -3386,7 +3386,7 @@ dialog q_mine_investor
 				talk 12
 				restart
 			}
-			show_choices
+			showChoices
 		}
 		choice 13
 		{
@@ -3395,25 +3395,25 @@ dialog q_mine_investor
 		}
 		escape choice 15
 			end
-		show_choices
+		showChoices
 	}
 	else
 	{
 		if once
 		{
-			if quest_progress 1
+			if questProgress 1
 				talk 16
-			if quest_progress 2
+			if questProgress 2
 				talk 17
-			if quest_progress 3
+			if questProgress 3
 				talk 18
-			if quest_progress 4
+			if questProgress 4
 				talk 19
-			if quest_progress 5
+			if questProgress 5
 				talk 20
-			if quest_progress 6
+			if questProgress 6
 			{
-				set_quest_progress 7
+				setQuestProgress 7
 				talk 21
 				talk 22
 				talk 23
@@ -3422,30 +3422,30 @@ dialog q_mine_investor
 				talk 26
 				restart
 			}
-			if quest_progress 7
+			if questProgress 7
 				talk 27
-			if quest_progress 8
+			if questProgress 8
 				talk 28
-			if quest_progress 9
+			if questProgress 9
 				talk 29
-			if quest_progress 10
+			if questProgress 10
 				talk 30
-			if quest_progress 11
+			if questProgress 11
 				talk 31
-			if quest_progress 12
+			if questProgress 12
 				talk 32
-			if quest_progress 13
+			if questProgress 13
 				talk 33
 		}
-		if quest_progress 7
+		if questProgress 7
 		{
-			if quest_special "udzialy_w_kopalni"
+			if questSpecial "udzialy_w_kopalni"
 			{
 				choice 34
 				{
 					if script "pc.unit.gold >= 10000"
 					{
-						set_quest_progress 9
+						setQuestProgress 9
 						talk 35
 					}
 					else
@@ -3459,7 +3459,7 @@ dialog q_mine_investor
 				{
 					if script "pc.unit.gold >= 12000"
 					{
-						set_quest_progress 9
+						setQuestProgress 9
 						talk 38
 					}
 					else
@@ -3483,12 +3483,12 @@ dialog q_mine_investor
 			}
 			choice 40
 			{
-				set_quest_progress 8
+				setQuestProgress 8
 				talk 41
 				end
 			}
 		}
-		if quest_progress 2
+		if questProgress 2
 		{
 			choice 42
 			{
@@ -3496,18 +3496,18 @@ dialog q_mine_investor
 				talk 44
 				choice 45
 				{
-					set_quest_progress 5
+					setQuestProgress 5
 					talk 46
 					end
 				}
 				choice 47
 				{
-					set_quest_progress 3
+					setQuestProgress 3
 					talk 48
 					talk 49
 					end
 				}
-				show_choices
+				showChoices
 			}
 		}
 		choice 50
@@ -3517,14 +3517,14 @@ dialog q_mine_investor
 		}
 		escape choice 52
 			end
-		show_choices
+		showChoices
 	}
 }
 
 //==============================================================================
 dialog q_mine_messenger
 {
-	set_quest_progress 4
+	setQuestProgress 4
 	talk 0
 	talk 1
 	talk 2
@@ -3536,7 +3536,7 @@ dialog q_mine_messenger
 //==============================================================================
 dialog q_mine_messenger2
 {
-	set_quest_progress 6
+	setQuestProgress 6
 	talk 0
 	talk 1
 	talk 2
@@ -3548,7 +3548,7 @@ dialog q_mine_messenger2
 //==============================================================================
 dialog q_mine_messenger3
 {
-	set_quest_progress 10
+	setQuestProgress 10
 	talk 0
 	talk 1
 	talk 2
@@ -3560,7 +3560,7 @@ dialog q_mine_messenger3
 //==============================================================================
 dialog q_mine_messenger4
 {
-	set_quest_progress 11
+	setQuestProgress 11
 	talk 0
 	talk 1
 	talk 2
@@ -3572,34 +3572,34 @@ dialog q_mine_messenger4
 //==============================================================================
 dialog q_mine_boss
 {
-	if quest_progress 3
+	if questProgress 3
 		talk 0
-	if quest_progress 4
+	if questProgress 4
 		talk 1
-	if quest_progress 5
+	if questProgress 5
 		talk 2
-	if quest_progress 6
+	if questProgress 6
 		talk 3
-	if quest_progress 7
+	if questProgress 7
 		talk 4
-	if quest_progress 8
+	if questProgress 8
 		talk 5
-	if quest_progress 9
+	if questProgress 9
 		talk 6
-	if quest_progress 10
+	if questProgress 10
 		talk 7
-	if quest_progress 11
+	if questProgress 11
 	{
-		set_quest_progress 12
+		setQuestProgress 12
 		talk 8
 		talk 9
 		talk 10
 		talk 11
 		end
 	}
-	if quest_progress 12
+	if questProgress 12
 		talk 12
-	if quest_progress 13
+	if questProgress 13
 		talk 13
 	end
 }
@@ -3615,12 +3615,12 @@ dialog messenger_talked
 dialog q_orcs_guard
 {
 	talk 0
-	if quest_progress 0
+	if questProgress 0
 	{
 		talk 1
 		talk 2
 		talk 3
-		set_quest_progress 1
+		setQuestProgress 1
 	}
 	end
 }
@@ -3628,44 +3628,44 @@ dialog q_orcs_guard
 //==============================================================================
 dialog q_orcs_captain
 {
-	if quest_progress between 0 and 2
+	if questProgress between 0 and 2
 	{
 		talk 0
 		talk 1
 		choice 2
 		{
-			set_quest_progress 3
+			setQuestProgress 3
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			talk 6
 			end
 		}
-		show_choices
+		showChoices
 	}
 	else
 	{
-		if quest_progress 3
+		if questProgress 3
 		{
 			talk 7
 			end
 		}
-		if quest_progress 4
+		if questProgress 4
 		{
 			talk 8
-			set_quest_progress 5
+			setQuestProgress 5
 			talk 9
-			if quest_special "q_orkowie_dolaczyl"
+			if questSpecial "q_orkowie_dolaczyl"
 			{
 				talk 10
 			}
 			end
 		}
-		if quest_progress 5
+		if questProgress 5
 		{
 			talk 11
 			end
@@ -3677,12 +3677,12 @@ dialog q_orcs_captain
 //==============================================================================
 dialog q_orcs2_gorush
 {
-	if quest_progress 16
+	if questProgress 16
 	{
 		talk 0
 		end
 	}
-	if quest_progress 15
+	if questProgress 15
 	{
 		talk 1
 		talk 2
@@ -3690,29 +3690,29 @@ dialog q_orcs2_gorush
 		talk 4
 		talk 5
 		talk 6
-		set_quest_progress 16
+		setQuestProgress 16
 		end
 	}
-	if quest_progress 6
+	if questProgress 6
 	{
 		talk 7
 		talk 8
 		talk 9
 		talk 10
-		set_quest_progress 7
+		setQuestProgress 7
 		end
 	}
-	if quest_event
+	if questEvent
 	{
-		if quest_progress 12
+		if questProgress 12
 		{
 			talk 11
 			talk 12
 			talk 13
-			set_quest_progress 13
+			setQuestProgress 13
 			end
 		}
-		if quest_progress 7
+		if questProgress 7
 		{
 			talk 14
 			talk 15
@@ -3720,70 +3720,70 @@ dialog q_orcs2_gorush
 			choice 17
 			{
 				talk 18
-				set_quest_progress 8
+				setQuestProgress 8
 				end
 			}
 			choice 19
 			{
 				talk 20
-				set_quest_progress 9
+				setQuestProgress 9
 				end
 			}
 			choice 21
 			{
 				talk 22
-				set_quest_progress 10
+				setQuestProgress 10
 				end
 			}
 			choice 23
 			{
-				set_quest_progress 11
-				if quest_special "q_orkowie_woj"
+				setQuestProgress 11
+				if questSpecial "q_orkowie_woj"
 					talk 24
-				else if quest_special "q_orkowie_lowca"
+				else if questSpecial "q_orkowie_lowca"
 					talk 25
 				else
 					talk 26
 				end
 			}
-			show_choices
+			showChoices
 		}
 		talk 27
 		talk 28
 		talk 29
 		talk 30
 		talk 31
-		set_quest_progress 4
+		setQuestProgress 4
 		end
 	}
-	if quest_progress between 0 and 1
+	if questProgress between 0 and 1
 	{
-		set_quest_progress 1
+		setQuestProgress 1
 		talk 32
 		talk 33
 		talk 34
 		choice 35
 		{
 			talk 36
-			set_quest_progress 3
+			setQuestProgress 3
 			end
 		}
 		escape choice 37
 		{
 			talk 38
-			set_quest_progress 2
+			setQuestProgress 2
 			end
 		}
-		show_choices
+		showChoices
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
 		talk 39
 		talk 40
 		choice 41
 		{
 			talk 42
-			set_quest_progress 3
+			setQuestProgress 3
 			end
 		}
 		escape choice 43
@@ -3791,31 +3791,31 @@ dialog q_orcs2_gorush
 			talk 44
 			end
 		}
-		show_choices
+		showChoices
 	}
 	talk 45
-	if quest_progress between 4 and 5
+	if questProgress between 4 and 5
 	{
 		choice 46
 		{
-			if quest_special "q_orkowie_na_miejscu"
+			if questSpecial "q_orkowie_na_miejscu"
 				talk 47
 			else
 			{
 				talk 48
-				set_quest_progress 5
+				setQuestProgress 5
 			}
 			end
 		}
 	}
-	if quest_progress 13
+	if questProgress 13
 	{
 		choice 49
 		{
 			talk 50
 			talk 51
 			talk 52
-			set_quest_progress 14
+			setQuestProgress 14
 			end
 		}
 	}
@@ -3850,13 +3850,13 @@ dialog q_orcs2_gorush
 	}
 	escape choice 66
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_orcs2_weak_orc
 {
-	if quest_progress 16
+	if questProgress 16
 		talk 0
 	else
 		talk 1
@@ -3866,14 +3866,14 @@ dialog q_orcs2_weak_orc
 //==============================================================================
 dialog q_orcs2_blacksmith
 {
-	if quest_progress 16
+	if questProgress 16
 	{
 		talk 0
 		choice 1
 			trade
 		escape choice 2
 			end
-		show_choices
+		showChoices
 	}
 	else
 	{
@@ -3896,8 +3896,8 @@ dialog q_rescue_captive_start
 	talk 1
 	choice 2
 	{
-		set_quest_progress 1
-		if quest_special "is_camp"
+		setQuestProgress 1
+		if questSpecial "is_camp"
 			talk 3
 		else
 			talk 4
@@ -3906,36 +3906,36 @@ dialog q_rescue_captive_start
 	}
 	escape choice 6
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_rescue_captive_timeout
 {
 	talk 0
-	set_quest_progress 4
+	setQuestProgress 4
 	end
 }
 
 //==============================================================================
 dialog q_rescue_captive_end
 {
-	if quest_progress 2
+	if questProgress 2
 	{
-		set_quest_progress 5
+		setQuestProgress 5
 		talk 0
 		end
 	}
-	else if quest_progress 3
+	else if questProgress 3
 	{
-		set_quest_progress 7
+		setQuestProgress 7
 		talk 1
 		talk 2
 		end2
 	}
 	else
 	{
-		set_quest_progress 8
+		setQuestProgress 8
 		talk 3
 		talk 4
 		end
@@ -3945,15 +3945,15 @@ dialog q_rescue_captive_end
 //==============================================================================
 dialog q_rescue_captive_talk
 {
-	if quest_progress 9
+	if questProgress 9
 	{
 		talk 7
 		end2
 	}
-	if quest_progress 2
+	if questProgress 2
 	{
 		talk 0
-		set_quest_progress 9
+		setQuestProgress 9
 		end2
 	}
 	talk 1
@@ -3961,18 +3961,18 @@ dialog q_rescue_captive_talk
 	choice 3
 	{
 		special "captive_join"
-		set_quest_progress 2
+		setQuestProgress 2
 		talk 4
 		end2
 	}
 	choice 5
 	{
 		special "captive_escape"
-		set_quest_progress 2
+		setQuestProgress 2
 		talk 6
 		end2
 	}
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -3981,8 +3981,8 @@ dialog q_retrieve_package_start
 	talk 0
 	choice 1
 	{
-		set_quest_progress 1
-		if quest_special "is_camp"
+		setQuestProgress 1
+		if questSpecial "is_camp"
 			talk 2
 		else
 			talk 3
@@ -3991,14 +3991,14 @@ dialog q_retrieve_package_start
 	}
 	escape choice 5
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_retrieve_package_timeout
 {
 	talk 0
-	set_quest_progress 2
+	setQuestProgress 2
 	end
 }
 
@@ -4007,14 +4007,14 @@ dialog q_retrieve_package_end
 {
 	talk 0
 	talk 1
-	set_quest_progress 3
+	setQuestProgress 3
 	end
 }
 
 //==============================================================================
 dialog q_sawmill_talk
 {
-	if quest_progress 0
+	if questProgress 0
 	{
 		script "target.knownName = true;"
 		talk 0
@@ -4025,7 +4025,7 @@ dialog q_sawmill_talk
 		talk 5
 		choice 6
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			talk 7
 			talk 8
 			talk 9
@@ -4033,19 +4033,19 @@ dialog q_sawmill_talk
 		}
 		escape choice 10
 		{
-			set_quest_progress 1
+			setQuestProgress 1
 			talk 11
 			end
 		}
-		show_choices
+		showChoices
 	}
-	else if quest_progress 1
+	else if questProgress 1
 	{
 		talk 12
 		talk 13
 		choice 14
 		{
-			set_quest_progress 2
+			setQuestProgress 2
 			talk 15
 			talk 16
 			talk 17
@@ -4056,24 +4056,24 @@ dialog q_sawmill_talk
 			talk 19
 			end
 		}
-		show_choices
+		showChoices
 	}
-	else if quest_progress 2
+	else if questProgress 2
 	{
 		talk 20
 		talk 21
 	}
-	else if quest_progress 3
+	else if questProgress 3
 	{
-		set_quest_progress 4
+		setQuestProgress 4
 		talk 22
 		talk 23
 		talk 24
 		talk 25
 	}
-	else if quest_progress 4
+	else if questProgress 4
 	{
-		if quest_special "czy_tartak"
+		if questSpecial "czy_tartak"
 			talk 26
 		else
 			talk 27
@@ -4089,11 +4089,11 @@ dialog q_sawmill_talk
 //==============================================================================
 dialog q_sawmill_messenger
 {
-	if quest_progress 5
+	if questProgress 5
 		talk 0
 	else
 	{
-		set_quest_progress 5
+		setQuestProgress 5
 		talk 1
 		talk 2
 		talk 3
@@ -4116,19 +4116,19 @@ dialog q_spread_news_start
 		talk 4
 		talk 5
 		talk 6
-		set_quest_progress 1
+		setQuestProgress 1
 		end
 	}
 	escape choice 7
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_spread_news_tell
 {
 	talk 0
-	set_quest_progress 2
+	setQuestProgress 2
 	end
 }
 
@@ -4136,7 +4136,7 @@ dialog q_spread_news_tell
 dialog q_spread_news_timeout
 {
 	talk 0
-	set_quest_progress 3
+	setQuestProgress 3
 	end
 }
 
@@ -4145,7 +4145,7 @@ dialog q_spread_news_end
 {
 	talk 0
 	talk 1
-	set_quest_progress 4
+	setQuestProgress 4
 	end
 }
 
@@ -4157,7 +4157,7 @@ dialog q_wanted_start
 	talk 2
 	choice 3
 	{
-		set_quest_progress 1
+		setQuestProgress 1
 		talk 4
 		talk 5
 		talk 6
@@ -4165,13 +4165,13 @@ dialog q_wanted_start
 	}
 	escape choice 7
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
 dialog q_wanted_timeout
 {
-	set_quest_progress 2
+	setQuestProgress 2
 	talk 0
 	talk 1
 	end
@@ -4181,7 +4181,7 @@ dialog q_wanted_timeout
 dialog q_wanted_end
 {
 	talk 0
-	set_quest_progress 4
+	setQuestProgress 4
 	talk 1
 	end
 }
@@ -4227,7 +4227,7 @@ dialog tomir
 			script "target.OrderLeave()"
 			end
 		}
-		show_choices
+		showChoices
 	}
 }
 
@@ -4276,14 +4276,14 @@ dialog mage_seller
 		}
 		escape choice 12
 			restart
-		show_choices
+		showChoices
 	}
 	choice 2
 	{
 		talk 3
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 4
 		{
@@ -4293,7 +4293,7 @@ dialog mage_seller
 	}
 	escape choice 6
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -4321,14 +4321,14 @@ dialog cleric_seller
 		}
 		escape choice 6
 			restart
-		show_choices
+		showChoices
 	}
 	choice 7
 	{
 		talk 8
 		restart
 	}
-	if have_item q_szaleni_kamien
+	if haveItem q_szaleni_kamien
 	{
 		choice 9
 		{
@@ -4338,7 +4338,7 @@ dialog cleric_seller
 	}
 	escape choice 11
 		end
-	show_choices
+	showChoices
 }
 
 //==============================================================================
@@ -4519,7 +4519,7 @@ dialog hunter_leader
 	{
 		escape choice 1
 			end
-		show_choices
+		showChoices
 	}
 	end
 }

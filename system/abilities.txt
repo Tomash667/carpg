@@ -2,46 +2,46 @@
 //------------------------------------------------------------------------------
 ability magic_bolt {
 	type point
-	flags {use_cast mage default_attack}
+	flags {useCast mage defaultAttack}
 	level 0
 	dmg 25 + 5
 	range 50
 	speed 20
 	tex "mp.png" 0.05
-	tex_particle "mpp.png" 0.02
-	sound_cast "flaunch.wav" 0.5
-	sound_hit "punch1.wav" 1
+	texParticle "mpp.png" 0.02
+	soundCast "flaunch.wav" 0.5
+	soundHit "punch1.wav" 1
 }
 
 ability xmagic_bolt {
 	type point
-	flags {use_cast mage triple}
+	flags {useCast mage triple}
 	dmg 20 + 5
 	range 50
 	speed 20
 	tex "xmp.png" 0.05
-	tex_particle "xmpp.png" 0.02
-	sound_cast "flaunch.wav" 0.5
-	sound_hit "punch1.wav" 1
+	texParticle "xmpp.png" 0.02
+	soundCast "flaunch.wav" 0.5
+	soundHit "punch1.wav" 1
 }
 
 ability fireball {
 	type point
-	flags {use_cast mage explode}
+	flags {useCast mage explode}
 	level 5
 	dmg 130 + 12
 	cooldown {2.5 5}
 	range 50
 	speed 15
-	explode_range 2
+	explodeRange 2
 	mana 75
 	tex "flare.png" 0.2
-	tex_particle "flare.png" 0.075
-	tex_explode "explosion.jpg"
-	sound_cast "rlaunch.mp3" 1
-	sound_hit "explode.mp3" 3
+	texParticle "flare.png" 0.075
+	texExplode "explosion.jpg"
+	soundCast "rlaunch.mp3" 1
+	soundHit "explode.mp3" 3
 	icon
-	learning_points 2
+	learningPoints 2
 	skill 20
 }
 
@@ -53,36 +53,36 @@ ability spit_poison {
 	range 20
 	speed 12
 	tex "spit.png" 0.1
-	tex_particle "spitp.png" 0.03
-	sound_cast "splash1.wav" 0.5
-	sound_hit "splash2.mp3" 1
+	texParticle "spitp.png" 0.03
+	soundCast "splash1.wav" 0.5
+	soundHit "splash2.mp3" 1
 }
 
 ability raise {
 	type target
 	effect raise
-	flags {use_cast non_combat}
+	flags {useCast nonCombat}
 	cooldown {10 15}
 	range 2.5
-	move_range 15
-	tex_particle "czarna_iskra.png" 0.2
-	sound_cast "Darkness3.mp3" 1
+	moveRange 15
+	texParticle "czarna_iskra.png" 0.2
+	soundCast "Darkness3.mp3" 1
 }
 
 ability thunder_bolt {
 	type ray
 	effect electro
 	level 10
-	flags {use_cast mage}
+	flags {useCast mage}
 	dmg 150 + 15
 	cooldown {7.5 12.5}
 	range 50
 	mana 200
-	tex_particle "iskra.png" 0.03
-	sound_cast "lighting_bolt.mp3" 3
-	sound_hit "zap.mp3" 1
+	texParticle "iskra.png" 0.03
+	soundCast "lighting_bolt.mp3" 3
+	soundHit "zap.mp3" 1
 	icon
-	learning_points 5
+	learningPoints 5
 	skill 50
 }
 
@@ -92,7 +92,7 @@ ability drain {
 	dmg 50 + 5
 	cooldown {2.5 5}
 	range 5
-	sound_cast "suck.mp3" 1
+	soundCast "suck.mp3" 1
 }
 
 ability drain2 {
@@ -101,83 +101,83 @@ ability drain2 {
 	dmg 80 + 8
 	cooldown {3.5 6}
 	range 6
-	sound_cast "suck.mp3" 1
+	soundCast "suck.mp3" 1
 }
 
 ability exploding_skull {
 	type point
-	flags {use_cast explode}
+	flags {useCast explode}
 	dmg 140 + 13
 	cooldown {5 10}
 	range 40
 	speed 12
-	explode_range 2.5
+	explodeRange 2.5
 	mesh "czaszka.qmsh" 0.13
-	tex_particle "flare.png" 0.075
-	tex_explode "explosion.jpg"
-	sound_cast "evil_laught.mp3" 1
-	sound_hit "explode.mp3" 3
+	texParticle "flare.png" 0.075
+	texExplode "explosion.jpg"
+	soundCast "evil_laught.mp3" 1
+	soundHit "explode.mp3" 3
 }
 
 ability heal {
 	type target
 	effect heal
-	flags {non_combat cleric use_cast}
+	flags {nonCombat cleric useCast}
 	dmg 50 + 5 // 5 points per charisma/gods_magic
 	cooldown 5
 	range 7.5
-	move_range 15
+	moveRange 15
 	mana 100
-	tex_particle "heal_effect.png" 0.1
-	sound_cast "heal.mp3" 1
+	texParticle "heal_effect.png" 0.1
+	soundCast "heal.mp3" 1
 	icon
 }
 
 ability mystic_ball {
 	type point
-	flags {use_cast explode}
+	flags {useCast explode}
 	dmg 400
 	cooldown 10
 	range 50
 	speed 18
-	explode_range 3
+	explodeRange 3
 	tex "flare2.png" 0.2
-	tex_particle "flare2.png" 0.075
-	tex_explode "rainbow.jpg"
-	sound_cast "rlaunch.mp3" 1
-	sound_hit "explode.mp3" 3
+	texParticle "flare2.png" 0.075
+	texExplode "rainbow.jpg"
+	soundCast "rlaunch.mp3" 1
+	soundHit "explode.mp3" 3
 }
 
 ability bull_charge {
 	type charge
 	effect stun
 	time 1.5
-	flags {strength ignore_units}
+	flags {strength ignoreUnits}
 	dmg 100 + 5 // 5 * strength
 	cooldown 20
 	range 5
 	width 0.6
 	stamina 100
-	sound_cast "charge.wav" 2
+	soundCast "charge.wav" 2
 	icon
 }
 
 ability dash {
 	type charge
-	flags pick_dir
+	flags pickDir
 	recharge 5
 	charges 3
 	range 7.5
 	width 0.25
 	stamina 25
-	sound_cast "dash.wav" 0.5
+	soundCast "dash.wav" 0.5
 	icon
 }
 
 ability summon_wolf {
 	type summon
 	unit white_wolf_sum
-	flags use_cast
+	flags useCast
 	cooldown 60
 	range 10
 	width 1.5
@@ -189,76 +189,76 @@ ability howl_aggro {
 	cooldown 9999
 	range 50
 	animation "howl"
-	sound_cast "wolf_x.mp3" 3
+	soundCast "wolf_x.mp3" 3
 }
 
 ability howl_summon {
-	type summon_away
+	type summonAway
 	unit wolf
 	count 5
 	flags boss50hp
 	cooldown 9999
 	range 50
 	animation "howl"
-	sound_cast "wolf_x.mp3" 3
+	soundCast "wolf_x.mp3" 3
 }
 
 ability wolf_charge {
 	type charge
-	flags ignore_units
+	flags ignoreUnits
 	dmg 250
 	cooldown {5 10}
 	range 5
 	width 1
 	animation "charge"
-	sound_cast "wolf_attack.mp3" 1
+	soundCast "wolf_attack.mp3" 1
 }
 
 ability entangling_arrow {
-	type ranged_attack
+	type rangedAttack
 	effect rooted
 	time 2
 	cooldown 20
 	stamina 100
 	mesh "entangling_arrow.qmsh" 1
 	color {68 106 59 160} // dark green
-	sound_hit "vine.mp3" 1
+	soundHit "vine.mp3" 1
 	icon
-	learning_points 2
+	learningPoints 2
 	skill 25
 }
 
 ability fire_trap {
 	type trap
-	flags {use_cast mage}
-	trap_id fireball
+	flags {useCast mage}
+	trapId fireball
 	dmg 130 + 12
 	level 5
 	range 10
 	width 1.5
 	mana 75
 	cooldown 10
-	tex_particle "fire_spark.png" 0.075
-	sound_cast "catching_fire.mp3" 0.5
+	texParticle "fire_spark.png" 0.075
+	soundCast "catching_fire.mp3" 0.5
 	count 3
 	icon
-	learning_points 2
+	learningPoints 2
 	skill 25
 }
 
 ability bear_trap {
 	type trap
-	flags use_kneel
-	trap_id bear
+	flags useKneel
+	trapId bear
 	dmg 300
 	range 3
 	width 1.5
 	cooldown 12
-	cast_time 1
+	castTime 1
 	stamina 50
-	tex_particle "dust.png" 0.075
-	sound_cast "metal_spring_02.mp3" 0.5
+	texParticle "dust.png" 0.075
+	soundCast "metal_spring_02.mp3" 0.5
 	count 3
 	icon
-	learning_points 3
+	learningPoints 3
 }

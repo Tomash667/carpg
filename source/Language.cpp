@@ -202,7 +202,7 @@ void Language::PrepareTokenizer(Tokenizer& t)
 {
 	t.AddKeywords(G_KEYWORD, {
 		{ "attribute", K_ATTRIBUTE },
-		{ "skill_group", K_SKILL_GROUP },
+		{ "skillGroup", K_SKILL_GROUP },
 		{ "skill", K_SKILL },
 		{ "class", K_CLASS },
 		{ "name", K_NAME },
@@ -212,9 +212,9 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "item", K_ITEM },
 		{ "perk", K_PERK },
 		{ "unit", K_UNIT },
-		{ "unit_group", K_UNIT_GROUP },
-		{ "location_start", K_LOCATION_START },
-		{ "location_end", K_LOCATION_END },
+		{ "unitGroup", K_UNIT_GROUP },
+		{ "locationStart", K_LOCATION_START },
+		{ "locationEnd", K_LOCATION_END },
 		{ "building", K_BUILDING },
 		{ "ability", K_ABILITY },
 		{ "usable", K_USABLE }
@@ -224,11 +224,11 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "name", P_NAME },
 		{ "name2", P_NAME2 },
 		{ "name3", P_NAME3 },
-		{ "real_name", P_REAL_NAME },
+		{ "realName", P_REAL_NAME },
 		{ "desc", P_DESC },
 		{ "about", P_ABOUT },
 		{ "text", P_TEXT },
-		{ "encounter_text", P_ENCOUNTER_TEXT },
+		{ "encounterText", P_ENCOUNTER_TEXT },
 		{ "details", P_DETAILS }
 		});
 }
@@ -292,7 +292,7 @@ void Language::ParseObject(Tokenizer& t)
 		}
 		break;
 	case K_SKILL_GROUP:
-		// skill_group id = "text"
+		// skillGroup id = "text"
 		{
 			const string& id = t.MustGetText();
 			SkillGroup* sgi = SkillGroup::Find(id);
@@ -523,7 +523,7 @@ void Language::ParseObject(Tokenizer& t)
 		}
 		break;
 	case K_UNIT_GROUP:
-		// unit_group id {
+		// unitGroup id {
 		//		name "text"
 		//		[name2 "text"]
 		//		[name3 "text"]

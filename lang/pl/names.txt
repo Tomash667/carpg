@@ -1,8 +1,8 @@
-name_from = "z "
-name_sonOf = "syn "
-name_sonOfPost = "a"
-name_sonOfInvalid = "y"
-name_prefix = ""
+nameFrom = "z "
+nameSonOf = "syn "
+nameSonOfPost = "a"
+nameSonOfInvalid = "y"
+namePrefix = ""
 
 name random {
 	"Adam"
@@ -308,7 +308,7 @@ name crazy {
 	"Cezar"
 }
 
-name location_start {
+name locationStart {
 	"Amber"
 	"Aqua"
 	"Black"
@@ -385,7 +385,7 @@ name location_start {
 	"Zany"
 }
 
-name location_end {
+name locationEnd {
 	"arc"
 	"beam"
 	"castle"
