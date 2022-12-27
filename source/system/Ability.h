@@ -57,6 +57,7 @@ struct Ability
 	SoundPtr soundCast, soundHit;
 	TexturePtr tex, texParticle, texIcon;
 	TexOverride texExplode;
+	ParticleEffect* particleEffect;
 	Vec2 cooldown;
 	Type type;
 	Effect effect;
@@ -72,7 +73,7 @@ struct Ability
 	};
 	Color color; // RangedAttack trail color
 
-	Ability() : soundCast(nullptr), soundHit(nullptr), tex(nullptr), texParticle(nullptr), texIcon(nullptr), shape(nullptr), mesh(nullptr), type(Point),
+	Ability() : soundCast(nullptr), soundHit(nullptr), tex(nullptr), texParticle(nullptr), texIcon(nullptr), particleEffect(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmgBonus(0), range(10.f), moveRange(10.f), size(0.f), sizeParticle(0.f), speed(0.f), explodeRange(0.f),
 		soundCastDist(1.f), soundHitDist(2.f), mana(0), stamina(0), charges(1), recharge(0), width(0), effect(None), learningPoints(0), skill(999),
 		level(0), count(1), time(1), color(Color::White), castTime(0) {}

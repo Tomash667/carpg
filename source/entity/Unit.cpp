@@ -7055,7 +7055,7 @@ void Unit::CastSpell()
 			trap->attack = ability.dmg + ability.dmgBonus * (level + CalculateMagicPower());
 
 			// particle effect
-			if(ability.texParticle)
+			if(ability.particleEffect)
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, targetPos, Vec2::Zero);
 		}
 		break;

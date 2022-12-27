@@ -23,9 +23,7 @@
 GameResources* gameRes;
 
 //=================================================================================================
-GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr), peHit(nullptr), peSpellHit(nullptr), peElectroHit(nullptr), peTorch(nullptr),
-peMagicTorch(nullptr), peCampfire(nullptr), peAltarBlood(nullptr), peWater(nullptr), peMagicfire(nullptr), peSmoke(nullptr), peSpawn(nullptr),
-peRaise(nullptr), peHeal(nullptr), peSpellOther(nullptr), peSpellBall(nullptr), peBlood(nullptr)
+GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
 {
 }
 
@@ -38,22 +36,7 @@ GameResources::~GameResources()
 		delete item.second;
 	for(Texture* tex : overrideItemTextures)
 		delete tex;
-	delete peHit;
-	delete peSpellHit;
-	delete peElectroHit;
-	delete peTorch;
-	delete peMagicTorch;
-	delete peCampfire;
-	delete peAltarBlood;
-	delete peWater;
-	delete peMagicfire;
-	delete peSmoke;
-	delete peSpawn;
-	delete peRaise;
-	delete peHeal;
-	delete peSpellOther;
-	delete peSpellBall;
-	delete peBlood;
+	DeleteElements(particleEffects);
 }
 
 //=================================================================================================
@@ -86,6 +69,7 @@ void GameResources::Init()
 void GameResources::InitEffects()
 {
 	peHit = new ParticleEffect;
+	peHit->id = "hit";
 	peHit->tex = resMgr->Get<Texture>("iskra.png");
 	peHit->life = 5.f;
 	peHit->particleLife = 0.5f;
@@ -99,8 +83,11 @@ void GameResources::InitEffects()
 	peHit->posMax = Vec3(0.1f, 0.1f, 0.1f);
 	peHit->alpha = Vec2(0.9f, 0.f);
 	peHit->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(peHit);
 
 	peSpellHit = new ParticleEffect;
+	peSpellHit->id = "spellHit";
+	peSpellHit->tex = nullptr;
 	//peSpellHit->tex = ability->texParticle;
 	peSpellHit->life = -1;
 	peSpellHit->particleLife = 0.5f;
@@ -115,9 +102,11 @@ void GameResources::InitEffects()
 	peSpellHit->alpha = Vec2(1.f, 0.f);
 	//peSpellHit->size = Vec2(ability->sizeParticle, 0.f);
 	peSpellHit->mode = 1;
+	particleEffects.push_back(peSpellHit);
 
-	peElectroHit = new ParticleEffect;
-	//peElectroHit->tex = ability->texParticle;
+	ParticleEffect* peElectroHit = new ParticleEffect;
+	peElectroHit->id = "electroHit";
+	peElectroHit->tex = resMgr->Get<Texture>("iskra.png");
 	peElectroHit->life = 0.f;
 	peElectroHit->particleLife = 0.5f;
 	peElectroHit->emissionInterval = 0.f;
@@ -126,13 +115,15 @@ void GameResources::InitEffects()
 	peElectroHit->maxParticles = 12;
 	peElectroHit->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 	peElectroHit->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//peElectroHit->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//peElectroHit->posMax = Vec3(ability->size, ability->size, ability->size);
+	peElectroHit->posMin = Vec3::Zero;
+	peElectroHit->posMax = Vec3::Zero;
 	peElectroHit->alpha = Vec2(1.f, 0.f);
-	//peElectroHit->size = Vec2(ability->sizeParticle, 0.f);
+	peElectroHit->size = Vec2(0.03f, 0.f);
 	peElectroHit->mode = 1;
+	particleEffects.push_back(peElectroHit);
 
 	peTorch = new ParticleEffect;
+	peTorch->id = "torch";
 	peTorch->tex = resMgr->Get<Texture>("flare.png");
 	peTorch->life = -1;
 	peTorch->particleLife = 0.5f;
@@ -147,14 +138,20 @@ void GameResources::InitEffects()
 	peTorch->alpha = Vec2(0.8f, 0.f);
 	peTorch->size = Vec2(0.5f, 0.f);
 	peTorch->mode = 1;
+	particleEffects.push_back(peTorch);
 
 	peMagicTorch = new ParticleEffect(*peTorch);
+	peMagicTorch->id = "magicTorch";
 	peMagicTorch->tex = resMgr->Get<Texture>("flare2.png");
+	particleEffects.push_back(peMagicTorch);
 
 	peCampfire = new ParticleEffect(*peTorch);
+	peCampfire->id = "campfire";
 	peCampfire->size = Vec2(0.7f, 0.f);
+	particleEffects.push_back(peCampfire);
 
 	peAltarBlood = new ParticleEffect;
+	peAltarBlood->id = "altarBlood";
 	peAltarBlood->tex = resMgr->Get<Texture>("krew.png");
 	peAltarBlood->life = -1;
 	peAltarBlood->particleLife = 0.5f;
@@ -168,8 +165,10 @@ void GameResources::InitEffects()
 	peAltarBlood->speedMax = Vec3(1, 6, 1);
 	peAltarBlood->alpha = Vec2(0.8f, 0.f);
 	peAltarBlood->size = Vec2(0.5f, 0.f);
+	particleEffects.push_back(peAltarBlood);
 
 	peWater = new ParticleEffect;
+	peWater->id = "water";
 	peWater->tex = resMgr->Get<Texture>("water.png");
 	peWater->life = -1;
 	peWater->particleLife = 3.f;
@@ -183,8 +182,10 @@ void GameResources::InitEffects()
 	peWater->speedMax = Vec3(0.6f, 7, 0.6f);
 	peWater->alpha = Vec2(0.8f, 0.f);
 	peWater->size = Vec2(0.05f, 0.f);
+	particleEffects.push_back(peWater);
 
-	peMagicfire = new ParticleEffect;
+	ParticleEffect* peMagicfire = new ParticleEffect;
+	peMagicfire->id = "magicfire";
 	peMagicfire->tex = resMgr->Get<Texture>("flare2.png");
 	peMagicfire->life = -1;
 	peMagicfire->particleLife = 0.5f;
@@ -199,8 +200,10 @@ void GameResources::InitEffects()
 	peMagicfire->alpha = Vec2(1.0f, 0.f);
 	peMagicfire->size = Vec2(1.0f, 0.f);
 	peMagicfire->mode = 1;
+	particleEffects.push_back(peMagicfire);
 
-	peSmoke = new ParticleEffect;
+	ParticleEffect* peSmoke = new ParticleEffect;
+	peSmoke->id = "smoke";
 	peSmoke->tex = resMgr->Get<Texture>("smoke.png");
 	peSmoke->life = -1;
 	peSmoke->particleLife = 2.5f;
@@ -215,8 +218,10 @@ void GameResources::InitEffects()
 	peSmoke->alpha = Vec2(0.25f, 0.f);
 	peSmoke->size = Vec2(1.0f, 5.f);
 	peSmoke->gravity = false;
+	particleEffects.push_back(peSmoke);
 
 	peSpawn = new ParticleEffect;
+	peSpawn->id = "spawn";
 	peSpawn->tex = resMgr->Get<Texture>("spawn_fog.png");
 	peSpawn->life = 5.f;
 	peSpawn->particleLife = 0.5f;
@@ -230,9 +235,11 @@ void GameResources::InitEffects()
 	peSpawn->posMax = Vec3(0.75f, 1.f, 0.75f);
 	peSpawn->alpha = Vec2(0.5f, 0.f);
 	peSpawn->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(peSpawn);
 
-	peRaise = new ParticleEffect;
-	//peRaise->tex = ability->texParticle;
+	ParticleEffect* peRaise = new ParticleEffect;
+	peRaise->id = "raise";
+	peRaise->tex = resMgr->Get<Texture>("czarna_iskra.png");
 	peRaise->life = 0.f;
 	peRaise->particleLife = 1.f;
 	peRaise->emissionInterval = 0.f;
@@ -241,13 +248,15 @@ void GameResources::InitEffects()
 	peRaise->maxParticles = 25;
 	peRaise->speedMin = Vec3(0, 4, 0);
 	peRaise->speedMax = Vec3(0, 5, 0);
-	//peRaise->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//peRaise->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	peRaise->posMin = Vec3::Zero;
+	peRaise->posMax = Vec3::Zero;
 	peRaise->alpha = Vec2(1.f, 0.f);
-	//peRaise->size = Vec2(ability->sizeParticle, 0.f);
+	peRaise->size = Vec2(0.2f, 0.f);
+	particleEffects.push_back(peRaise);
 
-	peHeal = new ParticleEffect;
-	//peHeal->tex = ability->texParticle;
+	ParticleEffect* peHeal = new ParticleEffect;
+	peHeal->id = "heal";
+	peHeal->tex = resMgr->Get<Texture>("heal_effect.png");
 	peHeal->life = 0.f;
 	peHeal->particleLife = 0.5f;
 	peHeal->emissionInterval = 0.f;
@@ -256,29 +265,39 @@ void GameResources::InitEffects()
 	peHeal->maxParticles = 25;
 	peHeal->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 	peHeal->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//peHeal->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//peHeal->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	peHeal->posMin = Vec3::Zero;
+	peHeal->posMax = Vec3::Zero;
 	peHeal->alpha = Vec2(0.9f, 0.f);
-	//peHeal->size = Vec2(ability->sizeParticle, 0.f);
+	peHeal->size = Vec2(0.1f, 0.f);
 	peHeal->mode = 1;
+	particleEffects.push_back(peHeal);
 
-	peSpellOther = new ParticleEffect;
-	//peSpellOther->tex = ability->texParticle;
-	peSpellOther->life = 0.f;
-	peSpellOther->particleLife = 0.5f;
-	peSpellOther->emissionInterval = 0.f;
-	peSpellOther->emissions = 1;
-	peSpellOther->spawn = Int2(12);
-	peSpellOther->maxParticles = 12;
-	peSpellOther->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
-	peSpellOther->speedMax = Vec3(0.5f, 3.0f, 0.5f);
-	peSpellOther->posMin = Vec3(-0.5f, 0, -0.5f);
-	peSpellOther->posMax = Vec3(0.5f, 0, 0.5f);
-	peSpellOther->alpha = Vec2(1.f, 0.f);
-	//peSpellOther->size = Vec2(ability->sizeParticle / 2, 0.f);
-	peSpellOther->mode = 1;
+	ParticleEffect* peFireTrap = new ParticleEffect;
+	peFireTrap->id = "fireTrap";
+	peFireTrap->tex = resMgr->Get<Texture>("fire_spark.png");
+	peFireTrap->life = 0.f;
+	peFireTrap->particleLife = 0.5f;
+	peFireTrap->emissionInterval = 0.f;
+	peFireTrap->emissions = 1;
+	peFireTrap->spawn = Int2(12);
+	peFireTrap->maxParticles = 12;
+	peFireTrap->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
+	peFireTrap->speedMax = Vec3(0.5f, 3.0f, 0.5f);
+	peFireTrap->posMin = Vec3(-0.5f, 0, -0.5f);
+	peFireTrap->posMax = Vec3(0.5f, 0, 0.5f);
+	peFireTrap->alpha = Vec2(1.f, 0.f);
+	peFireTrap->size = Vec2(0.0375f, 0.f);
+	peFireTrap->mode = 1;
+	particleEffects.push_back(peFireTrap);
+
+	ParticleEffect* peBearTrap = new ParticleEffect(*peFireTrap);
+	peBearTrap->id = "fireTrap";
+	peBearTrap->tex = resMgr->Get<Texture>("dust.png");
+	particleEffects.push_back(peBearTrap);
 
 	peSpellBall = new ParticleEffect;
+	peSpellBall->id = "spellBall";
+	peSpellBall->tex = nullptr;
 	//peSpellBall->tex = ability.texParticle;
 	peSpellBall->life = 0.f;
 	peSpellBall->particleLife = 0.5f;
@@ -293,8 +312,11 @@ void GameResources::InitEffects()
 	peSpellBall->alpha = Vec2(1.f, 0.f);
 	//peSpellBall->size = Vec2(ability.size / 2, 0.f);
 	peSpellBall->mode = 1;
+	particleEffects.push_back(peSpellBall);
 
 	peBlood = new ParticleEffect;
+	peBlood->id = "blood";
+	peBlood->tex = nullptr;
 	//peBlood->tex = gameRes->tBlood[type];
 	peBlood->life = 5.f;
 	peBlood->particleLife = 0.5f;
@@ -308,6 +330,7 @@ void GameResources::InitEffects()
 	peBlood->posMax = Vec3(0.1f, 0.1f, 0.1f);
 	peBlood->alpha = Vec2(0.9f, 0.f);
 	peBlood->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(peBlood);
 }
 
 //=================================================================================================
@@ -380,13 +403,11 @@ void GameResources::LoadData()
 	tBloodSplat[BLOOD_YELLOW] = resMgr->Load<Texture>("krew_slad4.png");
 	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
 	tVignette = resMgr->Load<Texture>("vignette.jpg");
-	resMgr->Load(peHit->tex);
-	resMgr->Load(peTorch->tex);
-	resMgr->Load(peMagicTorch->tex);
-	resMgr->Load(peAltarBlood->tex);
-	resMgr->Load(peWater->tex);
-	resMgr->Load(peSmoke->tex);
-	resMgr->Load(peSpawn->tex);
+	for(ParticleEffect* effect : particleEffects)
+	{
+		if(effect->tex)
+			resMgr->Load(effect->tex);
+	}
 
 	// preload terrain textures
 	resMgr->AddTaskCategory(txLoadTerrainTextures);
@@ -989,4 +1010,15 @@ void GameResources::LoadTrap(BaseTrap* trap)
 		resMgr->Load(trap->sound3);
 
 	trap->state = ResourceState::Loaded;
+}
+
+//=================================================================================================
+ParticleEffect* GameResources::GetParticleEffect(Cstring id)
+{
+	for(ParticleEffect* effect : particleEffects)
+	{
+		if(effect->id == id)
+			return effect;
+	}
+	return nullptr;
 }

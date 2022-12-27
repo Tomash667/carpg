@@ -2447,10 +2447,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						soundMgr->PlaySound3d(ability->soundHit, pos, ability->soundHitDist);
 
 					// particles
-					if(ability->texParticle)
+					if(ability->particleEffect)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						gameRes->peElectroHit->Apply(pe);
+						ability->particleEffect->Apply(pe);
 						pe->tex = ability->texParticle;
 						pe->pos = pos;
 						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);

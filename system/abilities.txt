@@ -65,7 +65,7 @@ ability raise {
 	cooldown {10 15}
 	range 2.5
 	move_range 15
-	tex_particle "czarna_iskra.png" 0.2
+	particleEffect raise
 	sound_cast "Darkness3.mp3" 1
 }
 
@@ -78,7 +78,7 @@ ability thunder_bolt {
 	cooldown {7.5 12.5}
 	range 50
 	mana 200
-	tex_particle "iskra.png" 0.03
+	particleEffect electroHit
 	sound_cast "lighting_bolt.mp3" 3
 	sound_hit "zap.mp3" 1
 	icon
@@ -128,7 +128,7 @@ ability heal {
 	range 7.5
 	move_range 15
 	mana 100
-	tex_particle "heal_effect.png" 0.1
+	particleEffect heal
 	sound_cast "heal.mp3" 1
 	icon
 }
@@ -238,7 +238,7 @@ ability fire_trap {
 	width 1.5
 	mana 75
 	cooldown 10
-	tex_particle "fire_spark.png" 0.075
+	particleEffect fireTrap
 	sound_cast "catching_fire.mp3" 0.5
 	count 3
 	icon
@@ -256,7 +256,7 @@ ability bear_trap {
 	cooldown 12
 	cast_time 1
 	stamina 50
-	tex_particle "dust.png" 0.075
+	particleEffect bearTrap
 	sound_cast "metal_spring_02.mp3" 0.5
 	count 3
 	icon

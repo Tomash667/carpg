@@ -2,6 +2,7 @@
 
 struct ParticleEffect
 {
+	string id;
 	TexturePtr tex;
 	Vec3 speedMin, speedMax, posMin, posMax;
 	Vec2 alpha, size;

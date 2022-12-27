@@ -1442,30 +1442,21 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'e': // effect
-			if(game->inLoad)
-				break;
-			if(token == "magicfire")
+			if(!game->inLoad)
 			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peMagicfire->Apply(pe);
-				pe->pos = pos;
-				if(locPart.partType == LocationPart::Type::Outside)
-					pe->pos.y += terrain->GetH(pos);
-				pe->Init();
-				locPart.lvlPart->pes.push_back(pe);
+				ParticleEffect* effect = gameRes->GetParticleEffect(token);
+				assert(effect);
+				if(effect)
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					effect->Apply(pe);
+					pe->pos = pos;
+					if(locPart.partType == LocationPart::Type::Outside)
+						pe->pos.y += terrain->GetH(pos);
+					pe->Init();
+					locPart.lvlPart->pes.push_back(pe);
+				}
 			}
-			else if(token == "smoke")
-			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peSmoke->Apply(pe);
-				pe->pos = pos;
-				if(locPart.partType == LocationPart::Type::Outside)
-					pe->pos.y += terrain->GetH(pos);
-				pe->Init();
-				locPart.lvlPart->pes.push_back(pe);
-			}
-			else
-				assert(0);
 			break;
 		}
 	}
@@ -5015,26 +5006,12 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	switch(ability->effect)
+	ability->particleEffect->Apply(pe);
+	if(bounds != Vec2::Zero)
 	{
-	case Ability::Raise:
-		gameRes->peRaise->Apply(pe);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		break;
-	case Ability::Heal:
-		gameRes->peHeal->Apply(pe);
-		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		break;
-	default:
-		gameRes->peSpellOther->Apply(pe);
-		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
-		break;
 	}
-	pe->tex = ability->texParticle;
 	pe->pos = pos;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
