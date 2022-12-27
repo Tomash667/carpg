@@ -686,7 +686,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
-							unit.act.attack.hitted = false;
+							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attackSpeed;
 						}
@@ -701,7 +701,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.f;
 							unit.act.attack.run = false;
-							unit.act.attack.hitted = false;
+							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attackSpeed;
 							const Weapon& weapon = unit.GetWeapon();
@@ -742,7 +742,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 							unit.act.attack.power = 1.5f;
 							unit.act.attack.run = true;
-							unit.act.attack.hitted = false;
+							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 							unit.meshInst->groups[1].speed = attackSpeed;
 							const Weapon& weapon = unit.GetWeapon();

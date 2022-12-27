@@ -13,6 +13,7 @@
 #include "Buff.h"
 #include "Event.h"
 #include "GameDialog.h"
+#include "UnitOrder.h"
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -118,15 +119,6 @@ enum class WeaponState
 };
 
 //-----------------------------------------------------------------------------
-enum class AutoTalkMode
-{
-	No,
-	Yes,
-	Wait,
-	Leader
-};
-
-//-----------------------------------------------------------------------------
 // Frozen state - used to disable unit movement
 // used for warping between locations, entering buildings
 enum class FROZEN
@@ -138,87 +130,10 @@ enum class FROZEN
 };
 
 //-----------------------------------------------------------------------------
-enum UnitOrder
-{
-	ORDER_NONE,
-	ORDER_WANDER,
-	ORDER_WAIT,
-	ORDER_FOLLOW,
-	ORDER_LEAVE,
-	ORDER_MOVE,
-	ORDER_LOOK_AT,
-	ORDER_ESCAPE_TO, // escape from enemies moving toward point
-	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
-	ORDER_GOTO_INN,
-	ORDER_GUARD, // stays near target, remove dontAttack when target dontAttack is removed
-	ORDER_AUTO_TALK,
-	ORDER_MAX
-};
-
-//-----------------------------------------------------------------------------
 struct TraderStock
 {
 	vector<ItemSlot> items;
 	int date;
-};
-
-//-----------------------------------------------------------------------------
-enum MoveType
-{
-	MOVE_RUN,
-	MOVE_WALK,
-	MOVE_RUN_WHEN_NEAR_TEAM
-};
-
-//-----------------------------------------------------------------------------
-struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
-{
-	UnitOrder order;
-	Entity<Unit> unit;
-	float timer;
-	union
-	{
-		struct
-		{
-			Vec3 pos;
-			MoveType moveType;
-			float range;
-		};
-		struct
-		{
-			AutoTalkMode autoTalk;
-			GameDialog* autoTalkDialog;
-			Quest* autoTalkQuest;
-		};
-	};
-	UnitOrderEntry* next;
-
-	UnitOrderEntry() : next(nullptr) {}
-	void OnFree()
-	{
-		if(next)
-		{
-			next->Free();
-			next = nullptr;
-		}
-	}
-	UnitOrderEntry* WithTimer(float timer);
-	UnitOrderEntry* WithMoveType(MoveType moveType);
-	UnitOrderEntry* WithRange(float range);
-	UnitOrderEntry* ThenWander();
-	UnitOrderEntry* ThenWait();
-	UnitOrderEntry* ThenFollow(Unit* target);
-	UnitOrderEntry* ThenLeave();
-	UnitOrderEntry* ThenMove(const Vec3& pos);
-	UnitOrderEntry* ThenLookAt(const Vec3& pos);
-	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
-	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
-	UnitOrderEntry* ThenGoToInn();
-	UnitOrderEntry* ThenGuard(Unit* target);
-	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest);
-
-private:
-	UnitOrderEntry* NextOrder();
 };
 
 //-----------------------------------------------------------------------------
@@ -307,7 +222,8 @@ struct Unit : public EntityType<Unit>
 		{
 			int index;
 			float power;
-			bool run, hitted;
+			byte hitted; // 0-no, 1-attack object, 2-yes
+			bool run;
 		} attack;
 		struct CastAction
 		{
@@ -948,6 +864,7 @@ public:
 	UnitOrderEntry* OrderGoToInn();
 	UnitOrderEntry* OrderGuard(Unit* target);
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
+	UnitOrderEntry* OrderAttackObject(Usable* usable);
 	void Talk(cstring text, int playAnim = -1);
 	void TalkS(const string& text, int playAnim = -1) { Talk(text.c_str(), playAnim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animationState == AS_BASH_ANIMATION); }

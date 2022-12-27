@@ -659,7 +659,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 						unit.act.attack.power = 1.f;
 						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
+						unit.act.attack.hitted = 0;
 						unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.meshInst->groups[group].speed = attackSpeed;
 					}
@@ -672,7 +672,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 					unit.act.attack.power = 1.f;
 					unit.act.attack.run = false;
-					unit.act.attack.hitted = false;
+					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 					unit.meshInst->groups[group].speed = attackSpeed;
 					break;
@@ -703,7 +703,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 					unit.act.attack.power = 1.5f;
 					unit.act.attack.run = true;
-					unit.act.attack.hitted = false;
+					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 					unit.meshInst->groups[group].speed = attackSpeed;
 					break;

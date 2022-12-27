@@ -47,7 +47,8 @@ cstring orderStr[ORDER_MAX] = {
 	"ESCAPE_TO_UNIT",
 	"GOTO_INN",
 	"GUARD",
-	"AUTO_TALK"
+	"AUTO_TALK",
+	"ATTACK_OBJECT"
 };
 
 //-----------------------------------------------------------------------------
@@ -283,6 +284,10 @@ void LevelGui::DrawFront()
 							if(u.order->autoTalkQuest)
 								str += Format(",%d", u.order->autoTalkQuest->id);
 						}
+						break;
+					case ORDER_ATTACK_OBJECT:
+						if(Usable* usable = u.order->usable)
+							str += Format(" %s(%d)", usable->base->id.c_str(), usable->id);
 						break;
 					}
 				}

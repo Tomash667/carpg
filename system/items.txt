@@ -1626,6 +1626,20 @@ armor al_clothes3b {
 	flags {notBlacksmith hq}
 }
 
+armor al_old_robe {
+	weight 1.5
+	value 5
+	mesh "robe.qmsh"
+	texOverride "whiteRobe.jpg"
+	type light
+	unitType human
+	material cloth
+	defense 5
+	reqStr 20
+	mobility 90
+	flags notShop
+}
+
 //------------------------------------------------------------------------------
 // AMULETS
 //------------------------------------------------------------------------------

@@ -493,6 +493,10 @@ item al_clothes3b {
 	name "Drogie ubranie"
 	desc "Drogie ubranie wykonane na miarê."
 }
+item al_old_robe {
+	name "Stara szata"
+	desc "Czasy œwietnoœci ma ju¿ za sob¹."
+}
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR

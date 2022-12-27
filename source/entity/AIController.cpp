@@ -592,7 +592,7 @@ void AIController::DoAttack(Unit* target, bool running)
 		unit->animation = ANI_PLAY;
 	}
 	unit->animationState = (doPowerAttack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
-	unit->act.attack.hitted = !target;
+	unit->act.attack.hitted = target ? 0 : 1;
 
 	if(Net::IsOnline())
 	{

@@ -3436,6 +3436,11 @@ unit q_main_villager_def : villager {
 unit q_main_oldman : villager {
 	dialog "main_village4/oldman"
 	flags {human aiStay hero peaceful specificName}
+	items {
+		dagger_short
+		al_old_robe
+		random 1 3 !normal_food
+	}
 	appearance {
 		hairColor 0xDED5D0
 	}

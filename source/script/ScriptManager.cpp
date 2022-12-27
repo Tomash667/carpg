@@ -592,7 +592,8 @@ void ScriptManager::RegisterGame()
 		{ "ORDER_ESCAPE_TO_UNIT", ORDER_ESCAPE_TO_UNIT },
 		{ "ORDER_GOTO_INN", ORDER_GOTO_INN },
 		{ "ORDER_GUARD", ORDER_GUARD },
-		{ "ORDER_AUTO_TALK", ORDER_AUTO_TALK }
+		{ "ORDER_AUTO_TALK", ORDER_AUTO_TALK },
+		{ "ORDER_ATTACK_OBJECT", ORDER_ATTACK_OBJECT }
 		});
 
 	AddEnum("MOVE_TYPE", {
@@ -760,6 +761,11 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
+	AddType("Usable")
+		.Member("const Vec3 pos", offsetof(Usable, pos))
+		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Usable, AddEventHandler))
+		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Usable, RemoveEventHandler));
+
 	AddType("UnitOrderBuilder")
 		.Method("UnitOrderBuilder@ WithTimer(float)", asMETHOD(UnitOrderEntry, WithTimer))
 		.Method("UnitOrderBuilder@ WithMoveType(MOVE_TYPE)", asMETHOD(UnitOrderEntry, WithMoveType))
@@ -774,7 +780,8 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ ThenEscapeToUnit(Unit@)", asMETHOD(UnitOrderEntry, ThenEscapeToUnit))
 		.Method("UnitOrderBuilder@ ThenGoToInn()", asMETHOD(UnitOrderEntry, ThenGoToInn))
 		.Method("UnitOrderBuilder@ ThenGuard(Unit@)", asMETHOD(UnitOrderEntry, ThenGuard))
-		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
+		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk))
+		.Method("UnitOrderBuilder@ ThenAttackObject(Usable@)", asMETHOD(UnitOrderEntry, ThenAttackObject));
 
 	ForType("Unit")
 		.Member("const UnitData@ data", offsetof(Unit, data))
@@ -825,6 +832,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ OrderGoToInn()", asMETHOD(Unit, OrderGoToInn))
 		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
 		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(Unit, OrderAutoTalk))
+		.Method("UnitOrderBuilder@ OrderAttackObject(Usable@)", asMETHOD(Unit, OrderAttackObject))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
 		.Method("void RotateTo(const Vec3& in)", asMETHODPR(Unit, RotateTo, (const Vec3&), void))
 		.Method("void RotateTo(float)", asMETHODPR(Unit, RotateTo, (float), void))
@@ -858,6 +866,7 @@ void ScriptManager::RegisterGame()
 		.Member("const string name", offsetof(UnitGroup, name))
 		.Member("const bool female", offsetof(UnitGroup, gender))
 		.Method("UnitData@ GetLeader(int)", asMETHOD(UnitGroup, GetLeader))
+		.Method("UnitData@ GetRandom()", asMETHOD(UnitGroup, GetRandomUnit))
 		.WithNamespace()
 		.AddProperty("UnitGroup@ empty", &UnitGroup::empty)
 		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
@@ -895,10 +904,6 @@ void ScriptManager::RegisterGame()
 		.AddFunction("BaseObject@ Get(const string& in)", asFUNCTION(BaseObject::GetS));
 
 	AddType("Object");
-
-	AddType("Usable")
-		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Usable, AddEventHandler))
-		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Usable, RemoveEventHandler));
 
 	AddType("Chest")
 		.Method("bool AddItem(Item@, uint = 1)", asMETHODPR(Chest, AddItem, (const Item*, uint), bool));

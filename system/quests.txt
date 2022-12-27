@@ -3180,7 +3180,8 @@ quest main_village4
 			case P_MAIN_V4_ENTER:
 				{
 					// enemies
-					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					UnitGroup@ group = UnitGroup::Get("plague");
+					Level::SpawnUnits(group, 10);
 					
 					// inn people
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
@@ -3194,6 +3195,13 @@ quest main_village4
 					building.canEnter = false;
 					Usable@ usable = Level::SpawnUsable(BaseObject::Get("barricade"), building.entryArea.Midpoint(), building.rot);
 					usable.AddEventHandler(quest, EVENT_DESTROY);
+					
+					// units attacking barricade
+					for(int i = 0; i < 2; ++i)
+					{
+						@unit = Level::SpawnUnitNearLocation(group.GetRandom(), usable.pos, 3);
+						unit.OrderAttackObject(usable);
+					}
 					
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);

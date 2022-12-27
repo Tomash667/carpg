@@ -493,6 +493,10 @@ item al_clothes3b {
 	name "Expensive clothes"
 	desc "Expensive clothes created by a bespoke tailor."
 }
+item al_old_robe {
+	name "Old robe"
+	desc "Its glory days are over."
+}
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
