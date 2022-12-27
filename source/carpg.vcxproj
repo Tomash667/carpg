@@ -148,6 +148,7 @@
     <ClInclude Include="entity\Explo.h" />
     <ClInclude Include="entity\LevelPart.h" />
     <ClInclude Include="entity\LevelQuad.h" />
+    <ClInclude Include="entity\ParticleEffect.h" />
     <ClInclude Include="entity\UnitList.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
@@ -356,6 +357,7 @@
     <ClCompile Include="entity\DrawBatch.cpp" />
     <ClCompile Include="entity\Explo.cpp" />
     <ClCompile Include="entity\LevelPart.cpp" />
+    <ClCompile Include="entity\ParticleEffect.cpp" />
     <ClCompile Include="entity\UnitList.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />

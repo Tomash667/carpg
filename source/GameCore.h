@@ -152,6 +152,7 @@ struct Object;
 struct ObjectGroup;
 struct OutsideObject;
 struct OtherItem;
+struct ParticleEffect;
 struct Perk;
 struct PlayerController;
 struct PlayerInfo;

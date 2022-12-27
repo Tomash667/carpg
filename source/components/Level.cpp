@@ -25,6 +25,7 @@
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
+#include "ParticleEffect.h"
 #include "Pathfinding.h"
 #include "PhysicCallbacks.h"
 #include "PlayerInfo.h"
@@ -810,33 +811,20 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		if(IsSet(obj->flags, OBJ_LIGHT))
 		{
 			// flame
+			ParticleEffect* effect;
+			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
+				effect = gameRes->peCampfire;
+			else if(IsSet(flags, SOE_MAGIC_LIGHT))
+				effect = gameRes->peMagicTorch;
+			else
+				effect = gameRes->peTorch;
+
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = Vec2(0.8f, 0.f);
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->particleLife = 0.5f;
+			effect->Apply(pe);
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawn = Int2(1, 3);
-			pe->speedMin = Vec3(-1, 3, -1);
-			pe->speedMax = Vec3(1, 4, 1);
-			pe->mode = 1;
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
-
-			pe->tex = gameRes->tFlare;
-			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				pe->size = Vec2(0.7f, 0.f);
-			else
-			{
-				pe->size = Vec2(0.5f, 0.f);
-				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					pe->tex = gameRes->tFlare2;
-			}
 
 			// light
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
@@ -854,22 +842,9 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		{
 			// blood
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = Vec2(0.8f, 0.f);
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 50;
-			pe->particleLife = 0.5f;
+			gameRes->peAltarBlood->Apply(pe);
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawn = Int2(1, 3);
-			pe->speedMin = Vec3(-1, 4, -1);
-			pe->speedMax = Vec3(1, 6, 1);
-			pe->mode = 0;
-			pe->tex = gameRes->tBlood[BLOOD_RED];
-			pe->size = Vec2(0.5f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
@@ -877,22 +852,9 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		{
 			// water
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = Vec2(0.8f, 0.f);
-			pe->emissionInterval = 0.1f;
-			pe->emissions = -1;
-			pe->life = -1;
-			pe->maxParticles = 500;
-			pe->particleLife = 3.f;
+			gameRes->peWater->Apply(pe);
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->posMin = Vec3(0, 0, 0);
-			pe->posMax = Vec3(0, 0, 0);
-			pe->spawn = Int2(4, 8);
-			pe->speedMin = Vec3(-0.6f, 4, -0.6f);
-			pe->speedMax = Vec3(0.6f, 7, 0.6f);
-			pe->mode = 0;
-			pe->tex = gameRes->tWater;
-			pe->size = Vec2(0.05f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
@@ -1485,47 +1447,20 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			if(token == "magicfire")
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tFlare2;
-				pe->alpha = Vec2(1.0f, 0.f);
-				pe->size = Vec2(1.0f, 0.f);
-				pe->emissionInterval = 0.1f;
-				pe->emissions = -1;
-				pe->life = -1;
-				pe->maxParticles = 50;
-				pe->particleLife = 0.5f;
+				gameRes->peMagicfire->Apply(pe);
 				pe->pos = pos;
 				if(locPart.partType == LocationPart::Type::Outside)
 					pe->pos.y += terrain->GetH(pos);
-				pe->posMin = Vec3(0, 0, 0);
-				pe->posMax = Vec3(0, 0, 0);
-				pe->spawn = Int2(2, 4);
-				pe->speedMin = Vec3(-1, 3, -1);
-				pe->speedMax = Vec3(1, 4, 1);
-				pe->mode = 1;
 				pe->Init();
 				locPart.lvlPart->pes.push_back(pe);
 			}
 			else if(token == "smoke")
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tSmoke;
-				pe->alpha = Vec2(0.25f, 0.f);
-				pe->size = Vec2(1.0f, 5.f);
-				pe->emissionInterval = 0.1f;
-				pe->emissions = -1;
-				pe->life = -1;
-				pe->maxParticles = 100;
-				pe->particleLife = 2.5f;
+				gameRes->peSmoke->Apply(pe);
 				pe->pos = pos;
 				if(locPart.partType == LocationPart::Type::Outside)
 					pe->pos.y += terrain->GetH(pos);
-				pe->posMin = Vec3(-0.5f, 0, -0.5f);
-				pe->posMax = Vec3(0.5f, 0, 0.5f);
-				pe->spawn = Int2(2, 4);
-				pe->speedMin = Vec3(-0.5f, 3, -0.5f);
-				pe->speedMax = Vec3(0.5f, 4, 0.5f);
-				pe->mode = 0;
-				pe->gravity = false;
 				pe->Init();
 				locPart.lvlPart->pes.push_back(pe);
 			}
@@ -4666,21 +4601,8 @@ void Level::SpawnUnitEffect(Unit& unit)
 	soundMgr->PlaySound3d(gameRes->sSummon, realPos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = gameRes->tSpawn;
-	pe->emissionInterval = 0.1f;
-	pe->life = 5.f;
-	pe->particleLife = 0.5f;
-	pe->emissions = 5;
-	pe->spawn = Int2(10, 15);
-	pe->maxParticles = 15 * 5;
+	gameRes->peSpawn->Apply(pe);
 	pe->pos = unit.pos;
-	pe->speedMin = Vec3(-1, 0, -1);
-	pe->speedMax = Vec3(1, 1, 1);
-	pe->posMin = Vec3(-0.75f, 0, -0.75f);
-	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
-	pe->size = Vec2(0.3f, 0.f);
-	pe->alpha = Vec2(0.5f, 0.f);
-	pe->mode = 0;
 	pe->Init();
 	unit.locPart->lvlPart->pes.push_back(pe);
 }
@@ -5093,50 +5015,27 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->tex = ability->texParticle;
-	pe->emissionInterval = 0.f;
-	pe->life = 0.f;
-	pe->emissions = 1;
-	pe->pos = pos;
 	switch(ability->effect)
 	{
 	case Ability::Raise:
-		pe->particleLife = 1.f;
-		pe->spawn = Int2(16, 25);
-		pe->maxParticles = 25;
-		pe->speedMin = Vec3(0, 4, 0);
-		pe->speedMax = Vec3(0, 5, 0);
+		gameRes->peRaise->Apply(pe);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = Vec2(ability->sizeParticle, 0.f);
-		pe->alpha = Vec2(1.f, 0.f);
-		pe->mode = 0;
 		break;
 	case Ability::Heal:
-		pe->particleLife = 0.5f;
-		pe->spawn = Int2(16, 25);
-		pe->maxParticles = 25;
-		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+		gameRes->peHeal->Apply(pe);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 		pe->size = Vec2(ability->sizeParticle, 0.f);
-		pe->alpha = Vec2(0.9f, 0.f);
-		pe->mode = 1;
 		break;
 	default:
-		pe->particleLife = 0.5f;
-		pe->spawn = Int2(12);
-		pe->maxParticles = 12;
-		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
-		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
-		pe->posMin = Vec3(-0.5f, 0, -0.5f);
-		pe->posMax = Vec3(0.5f, 0, 0.5f);
+		gameRes->peSpellOther->Apply(pe);
 		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
-		pe->alpha = Vec2(1.f, 0.f);
-		pe->mode = 1;
 		break;
 	}
+	pe->tex = ability->texParticle;
+	pe->pos = pos;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
 

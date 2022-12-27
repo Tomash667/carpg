@@ -29,6 +29,7 @@
 #include "MpBox.h"
 #include "MultiInsideLocation.h"
 #include "Object.h"
+#include "ParticleEffect.h"
 #include "PlayerController.h"
 #include "PlayerInfo.h"
 #include "Portal.h"
@@ -818,21 +819,9 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(game->gameState == GS_LEVEL)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
+					gameRes->peBlood->Apply(pe);
 					pe->tex = gameRes->tBlood[type];
-					pe->emissionInterval = 0.f;
-					pe->life = 5.f;
-					pe->particleLife = 0.5f;
-					pe->emissions = 1;
-					pe->spawn = Int2(10, 15);
-					pe->maxParticles = 15;
 					pe->pos = pos;
-					pe->speedMin = Vec3(-1, 0, -1);
-					pe->speedMax = Vec3(1, 1, 1);
-					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-					pe->size = Vec2(0.3f, 0.f);
-					pe->alpha = Vec2(0.9f, 0.f);
-					pe->mode = 0;
 					pe->Init();
 					gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 				}
@@ -2326,21 +2315,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(ability.texParticle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
+					gameRes->peSpellBall->Apply(pe);
 					pe->tex = ability.texParticle;
-					pe->emissionInterval = 0.1f;
-					pe->life = -1;
-					pe->particleLife = 0.5f;
-					pe->emissions = -1;
-					pe->spawn = Int2(3, 4);
-					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
-					pe->speedMin = Vec3(-1, -1, -1);
-					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
 					pe->size = Vec2(ability.sizeParticle, 0.f);
-					pe->alpha = Vec2(1.f, 0.f);
-					pe->mode = 1;
 					pe->Init();
 					locPart.lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
@@ -2470,21 +2450,12 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(ability->texParticle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
+						gameRes->peElectroHit->Apply(pe);
 						pe->tex = ability->texParticle;
-						pe->emissionInterval = 0.f;
-						pe->life = 0.f;
-						pe->particleLife = 0.5f;
-						pe->emissions = 1;
-						pe->spawn = Int2(8, 12);
-						pe->maxParticles = 12;
 						pe->pos = pos;
-						pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-						pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 						pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 						pe->posMax = Vec3(ability->size, ability->size, ability->size);
 						pe->size = Vec2(ability->sizeParticle, 0.f);
-						pe->alpha = Vec2(1.f, 0.f);
-						pe->mode = 1;
 						pe->Init();
 
 						gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
@@ -3090,21 +3061,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tSpark;
-					pe->emissionInterval = 0.f;
-					pe->life = 5.f;
-					pe->particleLife = 0.5f;
-					pe->emissions = 1;
-					pe->spawn = Int2(10, 15);
-					pe->maxParticles = 15;
+					gameRes->peHit->Apply(pe);
 					pe->pos = pos;
-					pe->speedMin = Vec3(-1, 0, -1);
-					pe->speedMax = Vec3(1, 1, 1);
-					pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-					pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-					pe->size = Vec2(0.3f, 0.f);
-					pe->alpha = Vec2(0.9f, 0.f);
-					pe->mode = 0;
 					pe->Init();
 					gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);
 

@@ -12,6 +12,7 @@
 #include "LevelPart.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
+#include "ParticleEffect.h"
 #include "Pathfinding.h"
 #include "Portal.h"
 #include "QuestManager.h"
@@ -528,22 +529,9 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// add particles
 	ParticleEmitter* pe = new ParticleEmitter;
-	pe->alpha = Vec2(0.8f, 0.f);
-	pe->emissionInterval = 0.1f;
-	pe->emissions = -1;
-	pe->life = -1;
-	pe->maxParticles = 50;
-	pe->particleLife = 0.5f;
+	gameRes->peAltarBlood->Apply(pe);
 	pe->pos = obj->pos;
 	pe->pos.y += obj->base->centery;
-	pe->posMin = Vec3(0, 0, 0);
-	pe->posMax = Vec3(0, 0, 0);
-	pe->spawn = Int2(1, 3);
-	pe->speedMin = Vec3(-1, 4, -1);
-	pe->speedMax = Vec3(1, 6, 1);
-	pe->mode = 0;
-	pe->tex = gameRes->tBlood[BLOOD_RED];
-	pe->size = Vec2(0.5f, 0.f);
 	pe->Init();
 	lvl.lvlPart->pes.push_back(pe);
 
