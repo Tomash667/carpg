@@ -21,7 +21,7 @@ Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
-Net::Net() : peer(nullptr), packetLogger(nullptr), mpLoad(false), mpUseInterp(true), mpInterp(0.05f), wasClient(false)
+Net::Net() : peer(nullptr), packetLogger(nullptr), mpLoad(false), mpUseInterp(true), mpInterp(0.05f), wasClient(false), journalChanges(false)
 {
 }
 

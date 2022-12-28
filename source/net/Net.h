@@ -220,7 +220,7 @@ public:
 
 	SystemAddress server, pingAdr;
 	float interpolateTimer;
-	bool wasClient, joinLan;
+	bool wasClient, joinLan, journalChanges;
 
 private:
 	static Mode mode;

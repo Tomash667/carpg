@@ -1083,7 +1083,8 @@ void Game::UpdateAi(float dt)
 									Usable& use = **it2;
 									if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 										&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
-										&& gameLevel->CanSee(locPart, use.pos, u.pos))
+										&& gameLevel->CanSee(locPart, use.pos, u.pos)
+										&& !IsSet(use.base->useFlags, BaseUsable::DESTROYABLE))
 									{
 										const Item* neededItem = use.base->item;
 										if(!neededItem || u.HaveItem(neededItem) || u.GetEquippedItem(SLOT_WEAPON) == neededItem)
