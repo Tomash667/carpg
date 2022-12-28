@@ -200,6 +200,24 @@ quest kill_animals {
 }
 
 //=============================================================================
+quest wanted {
+	dialog start {
+		0 "I've got a wanted poster on one of the adventurers. Committed many crimes."
+		1 "Award for his head is $reward$ gold pieces."
+		2 "You are able to kill him?"
+		3 "Yes"
+		4 "This adventurer is called $name$, you'll find him in the $target_loc$ to the $target_dir$ from here."
+		5 "Show him the wanted poster and then kill. Just do not hurt bystanders."
+		6 "If within one month you won't kill him, he will flee from country."
+		7 "No"
+	}
+	
+	texts {
+		0 "Wanted"
+	}
+}
+
+//=============================================================================
 quest find_artifact {
 	dialog start {
 		0 "I'm looking for a certain artifact known as the $(item.name)."

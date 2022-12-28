@@ -4150,25 +4150,6 @@ dialog q_spread_news_end
 }
 
 //==============================================================================
-dialog q_wanted_start
-{
-	talk 0
-	talk 1
-	talk 2
-	choice 3
-	{
-		setQuestProgress 1
-		talk 4
-		talk 5
-		talk 6
-		end
-	}
-	escape choice 7
-		end
-	showChoices
-}
-
-//==============================================================================
 dialog q_wanted_timeout
 {
 	setQuestProgress 2
