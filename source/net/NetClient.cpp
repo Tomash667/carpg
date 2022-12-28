@@ -2421,7 +2421,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					e->id = id;
 					e->locPart = &locPart;
 					e->Register();
-					e->ability = Ability::Get("thunder_bolt");
+					e->ability = Ability::Get("thunderBolt");
 					e->startPos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
@@ -2460,7 +2460,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: Broken ELECTRO_HIT.");
 				else if(game->gameState == GS_LEVEL)
 				{
-					Ability* ability = Ability::Get("thunder_bolt");
+					Ability* ability = Ability::Get("thunderBolt");
 
 					// sound
 					if(ability->soundHit)

@@ -193,7 +193,7 @@ weapon sword_semur {
 	dmgType slash
 	flags {notShop notRandom mage unique}
 	effects {
-		magic_power 15
+		magicPower 15
 	}
 }
 
@@ -208,7 +208,7 @@ weapon sword_forbidden {
 	dmgType {slash pierce blunt}
 	flags {notShop notRandom unique}
 	effects {
-		magic_power 10
+		magicPower 10
 	}
 }
 
@@ -349,7 +349,7 @@ weapon blunt_orcish_shaman {
 	dmgType blunt
 	flags {notShop mage}
 	effects {
-		magic_power 2
+		magicPower 2
 	}
 }
 
@@ -469,7 +469,7 @@ weapon wand_novice {
 	dmgType blunt
 	flags {notShop mage magical wand}
 	effects {
-		magic_power 1
+		magicPower 1
 	}
 }
 
@@ -485,7 +485,7 @@ weapon wand_adept {
 	dmgType blunt
 	flags {notShop mage magical wand}
 	effects {
-		magic_power 4
+		magicPower 4
 	}
 }
 
@@ -501,7 +501,7 @@ weapon wand_expert {
 	dmgType blunt
 	flags {notShop mage magical wand}
 	effects {
-		magic_power 8
+		magicPower 8
 	}
 }
 
@@ -517,7 +517,7 @@ weapon wand_master {
 	dmgType blunt
 	flags {notShop mage magical wand}
 	effects {
-		magic_power 12
+		magicPower 12
 	}
 }
 
@@ -580,7 +580,7 @@ bow bow_angel {
 	speed 60
 	flags {notShop notRandom unique}
 	effects {
-		magic_power 4
+		magicPower 4
 	}
 }
 
@@ -672,7 +672,7 @@ shield shield_adamantine {
 	material metal
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -686,7 +686,7 @@ shield shield_wall {
 	material rock
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -700,7 +700,7 @@ shield shield_death {
 	material rock
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -795,7 +795,7 @@ armor al_dragonskin {
 	mobility 80
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -917,7 +917,7 @@ armor al_angelskin {
 	mobility 100
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 		regeneration 5
 	}
 }
@@ -1080,7 +1080,7 @@ armor am_dragonscale {
 	mobility 55
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1149,7 +1149,7 @@ armor am_breastplate_adam {
 	mobility 70
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1165,8 +1165,8 @@ armor am_gladiator {
 	mobility 75
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.1
-		melee_attack 25
+		magicResistance 0.1
+		meleeAttack 25
 	}
 }
 
@@ -1247,7 +1247,7 @@ armor ah_antimage {
 	mobility 55
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.33
+		magicResistance 0.33
 	}
 }
 
@@ -1316,7 +1316,7 @@ armor ah_plate_adam {
 	mobility 40
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1333,7 +1333,7 @@ armor ah_black_armor {
 	mobility 40
 	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -1362,7 +1362,7 @@ armor ah_crystal_m {
 	mobility 25
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1378,7 +1378,7 @@ armor ah_blood_crystal {
 	mobility 25
 	flags {notShop notRandom magical}
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1447,7 +1447,7 @@ armor al_orc_shaman {
 	mobility 85
 	flags {notShop mage magical}
 	effects {
-		magic_power 1
+		magicPower 1
 	}
 }
 
@@ -1492,10 +1492,10 @@ armor al_mage2 {
 	mobility 90
 	flags {notShop mage magical}
 	effects {
-		magic_power 1
+		magicPower 1
 		mana 100
-		mana_regeneration 0.1
-		magic_resistance 0.1
+		manaRegeneration 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1513,10 +1513,10 @@ armor al_mage3 {
 	mobility 90
 	flags {notShop mage magical}
 	effects {
-		magic_power 2
+		magicPower 2
 		mana 200
-		mana_regeneration 0.2
-		magic_resistance 0.1
+		manaRegeneration 0.2
+		magicResistance 0.1
 	}
 }
 
@@ -1534,10 +1534,10 @@ armor al_mage4 {
 	mobility 90
 	flags {notShop mage unique}
 	effects {
-		magic_power 3
+		magicPower 3
 		mana 300
-		mana_regeneration 0.3
-		magic_resistance 0.25
+		manaRegeneration 0.3
+		magicResistance 0.25
 	}
 }
 
@@ -1554,8 +1554,8 @@ armor al_necromancer {
 	mobility 80
 	flags {notShop magical}
 	effects {
-		magic_power 2
-		magic_resistance 0.1
+		magicPower 2
+		magicResistance 0.1
 	}
 }
 
@@ -1672,7 +1672,7 @@ amulet a_food : a_silver {
 	aiValue 90
 	flags magical
 	effects {
-		natural_healing_mod 1.5
+		naturalHealingMod 1.5
 	}
 }
 
@@ -1691,7 +1691,7 @@ amulet a_mage : a_gold {
 	aiValue 120
 	flags magical
 	effects {
-		magic_power 5
+		magicPower 5
 	}
 	tag mage
 }
@@ -1712,7 +1712,7 @@ amulet a_stamina : a_gold {
 	flags magical
 	effects {
 		stamina 100
-		stamina_regeneration_mod 1.25
+		staminaRegenerationMod 1.25
 	}
 	tag stamina
 }
@@ -1723,7 +1723,7 @@ amulet a_mana : a_gold {
 	flags magical
 	effects {
 		mana 150
-		mana_regeneration 0.5
+		manaRegeneration 0.5
 	}
 	tag mana
 }
@@ -1734,7 +1734,7 @@ amulet a_warrior : a_ruby {
 	flags magical
 	effects {
 		attribute str 10
-		melee_attack 50
+		meleeAttack 50
 		skill oneHandedWeapon 20
 	}
 	tag {melee str}
@@ -1746,7 +1746,7 @@ amulet a_archer : a_ruby {
 	flags magical
 	effects {
 		attribute dex 10
-		ranged_attack 50
+		rangedAttack 50
 		skill bow 20
 	}
 	tag {ranged dex}
@@ -1757,7 +1757,7 @@ amulet a_antimagic : a_ruby {
 	aiValue 180
 	flags magical
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 	tag def
 }
@@ -1770,7 +1770,7 @@ amulet a_health : a_diamond {
 		health 250
 		attribute end 10
 		regeneration 10
-		poison_resistance 0.25
+		poisonResistance 0.25
 	}
 	tag def
 }
@@ -1890,7 +1890,7 @@ ring r_attack : r_gold {
 	aiValue 80
 	flags magical
 	effects {
-		melee_attack 15
+		meleeAttack 15
 	}
 	tag melee
 }
@@ -1900,7 +1900,7 @@ ring r_ranged_attack : r_gold {
 	aiValue 80
 	flags magical
 	effects {
-		ranged_attack 15
+		rangedAttack 15
 	}
 	tag ranged
 }
@@ -1910,7 +1910,7 @@ ring r_mage : r_gold {
 	aiValue 80
 	flags magical
 	effects {
-		magic_power 2
+		magicPower 2
 	}
 	tag mage
 }
@@ -2157,7 +2157,7 @@ ring r_poison_resistance : r_emerald {
 	aiValue 110
 	flags magical
 	effects {
-		poison_resistance 0.5
+		poisonResistance 0.5
 	}
 	tag def
 }
@@ -2167,7 +2167,7 @@ ring r_mana_regen : r_emerald {
 	aiValue 110
 	flags magical
 	effects {
-		mana_regeneration 1
+		manaRegeneration 1
 	}
 	tag mana
 }
@@ -2183,7 +2183,7 @@ consumable p_nreg {
 	time 10
 	flags groundMesh
 	effects {
-		natural_healing_mod 2
+		naturalHealingMod 2
 	}
 }
 
@@ -2195,7 +2195,7 @@ consumable p_nreg2 {
 	time 30
 	flags groundMesh
 	effects {
-		natural_healing_mod 2.5
+		naturalHealingMod 2.5
 	}
 }
 
@@ -2239,7 +2239,7 @@ consumable p_mp {
 	type potion
 	flags groundMesh
 	effects {
-		restore_mana 250
+		restoreMana 250
 	}
 }
 
@@ -2250,7 +2250,7 @@ consumable p_mp2 {
 	type potion
 	flags groundMesh
 	effects {
-		restore_mana 500
+		restoreMana 500
 	}
 }
 
@@ -2261,7 +2261,7 @@ consumable p_mp3 {
 	type potion
 	flags groundMesh
 	effects {
-		restore_mana 1000
+		restoreMana 1000
 	}
 }
 
@@ -2286,7 +2286,7 @@ consumable p_antidote {
 	flags groundMesh
 	effects {
 		antidote 0
-		poison_resistance 0.5
+		poisonResistance 0.5
 	}
 }
 
@@ -2298,7 +2298,7 @@ consumable p_antimagic {
 	time 300
 	flags groundMesh
 	effects {
-		magic_resistance 0.5
+		magicResistance 0.5
 	}
 }
 
@@ -2351,7 +2351,7 @@ consumable water {
 	time 10
 	flags groundMesh
 	effects {
-		stamina_regeneration 20
+		staminaRegeneration 20
 	}
 }
 
@@ -2363,7 +2363,7 @@ consumable spring_water {
 	time 30
 	flags {groundMesh hq}
 	effects {
-		stamina_regeneration 30
+		staminaRegeneration 30
 	}
 }
 
@@ -2411,7 +2411,7 @@ consumable bread {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2423,7 +2423,7 @@ consumable meat {
 	flags {notMerchant groundMesh}
 	time 5
 	effects {
-		food_regeneration 50
+		foodRegeneration 50
 	}
 }
 
@@ -2435,7 +2435,7 @@ consumable raw_meat {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 20
+		foodRegeneration 20
 	}
 }
 
@@ -2447,7 +2447,7 @@ consumable sausage {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 60
+		foodRegeneration 60
 	}
 }
 
@@ -2459,7 +2459,7 @@ consumable fish_meat {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2471,7 +2471,7 @@ consumable fish {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 15
+		foodRegeneration 15
 	}
 }
 
@@ -2483,7 +2483,7 @@ consumable apple {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 25
+		foodRegeneration 25
 	}
 }
 
@@ -2495,7 +2495,7 @@ consumable cheese {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2507,7 +2507,7 @@ consumable honeycomb {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 75
+		foodRegeneration 75
 	}
 }
 
@@ -2519,7 +2519,7 @@ consumable rice {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 30
+		foodRegeneration 30
 	}
 }
 
@@ -2531,7 +2531,7 @@ consumable soup {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 45
+		foodRegeneration 45
 	}
 }
 
@@ -2543,7 +2543,7 @@ consumable stew {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 60
+		foodRegeneration 60
 	}
 }
 
@@ -2555,7 +2555,7 @@ consumable mushroom {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 15
+		foodRegeneration 15
 	}
 }
 
@@ -2567,7 +2567,7 @@ consumable muffin {
 	time 5
 	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 100
+		foodRegeneration 100
 	}
 }
 
@@ -2589,7 +2589,7 @@ consumable mana_herb {
 	type herb
 	flags {groundMesh ingredient}
 	effects {
-		restore_mana 150
+		restoreMana 150
 	}
 }
 
@@ -2600,7 +2600,7 @@ consumable green_herb {
 	type herb
 	flags {notMerchant groundMesh}
 	effects {
-		green_hair 0
+		greenHair 0
 	}
 }
 

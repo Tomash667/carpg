@@ -2385,7 +2385,7 @@ quest main
 				else if(Level::dungeonLevel == 1 && e.onGenerate.stage == 1)
 				{
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
-					@room.type = RoomType::Get("crypt_library");
+					@room.type = RoomType::Get("cryptLibrary");
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}

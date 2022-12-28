@@ -335,17 +335,17 @@ dialog trainer
 		{
 			choice 10
 			{
-				special "train/one_handed_weapon"
+				special "train/oneHandedWeapon"
 				end
 			}
 			choice 11
 			{
-				special "train/short_blade"
+				special "train/shortBlade"
 				end
 			}
 			choice 12
 			{
-				special "train/long_blade"
+				special "train/longBlade"
 				end
 			}
 			choice 13
@@ -370,17 +370,17 @@ dialog trainer
 			}
 			choice 17
 			{
-				special "train/light_armor"
+				special "train/lightArmor"
 				end
 			}
 			choice 18
 			{
-				special "train/medium_armor"
+				special "train/mediumArmor"
 				end
 			}
 			choice 19
 			{
-				special "train/heavy_armor"
+				special "train/heavyArmor"
 				end
 			}
 			escape choice 8
@@ -4247,16 +4247,16 @@ dialog mage_seller
 				special "train/fireball"
 				end
 			}
-		if script "!pc.HaveAbility(Ability::Get(\"fire_trap\"))"
+		if script "!pc.HaveAbility(Ability::Get(\"fireTrap\"))"
 			choice 15
 			{
-				special "train/fire_trap"
+				special "train/fireTrap"
 				end
 			}
-		if script "!pc.HaveAbility(Ability::Get(\"thunder_bolt\"))"
+		if script "!pc.HaveAbility(Ability::Get(\"thunderBolt\"))"
 			choice 14
 			{
-				special "train/thunder_bolt"
+				special "train/thunderBolt"
 				end
 			}
 		choice 9
@@ -4266,7 +4266,7 @@ dialog mage_seller
 		}
 		choice 10
 		{
-			special "train/mystic_magic"
+			special "train/mysticMagic"
 			end
 		}
 		choice 11
@@ -4311,7 +4311,7 @@ dialog cleric_seller
 		}
 		choice 4
 		{
-			special "train/gods_magic"
+			special "train/godsMagic"
 			end
 		}
 		choice 5
@@ -4503,16 +4503,16 @@ dialog hunter_leader
 {
 	if once
 		talk 0
-	if script "!pc.HaveAbility(Ability::Get(\"entangling_arrow\"))"
+	if script "!pc.HaveAbility(Ability::Get(\"entanglingArrow\"))"
 		choice 2
 		{
-			special "train/entangling_arrow"
+			special "train/entanglingArrow"
 			end
 		}
-	if script "!pc.HaveAbility(Ability::Get(\"bear_trap\"))"
+	if script "!pc.HaveAbility(Ability::Get(\"bearTrap\"))"
 		choice 3
 		{
-			special "train/bear_trap"
+			special "train/bearTrap"
 			end
 		}
 	if choices != 0
@@ -4531,7 +4531,6 @@ dialog ill_idle
 	talk 0
 	end
 }
-
 
 //==============================================================================
 dialog plague_idle

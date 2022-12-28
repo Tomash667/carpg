@@ -105,20 +105,20 @@ items rogue {
 // COMMON ABILITIES
 //------------------------------------------------------------------------------
 abilities orc_shaman {
-	{magic_bolt 0}
+	{magicBolt 0}
 	{fireball 6}
 }
 
 abilities mage {
-	{magic_bolt 0}
+	{magicBolt 0}
 	{fireball 8}
-	{thunder_bolt 12}
+	{thunderBolt 12}
 }
 
 abilities mage_hero {
-	{magic_bolt 0}
+	{magicBolt 0}
 	{fireball 0}
-	{thunder_bolt 10}
+	{thunderBolt 10}
 }
 
 //------------------------------------------------------------------------------
@@ -2315,7 +2315,7 @@ unit zombie_rotting : base_zombie {
 		null
 	}
 	abilities {
-		{spit_poison 0}
+		{spitPoison 0}
 	}
 }
 
@@ -2418,7 +2418,7 @@ unit skeleton_mage : base_skeleton {
 		wand_novice
 	}
 	abilities {
-		{magic_bolt 0}
+		{magicBolt 0}
 		{fireball 0}
 	}
 }
@@ -2435,9 +2435,9 @@ unit necromancer : base_human {
 	gold {{50 100} {80 160}}
 	abilities {
 		nonCombat 1
-		{magic_bolt 0}
+		{magicBolt 0}
 		{raise 9}
-		{exploding_skull 13}
+		{explodingSkull 13}
 	}
 	group undead
 	dialog mage_idle
@@ -2559,7 +2559,7 @@ unit q_zlo_boss : base_human {
 	}
 	gold {4000 6000}
 	abilities {
-		{exploding_skull 0}
+		{explodingSkull 0}
 		{drain2 0}
 	}
 	dialog q_evil
@@ -2898,9 +2898,9 @@ unit q_magowie_boss : base_human {
 	}
 	gold {1000 2000}
 	abilities {
-		{xmagic_bolt 0}
+		{xmagicBolt 0}
 		{fireball 0}
-		{thunder_bolt 0}
+		{thunderBolt 0}
 	}
 	dialog q_mages2
 	idleDialog mage_idle
@@ -2995,9 +2995,9 @@ unit dire_wolf : wolf {
 	flags | {~aggro boss dontEscape stunRes rootedRes}
 	scale 2
 	abilities {
-		{howl_aggro 0}
-		{howl_summon 0}
-		{wolf_charge 0}
+		{howlAggro 0}
+		{howlSummon 0}
+		{wolfCharge 0}
 	}
 	tex {
 		"dire_wolf.jpg"
@@ -3344,7 +3344,7 @@ unit tomashu : base_human {
 	}
 	gold 666
 	abilities {
-		{mystic_ball 0}
+		{mysticBall 0}
 	}
 	dialog tomashu
 	appearance {
