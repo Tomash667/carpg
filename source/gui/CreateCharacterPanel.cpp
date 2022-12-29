@@ -42,7 +42,7 @@ enum ButtonId
 //=================================================================================================
 CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rtChar(nullptr), scene(nullptr), camera(nullptr)
 {
-	size = Int2(600, 500);
+	size = Int2(700, 500);
 	unit = new Unit;
 	unit->humanData = new Human;
 	unit->player = nullptr;
@@ -101,6 +101,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.maxv = MAX_HAIR - 1;
 		s.val = 0;
 		s.pos = Int2(20, 100);
+		s.width = 180;
 		s.parent = this;
 	}
 
@@ -111,6 +112,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.maxv = MAX_MUSTACHE - 1;
 		s.val = 0;
 		s.pos = Int2(20, 150);
+		s.width = 180;
 		s.parent = this;
 	}
 
@@ -121,6 +123,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.maxv = MAX_BEARD - 1;
 		s.val = 0;
 		s.pos = Int2(20, 200);
+		s.width = 180;
 		s.parent = this;
 	}
 
@@ -131,6 +134,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.maxv = nHairColors - 1;
 		s.val = 0;
 		s.pos = Int2(20, 250);
+		s.width = 180;
 		s.parent = this;
 	}
 
@@ -141,45 +145,45 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 		s.maxv = 100;
 		s.val = 50;
 		s.pos = Int2(20, 300);
+		s.width = 180;
 		s.parent = this;
-		s.SetHold(true);
-		s.holdVal = 25.f;
+		s.SetHold(25.f);
 	}
 
-	lbClasses.pos = Int2(16, 73 - 18);
-	lbClasses.size = Int2(198, 235 + 18);
+	lbClasses.pos = Int2(16, 55);
+	lbClasses.size = Int2(228, 253);
 	lbClasses.SetForceImageSize(Int2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.eventHandler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
 	lbClasses.parent = this;
 
-	tbClassDesc.pos = Int2(130, 335);
-	tbClassDesc.size = Int2(341, 93);
+	tbClassDesc.size = Int2(340, 93);
+	tbClassDesc.pos = Int2((size.x - tbClassDesc.size.x) / 2, 335);
 	tbClassDesc.SetReadonly(true);
 	tbClassDesc.AddScrollbar();
 
-	tbInfo.pos = Int2(130, 335);
-	tbInfo.size = Int2(341, 93);
+	tbInfo.size = Int2(340, 93);
+	tbInfo.pos = Int2((size.x - tbInfo.size.x) / 2, 335);
 	tbInfo.SetReadonly(true);
 	tbInfo.AddScrollbar();
 
-	flowPos = Int2(368, 73 - 18);
-	flowSize = Int2(198, 235 + 18);
-	flowScroll.pos = Int2(flowPos.x + flowSize.x + 2, flowPos.y);
+	flowSize = Int2(212, 253);
+	flowPos = Int2(size.x - flowSize.x - 33, 55);
+	flowScroll.pos = Int2(flowPos.x + flowSize.x - 1, flowPos.y);
 	flowScroll.size = Int2(16, flowSize.y);
 	flowScroll.total = 100;
 	flowScroll.part = 10;
 
 	tooltip.Init(TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip));
 
-	flowSkills.size = Int2(198, 235 + 18);
-	flowSkills.pos = Int2(16, 73 - 18);
+	flowSkills.size = Int2(228, 253);
+	flowSkills.pos = Int2(16, 55);
 	flowSkills.buttonSize = Int2(16, 16);
 	flowSkills.buttonTex = customBt;
 	flowSkills.onButton = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
-	flowPerks.size = Int2(198, 235 + 18);
-	flowPerks.pos = Int2(size.x - flowPerks.size.x - 16, 73 - 18);
+	flowPerks.size = Int2(228, 253);
+	flowPerks.pos = Int2(size.x - flowPerks.size.x - 17, 55);
 	flowPerks.buttonSize = Int2(16, 16);
 	flowPerks.buttonTex = customBt;
 	flowPerks.onButton = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
@@ -240,6 +244,8 @@ void CreateCharacterPanel::LoadData()
 {
 	tBox = resMgr->Load<Texture>("box.png");
 	tPowerBar = resMgr->Load<Texture>("klasa_cecha.png");
+	tArrowLeft = resMgr->Load<Texture>("page_prev.png");
+	tArrowRight = resMgr->Load<Texture>("page_next.png");
 	customClose.tex[Button::NONE] = AreaLayout(resMgr->Load<Texture>("close.png"));
 	customClose.tex[Button::HOVER] = AreaLayout(resMgr->Load<Texture>("close_hover.png"));
 	customClose.tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("close_down.png"));
@@ -253,7 +259,7 @@ void CreateCharacterPanel::LoadData()
 	customBt[1].tex[Button::DOWN] = AreaLayout(resMgr->Load<Texture>("minus_down.png"));
 	customBt[1].tex[Button::DISABLED] = AreaLayout(resMgr->Load<Texture>("minus_disabled.png"));
 
-	rtChar = render->CreateRenderTarget(Int2(128, 256));
+	rtChar = render->CreateRenderTarget(Int2(256, 256));
 
 	scene = new Scene;
 	scene->fogRange = Vec2(40, 80);
@@ -266,7 +272,7 @@ void CreateCharacterPanel::LoadData()
 	camera = new Camera;
 	camera->from = Vec3(0, 2, -2.5f);
 	camera->to = Vec3(0, 1, 0);
-	camera->aspect = 0.5f;
+	camera->aspect = 1.f;
 	camera->znear = 1.f;
 	camera->zfar = 5.f;
 	camera->UpdateMatrix();
@@ -281,8 +287,12 @@ void CreateCharacterPanel::Draw()
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
 	gui->DrawText(GameGui::fontBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
+	// arrows
+	gui->DrawSprite(tArrowLeft, Int2(pos.x + size.x / 2 - 75, pos.y + 164));
+	gui->DrawSprite(tArrowRight, Int2(pos.x + size.x / 2 + 75 - 16, pos.y + 164));
+
 	// character
-	gui->DrawSprite(rtChar, Int2(pos.x + 228, pos.y + 64));
+	gui->DrawSprite(rtChar, Int2(pos.x + (size.x - 256) / 2, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -384,7 +394,8 @@ void CreateCharacterPanel::Update(float dt)
 	int group = -1, id = -1;
 
 	// rotating unit
-	if(Rect::IsInside(gui->cursorPos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
+	const Int2 regionPos(pos.x + (size.x - 256) / 2 + 45, pos.y + 64);
+	if(Rect::IsInside(gui->cursorPos, regionPos, Int2(166, 256)) && input->Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
@@ -401,7 +412,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = Clip(unit->rot - float(gui->cursorPos.x - pos.x - 228 - 64) / 16 * dt);
+			unit->rot = Clip(unit->rot - float(gui->cursorPos.x - pos.x - size.x / 2) / 16 * dt);
 	}
 	else
 		rotating = false;

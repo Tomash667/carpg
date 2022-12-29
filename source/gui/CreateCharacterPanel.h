@@ -145,6 +145,6 @@ private:
 	vector<Perk*> availablePerks;
 	vector<pair<cstring, int>> takenPerks;
 	array<const Item*, SLOT_MAX> items;
-	TexturePtr tBox, tPowerBar;
+	TexturePtr tBox, tPowerBar, tArrowLeft, tArrowRight;
 	RenderTarget* rtChar;
 };
