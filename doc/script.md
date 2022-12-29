@@ -71,7 +71,9 @@ Game enums & constans
 * EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
 * EVENT_ENTER - for locations and units. Send when player enter specified location or every time specified unit changes location.
 * EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
+* EVENT_KICK - for units, send when hero is kicked out of team.
 * EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
+* EVENT_RECRUIT - for units, send when hero is added to team.
 * EVENT_TIMEOUT - for quests, send when quest timeout expired.
 * EVENT_TIMER - for quests, send after passing x days.
 * EVENT_UPDATE - for units, send every frame.
@@ -202,6 +204,14 @@ Static methods:
 
 BaseObject@ Get(const string& in) - return object data by id.
 
+### Class type
+Hero class like mage or warrior.
+
+Static method:
+
+Class@ GetRandomCrazy() - return random class that crazy can have.
+Class@ GetRandomHero(bool evil = false) - return random class that hero can have.
+
 ### Dialog type
 Dialogs between units.
 
@@ -235,7 +245,7 @@ Properties:
 Methods:
 
 * Item* QuestCopy(Quest*) - create quest item from item.
-* Item* QuestCopy(Quest*, const string& in name) - create quest item with name.
+* Item* QuestCopy(Quest*, const string& in name, const string& in desc = "") - create quest item with name and description.
 
 Static methods:
 
@@ -337,26 +347,30 @@ Properties:
 * For EVENT_CLEARED:
   * Location@ onCleared.location - cleared location.
 * For EVENT_DIE:
-  * Unit@ unit - unit that died.
+  * Unit@ onDie.unit - unit that died.
 * For EVENT_DESTROY:
-  * Usable@ usable - destroyed usable.
+  * Usable@ onDestroy.usable - destroyed usable.
 * For EVENT_ENTER:
   * Location@ onEnter.location - entered location.
   * Unit@ onEnter.unit - entering unit if unit event.
 * For EVENT_GENERATE:
-  * Location@ location - location that is generated.
-  * MapSettings@ mapSettings
-  * int stage - stage 0 is before generating (can use mapSettings), stage 1 is after.
-  * bool cancel - can be used in stage 0 to cancel some default logic.
+  * Location@ onGenerate.location - location that is generated.
+  * MapSettings@ onGenerate.mapSettings
+  * int onGenerate.stage - stage 0 is before generating (can use mapSettings), stage 1 is after.
+  * bool onGenerate.cancel - can be used in stage 0 to cancel some default logic.
+* For EVENT_KICK:
+  * Unit@ onKick.unit - kicked out unit.
 * For EVENT_PICKUP:
-  * Unit@ unit - unit picking item.
-  * GroundItem@ groundItem - picked ground item.
-  * Item@ item - picked item.
+  * Unit@ onPickup.unit - unit picking item.
+  * GroundItem@ onPickup.groundItem - picked ground item.
+  * Item@ onPickup.item - picked item.
+* For EVENT_RECRUIT:
+  * Unit@ onRecruit.unit - recruited unit.
 * For EVENT_UPDATE:
-  * Unit@ unit - unit to update.
+  * Unit@ onUpdate.unit - unit to update.
 * For EVENT_USE:
-  * Unit@ unit - unit using item.
-  * Item@ item - used item.
+  * Unit@ onUse.unit - unit using item.
+  * Item@ onUse.item - used item.
 
 ### GroundItem type
 Item on ground that can be picked up.
@@ -681,6 +695,13 @@ Static methods:
 * Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
 * Usable@ SpawnUsable(BaseObject@, const Vec3& in pos, float rot) - spawn usable at position.
 
+### NameHelper
+Used to generate names.
+
+Static methods:
+
+* string GenerateHeroName(Class@, bool crazy = false) - generate random hero name.
+
 ### StockScript component
 Used in stock script - items to sell by shopkeepers.
 
@@ -741,9 +762,9 @@ Static methods:
 * Location@ GetLocation(uint index) - return location by index.
 * Location@ GetLocationByType(LOCATION type, LOCATION_TARGET target = -1) - get first location by type.
 * Location@ GetRandomCity() - returns random city (not village).
-* Location@ GetRandomSettlementWithBuilding(const string& in buildingId) - returns random settlement that have this building.
-* Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
+* Location@ GetRandomSettlement(Location@) - returns random settlement excluding passed location.
 * Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
+* Location@ GetRandomSettlementWithBuilding(const string& in buildingId) - returns random settlement that have this building.
 * Location@ GetRandomSpawnLocation(const Vec2& in pos, UnitGroup@ group, float range = 160) - get random location with selected unit group within range, if not found will create camp.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, LOCATION_TARGET target = -1, int flags = 0) - get closest location of this type (doesn't return quest locations). Available flags: ```F_ALLOW_ACTIVE``` - allow active quest locations, ```F_EXCLUDED``` - exclude target instead of include in search.
 * Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, array<LOCATION_TARGET> targets) - get closest location of this type and specified targets (doesn't return quest locations).

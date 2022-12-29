@@ -442,14 +442,8 @@ dialog hero {
 		"Hello."
 		"Welcome $player_name$."
 	}
-	30 "Show wanted poster"
-	31 {
-		"Oh fuck!"
-		"Then I have to kill you!"
-		"You won't rat me out to the guards? You would?!"
-		"I'll kill you just like the others!"
-		"You'll pay for it with you live!"
-	}
+	30 "" // removed
+	31 "" // removed
 	32 "Recruit"
 	33 {
 		"Your team it too large."
@@ -616,14 +610,8 @@ dialog crazy {
 		"Hello!"
 		"And the same thing again."
 	}
-	31 "Show wanted poster"
-	32 {
-		"Oh fuck!"
-		"Then I have to kill you!"
-		"You won't rat me out to the guards? You would?!"
-		"I'll kill you just like the others!"
-		"You'll pay for it with you live!"
-	}
+	31 "" // removed
+	32 "" // removed
 	33 "Recruit"
 	34 "Well, your team is sufficiently large."
 	35 "But I think I have a way to help you with that."
@@ -1807,18 +1795,6 @@ dialog q_spread_news_timeout {
 dialog q_spread_news_end {
 	0 "Good, just people like you I need, conscientious and responsible."
 	1 "Take this 500 gold pieces."
-}
-
-//==============================================================================
-dialog q_wanted_timeout {
-	0 "You could not kill the $name$? That's bad."
-	1 "He probably holed up somewhere for good..."
-}
-
-//==============================================================================
-dialog q_wanted_end {
-	0 "I knew that I could rely on you $player$."
-	1 "Here is you reward, $reward$ gold pieces."
 }
 
 //==============================================================================

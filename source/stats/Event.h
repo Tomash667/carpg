@@ -14,7 +14,9 @@ enum EventType
 	EVENT_GENERATE,
 	EVENT_USE,
 	EVENT_TIMER,
-	EVENT_DESTROY
+	EVENT_DESTROY,
+	EVENT_RECRUIT,
+	EVENT_KICK
 };
 
 //-----------------------------------------------------------------------------
@@ -89,9 +91,17 @@ struct ScriptEvent
 		struct
 		{
 			Unit* unit;
+		} onKick;
+		struct
+		{
+			Unit* unit;
 			GroundItem* groundItem;
 			const Item* item;
 		} onPickup;
+		struct
+		{
+			Unit* unit;
+		} onRecruit;
 		struct
 		{
 			Unit* unit;

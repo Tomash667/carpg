@@ -435,11 +435,6 @@ dialog guard_captain
 		doQuest "captive"
 		doOnce
 	}
-	if needTalk "wanted"
-	{
-		doQuest "wanted"
-		doOnce
-	}
 	checkQuestTimeout 1
 	if special "q_magowie_to_miasto"
 	{
@@ -1146,15 +1141,6 @@ dialog hero
 		}
 		if once
 			talk 29
-		if haveQuestItem notActive "$wanted_letter"
-		{
-			choice 30
-			{
-				talk 31
-				special "force_attack"
-				end
-			}
-		}
 		choice 32
 		{
 			if script "Team::size >= Team::maxSize"
@@ -1463,15 +1449,6 @@ dialog crazy
 		}
 		if once
 			talk 30
-		if haveQuestItem notActive "$wanted_letter"
-		{
-			choice 31
-			{
-				talk 32
-				special "force_attack"
-				end
-			}
-		}
 		choice 33
 		{
 			if script "Team::size >= Team::maxSize"
@@ -4146,24 +4123,6 @@ dialog q_spread_news_end
 	talk 0
 	talk 1
 	setQuestProgress 4
-	end
-}
-
-//==============================================================================
-dialog q_wanted_timeout
-{
-	setQuestProgress 2
-	talk 0
-	talk 1
-	end
-}
-
-//==============================================================================
-dialog q_wanted_end
-{
-	talk 0
-	setQuestProgress 4
-	talk 1
 	end
 }
 

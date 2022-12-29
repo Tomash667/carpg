@@ -454,14 +454,8 @@ dialog hero {
 		"Witaj."
 		"Witaj $player_name$."
 	}
-	30 "Poka¿ list goñczy"
-	31 {
-		"O kurwa!"
-		"W takim razie muszê ciê zabiæ!"
-		"Chyba mnie nie wydasz stra¿nikom? Wydasz?!"
-		"Zabijê ciê tak jak tamtych!"
-		"Zap³acisz za to ¿yciem!"
-	}
+	30 "" // removed
+	31 "" // removed
 	32 "Rekrutuj"
 	33 {
 		"Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
@@ -628,14 +622,8 @@ dialog crazy {
 		"Witaj!"
 		"A ten znowu to samo."
 	}
-	31 "Poka¿ list goñczy"
-	32 {
-		"O kurwa!"
-		"W takim razie muszê ciê zabiæ!"
-		"Chyba mnie nie wydasz stra¿nikom? Wydasz?!"
-		"Zabijê ciê tak jak tamtych!"
-		"Zap³acisz za to ¿yciem!"
-	}
+	31 "" // removed
+	32 "" // removed
 	33 "Rekrutuj"
 	34 "Hmm, twoja dru¿yna jest wystarczaj¹co liczna."
 	35 "Ale chyba mam pewien sposób ¿eby ci z tym pomóc."
@@ -1819,18 +1807,6 @@ dialog q_spread_news_timeout {
 dialog q_spread_news_end {
 	0 "Dobrze, w³aœnie takich ludzi jak ty mi potrzeba, sumiennych i odpowiedzialnych."
 	1 "WeŸ to 500 sztuk z³ota."
-}
-
-//==============================================================================
-dialog q_wanted_timeout {
-	0 "Nie uda³o ci siê zabiæ $name$? To Ÿle."
-	1 "Teraz ju¿ pewnie siê gdzieœ zaszy³ na dobre..."
-}
-
-//==============================================================================
-dialog q_wanted_end {
-	0 "Wiedzia³em ¿e mo¿na na tobie polegaæ $player$."
-	1 "Oto twoje $reward$ sztuk z³ota."
 }
 
 //==============================================================================

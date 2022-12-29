@@ -203,17 +203,42 @@ quest kill_animals {
 quest wanted {
 	dialog start {
 		0 "I've got a wanted poster on one of the adventurers. Committed many crimes."
-		1 "Award for his head is $reward$ gold pieces."
+		1 "Award for his head is $(Str(level * 100)) gold pieces."
 		2 "You are able to kill him?"
 		3 "Yes"
-		4 "This adventurer is called $name$, you'll find him in the $target_loc$ to the $target_dir$ from here."
+		4 "This adventurer is called $(unitName), you'll find him in the $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)) from here."
 		5 "Show him the wanted poster and then kill. Just do not hurt bystanders."
 		6 "If within one month you won't kill him, he will flee from country."
 		7 "No"
 	}
 	
+	dialog captain {
+		0 "I knew that I could rely on you $player_name$."
+		1 "Here is you reward, $(Str(level * 100)) gold pieces."
+		2 "You could not kill the $(unitName)? That's bad."
+		3 "He probably holed up somewhere for good..."
+	}
+	
+	dialog wanted {
+		0 "Show wanted poster"
+		1 {
+			"Oh fuck!"
+			"Then I have to kill you!"
+			"You won't rat me out to the guards? You would?!"
+			"I'll kill you just like the others!"
+			"You'll pay for it with you live!"
+		}
+	}
+	
 	texts {
 		0 "Wanted"
+		1 "Obtained from captain guard of $(startLoc.name) at $date$."
+		2 "I got my hands on wanted poster. A reward $(Str(level * 100)) gold pieces for head of $(unitName) I'll find him in $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)) from here. I have a month before he will vanish somewhere."
+		3 "Reward $(Str(level * 100)) gold pieces for killing lawbreaker called $(unitName)."
+		4 "I killed $(unitName)."
+		5 "I got reward for killing $(unitName). Quest done!"
+		6 "The time that I had to complete this quest passed."
+		7 "Before I had time to kill $(unitName) he has hidden somewhere."
 	}
 }
 

@@ -573,6 +573,7 @@ void QuestManager::Save(GameWriter& f)
 		f << item->id;
 		f << item->questId;
 		f << item->name;
+		f << item->desc;
 	}
 
 	f << itemEventHandlers.size();
@@ -661,6 +662,8 @@ void QuestManager::Load(GameReader& f)
 		item->id = id;
 		f >> item->questId;
 		f >> item->name;
+		if(LOAD_VERSION >= V_DEV)
+			f >> item->desc;
 	}
 
 	// item event handlers

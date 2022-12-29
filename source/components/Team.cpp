@@ -96,8 +96,10 @@ void Team::AddMember(Unit* unit, HeroType type)
 		c.unit = unit;
 	}
 
-	if(unit->eventHandler)
-		unit->eventHandler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
+	// event
+	ScriptEvent event(EVENT_RECRUIT);
+	event.onRecruit.unit = unit;
+	unit->FireEvent(event);
 }
 
 void Team::RemoveMember(Unit* unit)
@@ -139,8 +141,10 @@ void Team::RemoveMember(Unit* unit)
 		c.id = unit->id;
 	}
 
-	if(unit->eventHandler)
-		unit->eventHandler->HandleUnitEvent(UnitEventHandler::KICK, unit);
+	// event
+	ScriptEvent event(EVENT_KICK);
+	event.onKick.unit = unit;
+	unit->FireEvent(event);
 }
 
 Unit* Team::FindActiveTeamMember(int id)

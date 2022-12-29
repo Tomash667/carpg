@@ -1071,6 +1071,7 @@ quest wanted
 		P_WANTED_KILLED
 		P_WANTED_FINISHED
 		P_WANTED_RECRUITED
+		P_WANTED_ON_TIMEOUT
 	}
 	
 	dialog start
@@ -1091,21 +1092,51 @@ quest wanted
 		showChoices
 	}
 	
+	dialog captain
+	{
+		if questProgress == P_WANTED_KILLED
+		{
+			talk 0
+			setQuestProgress P_WANTED_FINISHED
+			talk 1
+		}
+		else if questProgress == P_WANTED_ON_TIMEOUT
+		{
+			setQuestProgress P_WANTED_TIMEOUT
+			talk 2
+			talk 3
+		}
+		end
+	}
+	
+	dialog wanted
+	{
+		if script "!target.IsTeamMember()"
+		if haveQuestItem
+		{
+			choice 0
+			{
+				talk 1
+				special "force_attack"
+				end2
+			}
+		}
+		end
+	}
+	
 	code {
 		Location@ startLoc;
-		Unit@ tagetUnit;
+		Location@ targetLoc;
+		Unit@ targetUnit;
 		Class@ clas;
-		int level;
+		Item@ letter;
+		string unitName;
 		bool crazy;
 
 		void Startup()
 		{
 			@startLoc = Level::location;
 			level = Random(5, 15);
-			crazy = (Rand() % 5 == 0);
-			clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
-			targetUnit = nullptr;
-			inLocation = -1;
 		}
 
 		void SetProgress()
@@ -1114,16 +1145,15 @@ quest wanted
 			{
 			case P_WANTED_STARTED:
 				{
-					if(Rand() % 2 == 0)
-						@targetLoc = World::GetClosestLocation(L_CAVE, startLoc.pos);
-					else
-						@targetLoc = World::GetClosestLocation(L_OUTSIDE, startLoc.pos, { FOREST, HILLS });
-					@targetLoc.activeQuest = quest;
-					targetLoc.SetKnown();
-					targetLoc.AddEventHandler(quest, EVENT_CLEARED);
-					if(targetLoc.st < 5)
-						targetLoc.st = 5;
-					st = targetLoc.st;
+					crazy = (Rand() % 5 == 0);
+					@clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
+					unitName = NameHelper::GenerateHeroName(clas, crazy);
+					@targetLoc = World::GetRandomSettlement(startLoc);
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+					
+					// add letter
+					@letter = Item::Get("wanted_letter").QuestCopy(quest, "", TEXT(3));
+					pc.unit.AddTeamItem(letter);
 					
 					target.AddDialog(quest, "captain");
 
@@ -1133,65 +1163,24 @@ quest wanted
 					quest.SetTimeout(30);
 				}
 				break;
-			/*case P_KILLANI_CLEARED:
-				targetLoc.RemoveEventHandler(quest);
-				@targetLoc.activeQuest = null;
-				quest.AddEntry(TEXT(3));
-				break;
-			case P_KILLANI_FINISHED:
-				{
-					int reward = GetReward();
-					Team::AddReward(reward, reward * 3);
-					quest.AddEntry(TEXT(4));
-					quest.SetCompleted();
-				}
-				break;
-			case P_KILLANI_ON_TIMEOUT:
-				quest.AddEntry(TEXT(5));
-				targetLoc.RemoveEventHandler(quest);
-				@targetLoc.activeQuest = null;
-				break;
-			case P_KILLANI_TIMEOUT:
-				quest.AddEntry(TEXT(6));
+			case P_WANTED_TIMEOUT:
+				quest.AddEntry(TEXT(7));
 				quest.SetFailed();
-				break;*/
+				break;
+			case P_WANTED_KILLED:
+				//state = Quest::Started; // if recruited that will change it to in progress
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_WANTED_FINISHED:
+				Team::AddReward(level * 100, level * 250);
+				quest.AddEntry(TEXT(5));
+				quest.SetCompleted();
+				break;
+			case P_WANTED_RECRUITED:
+				break;
 			}
 			
-			/*switch(prog2)
-	{
-	case Progress::Started:
-		{
-			OnStart(questMgr->txQuest[257]);
-			questMgr->questTimeouts.push_back(this);
-
-			NameHelper::GenerateHeroName(clas, crazy, unitName);
-			targetLoc = world->GetRandomFreeSettlement(startLoc);
-			// if there is no free city he will talk about some random city but there won't be there...
-			if(!targetLoc)
-				targetLoc = world->GetRandomSettlement(startLoc);
-			if(!targetLoc->activeQuest)
-			{
-				targetLoc->activeQuest = this;
-				unitToSpawn = crazy ? clas->crazy : clas->hero;
-				unitDontAttack = true;
-				unitEventHandler = this;
-				sendSpawnEvent = true;
-				unitSpawnLevel = level;
-			}
-
-			// add letter
-			Item::Get("wanted_letter")->CreateCopy(letter);
-			letter.id = "$wanted_letter";
-			letter.name = questMgr->txQuest[258];
-			letter.questId = id;
-			letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());
-			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
-
-			// add journal entry
-			msgs.push_back(Format(questMgr->txQuest[29], GetStartLocationName(), world->GetDate()));
-			msgs.push_back(Format(questMgr->txQuest[260], level * 100, unitName.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
-		}
-		break;
+			/*
 	case Progress::Timeout:
 		{
 			state = Quest::Failed;
@@ -1205,23 +1194,6 @@ quest wanted
 			done = false;
 		}
 		break;
-	case Progress::Killed:
-		{
-			state = Quest::Started; // if recruited that will change it to in progress
-			OnUpdate(Format(questMgr->txQuest[262], unitName.c_str()));
-			RemoveElementTry<Quest_Dungeon*>(questMgr->questTimeouts, this);
-		}
-		break;
-	case Progress::Finished:
-		{
-			state = Quest::Completed;
-			static_cast<City*>(startLoc)->questCaptain = CityQuestState::None;
-
-			team->AddReward(level * 100, level * 250);
-
-			OnUpdate(Format(questMgr->txQuest[263], unitName.c_str()));
-		}
-		break;
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
@@ -1233,23 +1205,43 @@ quest wanted
 
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_CLEARED)
-				progress = P_KILLANI_CLEARED;
-			else if(e.event == EVENT_TIMEOUT)
+			switch(e.event)
 			{
-				if(progress == P_KILLANI_STARTED)
-					progress = P_KILLANI_ON_TIMEOUT;
+			case EVENT_ENTER:
+				{
+					UnitData@ unitToSpawn = crazy ? clas.crazy : clas.hero;
+					@targetUnit = Level::SpawnUnitInsideInn(unitToSpawn, level);
+					targetUnit.AddEventHandler(quest, EVENT_DIE);
+					targetUnit.AddDialog(quest, "wanted");
+					targetUnit.name = unitName;
+					targetUnit.dontAttack = true;
+					targetLoc.RemoveEventHandler(quest);
+				}
+				break;
+			case EVENT_DIE:
+				progress = P_WANTED_KILLED;
+				targetUnit.RemoveEventHandler(quest);
+				targetUnit = null;
+				break;
+			case EVENT_TIMEOUT:
+				if(targetUnit is null)
+				{
+					// remove handler if not spawned
+					targetLoc.RemoveEventHandler(quest);
+				}
+				else
+				{
+					
+				}
+				progress = P_WANTED_ON_TIMEOUT;
+				quest.AddEntry(TEXT(6));
+				break;
 			}
-		}
-
-		int GetReward()
-		{
-			return Quest::CalculateReward(st, Int2(5, 10), Int2(2500, 4000));
 		}
 
 		void OnUpgrade(Vars@ vars)
 		{
-			@startLoc = vars["startLoc"];
+			/*@startLoc = vars["startLoc"];
 			@targetLoc = vars["targetLoc"];
 			int startTime = vars["startTime"];
 			st = vars["st"];
@@ -1269,7 +1261,7 @@ quest wanted
 			{
 				@targetLoc.activeQuest = quest;
 				targetLoc.AddEventHandler(quest, EVENT_CLEARED);
-			}
+			}*/
 		}
 	}
 }

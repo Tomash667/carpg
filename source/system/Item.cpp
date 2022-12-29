@@ -365,11 +365,14 @@ Item* Item::QuestCopy(Quest* quest)
 }
 
 //=================================================================================================
-Item* Item::QuestCopy(Quest* quest, const string& name)
+Item* Item::QuestCopy(Quest* quest, const string& name, const string& desc)
 {
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
-	item->name = name;
+	if(!name.empty())
+		item->name = name;
+	if(!desc.empty())
+		item->desc = desc;
 	item->questId = quest->id;
 	questMgr->AddQuestItem(item);
 	return item;

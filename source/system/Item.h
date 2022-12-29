@@ -122,7 +122,7 @@ struct Item
 	void CreateCopy(Item& item) const;
 	Item* CreateCopy() const;
 	Item* QuestCopy(Quest* quest);
-	Item* QuestCopy(Quest* quest, const string& name);
+	Item* QuestCopy(Quest* quest, const string& name, const string& desc);
 	void Rename(cstring name);
 	void RenameS(const string& name) { Rename(name.c_str()); }
 

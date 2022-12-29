@@ -80,3 +80,11 @@ void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& name)
 		name += txNameSonOfPost;
 	}
 }
+
+//=================================================================================================
+string NameHelper::GenerateHeroNameS(Class* clas, bool crazy)
+{
+	string name;
+	GenerateHeroName(clas, crazy, name);
+	return name;
+}

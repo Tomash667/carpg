@@ -6032,7 +6032,7 @@ void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 //=================================================================================================
 void Unit::AddEventHandler(Quest2* quest, EventType type)
 {
-	assert(Any(type, EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE));
+	assert(Any(type, EVENT_DIE, EVENT_ENTER, EVENT_KICK, EVENT_PICKUP, EVENT_RECRUIT, EVENT_UPDATE));
 
 	Event e;
 	e.quest = quest;

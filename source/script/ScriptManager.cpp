@@ -13,6 +13,7 @@
 #include "ItemHelper.h"
 #include "LocationHelper.h"
 #include "Level.h"
+#include "NameHelper.h"
 #include "PlayerController.h"
 #include "PlayerInfo.h"
 #include "QuestManager.h"
@@ -540,7 +541,9 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_GENERATE", EVENT_GENERATE },
 		{ "EVENT_USE", EVENT_USE },
 		{ "EVENT_TIMER", EVENT_TIMER },
-		{ "EVENT_DESTROY", EVENT_DESTROY }
+		{ "EVENT_DESTROY", EVENT_DESTROY },
+		{ "EVENT_RECRUIT", EVENT_RECRUIT },
+		{ "EVENT_KICK", EVENT_KICK }
 		});
 
 	AddEnum("LOCATION", {
@@ -700,6 +703,14 @@ void ScriptManager::RegisterGame()
 		.Method("bool get_canEnter() property", asMETHOD(CityBuilding, GetCanEnter))
 		.Method("void set_canEnter(bool) property", asMETHOD(CityBuilding, SetCanEnter));
 
+	AddType("Class")
+		.WithNamespace()
+		.AddFunction("Class@ GetRandomCrazy()", asFUNCTION(Class::GetRandomCrazy))
+		.AddFunction("Class@ GetRandomHero(bool = false)", asFUNCTION(Class::GetRandomHero));
+
+	WithNamespace("NameHelper")
+		.AddFunction("string GenerateHeroName(Class@, bool=false)", asFUNCTION(NameHelper::GenerateHeroNameS));
+
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))
 		.Member("Location@ startLoc", offsetof(Quest_Scripted, startLoc))
@@ -731,7 +742,7 @@ void ScriptManager::RegisterGame()
 		.Method("const string& get_name() const property", asMETHOD(Item, GetName))
 		.Method("void set_name(const string& in) property", asMETHOD(Item, RenameS))
 		.Method("Item@ QuestCopy(Quest@)", asMETHODPR(Item, QuestCopy, (Quest*), Item*))
-		.Method("Item@ QuestCopy(Quest@, const string& in)", asMETHODPR(Item, QuestCopy, (Quest*, const string&), Item*))
+		.Method("Item@ QuestCopy(Quest@, const string& in, const string& in = \"\")", asMETHODPR(Item, QuestCopy, (Quest*, const string&, const string&), Item*))
 		.WithNamespace()
 		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::GetS))
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
@@ -985,9 +996,9 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("Location@ GetLocationByType(LOCATION, LOCATION_TARGET = LOCATION_TARGET(-1))", asMETHOD(World, GetLocationByType))
 		.AddFunction("Location@ GetRandomCity()", asMETHOD(World, GetRandomCity))
-		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*) const, Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
+		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSpawnLocation(const Vec2& in, UnitGroup@, float = 160)", asMETHOD(World, GetRandomSpawnLocation))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, LOCATION_TARGET = LOCATION_TARGET(-1), int flags = 0)", asMETHODPR(World, GetClosestLocation, (LOCATION, const Vec2&, int, int), Location*))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, array<LOCATION_TARGET>@)", asMETHOD(World, GetClosestLocationArrayS))
