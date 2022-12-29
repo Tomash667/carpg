@@ -13,7 +13,6 @@ private:
 	{
 		string name;
 		int index;
-		bool isConst;
 	};
 
 	BuildingLoader();
@@ -25,11 +24,12 @@ private:
 	void ParseBuilding(const string& id);
 	void ParseBuildingGroup(const string& id);
 	void ParseBuildingScript(const string& id);
+	void ParseAlias(const string& id);
 	void ParseCode(BuildingScript& script);
 	void StartVariant(BuildingScript& script);
-	void AddVar(Cstring id, bool isConst = false);
+	void AddVar(Cstring id);
 	Var* FindVar(const string& id);
-	Var& GetVar(bool canBeConst = false);
+	Var& GetVar();
 	void GetExpr();
 	void GetItem();
 	int CharToOp(char c);

@@ -461,7 +461,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(room->type)
 				rt = room->type;
 			else if(room->target == RoomTarget::Treasury)
-				rt = RoomType::Get("crypt_treasure");
+				rt = RoomType::Get("cryptTreasure");
 			else if(room->target == RoomTarget::Throne)
 				rt = RoomType::Get("throne");
 			else if(room->target == RoomTarget::PortalCreate)

@@ -19,7 +19,7 @@ perk chronic_disease {
 		canMod end
 	}
 	effect {
-		natural_healing_mod 0.5
+		naturalHealingMod 0.5
 		end -5
 	}
 }
@@ -172,7 +172,7 @@ perk aggressive {
 		noPerk bad_back
 	}
 	effect {
-		melee_attack 10
+		meleeAttack 10
 	}
 }
 perk mobility {
@@ -192,7 +192,7 @@ perk finesse {
 		noPerk sluggish
 	}
 	effect {
-		ranged_attack 10
+		rangedAttack 10
 	}
 }
 perk tough {
@@ -219,7 +219,7 @@ perk adaptation {
 		end 75
 	}
 	effect {
-		poison_resistance 0.5
+		poisonResistance 0.5
 	}
 }
 perk perfect_health {
@@ -257,7 +257,7 @@ perk mana_harmony {
 		wis 90
 	}
 	effect {
-		mana_regeneration 1
+		manaRegeneration 1
 	}
 }
 perk magic_adept {
@@ -266,6 +266,6 @@ perk magic_adept {
 		int 60
 	}
 	effect {
-		magic_power 5
+		magicPower 5
 	}
 }

@@ -36,6 +36,7 @@ struct Building
 		unit(nullptr), state(ResourceState::NotLoaded) {}
 
 	static vector<Building*> buildings;
+	static std::map<string, Building*> aliases;
 	static Building* TryGet(Cstring id);
 	static Building* Get(Cstring id)
 	{

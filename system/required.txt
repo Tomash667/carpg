@@ -232,10 +232,9 @@ group list random
 //------------------------------------------------------------------------------
 // Required abilities
 //------------------------------------------------------------------------------
-ability thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
-ability raise // hardcoded spell effect in net
-ability heal // hardcoded spell effect in net
-ability fireball // hardcoded to cast for fire rune
+ability fireball
+ability magicBolt
+ability thunderBolt
 
 //------------------------------------------------------------------------------
 // Required dialogs
@@ -315,9 +314,9 @@ dialog crazies_encounter
 // hardcoded
 buildingGroup inn
 buildingGroup hall
-buildingGroup training_grounds
+buildingGroup trainingGrounds
 buildingGroup arena
-buildingGroup food_seller
+buildingGroup foodSeller
 buildingGroup alchemist
 buildingGroup blacksmith
 buildingGroup merchant
@@ -333,11 +332,12 @@ buildingScript city {
 buildingScript village {
 	inn
 }
-buildingScript village_destroyed {
+buildingScript villageDestroyed {
 	hall
 	inn
 }
-buildingScript village_destroyed {
+buildingScript villageDestroyed {
+	inn
 	alchemist
 }
 

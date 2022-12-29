@@ -13,10 +13,10 @@ RoomStrChance humanFortRooms[] = {
 	RoomStrChance("library", 5),
 	RoomStrChance("storeroom", 10),
 	RoomStrChance("saferoom", 2),
-	RoomStrChance("beer_storeroom", 5),
-	RoomStrChance("meeting_room", 10),
-	RoomStrChance("training_room", 5),
-	RoomStrChance("crafting_room", 5),
+	RoomStrChance("beerStoreroom", 5),
+	RoomStrChance("meetingRoom", 10),
+	RoomStrChance("trainingRoom", 5),
+	RoomStrChance("craftingRoom", 5),
 	RoomStrChance("kitchen", 5)
 };
 
@@ -28,10 +28,10 @@ RoomStrChance mageTowerRooms[] = {
 	RoomStrChance("library", 6),
 	RoomStrChance("storeroom", 10),
 	RoomStrChance("saferoom", 1),
-	RoomStrChance("beer_storeroom", 3),
-	RoomStrChance("meeting_room", 8),
-	RoomStrChance("training_room", 4),
-	RoomStrChance("crafting_room", 4),
+	RoomStrChance("beerStoreroom", 3),
+	RoomStrChance("meetingRoom", 8),
+	RoomStrChance("trainingRoom", 4),
+	RoomStrChance("craftingRoom", 4),
 	RoomStrChance("kitchen", 4)
 };
 
@@ -42,11 +42,11 @@ RoomStrChance necroBaseRooms[] = {
 	RoomStrChance("library", 5),
 	RoomStrChance("storeroom", 10),
 	RoomStrChance("saferoom", 2),
-	RoomStrChance("beer_storeroom", 5),
+	RoomStrChance("beerStoreroom", 5),
 	RoomStrChance("shrine", 5),
-	RoomStrChance("meeting_room", 10),
-	RoomStrChance("training_room", 5),
-	RoomStrChance("crafting_room", 5),
+	RoomStrChance("meetingRoom", 10),
+	RoomStrChance("trainingRoom", 5),
+	RoomStrChance("craftingRoom", 5),
 	RoomStrChance("kitchen", 5)
 };
 
@@ -56,10 +56,10 @@ RoomStrChance vaultRooms[] = {
 	RoomStrChance("library", 2),
 	RoomStrChance("storeroom", 10),
 	RoomStrChance("saferoom", 5),
-	RoomStrChance("beer_storeroom", 5),
-	RoomStrChance("meeting_room", 5),
-	RoomStrChance("training_room", 2),
-	RoomStrChance("crafting_room", 2),
+	RoomStrChance("beerStoreroom", 5),
+	RoomStrChance("meetingRoom", 5),
+	RoomStrChance("trainingRoom", 2),
+	RoomStrChance("craftingRoom", 2),
 	RoomStrChance("kitchen", 2)
 };
 
@@ -68,12 +68,12 @@ RoomStrChance cryptRooms[] = {
 	RoomStrChance("graves", 8),
 	RoomStrChance("graves2", 8),
 	RoomStrChance("shrine", 4),
-	RoomStrChance("crypt_room", 2)
+	RoomStrChance("cryptRoom", 2)
 };
 
 //-----------------------------------------------------------------------------
 RoomStrChance labyrinthRooms[] = {
-	RoomStrChance("labyrinth_treasure", 1)
+	RoomStrChance("labyrinthTreasure", 1)
 };
 
 //-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ BaseLocation gBaseLocations[] = {
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		cryptRooms, countof(cryptRooms), 0, 80, 5, 1, "undead", "necromancers", "random", 50, 25, 25, TRAPS_NORMAL | TRAPS_NEAR_END, CRYPT_2_TEXTURE,
 		LocationTexturePack("floor_pavement_stone5_2.jpg", "256-01a.jpg", "sufit2.jpg"),
-	"Old temple",			Int2(1, 3),		40, 2,		35, 15,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", "shrine",
+	"Old temple",			Int2(1, 3),		40, 2,		35, 15,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "cryptStairs", "shrine",
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		necroBaseRooms, countof(necroBaseRooms), 0, 80, 5, 1, "undead", "necromancers", "evil", 25, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),
@@ -118,7 +118,7 @@ BaseLocation gBaseLocations[] = {
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,
 		vaultRooms, countof(vaultRooms), 0, 100, 0, 3, "bandits", nullptr, "random", 25, 25, 50, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),
-	"Necromancers base",	Int2(2, 3),		45, 3,		35,	15,		25,			Int2(5,10),	Int2(5,10), BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
+	"Necromancers base",	Int2(2, 3),		45, 3,		35,	15,		25,			Int2(5,10),	Int2(5,10), BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "cryptStairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		necroBaseRooms, countof(necroBaseRooms), 0, 80, 5, 1, "necromancers", "evil", "random", 50, 25, 25, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_paving_littleStones3.jpg", "256-03b.jpg", "sufit2.jpg"),
@@ -130,7 +130,7 @@ BaseLocation gBaseLocations[] = {
 		Color::Black, Color(0.4f,0.4f,0.4f), Vec2(16.f,25.f), 25.f,
 		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, ANCIENT_ARMORY,
 		LocationTexturePack("rock2.jpg", "rock1.jpg", "rock3.jpg"),
-	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "crypt_stairs", nullptr,
+	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, "cryptStairs", nullptr,
 		Color(40,40,40), Color(0.25f,0.25f,0.25f), Vec2(5.f,18.f), 18.f,
 		humanFortRooms, countof(humanFortRooms), 0, 80, 5, 1, "golems", nullptr, nullptr, 100, 0, 0, TRAPS_MAGIC | TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile_ceramicBlue.jpg", "block10c.jpg", "woodmgrid1a.jpg"),

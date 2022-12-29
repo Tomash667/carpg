@@ -493,8 +493,7 @@ quest main {
 		27 "Nigdy nie widzia³em takich dziwnych zió³. Wygl¹daj¹ jak skrystalizowane. Poœlê po jakiegoœ doœwiadczonego alchemika ¿eby je zbada³."
 		28 "Przeka¿ informacje"
 		29 "Wiêc mówisz ¿e ten starzec straci³ pamieæ? Mam nadzieje ¿e to nie jest kolejny objaw choroby. W wolnym czasie pójdê z nim porozmawiaæ, mo¿e uda mi siê przywróciæ mu pamiêæ."
-		
-		//12 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ 10 unikalnych zadañ)"
+		30 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ wszystkie unikalne zadania)"
 	}
 	
 	texts {
@@ -604,7 +603,6 @@ quest main_village3 {
 		8 "Odda³em dziwne zio³a $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 	}
 }
-
 
 //=============================================================================
 quest main_village4 {

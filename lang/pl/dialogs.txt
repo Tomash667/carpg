@@ -179,16 +179,16 @@ dialog trainer {
 	7 "$train_lab/dex$"
 	8 "Anuluj"
 	9 "Umiejêtnoœæ"
-	10 "$train_lab/one_handed_weapon$"
-	11 "$train_lab/short_blade$"
-	12 "$train_lab/long_blade$"
+	10 "$train_lab/oneHandedWeapon$"
+	11 "$train_lab/shortBlade$"
+	12 "$train_lab/longBlade$"
 	13 "$train_lab/blunt$"
 	14 "$train_lab/axe$"
 	15 "$train_lab/bow$"
 	16 "$train_lab/shield$"
-	17 "$train_lab/light_armor$"
-	18 "$train_lab/medium_armor$"
-	19 "$train_lab/heavy_armor$"
+	17 "$train_lab/lightArmor$"
+	18 "$train_lab/mediumArmor$"
+	19 "$train_lab/heavyArmor$"
 	20 "Atut"
 	21 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
 	22 "Czym siê zajmujesz?"
@@ -1846,12 +1846,12 @@ dialog mage_seller {
 	7 "Szkolenie"
 	8 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
 	9 "$train_lab/int$"
-	10 "$train_lab/mystic_magic$"
+	10 "$train_lab/mysticMagic$"
 	11 "$train_lab/concentration$"
 	12 "Anuluj"
 	13 "$train_lab/fireball$"
-	14 "$train_lab/thunder_bolt$"
-	15 "$train_lab/fire_trap$"
+	14 "$train_lab/thunderBolt$"
+	15 "$train_lab/fireTrap$"
 }
 
 //==============================================================================
@@ -1863,7 +1863,7 @@ dialog cleric_seller {
 	1 "Szkolenie"
 	2 "Jeœli chcesz mogê ciê nauczyæ czegoœ o magii bogów."
 	3 "$train_lab/wis$"
-	4 "$train_lab/gods_magic$"
+	4 "$train_lab/godsMagic$"
 	5 "$train_lab/concentration$"
 	6 "Anuluj"
 	7 "Czym siê zajmujesz?"
@@ -2064,8 +2064,8 @@ dialog hunter_leader {
 		"Witaj!"
 	}
 	1 "Koniec rozmowy"
-	2 "$train_lab/entangling_arrow$"
-	3 "$train_lab/bear_trap$"
+	2 "$train_lab/entanglingArrow$"
+	3 "$train_lab/bearTrap$"
 }
 
 //==============================================================================

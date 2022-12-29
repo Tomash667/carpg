@@ -2360,7 +2360,7 @@ quest main
 				{
 					doOnce
 					talk 20
-					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE;"
+					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2371,7 +2371,7 @@ quest main
 				{
 					doOnce
 					talk 23
-					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE;"
+					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2382,7 +2382,7 @@ quest main
 				{
 					doOnce
 					talk 27
-					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE;"
+					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2393,7 +2393,7 @@ quest main
 				{
 					doOnce
 					talk 29
-					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE;"
+					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2411,12 +2411,22 @@ quest main
 			if once
 			{
 				if choices == 0
-					talk 16
+				{
+					if script "counter == 4"
+						talk 30
+					else
+						talk 16
+				}
 				else
 					talk 17
 			}
 			else if choices == 0
-				talk 18
+			{
+				if script "counter == 4"
+					talk 30
+				else
+					talk 18
+			}
 		}
 		
 		if choices > 0
@@ -2594,7 +2604,7 @@ quest main
 				else if(Level::dungeonLevel == 1 && e.onGenerate.stage == 1)
 				{
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
-					@room.type = RoomType::Get("crypt_library");
+					@room.type = RoomType::Get("cryptLibrary");
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}
@@ -2710,6 +2720,7 @@ quest main
 					}
 					
 					quest.AddEntry(TEXT(16));
+					counter = 0;
 				}
 				break;
 			}

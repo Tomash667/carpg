@@ -1287,5 +1287,6 @@ void LocationPart::DestroyUsable(Usable* usable)
 	}
 
 	RemoveElement(usables, usable);
+	usable->RemoveAllEventHandlers();
 	delete usable;
 }

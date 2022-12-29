@@ -1,6 +1,6 @@
 // This file contains list of abilities
 //------------------------------------------------------------------------------
-ability magic_bolt {
+ability magicBolt {
 	type point
 	flags {useCast mage defaultAttack}
 	level 0
@@ -13,7 +13,7 @@ ability magic_bolt {
 	soundHit "punch1.wav" 1
 }
 
-ability xmagic_bolt {
+ability xmagicBolt {
 	type point
 	flags {useCast mage triple}
 	dmg 20 + 5
@@ -45,7 +45,7 @@ ability fireball {
 	skill 20
 }
 
-ability spit_poison {
+ability spitPoison {
 	type ball
 	flags poison
 	dmg 75
@@ -69,7 +69,7 @@ ability raise {
 	soundCast "Darkness3.mp3" 1
 }
 
-ability thunder_bolt {
+ability thunderBolt {
 	type ray
 	effect electro
 	level 10
@@ -104,7 +104,7 @@ ability drain2 {
 	soundCast "suck.mp3" 1
 }
 
-ability exploding_skull {
+ability explodingSkull {
 	type point
 	flags {useCast explode}
 	dmg 140 + 13
@@ -133,7 +133,7 @@ ability heal {
 	icon
 }
 
-ability mystic_ball {
+ability mysticBall {
 	type point
 	flags {useCast explode}
 	dmg 400
@@ -148,7 +148,7 @@ ability mystic_ball {
 	soundHit "explode.mp3" 3
 }
 
-ability bull_charge {
+ability bullCharge {
 	type charge
 	effect stun
 	time 1.5
@@ -174,7 +174,7 @@ ability dash {
 	icon
 }
 
-ability summon_wolf {
+ability summonWolf {
 	type summon
 	unit white_wolf_sum
 	flags useCast
@@ -184,7 +184,7 @@ ability summon_wolf {
 	icon
 }
 
-ability howl_aggro {
+ability howlAggro {
 	type aggro
 	cooldown 9999
 	range 50
@@ -192,7 +192,7 @@ ability howl_aggro {
 	soundCast "wolf_x.mp3" 3
 }
 
-ability howl_summon {
+ability howlSummon {
 	type summonAway
 	unit wolf
 	count 5
@@ -203,7 +203,7 @@ ability howl_summon {
 	soundCast "wolf_x.mp3" 3
 }
 
-ability wolf_charge {
+ability wolfCharge {
 	type charge
 	flags ignoreUnits
 	dmg 250
@@ -214,7 +214,7 @@ ability wolf_charge {
 	soundCast "wolf_attack.mp3" 1
 }
 
-ability entangling_arrow {
+ability entanglingArrow {
 	type rangedAttack
 	effect rooted
 	time 2
@@ -228,7 +228,7 @@ ability entangling_arrow {
 	skill 25
 }
 
-ability fire_trap {
+ability fireTrap {
 	type trap
 	flags {useCast mage}
 	trapId fireball
@@ -246,7 +246,7 @@ ability fire_trap {
 	skill 25
 }
 
-ability bear_trap {
+ability bearTrap {
 	type trap
 	flags useKneel
 	trapId bear
@@ -262,3 +262,19 @@ ability bear_trap {
 	icon
 	learningPoints 3
 }
+
+// pre V_DEV names
+alias magicBolt magic_bolt
+alias xmagicBolt xmagic_bolt
+alias spitPoison spit_poison
+alias thunderBolt thunder_bolt
+alias explodingSkull exploding_skull
+alias mysticBall mystic_ball
+alias bullCharge bull_charge
+alias summonWolf summon_wolf
+alias howlAggro howl_aggro
+alias howlSummon howl_summon
+alias wolfCharge wolf_charge
+alias entanglingArrow entangling_arrow
+alias fireTrap fire_trap
+alias bearTrap bear_trap

@@ -25,10 +25,10 @@ void Usable::Save(GameWriter& f)
 		container->Save(f);
 	// events
 	f << events.size();
-	for(Event& e : events)
+	for(Event& event : events)
 	{
-		f << e.type;
-		f << e.quest->id;
+		f << event.type;
+		f << event.quest->id;
 	}
 	// user
 	if(f.isLocal && !IsSet(base->useFlags, BaseUsable::CONTAINER))
@@ -60,18 +60,18 @@ void Usable::Load(GameReader& f)
 	if(LOAD_VERSION >= V_DEV)
 	{
 		events.resize(f.Read<uint>());
-		for(Event& e : events)
+		for(Event& event : events)
 		{
 			int questId;
-			f >> e.type;
+			f >> event.type;
 			f >> questId;
-			questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
+			questMgr->AddQuestRequest(questId, (Quest**)&event.quest, [&]()
 			{
-				EventPtr event;
-				event.source = EventPtr::LOCATION;
-				event.type = e.type;
-				event.usable = this;
-				e.quest->AddEventPtr(event);
+				EventPtr e;
+				e.source = EventPtr::USABLE;
+				e.type = event.type;
+				e.usable = this;
+				event.quest->AddEventPtr(e);
 			});
 		}
 	}
@@ -137,33 +137,46 @@ void Usable::AddEventHandler(Quest2* quest, EventType type)
 {
 	assert(type == EVENT_DESTROY);
 
-	Event e;
-	e.quest = quest;
-	e.type = type;
-	events.push_back(e);
-
-	EventPtr event;
-	event.source = EventPtr::USABLE;
+	Event event;
+	event.quest = quest;
 	event.type = type;
-	event.usable = this;
-	quest->AddEventPtr(event);
+	events.push_back(event);
+
+	EventPtr e;
+	e.source = EventPtr::USABLE;
+	e.type = type;
+	e.usable = this;
+	quest->AddEventPtr(e);
 }
 
 //=================================================================================================
 void Usable::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 {
-	LoopAndRemove(events, [=](Event& e)
+	LoopAndRemove(events, [=](Event& event)
 	{
-		return e.quest == quest && (type == EVENT_ANY || e.type == type);
+		return event.quest == quest && (type == EVENT_ANY || event.type == type);
 	});
 
 	if(!cleanup)
 	{
-		EventPtr event;
-		event.source = EventPtr::USABLE;
-		event.type = type;
-		event.usable = this;
-		quest->RemoveEventPtr(event);
+		EventPtr e;
+		e.source = EventPtr::USABLE;
+		e.type = type;
+		e.usable = this;
+		quest->RemoveEventPtr(e);
+	}
+}
+
+//=================================================================================================
+void Usable::RemoveAllEventHandlers()
+{
+	for(Event& event : events)
+	{
+		EventPtr e;
+		e.source = EventPtr::USABLE;
+		e.type = event.type;
+		e.usable = this;
+		event.quest->RemoveEventPtr(e);
 	}
 }
 
