@@ -684,6 +684,9 @@
     <ClCompile Include="entity\DestroyedObject.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="entity\UnitOrder.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
     <ClCompile Include="entity\ParticleEffect.cpp">
       <Filter>entity</Filter>
     </ClCompile>
@@ -1350,6 +1353,9 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\DestroyedObject.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\UnitOrder.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\ParticleEffect.h">

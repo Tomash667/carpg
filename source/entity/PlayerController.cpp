@@ -3029,7 +3029,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						u.animationState = AS_ATTACK_PREPARE;
 						u.act.attack.index = u.GetRandomAttack();
 						u.act.attack.run = false;
-						u.act.attack.hitted = false;
+						u.act.attack.hitted = 0;
 						u.meshInst->Play(NAMES::aniAttacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						u.meshInst->groups[1].speed = speed;
 						actionKey = k;
@@ -3111,13 +3111,13 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					if(!secondary && IsSet(u.GetWeapon().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
 					{
 						// cast magic bolt
-						UseAbility(Ability::Get("magic_bolt"), false);
+						UseAbility(Ability::Get("magicBolt"), false);
 					}
 					else
 					{
 						u.action = A_ATTACK;
 						u.act.attack.index = u.GetRandomAttack();
-						u.act.attack.hitted = false;
+						u.act.attack.hitted = 0;
 						u.meshInst->Play(NAMES::aniAttacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 						if(u.running)
 						{

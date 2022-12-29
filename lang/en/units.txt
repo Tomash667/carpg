@@ -29,13 +29,13 @@ unit captive = "Captive"
 unit traveler = "Traveler"
 unit artur_drwal {
 	name "Lumberjack"
-	real_name "Arthur the Luberjack"
+	realName "Arthur the Luberjack"
 }
 unit poslaniec_tartak = "Messenger"
 unit drwal = "Lumberjack"
 unit inwestor {
 	name "Investor"
-	real_name "Marco Bartoli"
+	realName "Marco Bartoli"
 }
 unit poslaniec_kopalnia = "Messenger"
 unit gornik = "Miner"
@@ -43,7 +43,7 @@ unit gornik_szef = "Chief of miners"
 unit pijak = "Drunkard"
 unit mistrz_agentow {
 	name "Stranger"
-	real_name "Arto"
+	realName "Arto"
 }
 unit guard_q_bandyci = "Guard"
 unit agent = "Agent"
@@ -52,7 +52,7 @@ unit q_magowie_stary = "Old mage"
 unit q_orkowie_straznik = "Guard"
 unit base_gorush {
 	name "Ork"
-	real_name "Gorush"
+	realName "Gorush"
 }
 unit q_orkowie_gorush {}
 unit q_orkowie_gorush_woj {}
@@ -68,13 +68,13 @@ unit q_orkowie_orc_chief = "Orc chief"
 unit q_orkowie_orc_shaman = "Orc shaman"
 unit q_gobliny_szlachcic {
 	name "Nobleman"
-	real_name "Sir Foltest Denhoff"
+	realName "Sir Foltest Denhoff"
 }
 unit q_gobliny_poslaniec = "Messenger"
 unit q_gobliny_mag = "Wandering mage"
 unit q_zlo_kaplan {
 	name "Priest"
-	real_name "Jozan"
+	realName "Jozan"
 }
 unit q_zlo_mag = "Mage"
 unit hunter = "Hunter"
@@ -85,7 +85,7 @@ unit goblin_fighter = "Goblin fighter"
 unit goblin_chief = "Goblin chief"
 unit q_gobliny_szlachcic2 {
 	name "Nobleman"
-	real_name "Sir Foltest Denhoff"
+	realName "Sir Foltest Denhoff"
 }
 unit q_gobliny_ochroniarz = "Bodyguard"
 unit tut_goblin = "Goblin"
@@ -150,7 +150,7 @@ unit hero_warrior = "Warrior"
 unit hero_hunter = "Hunter"
 unit hero_rogue = "Rogue"
 unit hero_tomir {
-	real_name "Tomir"
+	realName "Tomir"
 }
 unit hero_cleric = "Cleric"
 unit tomashu = "Tomashu"
@@ -158,7 +158,7 @@ unit unk = "Unknown"
 unit crazy_cook = "Crazy cook"
 unit xwokloiz {
 	name "Alchemist apprentice"
-	real_name "Luke Herbalist"
+	realName "Luke Herbalist"
 }
 unit q_main_academy = "Academy teacher"
 unit q_main_messenger = "Messenger"
@@ -171,46 +171,46 @@ unit q_main_plague_soltys = "Infected soltys"
 unit q_main_plague_alchemist = "Infected alchemist"
 unit q_main_plague_guard = "Infected guard"
 
-unit_group orcs {
+unitGroup orcs {
 	name "orcs"
-	encounter_text "You encounter a pack of orcs looking for easy loot!"
+	encounterText "You encounter a pack of orcs looking for easy loot!"
 }
-unit_group bandits {
+unitGroup bandits {
 	name "bandits"
-	encounter_text "While traveling you encountered a group of bandits!"
+	encounterText "While traveling you encountered a group of bandits!"
 }
-unit_group goblins {
+unitGroup goblins {
 	name "goblins"
-	encounter_text "Out of surprise, a band of goblins attacked you!"
+	encounterText "Out of surprise, a band of goblins attacked you!"
 }
-unit_group undead {
+unitGroup undead {
 	name "undead"
 }
-unit_group necromancers {
+unitGroup necromancers {
 	name "necromancers"
 }
-unit_group evil {
+unitGroup evil {
 	name "evil clerics"
 }
-unit_group mages {
+unitGroup mages {
 	name "mages"
 }
-unit_group golems {
+unitGroup golems {
 	name "golems"
 }
-unit_group mages_and_golems {
+unitGroup mages_and_golems {
 	name "mages and golems"
 }
-unit_group unk {
+unitGroup unk {
 	name "unknown monsters"
 }
-unit_group challange {
+unitGroup challange {
 	name "powerful enemies"
 }
-unit_group forest {
+unitGroup forest {
 	name "animals"
-	encounter_text "Suddenly, wild animals jump out of the bushes!"
+	encounterText "Suddenly, wild animals jump out of the bushes!"
 }
-unit_group cave {
+unitGroup cave {
 	name "animals"
 }

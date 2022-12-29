@@ -232,25 +232,25 @@ void UnitLoader::InitTokenizer()
 		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
-		{ "idle_dialog", P_IDLE_DIALOG },
+		{ "idleDialog", P_IDLE_DIALOG },
 		{ "group", P_GROUP },
-		{ "dmg_type", P_DMG_TYPE },
-		{ "walk_speed", P_WALK_SPEED },
-		{ "run_speed", P_RUN_SPEED },
-		{ "rot_speed", P_ROT_SPEED },
+		{ "dmgType", P_DMG_TYPE },
+		{ "walkSpeed", P_WALK_SPEED },
+		{ "runSpeed", P_RUN_SPEED },
+		{ "rotSpeed", P_ROT_SPEED },
 		{ "blood", P_BLOOD },
-		{ "blood_size", P_BLOOD_SIZE },
+		{ "bloodSize", P_BLOOD_SIZE },
 		{ "sounds", P_SOUNDS },
 		{ "frames", P_FRAMES },
 		{ "tex", P_TEX },
 		{ "idles", P_IDLES },
 		{ "width", P_WIDTH },
-		{ "attack_range", P_ATTACK_RANGE },
-		{ "armor_type", P_ARMOR_TYPE },
+		{ "attackRange", P_ATTACK_RANGE },
+		{ "armorType", P_ARMOR_TYPE },
 		{ "class", P_CLASS },
 		{ "trader", P_TRADER },
 		{ "upgrade", P_UPGRADE },
-		{ "spell_power", P_SPELL_POWER },
+		{ "spellPower", P_SPELL_POWER },
 		{ "mp", P_MP },
 		{ "tint", P_TINT },
 		{ "appearance", P_APPEARANCE },
@@ -273,76 +273,76 @@ void UnitLoader::InitTokenizer()
 		{ "human", F_HUMAN },
 		{ "humanoid", F_HUMANOID },
 		{ "coward", F_COWARD },
-		{ "dont_escape", F_DONT_ESCAPE },
+		{ "dontEscape", F_DONT_ESCAPE },
 		{ "archer", F_ARCHER },
 		{ "peaceful", F_PEACEFUL },
-		{ "pierce_res25", F_PIERCE_RES25 },
-		{ "slash_res25", F_SLASH_RES25 },
-		{ "blunt_res25", F_BLUNT_RES25 },
-		{ "pierce_weak25", F_PIERCE_WEAK25 },
-		{ "slash_weak25", F_SLASH_WEAK25 },
-		{ "blunt_weak25", F_BLUNT_WEAK25 },
+		{ "pierceRes25", F_PIERCE_RES25 },
+		{ "slashRes25", F_SLASH_RES25 },
+		{ "bluntRes25", F_BLUNT_RES25 },
+		{ "pierceWeak25", F_PIERCE_WEAK25 },
+		{ "slashWeak25", F_SLASH_WEAK25 },
+		{ "bluntWeak25", F_BLUNT_WEAK25 },
 		{ "undead", F_UNDEAD },
 		{ "slow", F_SLOW },
-		{ "poison_attack", F_POISON_ATTACK },
+		{ "poisonAttack", F_POISON_ATTACK },
 		{ "immortal", F_IMMORTAL },
 		{ "aggro", F_AGGRO },
 		{ "crazy", F_CRAZY },
-		{ "dont_open", F_DONT_OPEN },
+		{ "dontOpen", F_DONT_OPEN },
 		{ "slight", F_SLIGHT },
 		{ "secret", F_SECRET },
-		{ "dont_suffer", F_DONT_SUFFER },
+		{ "dontSuffer", F_DONT_SUFFER },
 		{ "mage", F_MAGE },
-		{ "poison_res", F_POISON_RES },
+		{ "poisonRes", F_POISON_RES },
 		{ "loner", F_LONER },
-		{ "no_power_attack", F_NO_POWER_ATTACK },
-		{ "ai_clerk", F_AI_CLERK },
-		{ "ai_guard", F_AI_GUARD },
-		{ "ai_stay", F_AI_STAY },
-		{ "ai_wanders", F_AI_WANDERS },
-		{ "ai_drunkman", F_AI_DRUNKMAN },
+		{ "noPowerAttack", F_NO_POWER_ATTACK },
+		{ "aiClerk", F_AI_CLERK },
+		{ "aiGuard", F_AI_GUARD },
+		{ "aiStay", F_AI_STAY },
+		{ "aiWanders", F_AI_WANDERS },
+		{ "aiDrunkman", F_AI_DRUNKMAN },
 		{ "hero", F_HERO }
 		});
 
 	t.AddKeywords(G_FLAGS2, {
-		{ "ai_train", F2_AI_TRAIN },
-		{ "specific_name", F2_SPECIFIC_NAME },
-		{ "fixed_stats", F2_FIXED_STATS },
+		{ "aiTrain", F2_AI_TRAIN },
+		{ "specificName", F2_SPECIFIC_NAME },
+		{ "fixedStats", F2_FIXED_STATS },
 		{ "contest", F2_CONTEST },
-		{ "contest_50", F2_CONTEST_50 },
-		{ "dont_talk", F2_DONT_TALK },
+		{ "contest50", F2_CONTEST_50 },
+		{ "dontTalk", F2_DONT_TALK },
 		{ "construct", F2_CONSTRUCT },
-		{ "fast_learner", F2_FAST_LEARNER },
-		{ "mp_bar", F2_MP_BAR },
+		{ "fastLearner", F2_FAST_LEARNER },
+		{ "mpBar", F2_MP_BAR },
 		{ "melee", F2_MELEE },
-		{ "melee_50", F2_MELEE_50 },
+		{ "melee50", F2_MELEE_50 },
 		{ "boss", F2_BOSS },
 		{ "bloodless", F2_BLOODLESS },
-		{ "limited_rot", F2_LIMITED_ROT },
-		{ "alpha_blend", F2_ALPHA_BLEND },
-		{ "stun_res", F2_STUN_RESISTANCE },
-		{ "sit_on_throne", F2_SIT_ON_THRONE },
+		{ "limitedRot", F2_LIMITED_ROT },
+		{ "alphaBlend", F2_ALPHA_BLEND },
+		{ "stunRes", F2_STUN_RESISTANCE },
+		{ "sitOnThrone", F2_SIT_ON_THRONE },
 		{ "guard", F2_GUARD },
-		{ "rooted_res", F2_ROOTED_RESISTANCE },
+		{ "rootedRes", F2_ROOTED_RESISTANCE },
 		{ "xar", F2_XAR },
 		{ "tournament", F2_TOURNAMENT },
 		{ "yell", F2_YELL },
 		{ "backstab", F2_BACKSTAB },
-		{ "ignore_block", F2_IGNORE_BLOCK },
-		{ "backstab_res", F2_BACKSTAB_RES },
-		{ "magic_res50", F2_MAGIC_RES50 },
-		{ "magic_res25", F2_MAGIC_RES25 },
+		{ "ignoreBlock", F2_IGNORE_BLOCK },
+		{ "backstabRes", F2_BACKSTAB_RES },
+		{ "magicRes50", F2_MAGIC_RES50 },
+		{ "magicRes25", F2_MAGIC_RES25 },
 		{ "guarded", F2_GUARDED }
 		});
 
 	t.AddKeywords(G_FLAGS3, {
-		{ "contest_25", F3_CONTEST_25 },
-		{ "drunk_mage", F3_DRUNK_MAGE },
-		{ "drunkman_after_contest", F3_DRUNKMAN_AFTER_CONTEST },
-		{ "dont_eat", F3_DONT_EAT },
-		{ "orc_food", F3_ORC_FOOD },
+		{ "contest25", F3_CONTEST_25 },
+		{ "drunkMage", F3_DRUNK_MAGE },
+		{ "drunkmanAfterContest", F3_DRUNKMAN_AFTER_CONTEST },
+		{ "dontEat", F3_DONT_EAT },
+		{ "orcFood", F3_ORC_FOOD },
 		{ "miner", F3_MINER },
-		{ "talk_at_competition", F3_TALK_AT_COMPETITION }
+		{ "talkAtCompetition", F3_TALK_AT_COMPETITION }
 		});
 
 	t.AddKeywords(G_GROUP, {
@@ -395,7 +395,7 @@ void UnitLoader::InitTokenizer()
 		t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
 
 	t.AddKeywords(G_SOUND_TYPE, {
-		{ "see_enemy", SOUND_SEE_ENEMY },
+		{ "seeEnemy", SOUND_SEE_ENEMY },
 		{ "pain", SOUND_PAIN },
 		{ "death", SOUND_DEATH },
 		{ "attack", SOUND_ATTACK },
@@ -405,15 +405,15 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeywords(G_FRAME_KEYWORD, {
 		{ "attacks", FK_ATTACKS },
-		{ "simple_attacks", FK_SIMPLE_ATTACKS },
+		{ "simpleAttacks", FK_SIMPLE_ATTACKS },
 		{ "cast", FK_CAST },
-		{ "take_weapon", FK_TAKE_WEAPON },
+		{ "takeWeapon", FK_TAKE_WEAPON },
 		{ "bash", FK_BASH }
 		});
 
 	t.AddKeywords(G_WEAPON_FLAG, {
-		{ "short_blade", A_SHORT_BLADE },
-		{ "long_blade", A_LONG_BLADE },
+		{ "shortBlade", A_SHORT_BLADE },
+		{ "longBlade", A_LONG_BLADE },
 		{ "blunt", A_BLUNT },
 		{ "axe", A_AXE }
 		});
@@ -421,7 +421,7 @@ void UnitLoader::InitTokenizer()
 	t.AddKeyword("null", 0, G_NULL);
 
 	t.AddKeywords(G_ABILITY_KEYWORD, {
-		{ "non_combat", AK_NON_COMBAT },
+		{ "nonCombat", AK_NON_COMBAT },
 		{ "null", AK_NULL }
 		});
 
@@ -436,10 +436,10 @@ void UnitLoader::InitTokenizer()
 	t.AddKeywords(G_GROUP_KEYWORD, {
 		{ "leader", GK_LEADER },
 		{ "group", GK_GROUP },
-		{ "food_mod", GK_FOOD_MOD },
-		{ "orc_food", GK_ORC_FOOD },
-		{ "have_camps", GK_HAVE_CAMPS },
-		{ "encounter_chance", GK_ENCOUNTER_CHANCE },
+		{ "foodMod", GK_FOOD_MOD },
+		{ "orcFood", GK_ORC_FOOD },
+		{ "haveCamps", GK_HAVE_CAMPS },
+		{ "encounterChance", GK_ENCOUNTER_CHANCE },
 		{ "special", GK_SPECIAL },
 		{ "list", GK_LIST },
 		{ "gender", GK_GENDER }
@@ -471,14 +471,14 @@ void UnitLoader::InitTokenizer()
 		});
 
 	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
-		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "miscItem", OtherItem::Subtype::MiscItem },
 		{ "tool", OtherItem::Subtype::Tool },
 		{ "valuable", OtherItem::Subtype::Valuable },
 		{ "ingredient", OtherItem::Subtype::Ingredient }
 		});
 
 	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
-		{ "normal_book", Book::Subtype::NormalBook },
+		{ "normalBook", Book::Subtype::NormalBook },
 		{ "recipe", Book::Subtype::Recipe }
 		});
 
@@ -512,7 +512,7 @@ void UnitLoader::InitTokenizer()
 		{ "hair", AK_HAIR },
 		{ "beard", AK_BEARD },
 		{ "mustache", AK_MUSTACHE },
-		{ "hair_color", AK_HAIR_COLOR },
+		{ "hairColor", AK_HAIR_COLOR },
 		{ "height", AK_HEIGHT }
 		});
 }
@@ -1315,7 +1315,7 @@ void UnitLoader::ParseProfile(Ptr<StatProfile>& profile)
 			cstring a = "subprofile";
 			int b = G_ATTRIBUTE, c = G_SKILL;
 			t.StartUnexpected()
-				.Add(tokenizer::T_ITEM, (int*)&a)
+				.Add(tokenizer::T_ITEM, (int*)a)
 				.Add(tokenizer::T_KEYWORD_GROUP, &b)
 				.Add(tokenizer::T_KEYWORD_GROUP, &c)
 				.Throw();

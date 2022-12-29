@@ -493,6 +493,10 @@ item al_clothes3b {
 	name "Drogie ubranie"
 	desc "Drogie ubranie wykonane na miarê."
 }
+item al_old_robe {
+	name "Stara szata"
+	desc "Czasy œwietnoœci ma ju¿ za sob¹."
+}
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
@@ -1077,10 +1081,6 @@ item sekret_kartka {
 item sekret_kartka2 {
 	name "Kawa³ek papieru"
 	desc "Tylko dziêki prawdziwej odwadze mo¿esz przejœæ przez ten portal. Wczytywanie gry ci nie pomo¿e."
-}
-item q_main_letter {
-	name "Dokumenty"
-	desc "Dokumenty dziêki którym zostaniesz przyjêty do Akademii."
 }
 item letter {
 	name "List"

@@ -30,6 +30,7 @@ struct Usable : EntityType<Usable>
 	Vec3 GetCenter() const;
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
+	void RemoveAllEventHandlers();
 	void FireEvent(ScriptEvent& e);
 };
 

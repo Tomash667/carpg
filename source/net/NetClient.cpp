@@ -238,6 +238,13 @@ void Net::UpdateClient(float dt)
 		}
 	}
 
+	// join journal update messages into one and show
+	if(journalChanges)
+	{
+		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+		journalChanges = false;
+	}
+
 	// send my position/action
 	updateTimer += dt;
 	if(updateTimer >= TICK)
@@ -660,7 +667,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 						unit.act.attack.power = 1.f;
 						unit.act.attack.run = false;
-						unit.act.attack.hitted = false;
+						unit.act.attack.hitted = 0;
 						unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 						unit.meshInst->groups[group].speed = attackSpeed;
 					}
@@ -673,7 +680,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 					unit.act.attack.power = 1.f;
 					unit.act.attack.run = false;
-					unit.act.attack.hitted = false;
+					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 					unit.meshInst->groups[group].speed = attackSpeed;
 					break;
@@ -704,7 +711,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.index = ((typeflags & 0xF0) >> 4);
 					unit.act.attack.power = 1.5f;
 					unit.act.attack.run = true;
-					unit.act.attack.hitted = false;
+					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
 					unit.meshInst->groups[group].speed = attackSpeed;
 					break;
@@ -1476,8 +1483,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				quest->state = Quest::Started;
 				gameGui->journal->NeedUpdate(Journal::Quests, quest->questIndex);
-				gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				questMgr->quests.push_back(quest);
+				journalChanges = true;
 			}
 			break;
 		// update quest
@@ -1516,7 +1523,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						}
 					}
 					gameGui->journal->NeedUpdate(Journal::Quests, quest->questIndex);
-					gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+					journalChanges = true;
 				}
 			}
 			break;
@@ -2401,7 +2408,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					e->id = id;
 					e->locPart = &locPart;
 					e->Register();
-					e->ability = Ability::Get("thunder_bolt");
+					e->ability = Ability::Get("thunderBolt");
 					e->startPos = p1;
 					e->AddLine(p1, p2);
 					e->valid = true;
@@ -2440,7 +2447,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					Error("Update client: Broken ELECTRO_HIT.");
 				else if(game->gameState == GS_LEVEL)
 				{
-					Ability* ability = Ability::Get("thunder_bolt");
+					Ability* ability = Ability::Get("thunderBolt");
 
 					// sound
 					if(ability->soundHit)
@@ -3043,7 +3050,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				f >> canEnter;
 				if(!f)
 					Error("Update client: Broken SET_CAN_ENTER.");
-				else if(gameLevel->cityCtx || id >= (int)gameLevel->cityCtx->insideBuildings.size())
+				else if(!gameLevel->cityCtx || id >= (int)gameLevel->cityCtx->insideBuildings.size())
 					Error("Update client: SET_CAN_ENTER, Invalid building %d.", id);
 				else
 					gameLevel->cityCtx->insideBuildings[id]->canEnter = canEnter;

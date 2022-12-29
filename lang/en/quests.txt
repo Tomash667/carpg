@@ -436,8 +436,7 @@ quest main {
 		27 "I have never seen such strange herbs. They look crystallized. I'll send for an experienced alchemist to examine them."
 		28 "Provide information"
 		29 "So you're saying this old man lost his memory? I hope this is not another symptom of the disease. In my spare time, I'll go talk to him, maybe I can restore his memory."
-		
-		//12 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
+		30 "(This is the end of the main plot for this version. In the meantime try to complete all unique quests)"
 	}
 	
 	texts {

@@ -137,9 +137,9 @@ void ItemLoader::InitTokenizer()
 		{ "gold", IT_GOLD },
 		{ "list", IT_LIST },
 		{ "stock", IT_STOCK },
-		{ "book_scheme", IT_BOOK_SCHEME },
-		{ "start_items", IT_START_ITEMS },
-		{ "better_items", IT_BETTER_ITEMS },
+		{ "bookScheme", IT_BOOK_SCHEME },
+		{ "startItems", IT_START_ITEMS },
+		{ "betterItems", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS },
 		{ "recipe", IT_RECIPE }
 		});
@@ -147,19 +147,19 @@ void ItemLoader::InitTokenizer()
 	t.AddKeywords(G_PROPERTY, {
 		{ "weight", P_WEIGHT },
 		{ "value", P_VALUE },
-		{ "ai_value", P_AI_VALUE },
+		{ "aiValue", P_AI_VALUE },
 		{ "mesh", P_MESH },
 		{ "tex", P_TEX },
 		{ "attack", P_ATTACK },
-		{ "req_str", P_REQ_STR },
+		{ "reqStr", P_REQ_STR },
 		{ "type", P_TYPE },
 		{ "material", P_MATERIAL },
-		{ "dmg_type", P_DMG_TYPE },
+		{ "dmgType", P_DMG_TYPE },
 		{ "flags", P_FLAGS },
 		{ "defense", P_DEFENSE },
 		{ "mobility", P_MOBILITY },
-		{ "unit_type", P_UNIT_TYPE },
-		{ "tex_override", P_TEX_OVERRIDE },
+		{ "unitType", P_UNIT_TYPE },
+		{ "texOverride", P_TEX_OVERRIDE },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
@@ -168,12 +168,12 @@ void ItemLoader::InitTokenizer()
 		{ "block", P_BLOCK },
 		{ "effects", P_EFFECTS },
 		{ "tag", P_TAG },
-		{ "attack_mod", P_ATTACK_MOD }
+		{ "attackMod", P_ATTACK_MOD }
 		});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
-		{ "short_blade", WT_SHORT_BLADE },
-		{ "long_blade", WT_LONG_BLADE },
+		{ "shortBlade", WT_SHORT_BLADE },
+		{ "longBlade", WT_LONG_BLADE },
 		{ "axe", WT_AXE },
 		{ "blunt", WT_BLUNT }
 		});
@@ -198,24 +198,24 @@ void ItemLoader::InitTokenizer()
 
 	// register item flags (ITEM_TEX_ONLY is not flag in item but property)
 	t.AddKeywords(G_FLAGS, {
-		{ "not_shop", ITEM_NOT_SHOP },
+		{ "notShop", ITEM_NOT_SHOP },
 		{ "quest", ITEM_QUEST },
-		{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
+		{ "notBlacksmith", ITEM_NOT_BLACKSMITH },
 		{ "mage", ITEM_MAGE },
-		{ "dont_drop", ITEM_DONT_DROP },
-		{ "ground_mesh", ITEM_GROUND_MESH },
-		{ "crystal_sound", ITEM_CRYSTAL_SOUND },
+		{ "dontDrop", ITEM_DONT_DROP },
+		{ "groundMesh", ITEM_GROUND_MESH },
+		{ "crystalSound", ITEM_CRYSTAL_SOUND },
 		{ "important", ITEM_IMPORTANT },
-		{ "not_merchant", ITEM_NOT_MERCHANT },
-		{ "not_random", ITEM_NOT_RANDOM },
+		{ "notMerchant", ITEM_NOT_MERCHANT },
+		{ "notRandom", ITEM_NOT_RANDOM },
 		{ "hq", ITEM_HQ },
 		{ "magical", ITEM_MAGICAL },
 		{ "unique", ITEM_UNIQUE },
-		{ "magic_scroll", ITEM_MAGIC_SCROLL },
+		{ "magicScroll", ITEM_MAGIC_SCROLL },
 		{ "wand", ITEM_WAND },
 		{ "ingredient", ITEM_INGREDIENT },
-		{ "single_use", ITEM_SINGLE_USE },
-		{ "not_team", ITEM_NOT_TEAM }
+		{ "singleUse", ITEM_SINGLE_USE },
+		{ "notTeam", ITEM_NOT_TEAM }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -238,14 +238,14 @@ void ItemLoader::InitTokenizer()
 		});
 
 	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
-		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "miscItem", OtherItem::Subtype::MiscItem },
 		{ "tool", OtherItem::Subtype::Tool },
 		{ "valuable", OtherItem::Subtype::Valuable },
 		{ "ingredient", OtherItem::Subtype::Ingredient }
 		});
 
 	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
-		{ "normal_book", Book::Subtype::NormalBook },
+		{ "normalBook", Book::Subtype::NormalBook },
 		{ "recipe", Book::Subtype::Recipe }
 		});
 

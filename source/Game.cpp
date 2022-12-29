@@ -1117,8 +1117,8 @@ void Game::SetGameText()
 	txNeedItem = Str("needItem");
 
 	// rumors
-	StrArray(txRumor, "rumor_");
-	StrArray(txRumorD, "rumor_d_");
+	StrArray(txRumor, "rumor");
+	StrArray(txRumorDrunk, "rumorDrunk");
 
 	// dialogs 1
 	StrArray(txQuestAlreadyGiven, "questAlreadyGiven");

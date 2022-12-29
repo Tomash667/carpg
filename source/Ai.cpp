@@ -398,26 +398,6 @@ void Game::UpdateAi(float dt)
 					u.StopUsingUsable();
 				}
 
-				bool hideWeapon = true;
-				if(u.action != A_NONE)
-					hideWeapon = false;
-				else if(ai.st.idle.action == AIController::Idle_TrainCombat)
-				{
-					if(u.weaponTaken == W_ONE_HANDED)
-						hideWeapon = false;
-				}
-				else if(ai.st.idle.action == AIController::Idle_TrainBow)
-				{
-					if(u.weaponTaken == W_BOW)
-						hideWeapon = false;
-				}
-				if(hideWeapon)
-				{
-					u.HideWeapon();
-					if(!u.lookTarget)
-						ai.CheckPotion(true);
-				}
-
 				// fix bug of unkown origin. occurs after arena fight, affecting loosers
 				if(u.weaponState == WeaponState::Hiding && u.action == A_NONE)
 				{
@@ -460,6 +440,7 @@ void Game::UpdateAi(float dt)
 					lookAt = LookAtPoint;
 					lookPos = lookTarget->pos;
 					u.timer = Random(1.f, 2.f);
+					u.HideWeapon();
 					break;
 				}
 
@@ -476,6 +457,25 @@ void Game::UpdateAi(float dt)
 				{
 					order = ORDER_FOLLOW;
 					orderUnit = team->GetLeader();
+				}
+
+				bool hideWeapon = true;
+				if(u.action != A_NONE)
+					hideWeapon = false;
+				else if(ai.st.idle.action == AIController::Idle_TrainCombat || order == ORDER_ATTACK_OBJECT)
+				{
+					if(u.weaponTaken == W_ONE_HANDED)
+						hideWeapon = false;
+				}
+				else if(ai.st.idle.action == AIController::Idle_TrainBow)
+				{
+					if(u.weaponTaken == W_BOW)
+						hideWeapon = false;
+				}
+				if(hideWeapon)
+				{
+					u.HideWeapon();
+					ai.CheckPotion(true);
 				}
 
 				bool useIdle = true;
@@ -709,6 +709,33 @@ void Game::UpdateAi(float dt)
 					break;
 				case ORDER_AUTO_TALK:
 					u.CheckAutoTalk(dt);
+					break;
+				case ORDER_ATTACK_OBJECT:
+					useIdle = false;
+					if(Usable* usable = u.order->usable)
+					{
+						if(Vec3::Distance2d(u.pos, usable->pos) < u.GetUnitRadius() * 2 + 0.25f)
+						{
+							u.TakeWeapon(W_ONE_HANDED);
+							if(u.GetStaminap() >= 0.25f)
+								ai.DoAttack(nullptr, false);
+							ai.inCombat = true;
+							lookAt = LookAtPoint;
+							lookPos = usable->pos;
+						}
+						else
+						{
+							moveType = MovePoint;
+							targetPos = usable->pos;
+							lookAt = LookAtWalk;
+							runType = Walk;
+						}
+					}
+					else
+					{
+						ai.inCombat = false;
+						u.OrderNext();
+					}
 					break;
 				}
 
@@ -1056,7 +1083,8 @@ void Game::UpdateAi(float dt)
 									Usable& use = **it2;
 									if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 										&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
-										&& gameLevel->CanSee(locPart, use.pos, u.pos))
+										&& gameLevel->CanSee(locPart, use.pos, u.pos)
+										&& !IsSet(use.base->useFlags, BaseUsable::DESTROYABLE))
 									{
 										const Item* neededItem = use.base->item;
 										if(!neededItem || u.HaveItem(neededItem) || u.GetEquippedItem(SLOT_WEAPON) == neededItem)
@@ -1806,7 +1834,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 						{
 							if(!(*it2)->toRemove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-								&& !(*it2)->act.attack.hitted && (*it2)->animationState < AS_ATTACK_FINISHED)
+								&& !(*it2)->act.attack.hitted == 0 && (*it2)->animationState < AS_ATTACK_FINISHED)
 							{
 								float dist = Vec3::Distance(u.pos, (*it2)->pos);
 								if(dist < bestDist)
@@ -2206,7 +2234,7 @@ void Game::UpdateAi(float dt)
 				for(vector<Unit*>::iterator it2 = locPart.units.begin(), end2 = locPart.units.end(); it2 != end2; ++it2)
 				{
 					if(!(*it2)->toRemove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK
-						&& !(*it2)->act.attack.hitted && (*it2)->animationState < AS_ATTACK_FINISHED)
+						&& !(*it2)->act.attack.hitted == 0 && (*it2)->animationState < AS_ATTACK_FINISHED)
 					{
 						float dist = Vec3::Distance(u.pos, (*it2)->pos);
 						if(dist < bestDist)

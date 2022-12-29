@@ -1935,6 +1935,9 @@ void Unit::Save(GameWriter& f)
 			else
 				f.Write0();
 			break;
+		case ORDER_ATTACK_OBJECT:
+			f << currentOrder->usable;
+			break;
 		}
 		currentOrder = currentOrder->next;
 	}
@@ -2170,7 +2173,14 @@ void Unit::Load(GameReader& f)
 				f >> act.attack.index;
 				f >> act.attack.power;
 				f >> act.attack.run;
-				f >> act.attack.hitted;
+				if(LOAD_VERSION >= V_DEV)
+					f >> act.attack.hitted;
+				else
+				{
+					bool oldHitted;
+					f >> oldHitted;
+					act.attack.hitted = oldHitted ? 2 : 0;
+				}
 			}
 			else
 			{
@@ -2394,6 +2404,9 @@ void Unit::Load(GameReader& f)
 					currentOrder->autoTalkDialog = nullptr;
 					currentOrder->autoTalkQuest = nullptr;
 				}
+				break;
+			case ORDER_ATTACK_OBJECT:
+				f >> currentOrder->usable;
 				break;
 			}
 		}
@@ -6291,6 +6304,16 @@ UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog, Quest* ques
 }
 
 //=================================================================================================
+UnitOrderEntry* Unit::OrderAttackObject(Usable* usable)
+{
+	assert(usable);
+	OrderReset();
+	order->order = ORDER_ATTACK_OBJECT;
+	order->usable = usable;
+	return order;
+}
+
+//=================================================================================================
 void Unit::Talk(cstring text, int playAnim)
 {
 	assert(text && Net::IsLocal());
@@ -6390,6 +6413,7 @@ void Unit::RotateTo(const Vec3& pos)
 		changed = true;
 }
 
+//=================================================================================================
 void Unit::RotateTo(float rot)
 {
 	this->rot = rot;
@@ -6397,135 +6421,6 @@ void Unit::RotateTo(float rot)
 		ai->startRot = rot;
 	else
 		changed = true;
-}
-
-UnitOrderEntry* UnitOrderEntry::NextOrder()
-{
-	next = UnitOrderEntry::Get();
-	next->timer = -1.f;
-	return next;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithTimer(float timer)
-{
-	this->timer = timer;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithMoveType(MoveType moveType)
-{
-	this->moveType = moveType;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithRange(float range)
-{
-	this->range = range;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenWander()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_WANDER;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenWait()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_WAIT;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenFollow(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_FOLLOW;
-	o->unit = target;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenLeave()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_LEAVE;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_MOVE;
-	o->pos = pos;
-	o->moveType = MOVE_RUN;
-	o->range = 0.1f;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenLookAt(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_LOOK_AT;
-	o->pos = pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenEscapeTo(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_ESCAPE_TO;
-	o->pos = pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenEscapeToUnit(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_ESCAPE_TO_UNIT;
-	o->unit = target;
-	o->pos = target->pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenGoToInn()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_GOTO_INN;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenGuard(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_GUARD;
-	o->unit = target;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
-{
-	if(quest)
-		assert(dialog);
-
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_AUTO_TALK;
-	if(!leader)
-	{
-		o->autoTalk = AutoTalkMode::Yes;
-		o->timer = Unit::AUTO_TALK_WAIT;
-	}
-	else
-	{
-		o->autoTalk = AutoTalkMode::Leader;
-		o->timer = 0.f;
-	}
-	o->autoTalkDialog = dialog;
-	o->autoTalkQuest = quest;
-	return o;
 }
 
 //=================================================================================================
@@ -7659,10 +7554,10 @@ void Unit::Update(float dt)
 		{
 			if(animationState == AS_ATTACK_CAN_HIT && meshInst->GetProgress(groupIndex) > GetAttackFrame(0))
 			{
-				if(Net::IsLocal() && !act.attack.hitted && meshInst->GetProgress(groupIndex) >= GetAttackFrame(1))
+				if(Net::IsLocal() && act.attack.hitted != 2 && meshInst->GetProgress(groupIndex) >= GetAttackFrame(1))
 				{
 					if(DoAttack())
-						act.attack.hitted = true;
+						act.attack.hitted = 2;
 				}
 				if(meshInst->GetProgress(groupIndex) >= GetAttackFrame(2) || meshInst->IsEnded(groupIndex))
 				{

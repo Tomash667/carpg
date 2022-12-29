@@ -1,15 +1,15 @@
 [Buffs]
-buff_poison = "Poisoned"
-buff_alcohol = "Alcohol"
-buff_regeneration = "Regeneration"
-buff_natural = "Natural healing"
-buff_food = "Food"
-buff_antimagic = "Antimagic"
-buff_stamina = "Restoring stamina"
-buff_stun = "Stunned"
-buff_poison_res = "Poison resistance"
-buff_rooted = "Rooted"
-buff_slow_move = "Slow move"
+buffPoison = "Poisoned"
+buffAlcohol = "Alcohol"
+buffRegeneration = "Regeneration"
+buffNatural = "Natural healing"
+buffFood = "Food"
+buffAntimagic = "Antimagic"
+buffStamina = "Restoring stamina"
+buffStun = "Stunned"
+buffPoisonRes = "Poison resistance"
+buffRooted = "Rooted"
+buffSlowMove = "Slow move"
 
 [Directions]
 dirN = "north"
@@ -293,20 +293,20 @@ perk traveling_merchant {
 
 //------------------------------------------------------------------------------
 // SKILLS
-skill_group weapon = "Weapons"
-skill_group armor = "Shield & Armor"
-skill_group magic = "Magic"
-skill_group other = "Other"
+skillGroup weapon = "Weapons"
+skillGroup armor = "Shield & Armor"
+skillGroup magic = "Magic"
+skillGroup other = "Other"
 
-skill one_handed_weapon {
+skill oneHandedWeapon {
 	name "One-handed weapons"
 	desc "Affects damage and attack speed of all one-handed weapons."
 }
-skill short_blade {
+skill shortBlade {
 	name "Short blade"
 	desc "Affects damage and attack speed for daggers, short swords and rapiers."
 }
-skill long_blade {
+skill longBlade {
 	name "Long blade"
 	desc "Affects damage and attack speed for long swords and scimitars."
 }
@@ -330,27 +330,27 @@ skill shield {
 	name "Shields"
 	desc "Affects block speed, blocked damage and gives small defense bonus."
 }
-skill light_armor {
+skill lightArmor {
 	name "Light armor"
 	desc "Affects defense and reduce armor penalty when using light armor."
 }
-skill medium_armor {
+skill mediumArmor {
 	name "Medium armor"
 	desc "Affects defense and reduce armor penalty when using medium armor."
 }
-skill heavy_armor {
+skill heavyArmor {
 	name "Heavy armor"
 	desc "Affects defense and reduce armor penalty when using heavy armor."
 }
-skill nature_magic {
+skill natureMagic {
 	name "Nature magic"
 	desc "Affects power of nature spells and allows cast better spells."
 }
-skill gods_magic {
+skill godsMagic {
 	name "Gods magic"
 	desc "Affects power of gods spells and allows cast better spells."
 }
-skill mystic_magic {
+skill mysticMagic {
 	name "Mystic magic"
 	desc "Affects power of mystic spells and allows cast better spells."
 }
@@ -382,7 +382,7 @@ skill steal {
 	name "Theft"
 	desc "Affects chance to steal from others."
 }
-skill animal_empathy {
+skill animalEmpathy {
 	name "Animal empathy"
 	desc "Allows to understand, calm and recruit encountered animals."
 }

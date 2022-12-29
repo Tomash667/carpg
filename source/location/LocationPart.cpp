@@ -1073,21 +1073,24 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 	b.u[2] = Vec3(0, 0, 1);
 
 	// search for collision
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	if(unit.action != A_ATTACK || unit.act.attack.hitted != 1)
 	{
-		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
-			continue;
-
-		Box box2;
-		(*it)->GetBox(box2);
-		b.c = box2.Midpoint();
-		b.e = box2.Size() / 2;
-
-		if(OOBToOOB(b, a))
+		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		{
-			hitpoint = a.c;
-			hitted = *it;
-			return true;
+			if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
+				continue;
+
+			Box box2;
+			(*it)->GetBox(box2);
+			b.c = box2.Midpoint();
+			b.e = box2.Size() / 2;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				hitted = *it;
+				return true;
+			}
 		}
 	}
 
@@ -1250,5 +1253,6 @@ void LocationPart::DestroyUsable(Usable* usable)
 	}
 
 	RemoveElement(usables, usable);
+	usable->RemoveAllEventHandlers();
 	delete usable;
 }

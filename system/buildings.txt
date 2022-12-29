@@ -1,25 +1,25 @@
 //================================================================================
 // Building group
 //================================================================================
-building_group alchemist
-building_group arena
-building_group barracks
-building_group blacksmith
-building_group cottage
-building_group food_seller
-building_group hall
-building_group house
-building_group inn
-building_group merchant
-building_group training_grounds
-building_group destroyed_cottage
+buildingGroup alchemist
+buildingGroup arena
+buildingGroup barracks
+buildingGroup blacksmith
+buildingGroup cottage
+buildingGroup destroyedCottage
+buildingGroup foodSeller
+buildingGroup hall
+buildingGroup house
+buildingGroup inn
+buildingGroup merchant
+buildingGroup trainingGrounds
 
 //================================================================================
 // Building
 //================================================================================
 building merchant {
 	mesh "kupiec.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -39,7 +39,7 @@ building merchant {
 
 building blacksmith {
 	mesh "kowal.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -53,7 +53,7 @@ building blacksmith {
 
 building alchemist {
 	mesh "alchemik.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -65,9 +65,9 @@ building alchemist {
 	shift {1 1}
 }
 
-building training_grounds {
+building trainingGrounds {
 	mesh "pola.qmsh"
-	flags {have_name list favor_road}
+	flags {haveName list favorRoad}
 	scheme {
 		" .||. "
 		".||||."
@@ -80,7 +80,7 @@ building training_grounds {
 		"......"
 		"......"
 	}
-	group training_grounds
+	group trainingGrounds
 	unit trainer
 	shift {
 		bottom {1 3}
@@ -92,8 +92,8 @@ building training_grounds {
 
 building inn {
 	mesh "karczma.qmsh"
-	inside_mesh "karczma_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "karczma_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"######"
 		"######"
@@ -112,10 +112,10 @@ building inn {
 	shift {1 1}
 }
 
-building city_hall {
+building cityHall {
 	mesh "ratusz.qmsh"
-	inside_mesh "ratusz_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "ratusz_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"#####"
 		"#####"
@@ -135,10 +135,10 @@ building city_hall {
 	}
 }
 
-building village_hall {
+building villageHall {
 	mesh "soltys.qmsh"
-	inside_mesh "soltys_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "soltys_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -158,7 +158,7 @@ building village_hall {
 
 building barracks {
 	mesh "baraki.qmsh"
-	flags {have_name favor_road}
+	flags {haveName favorRoad}
 	scheme {
 		"######"
 		"######"
@@ -188,7 +188,7 @@ building barracks {
 
 building house {
 	mesh "dom.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"###"
 		"###"
@@ -207,7 +207,7 @@ building house {
 
 building house2 {
 	mesh "dom2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"####"
 		"####"
@@ -220,7 +220,7 @@ building house2 {
 
 building house3 {
 	mesh "dom3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"###"
 		"###"
@@ -239,8 +239,8 @@ building house3 {
 
 building arena {
 	mesh "arena.qmsh"
-	inside_mesh "arena_srodek.qmsh"
-	flags {favor_center have_name list favor_road}
+	insideMesh "arena_srodek.qmsh"
+	flags {favorCenter haveName list favorRoad}
 	scheme {
 		"  ||||||  "
 		" |||||||| "
@@ -264,9 +264,9 @@ building arena {
 	}
 }
 
-building food_seller {
+building foodSeller {
 	mesh "food_seller.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"####"
 		"####"
@@ -274,7 +274,7 @@ building food_seller {
 		"@+.."
 		"...."
 	}
-	group food_seller
+	group foodSeller
 	unit food_seller
 	shift {
 		bottom {1 1}
@@ -286,7 +286,7 @@ building food_seller {
 
 building cottage {
 	mesh "chata.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -306,7 +306,7 @@ building cottage {
 
 building cottage2 {
 	mesh "chata2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||||"
 		"||||||||"
@@ -326,7 +326,7 @@ building cottage2 {
 
 building cottage3 {
 	mesh "chata3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||"
 		"||||||"
@@ -339,10 +339,10 @@ building cottage3 {
 	shift {1 1}
 }
 
-building village_inn {
+building villageInn {
 	mesh "karczma2.qmsh"
-	inside_mesh "karczma2_srodek.qmsh"
-	flags {favor_center favor_road have_name list}
+	insideMesh "karczma2_srodek.qmsh"
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		"|||||||||||||||"
 		"|||||||||||||||"
@@ -363,30 +363,9 @@ building village_inn {
 	}
 }
 
-building village_hall_old {
-	mesh "soltys_old.qmsh"
-	inside_mesh "soltys_srodek_old.qmsh"
-	flags {favor_center favor_road have_name list}
-	scheme {
-		"####"
-		"####"
-		"####"
-		"### "
-		"### "
-		" +  "
-	}
-	group hall
-	shift {
-		bottom {1 2}
-		left {0 1}
-		top {1 0}
-		right {2 1}
-	}
-}
-
-building mages_tower {
+building magesTower {
 	mesh "mages_tower.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		" ||||| "
 		"|||||||"
@@ -408,7 +387,7 @@ building mages_tower {
 
 building shrine {
 	mesh "shrine.qmsh"
-	flags {favor_center favor_road have_name list}
+	flags {favorCenter favorRoad haveName list}
 	scheme {
 		" |||| "
 		"||||||"
@@ -429,7 +408,7 @@ building shrine {
 
 building windmill {
 	mesh "windmill.qmsh"
-	flags {favor_dist no_path}
+	flags {favorDist noPath}
 	scheme {
 		"        "
 		"        "
@@ -441,9 +420,9 @@ building windmill {
 	shift {1 1}
 }
 
-building destroyed_cottage {
+building destroyedCottage {
 	mesh "chata_zniszczona.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -452,7 +431,7 @@ building destroyed_cottage {
 		"|||||||||||"
 		"    @+     "
 	}
-	group destroyed_cottage
+	group destroyedCottage
 	shift {
 		bottom {0 2}
 		left {0 0}
@@ -461,9 +440,9 @@ building destroyed_cottage {
 	}
 }
 
-building destroyed_cottage2 {
+building destroyedCottage2 {
 	mesh "chata_zniszczona2.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||||"
 		"||||||||"
@@ -472,7 +451,7 @@ building destroyed_cottage2 {
 		"||||||||"
 		"   +@   "
 	}
-	group destroyed_cottage
+	group destroyedCottage
 	shift {
 		bottom {0 2}
 		left {0 0}
@@ -481,9 +460,9 @@ building destroyed_cottage2 {
 	}
 }
 
-building destroyed_cottage3 {
+building destroyedCottage3 {
 	mesh "chata_zniszczona3.qmsh"
-	flags favor_road
+	flags favorRoad
 	scheme {
 		"||||||"
 		"||||||"
@@ -492,46 +471,46 @@ building destroyed_cottage3 {
 		"||||||"
 		"@+    "
 	}
-	group destroyed_cottage
+	group destroyedCottage
 	shift {1 1}
 }
 
 //================================================================================
 // Building script
 //================================================================================
-building_script capital {
-	city_hall
+buildingScript capital {
+	cityHall
 	shuffle start
 		arena
 		merchant
-		food_seller
+		foodSeller
 		blacksmith
 		alchemist
 		inn
-		training_grounds
-		mages_tower
+		trainingGrounds
+		magesTower
 		shrine
 	shuffle end
 	barracks
 	set citizens = 15
-	set citizens_world = citizens * 300 + random(100,299)
+	set citizensWorld = citizens * 300 + random(100,299)
 	required off
 	set count = citizens * 3
 	group house
 }
 
-building_script city {
-	city_hall
+buildingScript city {
+	cityHall
 	shuffle start
 		arena
 		merchant
-		food_seller
+		foodSeller
 		blacksmith
 		alchemist
 		inn
-		training_grounds
+		trainingGrounds
 		if rand 2
-			mages_tower
+			magesTower
 		endif
 		if rand 2
 			shrine
@@ -539,26 +518,26 @@ building_script city {
 	shuffle end
 	barracks
 	set citizens = random(12,15)
-	set citizens_world = citizens * 200 + random(100,299)
+	set citizensWorld = citizens * 200 + random(100,299)
 	required off
 	set count = citizens * 3
 	group house
 }
 
-building_script village {
-	village_hall
+buildingScript village {
+	villageHall
 	set citizens = 5 + random(0,2)
 	shuffle start
 		merchant
-		food_seller
-		village_inn
+		foodSeller
+		villageInn
 		if rand 2
 			blacksmith
 			inc counter
 			inc citizens
 		endif
 		if rand 2
-			training_grounds
+			trainingGrounds
 			inc counter
 			inc citizens
 		endif
@@ -571,26 +550,26 @@ building_script village {
 	shuffle end
 	barracks
 	windmill
-	set citizens_world = citizens * 100 + random(0,99)
+	set citizensWorld = citizens * 100 + random(0,99)
 	required off
 	set count = citizens
 	group cottage
 }
 
-building_script village_empty {
-	village_hall
+buildingScript villageEmpty {
+	villageHall
 	set citizens = 5 + random(0,2)
 	shuffle start
 		merchant
-		food_seller
-		village_inn
+		foodSeller
+		villageInn
 		if rand 2
 			blacksmith
 			inc counter
 			inc citizens
 		endif
 		if rand 2
-			training_grounds
+			trainingGrounds
 			inc counter
 			inc citizens
 		endif
@@ -603,27 +582,27 @@ building_script village_empty {
 	shuffle end
 	barracks
 	windmill
-	set citizens_world = 0
+	set citizensWorld = 0
 	required off
 	set count = citizens
 	group cottage
 	set citizens = 0
 }
 
-building_script village_destroyed {
-	village_hall
+buildingScript villageDestroyed {
+	villageHall
 	set citizens = 5 + random(0,2)
 	shuffle start
 		merchant
-		food_seller
-		village_inn
+		foodSeller
+		villageInn
 		if rand 2
 			blacksmith
 			inc counter
 			inc citizens
 		endif
 		if rand 2
-			training_grounds
+			trainingGrounds
 			inc counter
 			inc citizens
 		endif
@@ -636,20 +615,20 @@ building_script village_destroyed {
 	shuffle end
 	barracks
 	windmill
-	set citizens_world = 0
+	set citizensWorld = 0
 	required off
 	set count = citizens
-	group destroyed_cottage
+	group destroyedCottage
 	set citizens = 0
 }
 
-building_script village_destroyed2 {
-	village_hall
+buildingScript villageDestroyed2 {
+	villageHall
 	set citizens = 6 + random(0,2)
 	shuffle start
 		merchant
-		food_seller
-		village_inn
+		foodSeller
+		villageInn
 		alchemist
 		if rand 2
 			blacksmith
@@ -658,16 +637,25 @@ building_script village_destroyed2 {
 		endif
 		if counter < 1
 			if rand 2
-				training_grounds
+				trainingGrounds
 				inc citizens
 			endif
 		endif
 	shuffle end
 	barracks
 	windmill
-	set citizens_world = 0
+	set citizensWorld = 0
 	required off
 	set count = citizens
-	group destroyed_cottage
+	group destroyedCottage
 	set citizens = 0
 }
+
+//================================================================================
+// prev V_DEV
+alias trainingGrounds training_grounds
+alias cityHall city_hall
+alias villageHall village_hall
+alias foodSeller food_seller
+alias villageInn village_inn
+alias magesTower mages_tower

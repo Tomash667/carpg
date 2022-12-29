@@ -23,7 +23,8 @@ enum Top
 {
 	T_BUILDING,
 	T_BUILDING_GROUP,
-	T_BUILDING_SCRIPT
+	T_BUILDING_SCRIPT,
+	T_ALIAS
 };
 
 enum BuildingKeyword
@@ -100,13 +101,14 @@ void BuildingLoader::InitTokenizer()
 {
 	t.AddKeywords(G_TOP, {
 		{ "building", T_BUILDING },
-		{ "building_group", T_BUILDING_GROUP },
-		{ "building_script", T_BUILDING_SCRIPT }
+		{ "buildingGroup", T_BUILDING_GROUP },
+		{ "buildingScript", T_BUILDING_SCRIPT },
+		{ "alias", T_ALIAS }
 		});
 
 	t.AddKeywords(G_BUILDING, {
 		{ "mesh", BK_MESH },
-		{ "inside_mesh", BK_INSIDE_MESH },
+		{ "insideMesh", BK_INSIDE_MESH },
 		{ "flags", BK_FLAGS },
 		{ "scheme", BK_SCHEME },
 		{ "group", BK_GROUP },
@@ -115,12 +117,12 @@ void BuildingLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_BUILDING_FLAGS, {
-		{ "favor_center", Building::FAVOR_CENTER },
-		{ "favor_road", Building::FAVOR_ROAD },
-		{ "have_name", Building::HAVE_NAME },
+		{ "favorCenter", Building::FAVOR_CENTER },
+		{ "favorRoad", Building::FAVOR_ROAD },
+		{ "haveName", Building::HAVE_NAME },
 		{ "list", Building::LIST },
-		{ "favor_dist", Building::FAVOR_DIST },
-		{ "no_path", Building::NO_PATH }
+		{ "favorDist", Building::FAVOR_DIST },
+		{ "noPath", Building::NO_PATH }
 		});
 
 	t.AddKeywords(G_SIDE, {
@@ -166,6 +168,9 @@ void BuildingLoader::LoadEntity(int top, const string& id)
 		break;
 	case T_BUILDING_SCRIPT:
 		ParseBuildingScript(id);
+		break;
+	case T_ALIAS:
+		ParseAlias(id);
 		break;
 	}
 }
@@ -679,16 +684,14 @@ void BuildingLoader::StartVariant(BuildingScript& script)
 	AddVar("count");
 	AddVar("counter");
 	AddVar("citizens");
-	AddVar("citizens_world");
-	AddVar("first_city", true);
+	AddVar("citizensWorld");
 }
 
 //=================================================================================================
-void BuildingLoader::AddVar(Cstring id, bool isConst)
+void BuildingLoader::AddVar(Cstring id)
 {
 	Var v;
 	v.name = id.s;
-	v.isConst = isConst;
 	v.index = vars.size();
 	vars.push_back(v);
 }
@@ -705,14 +708,12 @@ BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 }
 
 //=================================================================================================
-BuildingLoader::Var& BuildingLoader::GetVar(bool canBeConst)
+BuildingLoader::Var& BuildingLoader::GetVar()
 {
 	const string& id = t.MustGetItem();
 	Var* v = FindVar(id);
 	if(!v)
 		t.Throw("Missing variable '%s'.", id.c_str());
-	if(v->isConst && !canBeConst)
-		t.Throw("Variable '%s' cannot be modified.", id.c_str());
 	t.Next();
 	return *v;
 }
@@ -775,7 +776,7 @@ void BuildingLoader::GetItem()
 	else if(t.IsItem())
 	{
 		// var ?
-		Var& v = GetVar(true);
+		Var& v = GetVar();
 		code->push_back(BuildingScript::BS_PUSH_VAR);
 		code->push_back(v.index);
 	}
@@ -808,9 +809,9 @@ void BuildingLoader::SetupBuildingGroups()
 {
 	BuildingGroup::BG_INN = BuildingGroup::Get("inn");
 	BuildingGroup::BG_HALL = BuildingGroup::Get("hall");
-	BuildingGroup::BG_TRAINING_GROUNDS = BuildingGroup::Get("training_grounds");
+	BuildingGroup::BG_TRAINING_GROUNDS = BuildingGroup::Get("trainingGrounds");
 	BuildingGroup::BG_ARENA = BuildingGroup::Get("arena");
-	BuildingGroup::BG_FOOD_SELLER = BuildingGroup::Get("food_seller");
+	BuildingGroup::BG_FOOD_SELLER = BuildingGroup::Get("foodSeller");
 	BuildingGroup::BG_ALCHEMIST = BuildingGroup::Get("alchemist");
 	BuildingGroup::BG_BLACKSMITH = BuildingGroup::Get("blacksmith");
 	BuildingGroup::BG_MERCHANT = BuildingGroup::Get("merchant");
@@ -900,4 +901,16 @@ void BuildingLoader::CalculateCrc()
 	}
 
 	content.crc[(int)Content::Id::Buildings] = crc.Get();
+}
+
+//=================================================================================================
+void BuildingLoader::ParseAlias(const string& id)
+{
+	Building* building = Building::TryGet(id);
+	if(!building)
+		t.Throw("Missing building '%s'.", id.c_str());
+	t.Next();
+
+	const string& aliasId = t.MustGetItemKeyword();
+	Building::aliases[aliasId] = building;
 }

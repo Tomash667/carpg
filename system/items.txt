@@ -8,10 +8,10 @@ weapon dagger_knife {
 	value 2
 	mesh "knife.qmsh"
 	attack 5
-	req_str 15
-	type short_blade
+	reqStr 15
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 }
 
 weapon dagger_short {
@@ -19,10 +19,10 @@ weapon dagger_short {
 	value 10
 	mesh "sztylet.qmsh"
 	attack 15
-	req_str 20
-	type short_blade
+	reqStr 20
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 }
 
 weapon dagger_sword {
@@ -30,10 +30,10 @@ weapon dagger_sword {
 	value 100
 	mesh "short_sword.qmsh"
 	attack 45
-	req_str 25
-	type short_blade
+	reqStr 25
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 }
 
 weapon dagger_rapier {
@@ -41,10 +41,10 @@ weapon dagger_rapier {
 	value 250
 	mesh "rapier.qmsh"
 	attack 65
-	req_str 22
-	type short_blade
+	reqStr 22
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 }
 
 weapon dagger_cutlass {
@@ -52,10 +52,10 @@ weapon dagger_cutlass {
 	value 1000
 	mesh "cutlass.qmsh"
 	attack 90
-	req_str 30
-	type short_blade
+	reqStr 30
+	type shortBlade
 	material metal
-	dmg_type {pierce slash}
+	dmgType {pierce slash}
 	flags hq
 }
 
@@ -64,10 +64,10 @@ weapon dagger_assassin {
 	value 3000
 	mesh "sztylet_zabojcy.qmsh"
 	attack 120
-	req_str 20
-	type short_blade
+	reqStr 20
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 	flags hq
 	effects {
 		on_attack backstab 0.1
@@ -79,10 +79,10 @@ weapon dagger_sword_a {
 	value 7500
 	mesh "adam_kmiecz.qmsh"
 	attack 150
-	req_str 26
-	type short_blade
+	reqStr 26
+	type shortBlade
 	material metal
-	dmg_type pierce
+	dmgType pierce
 	flags magical
 }
 
@@ -91,11 +91,11 @@ weapon dagger_spinesheath {
 	value 25000
 	mesh "grzbietokluj.qmsh"
 	attack 180
-	req_str 20
-	type short_blade
+	reqStr 20
+	type shortBlade
 	material metal
-	dmg_type pierce
-	flags {not_shop not_random unique}
+	dmgType pierce
+	flags {notShop notRandom unique}
 	effects {
 		on_attack backstab 0.25
 	}
@@ -106,10 +106,10 @@ weapon sword_wooden {
 	value 2
 	mesh "sword_wood.qmsh"
 	attack 10
-	req_str 30
-	type long_blade
+	reqStr 30
+	type longBlade
 	material wood
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon sword_long {
@@ -117,10 +117,10 @@ weapon sword_long {
 	value 20
 	mesh "sword.qmsh"
 	attack 20
-	req_str 40
-	type long_blade
+	reqStr 40
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon sword_scimitar {
@@ -128,10 +128,10 @@ weapon sword_scimitar {
 	value 100
 	mesh "sejmitar.qmsh"
 	attack 35
-	req_str 50
-	type long_blade
+	reqStr 50
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon sword_orcish {
@@ -139,10 +139,10 @@ weapon sword_orcish {
 	value 200
 	mesh "orc_sword.qmsh"
 	attack 70
-	req_str 55
-	type long_blade
+	reqStr 55
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon sword_serrated {
@@ -150,10 +150,10 @@ weapon sword_serrated {
 	value 1200
 	mesh "zabkowany_miecz.qmsh"
 	attack 100
-	req_str 45
-	type long_blade
+	reqStr 45
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 	flags hq
 }
 
@@ -162,10 +162,10 @@ weapon sword_mercenary {
 	value 3000
 	mesh "naraphim_sword.qmsh"
 	attack 130
-	req_str 50
-	type long_blade
+	reqStr 50
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 	flags hq
 }
 
@@ -174,26 +174,26 @@ weapon sword_adamantine {
 	value 7500
 	mesh "adam_miecz.qmsh"
 	attack 160
-	req_str 50
-	type long_blade
+	reqStr 50
+	type longBlade
 	material metal
-	dmg_type slash
+	dmgType slash
 	flags magical
 }
 
 weapon sword_semur {
 	weight 1.8
 	value 30000
-	ai_value 500
+	aiValue 500
 	mesh "semur.qmsh"
 	attack 200
-	req_str 45
-	type long_blade
+	reqStr 45
+	type longBlade
 	material metal
-	dmg_type slash
-	flags {not_shop not_random mage unique}
+	dmgType slash
+	flags {notShop notRandom mage unique}
 	effects {
-		magic_power 15
+		magicPower 15
 	}
 }
 
@@ -202,13 +202,13 @@ weapon sword_forbidden {
 	value 500000
 	mesh "sny.qmsh"
 	attack 250
-	req_str 45
-	type long_blade
+	reqStr 45
+	type longBlade
 	material crystal
-	dmg_type {slash pierce blunt}
-	flags {not_shop not_random unique}
+	dmgType {slash pierce blunt}
+	flags {notShop notRandom unique}
 	effects {
-		magic_power 10
+		magicPower 10
 	}
 }
 
@@ -217,10 +217,10 @@ weapon axe_rusted {
 	value 10
 	mesh "axe_rusted.qmsh"
 	attack 15
-	req_str 40
+	reqStr 40
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon axe_small {
@@ -228,10 +228,10 @@ weapon axe_small {
 	value 15
 	mesh "hatchet.qmsh"
 	attack 25
-	req_str 45
+	reqStr 45
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon axe_battle {
@@ -239,10 +239,10 @@ weapon axe_battle {
 	value 80
 	mesh "battle_axe.qmsh"
 	attack 55
-	req_str 55
+	reqStr 55
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon axe_orcish {
@@ -250,10 +250,10 @@ weapon axe_orcish {
 	value 220
 	mesh "orc_axe.qmsh"
 	attack 75
-	req_str 65
+	reqStr 65
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 }
 
 weapon axe_crystal {
@@ -261,10 +261,10 @@ weapon axe_crystal {
 	value 1500
 	mesh "crystal_axe.qmsh"
 	attack 105
-	req_str 60
+	reqStr 60
 	type axe
 	material crystal
-	dmg_type slash
+	dmgType slash
 	flags hq
 }
 
@@ -273,10 +273,10 @@ weapon axe_dwarf {
 	value 4000
 	mesh "axe_dwarf.qmsh"
 	attack 135
-	req_str 55
+	reqStr 55
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 	flags hq
 }
 
@@ -285,10 +285,10 @@ weapon axe_giant {
 	value 9000
 	mesh "giant_axe.qmsh"
 	attack 165
-	req_str 70
+	reqStr 70
 	type axe
 	material metal
-	dmg_type slash
+	dmgType slash
 	flags magical
 }
 
@@ -297,11 +297,11 @@ weapon axe_ripper {
 	value 40000
 	mesh "rozpruwacz.qmsh"
 	attack 210
-	req_str 75
+	reqStr 75
 	type axe
 	material metal
-	dmg_type {slash pierce}
-	flags {not_shop not_random unique}
+	dmgType {slash pierce}
+	flags {notShop notRandom unique}
 }
 
 weapon blunt_club {
@@ -309,10 +309,10 @@ weapon blunt_club {
 	value 2
 	mesh "maczuga.qmsh"
 	attack 15
-	req_str 40
+	reqStr 40
 	type blunt
 	material wood
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon blunt_mace {
@@ -320,10 +320,10 @@ weapon blunt_mace {
 	value 12
 	mesh "buzdygan.qmsh"
 	attack 25
-	req_str 50
+	reqStr 50
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon blunt_orcish {
@@ -331,25 +331,25 @@ weapon blunt_orcish {
 	value 75
 	mesh "orc_hammer.qmsh"
 	attack 60
-	req_str 60
+	reqStr 60
 	type blunt
 	material rock
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon blunt_orcish_shaman {
 	weight 2
 	value 50
-	ai_value 150
+	aiValue 150
 	mesh "ozdobny_orkowy_mlot.qmsh"
 	attack 30
-	req_str 40
+	reqStr 40
 	type blunt
 	material rock
-	dmg_type blunt
-	flags {not_shop mage}
+	dmgType blunt
+	flags {notShop mage}
 	effects {
-		magic_power 2
+		magicPower 2
 	}
 }
 
@@ -358,10 +358,10 @@ weapon blunt_barbed {
 	value 180
 	mesh "barbed_cudgel.qmsh"
 	attack 80
-	req_str 50
+	reqStr 50
 	type blunt
 	material metal
-	dmg_type {blunt pierce}
+	dmgType {blunt pierce}
 }
 
 weapon blunt_morningstar {
@@ -369,10 +369,10 @@ weapon blunt_morningstar {
 	value 800
 	mesh "morgensztern.qmsh"
 	attack 110
-	req_str 55
+	reqStr 55
 	type blunt
 	material metal
-	dmg_type {blunt pierce}
+	dmgType {blunt pierce}
 	flags hq
 }
 
@@ -381,10 +381,10 @@ weapon blunt_dwarven {
 	value 2500
 	mesh "krasnoludzki_mlot.qmsh"
 	attack 140
-	req_str 60
+	reqStr 60
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 	flags hq
 }
 
@@ -393,11 +393,11 @@ weapon blunt_ogre {
 	value 150
 	mesh "ogre_club.qmsh"
 	attack 160
-	req_str 120
+	reqStr 120
 	type blunt
 	material wood
-	dmg_type {blunt pierce}
-	flags not_shop
+	dmgType {blunt pierce}
+	flags notShop
 }
 
 weapon blunt_adamantine {
@@ -405,10 +405,10 @@ weapon blunt_adamantine {
 	value 6000
 	mesh "adam_buzdygan.qmsh"
 	attack 170
-	req_str 60
+	reqStr 60
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 	flags magical
 }
 
@@ -417,11 +417,11 @@ weapon blunt_skullsmasher {
 	value 20000
 	mesh "rozlupywacz.qmsh"
 	attack 220
-	req_str 70
+	reqStr 70
 	type blunt
 	material metal
-	dmg_type {blunt pierce}
-	flags {not_shop not_random unique}
+	dmgType {blunt pierce}
+	flags {notShop notRandom unique}
 }
 
 weapon blacksmith_hammer {
@@ -429,10 +429,10 @@ weapon blacksmith_hammer {
 	value 40
 	mesh "mlot_kowala.qmsh"
 	attack 50
-	req_str 50
+	reqStr 50
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon pickaxe {
@@ -440,10 +440,10 @@ weapon pickaxe {
 	value 30
 	mesh "kilof.qmsh"
 	attack 50
-	req_str 55
+	reqStr 55
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon frying_pan {
@@ -451,73 +451,73 @@ weapon frying_pan {
 	value 25
 	mesh "frying_pan.qmsh"
 	attack 35
-	req_str 25
+	reqStr 25
 	type blunt
 	material metal
-	dmg_type blunt
+	dmgType blunt
 }
 
 weapon wand_novice {
 	weight 0.6
 	value 75
-	ai_value 100
+	aiValue 100
 	mesh "wand1.qmsh"
 	attack 10
-	req_str 15
+	reqStr 15
 	type blunt
 	material wood
-	dmg_type blunt
-	flags {not_shop mage magical wand}
+	dmgType blunt
+	flags {notShop mage magical wand}
 	effects {
-		magic_power 1
+		magicPower 1
 	}
 }
 
 weapon wand_adept {
 	weight 0.6
 	value 200
-	ai_value 200
+	aiValue 200
 	mesh "wand2.qmsh"
 	attack 25
-	req_str 15
+	reqStr 15
 	type blunt
 	material wood
-	dmg_type blunt
-	flags {not_shop mage magical wand}
+	dmgType blunt
+	flags {notShop mage magical wand}
 	effects {
-		magic_power 4
+		magicPower 4
 	}
 }
 
 weapon wand_expert {
 	weight 0.6
 	value 1250
-	ai_value 300
+	aiValue 300
 	mesh "wand3.qmsh"
 	attack 50
-	req_str 15
+	reqStr 15
 	type blunt
 	material wood
-	dmg_type blunt
-	flags {not_shop mage magical wand}
+	dmgType blunt
+	flags {notShop mage magical wand}
 	effects {
-		magic_power 8
+		magicPower 8
 	}
 }
 
 weapon wand_master {
 	weight 0.6
 	value 6500
-	ai_value 400
+	aiValue 400
 	mesh "wand4.qmsh"
 	attack 75
-	req_str 15
+	reqStr 15
 	type blunt
 	material wood
-	dmg_type blunt
-	flags {not_shop mage magical wand}
+	dmgType blunt
+	flags {notShop mage magical wand}
 	effects {
-		magic_power 12
+		magicPower 12
 	}
 }
 
@@ -530,7 +530,7 @@ bow bow_short {
 	mesh "luk_krotki.qmsh"
 	attack 15
 	speed 40
-	req_str 25
+	reqStr 25
 }
 
 bow bow_long {
@@ -539,7 +539,7 @@ bow bow_long {
 	mesh "luk_dlugi.qmsh"
 	attack 45
 	speed 45
-	req_str 35
+	reqStr 35
 }
 
 bow bow_composite {
@@ -548,7 +548,7 @@ bow bow_composite {
 	mesh "luk_kompozytowy.qmsh"
 	attack 85
 	speed 45
-	req_str 40
+	reqStr 40
 }
 
 bow bow_elven {
@@ -556,7 +556,7 @@ bow bow_elven {
 	value 3000
 	mesh "luk_elfi.qmsh"
 	attack 125
-	req_str 35
+	reqStr 35
 	speed 50
 	flags hq
 }
@@ -566,7 +566,7 @@ bow bow_dragonbone {
 	value 8000
 	mesh "luk_smoczy.qmsh"
 	attack 170
-	req_str 50
+	reqStr 50
 	speed 50
 	flags magical
 }
@@ -576,11 +576,11 @@ bow bow_angel {
 	value 30000
 	mesh "luk_anielski.qmsh"
 	attack 220
-	req_str 25
+	reqStr 25
 	speed 60
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_power 4
+		magicPower 4
 	}
 }
 
@@ -589,9 +589,9 @@ bow q_gobliny_luk {
 	value 100
 	mesh "luk_stary.qmsh"
 	attack 40
-	req_str 45
+	reqStr 45
 	speed 45
-	flags {not_shop not_random dont_drop important}
+	flags {notShop notRandom dontDrop important}
 }
 
 //------------------------------------------------------------------------------
@@ -602,7 +602,7 @@ shield shield_plank {
 	value 5
 	mesh "shield_plank.qmsh"
 	block 10
-	req_str 25
+	reqStr 25
 	material wood
 }
 
@@ -611,7 +611,7 @@ shield shield_wood {
 	value 25
 	mesh "drewniana_tarcza.qmsh"
 	block 30
-	req_str 30
+	reqStr 30
 	material wood
 }
 
@@ -620,7 +620,7 @@ shield shield_kite {
 	value 100
 	mesh "kite_shield.qmsh"
 	block 50
-	req_str 40
+	reqStr 40
 	material wood
 }
 
@@ -629,7 +629,7 @@ shield shield_iron {
 	value 250
 	mesh "iron_shield.qmsh"
 	block 70
-	req_str 35
+	reqStr 35
 	material metal
 }
 
@@ -638,7 +638,7 @@ shield shield_steel {
 	value 1000
 	mesh "kite_shield_steel.qmsh"
 	block 100
-	req_str 50
+	reqStr 50
 	material metal
 }
 
@@ -647,7 +647,7 @@ shield shield_mithril {
 	value 3000
 	mesh "mith_shield.qmsh"
 	block 130
-	req_str 20
+	reqStr 20
 	material metal
 	flags hq
 }
@@ -657,8 +657,8 @@ shield shield_spiked {
 	value 4000
 	mesh "spiked_shield.qmsh"
 	block 140
-	attack_mod 1
-	req_str 60
+	attackMod 1
+	reqStr 60
 	material metal
 	flags hq
 }
@@ -668,11 +668,11 @@ shield shield_adamantine {
 	value 7500
 	mesh "adam_shield.qmsh"
 	block 160
-	req_str 55
+	reqStr 55
 	material metal
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -681,12 +681,12 @@ shield shield_wall {
 	value 25000
 	mesh "shield_wall.qmsh"
 	block 200
-	attack_mod 0.6
-	req_str 75
+	attackMod 0.6
+	reqStr 75
 	material rock
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -695,12 +695,12 @@ shield shield_death {
 	value 25000
 	mesh "shield_death.qmsh"
 	block 200
-	attack_mod 0.6
-	req_str 55
+	attackMod 0.6
+	reqStr 55
 	material rock
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -712,10 +712,10 @@ armor al_padded {
 	value 10
 	mesh "padded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 5
-	req_str 25
+	reqStr 25
 	mobility 90
 }
 
@@ -724,10 +724,10 @@ armor al_padded_hq {
 	value 20
 	mesh "padded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 15
-	req_str 25
+	reqStr 25
 	mobility 95
 	flags hq
 }
@@ -737,10 +737,10 @@ armor al_padded_m {
 	value 75
 	mesh "padded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 35
-	req_str 25
+	reqStr 25
 	mobility 95
 	flags magical
 }
@@ -750,10 +750,10 @@ armor al_leather {
 	value 15
 	mesh "leather_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 15
-	req_str 30
+	reqStr 30
 	mobility 85
 }
 
@@ -762,10 +762,10 @@ armor al_leather_hq {
 	value 30
 	mesh "leather_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 25
-	req_str 30
+	reqStr 30
 	mobility 90
 	flags hq
 }
@@ -775,10 +775,10 @@ armor al_leather_m {
 	value 120
 	mesh "leather_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 45
-	req_str 30
+	reqStr 30
 	mobility 90
 	flags magical
 }
@@ -788,14 +788,14 @@ armor al_dragonskin {
 	value 15000
 	mesh "dragonskin.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 165
-	req_str 35
+	reqStr 35
 	mobility 80
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -804,10 +804,10 @@ armor al_studded {
 	value 100
 	mesh "studded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 40
-	req_str 35
+	reqStr 35
 	mobility 80
 }
 
@@ -816,10 +816,10 @@ armor al_studded_hq {
 	value 150
 	mesh "studded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 50
-	req_str 35
+	reqStr 35
 	mobility 85
 	flags hq
 }
@@ -829,10 +829,10 @@ armor al_studded_m {
 	value 500
 	mesh "studded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 70
-	req_str 35
+	reqStr 35
 	mobility 85
 	flags magical
 }
@@ -842,12 +842,12 @@ armor al_shadow {
 	value 12000
 	mesh "studded_armor.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 100
-	req_str 30
+	reqStr 30
 	mobility 85
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
 		backstab 0.1
 	}
@@ -858,10 +858,10 @@ armor al_chain_shirt {
 	value 1000
 	mesh "chain_shirt.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material metal
 	defense 90
-	req_str 40
+	reqStr 40
 	mobility 75
 }
 
@@ -870,10 +870,10 @@ armor al_chain_shirt_hq {
 	value 1500
 	mesh "chain_shirt.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material metal
 	defense 100
-	req_str 40
+	reqStr 40
 	mobility 80
 	flags hq
 }
@@ -883,10 +883,10 @@ armor al_chain_shirt_m {
 	value 3000
 	mesh "chain_shirt.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material metal
 	defense 120
-	req_str 40
+	reqStr 40
 	mobility 80
 	flags magical
 }
@@ -895,12 +895,12 @@ armor al_chain_shirt_mith {
 	weight 5.5
 	value 5000
 	mesh "chain_shirt.qmsh"
-	tex_override "chain_shirt_mith.jpg"
+	texOverride "chain_shirt_mith.jpg"
 	type light
-	unit_type human
+	unitType human
 	material metal
 	defense 135
-	req_str 30
+	reqStr 30
 	mobility 90
 	flags magical
 }
@@ -910,14 +910,14 @@ armor al_angelskin {
 	value 25000
 	mesh "angelskin.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material metal
 	defense 180
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 		regeneration 5
 	}
 }
@@ -927,10 +927,10 @@ armor am_hide {
 	value 10
 	mesh "hide_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material skin
 	defense 10
-	req_str 40
+	reqStr 40
 	mobility 75
 }
 
@@ -939,10 +939,10 @@ armor am_hide_hq {
 	value 15
 	mesh "hide_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material skin
 	defense 20
-	req_str 40
+	reqStr 40
 	mobility 80
 	flags hq
 }
@@ -952,10 +952,10 @@ armor am_hide_m {
 	value 50
 	mesh "hide_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material skin
 	defense 40
-	req_str 40
+	reqStr 40
 	mobility 80
 	flags magical
 }
@@ -964,12 +964,12 @@ armor am_troll_hide {
 	weight 12.5
 	value 2000
 	mesh "hide_armor.qmsh"
-	tex_override "troll_hide_armor.jpg"
+	texOverride "troll_hide_armor.jpg"
 	type medium
-	unit_type human
+	unitType human
 	material skin
 	defense 60
-	req_str 45
+	reqStr 45
 	mobility 75
 	flags magical
 	effects {
@@ -982,10 +982,10 @@ armor am_chainmail {
 	value 50
 	mesh "chainmail.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 20
-	req_str 50
+	reqStr 50
 	mobility 60
 }
 
@@ -994,10 +994,10 @@ armor am_chainmail_hq {
 	value 150
 	mesh "chainmail.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 30
-	req_str 50
+	reqStr 50
 	mobility 65
 	flags hq
 }
@@ -1007,10 +1007,10 @@ armor am_chainmail_m {
 	value 250
 	mesh "chainmail.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 50
-	req_str 50
+	reqStr 50
 	mobility 65
 	flags magical
 }
@@ -1019,12 +1019,12 @@ armor am_chainmail_mith {
 	weight 9
 	value 250
 	mesh "chainmail.qmsh"
-	tex_override "chainmail_mith.jpg"
+	texOverride "chainmail_mith.jpg"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 70
-	req_str 35
+	reqStr 35
 	mobility 75
 	flags magical
 }
@@ -1034,10 +1034,10 @@ armor am_scale {
 	value 100
 	mesh "scale_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 50
-	req_str 50
+	reqStr 50
 	mobility 60
 }
 
@@ -1046,10 +1046,10 @@ armor am_scale_hq {
 	value 250
 	mesh "scale_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 60
-	req_str 50
+	reqStr 50
 	mobility 65
 	flags hq
 }
@@ -1059,10 +1059,10 @@ armor am_scale_m {
 	value 500
 	mesh "scale_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 80
-	req_str 45
+	reqStr 45
 	mobility 65
 	flags magical
 }
@@ -1071,16 +1071,16 @@ armor am_dragonscale {
 	weight 16.5
 	value 15000
 	mesh "scale_armor.qmsh"
-	tex_override "dragonscale.jpg"
+	texOverride "dragonscale.jpg"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 180
-	req_str 50
+	reqStr 50
 	mobility 55
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1089,10 +1089,10 @@ armor am_breastplate {
 	value 1000
 	mesh "breastplate.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 100
-	req_str 45
+	reqStr 45
 	mobility 70
 }
 
@@ -1101,10 +1101,10 @@ armor am_breastplate_hq {
 	value 1500
 	mesh "breastplate.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 110
-	req_str 45
+	reqStr 45
 	mobility 75
 	flags hq
 }
@@ -1114,10 +1114,10 @@ armor am_breastplate_m {
 	value 3000
 	mesh "breastplate.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 130
-	req_str 40
+	reqStr 40
 	mobility 75
 	flags magical
 }
@@ -1126,12 +1126,12 @@ armor am_breastplate_mith {
 	weight 6.5
 	value 5000
 	mesh "breastplate.qmsh"
-	tex_override "breastplate_mith.jpg"
+	texOverride "breastplate_mith.jpg"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 150
-	req_str 30
+	reqStr 30
 	mobility 85
 	flags magical
 }
@@ -1140,16 +1140,16 @@ armor am_breastplate_adam {
 	weight 16
 	value 10000
 	mesh "breastplate.qmsh"
-	tex_override "breastplate_adam.jpg"
+	texOverride "breastplate_adam.jpg"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 170
-	req_str 50
+	reqStr 50
 	mobility 70
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1158,15 +1158,15 @@ armor am_gladiator {
 	value 25000
 	mesh "gladiator_armor.qmsh"
 	type medium
-	unit_type human
+	unitType human
 	material metal
 	defense 200
-	req_str 45
+	reqStr 45
 	mobility 75
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.1
-		melee_attack 25
+		magicResistance 0.1
+		meleeAttack 25
 	}
 }
 
@@ -1174,12 +1174,12 @@ armor ah_splint_rusted {
 	weight 18
 	value 75
 	mesh "splint_armor.qmsh"
-	tex_override "splint_armor_rusted.jpg"
+	texOverride "splint_armor_rusted.jpg"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 25
-	req_str 50
+	reqStr 50
 	mobility 50
 }
 
@@ -1188,10 +1188,10 @@ armor ah_splint {
 	value 150
 	mesh "splint_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 55
-	req_str 50
+	reqStr 50
 	mobility 50
 }
 
@@ -1200,10 +1200,10 @@ armor ah_splint_hq {
 	value 225
 	mesh "splint_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 65
-	req_str 50
+	reqStr 50
 	mobility 55
 	flags hq
 }
@@ -1213,10 +1213,10 @@ armor ah_splint_m {
 	value 600
 	mesh "splint_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 85
-	req_str 50
+	reqStr 50
 	mobility 55
 	flags magical
 }
@@ -1225,12 +1225,12 @@ armor ah_splint_mith {
 	weight 9
 	value 1200
 	mesh "splint_armor.qmsh"
-	tex_override "splint_armor_mith.jpg"
+	texOverride "splint_armor_mith.jpg"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 110
-	req_str 35
+	reqStr 35
 	mobility 65
 	flags magical
 }
@@ -1240,14 +1240,14 @@ armor ah_antimage {
 	value 18000
 	mesh "splint_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 130
-	req_str 55
+	reqStr 55
 	mobility 55
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.33
+		magicResistance 0.33
 	}
 }
 
@@ -1256,10 +1256,10 @@ armor ah_plate {
 	value 1500
 	mesh "plate_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 110
-	req_str 70
+	reqStr 70
 	mobility 40
 }
 
@@ -1268,10 +1268,10 @@ armor ah_plate_hq {
 	value 2000
 	mesh "plate_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 120
-	req_str 70
+	reqStr 70
 	mobility 45
 	flags hq
 }
@@ -1281,10 +1281,10 @@ armor ah_plate_m {
 	value 4000
 	mesh "plate_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 140
-	req_str 65
+	reqStr 65
 	mobility 45
 	flags magical
 }
@@ -1293,12 +1293,12 @@ armor ah_plate_mith {
 	weight 12.5
 	value 6500
 	mesh "plate_armor.qmsh"
-	tex_override "plate_armor_mith.jpg"
+	texOverride "plate_armor_mith.jpg"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 165
-	req_str 70
+	reqStr 70
 	mobility 55
 	flags magical
 }
@@ -1307,16 +1307,16 @@ armor ah_plate_adam {
 	weight 30
 	value 12000
 	mesh "plate_armor.qmsh"
-	tex_override "plate_armor_adam.jpg"
+	texOverride "plate_armor_adam.jpg"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 185
-	req_str 40
+	reqStr 40
 	mobility 40
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1324,16 +1324,16 @@ armor ah_black_armor {
 	weight 30
 	value 30000
 	mesh "plate_armor.qmsh"
-	tex_override "black_armor.jpg"
+	texOverride "black_armor.jpg"
 	type heavy
-	unit_type human
+	unitType human
 	material metal
 	defense 220
-	req_str 75
+	reqStr 75
 	mobility 40
-	flags {not_shop not_random unique}
+	flags {notShop notRandom unique}
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 }
 
@@ -1342,10 +1342,10 @@ armor ah_crystal {
 	value 6000
 	mesh "crystal_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material crystal
 	defense 165
-	req_str 80
+	reqStr 80
 	mobility 25
 	flags hq
 }
@@ -1355,14 +1355,14 @@ armor ah_crystal_m {
 	value 16000
 	mesh "crystal_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material crystal
 	defense 195
-	req_str 80
+	reqStr 80
 	mobility 25
 	flags magical
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1371,14 +1371,14 @@ armor ah_blood_crystal {
 	value 24000
 	mesh "crystal_armor.qmsh"
 	type heavy
-	unit_type human
+	unitType human
 	material crystal
 	defense 210
-	req_str 80
+	reqStr 80
 	mobility 25
-	flags {not_shop not_random magical}
+	flags {notShop notRandom magical}
 	effects {
-		magic_resistance 0.1
+		magicResistance 0.1
 	}
 }
 
@@ -1387,12 +1387,12 @@ armor al_blacksmith {
 	value 50
 	mesh "blacksmith_clothes.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 35
-	req_str 30
+	reqStr 30
 	mobility 85
-	flags not_blacksmith
+	flags notBlacksmith
 }
 
 armor al_innkeeper {
@@ -1400,12 +1400,12 @@ armor al_innkeeper {
 	value 50
 	mesh "innkeeper_clothes.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material skin
 	defense 15
-	req_str 20
+	reqStr 20
 	mobility 85
-	flags not_blacksmith
+	flags notBlacksmith
 }
 
 armor al_goblin {
@@ -1413,12 +1413,12 @@ armor al_goblin {
 	value 10
 	mesh "goblin_armor.qmsh"
 	type light
-	unit_type goblin
+	unitType goblin
 	material skin
 	defense 20
-	req_str 20
+	reqStr 20
 	mobility 90
-	flags not_shop
+	flags notShop
 }
 
 armor al_orc {
@@ -1426,28 +1426,28 @@ armor al_orc {
 	value 15
 	mesh "orc_armor.qmsh"
 	type light
-	unit_type orc
+	unitType orc
 	material skin
 	defense 25
-	req_str 40
+	reqStr 40
 	mobility 85
-	flags not_shop
+	flags notShop
 }
 
 armor al_orc_shaman {
 	weight 9
 	value 100
-	ai_value 50
+	aiValue 50
 	mesh "orc_shaman_armor.qmsh"
 	type light
-	unit_type orc
+	unitType orc
 	material skin
 	defense 20
-	req_str 50
+	reqStr 50
 	mobility 85
-	flags {not_shop mage magical}
+	flags {notShop mage magical}
 	effects {
-		magic_power 1
+		magicPower 1
 	}
 }
 
@@ -1456,106 +1456,106 @@ armor am_orc {
 	value 50
 	mesh "orc_chainmail.qmsh"
 	type medium
-	unit_type orc
+	unitType orc
 	material metal
 	defense 50
-	req_str 60
+	reqStr 60
 	mobility 60
-	flags not_shop
+	flags notShop
 }
 
 armor al_mage {
 	weight 1.5
 	value 50
-	ai_value 100
+	aiValue 100
 	mesh "robe.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 20
-	req_str 20
+	reqStr 20
 	mobility 90
-	flags {not_shop mage magical}
+	flags {notShop mage magical}
 }
 
 armor al_mage2 {
 	weight 1.5
 	value 150
-	ai_value 200
+	aiValue 200
 	mesh "robe.qmsh"
-	tex_override "robe2.jpg"
+	texOverride "robe2.jpg"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 30
-	req_str 20
+	reqStr 20
 	mobility 90
-	flags {not_shop mage magical}
+	flags {notShop mage magical}
 	effects {
-		magic_power 1
+		magicPower 1
 		mana 100
-		mana_regeneration 0.1
-		magic_resistance 0.1
+		manaRegeneration 0.1
+		magicResistance 0.1
 	}
 }
 
 armor al_mage3 {
 	weight 1.5
 	value 1000
-	ai_value 300
+	aiValue 300
 	mesh "robe.qmsh"
-	tex_override "robe3.jpg"
+	texOverride "robe3.jpg"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 40
-	req_str 20
+	reqStr 20
 	mobility 90
-	flags {not_shop mage magical}
+	flags {notShop mage magical}
 	effects {
-		magic_power 2
+		magicPower 2
 		mana 200
-		mana_regeneration 0.2
-		magic_resistance 0.1
+		manaRegeneration 0.2
+		magicResistance 0.1
 	}
 }
 
 armor al_mage4 {
 	weight 1.5
 	value 3500
-	ai_value 400
+	aiValue 400
 	mesh "robe.qmsh"
-	tex_override "robe4.jpg"
+	texOverride "robe4.jpg"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 50
-	req_str 20
+	reqStr 20
 	mobility 90
-	flags {not_shop mage unique}
+	flags {notShop mage unique}
 	effects {
-		magic_power 3
+		magicPower 3
 		mana 300
-		mana_regeneration 0.3
-		magic_resistance 0.25
+		manaRegeneration 0.3
+		magicResistance 0.25
 	}
 }
 
 armor al_necromancer {
 	weight 2
 	value 100
-	ai_value 250
+	aiValue 250
 	mesh "necromancer_robe.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 50
-	req_str 25
+	reqStr 25
 	mobility 80
-	flags {not_shop magical}
+	flags {notShop magical}
 	effects {
-		magic_power 2
-		magic_resistance 0.1
+		magicPower 2
+		magicResistance 0.1
 	}
 }
 
@@ -1564,12 +1564,12 @@ armor al_clothes {
 	value 5
 	mesh "clothes.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 5
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags not_blacksmith
+	flags notBlacksmith
 }
 
 armor al_clothes2 {
@@ -1577,26 +1577,26 @@ armor al_clothes2 {
 	value 15
 	mesh "clothes2.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 5
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags not_blacksmith
+	flags notBlacksmith
 }
 
 armor al_clothes2b {
 	weight 1
 	value 15
 	mesh "clothes2.qmsh"
-	tex_override "clothes2b.jpg"
+	texOverride "clothes2b.jpg"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 5
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags not_blacksmith
+	flags notBlacksmith
 }
 
 armor al_clothes3 {
@@ -1604,26 +1604,40 @@ armor al_clothes3 {
 	value 100
 	mesh "clothes3.qmsh"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 5
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags {not_blacksmith hq}
+	flags {notBlacksmith hq}
 }
 
 armor al_clothes3b {
 	weight 1
 	value 100
 	mesh "clothes3.qmsh"
-	tex_override "clothes3b.jpg"
+	texOverride "clothes3b.jpg"
 	type light
-	unit_type human
+	unitType human
 	material cloth
 	defense 5
-	req_str 20
+	reqStr 20
 	mobility 100
-	flags {not_blacksmith hq}
+	flags {notBlacksmith hq}
+}
+
+armor al_old_robe {
+	weight 1.5
+	value 5
+	mesh "robe.qmsh"
+	texOverride "whiteRobe.jpg"
+	type light
+	unitType human
+	material cloth
+	defense 5
+	reqStr 20
+	mobility 90
+	flags notShop
 }
 
 //------------------------------------------------------------------------------
@@ -1655,16 +1669,16 @@ amulet a_diamond {
 
 amulet a_food : a_silver {
 	value 750
-	ai_value 90
+	aiValue 90
 	flags magical
 	effects {
-		natural_healing_mod 1.5
+		naturalHealingMod 1.5
 	}
 }
 
 amulet a_sprinter : a_silver {
 	value 750
-	ai_value 90
+	aiValue 90
 	flags magical
 	effects {
 		mobility 25
@@ -1674,17 +1688,17 @@ amulet a_sprinter : a_silver {
 
 amulet a_mage : a_gold {
 	value 1500
-	ai_value 120
+	aiValue 120
 	flags magical
 	effects {
-		magic_power 5
+		magicPower 5
 	}
 	tag mage
 }
 
 amulet a_defense : a_gold {
 	value 1500
-	ai_value 120
+	aiValue 120
 	flags magical
 	effects {
 		defense 50
@@ -1694,45 +1708,45 @@ amulet a_defense : a_gold {
 
 amulet a_stamina : a_gold {
 	value 1500
-	ai_value 120
+	aiValue 120
 	flags magical
 	effects {
 		stamina 100
-		stamina_regeneration_mod 1.25
+		staminaRegenerationMod 1.25
 	}
 	tag stamina
 }
 
 amulet a_mana : a_gold {
 	value 1500
-	ai_value 120
+	aiValue 120
 	flags magical
 	effects {
 		mana 150
-		mana_regeneration 0.5
+		manaRegeneration 0.5
 	}
 	tag mana
 }
 
 amulet a_warrior : a_ruby {
 	value 3000
-	ai_value 150
+	aiValue 150
 	flags magical
 	effects {
 		attribute str 10
-		melee_attack 50
-		skill one_handed_weapon 20
+		meleeAttack 50
+		skill oneHandedWeapon 20
 	}
 	tag {melee str}
 }
 
 amulet a_archer : a_ruby {
 	value 3000
-	ai_value 150
+	aiValue 150
 	flags magical
 	effects {
 		attribute dex 10
-		ranged_attack 50
+		rangedAttack 50
 		skill bow 20
 	}
 	tag {ranged dex}
@@ -1740,23 +1754,23 @@ amulet a_archer : a_ruby {
 
 amulet a_antimagic : a_ruby {
 	value 3000
-	ai_value 180
+	aiValue 180
 	flags magical
 	effects {
-		magic_resistance 0.25
+		magicResistance 0.25
 	}
 	tag def
 }
 
 amulet a_health : a_diamond {
 	value 6000
-	ai_value 180
+	aiValue 180
 	flags magical
 	effects {
 		health 250
 		attribute end 10
 		regeneration 10
-		poison_resistance 0.25
+		poisonResistance 0.25
 	}
 	tag def
 }
@@ -1784,7 +1798,7 @@ ring r_emerald {
 
 ring r_str : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute str 5
@@ -1794,7 +1808,7 @@ ring r_str : r_gold {
 
 ring r_end : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute end 5
@@ -1804,7 +1818,7 @@ ring r_end : r_gold {
 
 ring r_dex : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute dex 5
@@ -1814,7 +1828,7 @@ ring r_dex : r_gold {
 
 ring r_int : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute int 5
@@ -1824,7 +1838,7 @@ ring r_int : r_gold {
 
 ring r_wis : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute wis 5
@@ -1833,7 +1847,7 @@ ring r_wis : r_gold {
 
 ring r_cha : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		attribute cha 5
@@ -1843,7 +1857,7 @@ ring r_cha : r_gold {
 
 ring r_hp : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		health 100
@@ -1853,7 +1867,7 @@ ring r_hp : r_gold {
 
 ring r_stamina : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		stamina 50
@@ -1863,7 +1877,7 @@ ring r_stamina : r_gold {
 
 ring r_def : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		defense 15
@@ -1873,67 +1887,67 @@ ring r_def : r_gold {
 
 ring r_attack : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		melee_attack 15
+		meleeAttack 15
 	}
 	tag melee
 }
 
 ring r_ranged_attack : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		ranged_attack 15
+		rangedAttack 15
 	}
 	tag ranged
 }
 
 ring r_mage : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		magic_power 2
+		magicPower 2
 	}
 	tag mage
 }
 
 ring r_one_handed_weapon : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill one_handed_weapon 10
+		skill oneHandedWeapon 10
 	}
 	tag melee
 }
 
 ring r_short_blade : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill short_blade 10
+		skill shortBlade 10
 	}
 	tag melee
 }
 
 ring r_long_blade : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill long_blade 10
+		skill longBlade 10
 	}
 	tag melee
 }
 
 ring r_axe : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill axe 10
@@ -1943,7 +1957,7 @@ ring r_axe : r_gold {
 
 ring r_blunt : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill blunt 10
@@ -1953,7 +1967,7 @@ ring r_blunt : r_gold {
 
 ring r_bow : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill bow 10
@@ -1963,7 +1977,7 @@ ring r_bow : r_gold {
 
 ring r_shield : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill shield 10
@@ -1973,37 +1987,37 @@ ring r_shield : r_gold {
 
 ring r_light_armor : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill light_armor 10
+		skill lightArmor 10
 	}
 	tag def
 }
 
 ring r_medium_armor : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill medium_armor 10
+		skill mediumArmor 10
 	}
 	tag def
 }
 
 ring r_heavy_armor : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill heavy_armor 10
+		skill heavyArmor 10
 	}
 	tag def
 }
 
 ring r_persuasion : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill persuasion 10
@@ -2012,7 +2026,7 @@ ring r_persuasion : r_gold {
 
 ring r_carry : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		carry 1.5
@@ -2021,17 +2035,17 @@ ring r_carry : r_gold {
 
 ring r_gods_magic : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill gods_magic 10
+		skill godsMagic 10
 	}
 	tag cleric
 }
 
 ring r_concentration : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		skill concentration 10
@@ -2041,17 +2055,17 @@ ring r_concentration : r_gold {
 
 ring r_mystic_magic : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
-		skill mystic_magic 10
+		skill mysticMagic 10
 	}
 	tag mage
 }
 
 ring r_mana : r_gold {
 	value 500
-	ai_value 80
+	aiValue 80
 	flags magical
 	effects {
 		mana 100
@@ -2061,7 +2075,7 @@ ring r_mana : r_gold {
 
 ring r_str2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute str 15
@@ -2071,7 +2085,7 @@ ring r_str2 : r_emerald {
 
 ring r_end2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute end 15
@@ -2081,7 +2095,7 @@ ring r_end2 : r_emerald {
 
 ring r_dex2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute dex 15
@@ -2091,7 +2105,7 @@ ring r_dex2 : r_emerald {
 
 ring r_int2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute int 15
@@ -2101,7 +2115,7 @@ ring r_int2 : r_emerald {
 
 ring r_wis2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute wis 15
@@ -2110,7 +2124,7 @@ ring r_wis2 : r_emerald {
 
 ring r_cha2 : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		attribute cha 15
@@ -2120,7 +2134,7 @@ ring r_cha2 : r_emerald {
 
 ring r_regeneration : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		regeneration 5
@@ -2130,7 +2144,7 @@ ring r_regeneration : r_emerald {
 
 ring r_assassin : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
 		backstab 0.25
@@ -2140,20 +2154,20 @@ ring r_assassin : r_emerald {
 
 ring r_poison_resistance : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
-		poison_resistance 0.5
+		poisonResistance 0.5
 	}
 	tag def
 }
 
 ring r_mana_regen : r_emerald {
 	value 1500
-	ai_value 110
+	aiValue 110
 	flags magical
 	effects {
-		mana_regeneration 1
+		manaRegeneration 1
 	}
 	tag mana
 }
@@ -2167,9 +2181,9 @@ consumable p_nreg {
 	mesh "natural_pot.qmsh"
 	type potion
 	time 10
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		natural_healing_mod 2
+		naturalHealingMod 2
 	}
 }
 
@@ -2179,9 +2193,9 @@ consumable p_nreg2 {
 	mesh "natural_pot2.qmsh"
 	type potion
 	time 30
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		natural_healing_mod 2.5
+		naturalHealingMod 2.5
 	}
 }
 
@@ -2190,7 +2204,7 @@ consumable p_hp {
 	value 25
 	mesh "hp_pot.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		heal 250
 	}
@@ -2201,7 +2215,7 @@ consumable p_hp2 {
 	value 100
 	mesh "hp_pot2.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		heal 500
 	}
@@ -2212,7 +2226,7 @@ consumable p_hp3 {
 	value 400
 	mesh "hp_pot3.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		heal 1000
 	}
@@ -2223,9 +2237,9 @@ consumable p_mp {
 	value 25
 	mesh "mp_pot.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		restore_mana 250
+		restoreMana 250
 	}
 }
 
@@ -2234,9 +2248,9 @@ consumable p_mp2 {
 	value 100
 	mesh "mp_pot2.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		restore_mana 500
+		restoreMana 500
 	}
 }
 
@@ -2245,9 +2259,9 @@ consumable p_mp3 {
 	value 400
 	mesh "mp_pot3.qmsh"
 	type potion
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		restore_mana 1000
+		restoreMana 1000
 	}
 }
 
@@ -2257,7 +2271,7 @@ consumable p_reg {
 	mesh "misc_pot.qmsh"
 	type potion
 	time 360
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		regeneration 5
 	}
@@ -2269,10 +2283,10 @@ consumable p_antidote {
 	mesh "antidote.qmsh"
 	type potion
 	time 30
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		antidote 0
-		poison_resistance 0.5
+		poisonResistance 0.5
 	}
 }
 
@@ -2282,9 +2296,9 @@ consumable p_antimagic {
 	mesh "misc_pot.qmsh"
 	type potion
 	time 300
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		magic_resistance 0.5
+		magicResistance 0.5
 	}
 }
 
@@ -2293,7 +2307,7 @@ consumable p_str {
 	value 500
 	mesh "gray_potion.qmsh"
 	type potion
-	flags {not_shop not_random ground_mesh magical}
+	flags {notShop notRandom groundMesh magical}
 	effects {
 		attribute str 1
 	}
@@ -2304,7 +2318,7 @@ consumable p_end {
 	value 500
 	mesh "gray_potion.qmsh"
 	type potion
-	flags {not_shop not_random ground_mesh magical}
+	flags {notShop notRandom groundMesh magical}
 	effects {
 		attribute end 1
 	}
@@ -2315,7 +2329,7 @@ consumable p_dex {
 	value 500
 	mesh "gray_potion.qmsh"
 	type potion
-	flags {not_shop not_random ground_mesh magical}
+	flags {notShop notRandom groundMesh magical}
 	effects {
 		attribute dex 1
 	}
@@ -2326,7 +2340,7 @@ consumable q_magowie_potion {
 	value 150
 	mesh "antidote.qmsh"
 	type potion
-	flags {not_shop not_random ground_mesh hq}
+	flags {notShop notRandom groundMesh hq}
 }
 
 consumable water {
@@ -2335,9 +2349,9 @@ consumable water {
 	mesh "water.qmsh"
 	type drink
 	time 10
-	flags ground_mesh
+	flags groundMesh
 	effects {
-		stamina_regeneration 20
+		staminaRegeneration 20
 	}
 }
 
@@ -2347,9 +2361,9 @@ consumable spring_water {
 	mesh "water.qmsh"
 	type drink
 	time 30
-	flags {ground_mesh hq}
+	flags {groundMesh hq}
 	effects {
-		stamina_regeneration 30
+		staminaRegeneration 30
 	}
 }
 
@@ -2359,7 +2373,7 @@ consumable beer {
 	mesh "piwo.qmsh"
 	type drink
 	time 2
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		alcohol 75
 	}
@@ -2371,7 +2385,7 @@ consumable vodka {
 	mesh "vodka.qmsh"
 	type drink
 	time 2
-	flags ground_mesh
+	flags groundMesh
 	effects {
 		alcohol 150
 	}
@@ -2383,7 +2397,7 @@ consumable spirit {
 	mesh "vodka.qmsh"
 	type drink
 	time 2
-	flags {ground_mesh hq}
+	flags {groundMesh hq}
 	effects {
 		alcohol 300
 	}
@@ -2395,9 +2409,9 @@ consumable bread {
 	mesh "chleb.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2406,10 +2420,10 @@ consumable meat {
 	value 10
 	mesh "mieso.qmsh"
 	type food
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	time 5
 	effects {
-		food_regeneration 50
+		foodRegeneration 50
 	}
 }
 
@@ -2419,9 +2433,9 @@ consumable raw_meat {
 	mesh "surowe_mieso.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 20
+		foodRegeneration 20
 	}
 }
 
@@ -2431,9 +2445,9 @@ consumable sausage {
 	mesh "sausage.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 60
+		foodRegeneration 60
 	}
 }
 
@@ -2443,9 +2457,9 @@ consumable fish_meat {
 	mesh "fish_meat.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2455,9 +2469,9 @@ consumable fish {
 	mesh "fish.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 15
+		foodRegeneration 15
 	}
 }
 
@@ -2467,9 +2481,9 @@ consumable apple {
 	mesh "jablko.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 25
+		foodRegeneration 25
 	}
 }
 
@@ -2479,9 +2493,9 @@ consumable cheese {
 	mesh "ser.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 40
+		foodRegeneration 40
 	}
 }
 
@@ -2491,9 +2505,9 @@ consumable honeycomb {
 	mesh "plaster_miodu.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 75
+		foodRegeneration 75
 	}
 }
 
@@ -2503,9 +2517,9 @@ consumable rice {
 	mesh "ryz.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 30
+		foodRegeneration 30
 	}
 }
 
@@ -2515,9 +2529,9 @@ consumable soup {
 	mesh "soup.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 45
+		foodRegeneration 45
 	}
 }
 
@@ -2527,9 +2541,9 @@ consumable stew {
 	mesh "stew.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 60
+		foodRegeneration 60
 	}
 }
 
@@ -2539,9 +2553,9 @@ consumable mushroom {
 	mesh "grzyb.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 15
+		foodRegeneration 15
 	}
 }
 
@@ -2551,9 +2565,9 @@ consumable muffin {
 	mesh "muffin.qmsh"
 	type food
 	time 5
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		food_regeneration 100
+		foodRegeneration 100
 	}
 }
 
@@ -2562,7 +2576,7 @@ consumable healing_herb {
 	value 10
 	mesh "healing_herb.qmsh"
 	type herb
-	flags {ground_mesh ingredient}
+	flags {groundMesh ingredient}
 	effects {
 		heal 150
 	}
@@ -2573,9 +2587,9 @@ consumable mana_herb {
 	value 10
 	mesh "mana_herb.qmsh"
 	type herb
-	flags {ground_mesh ingredient}
+	flags {groundMesh ingredient}
 	effects {
-		restore_mana 150
+		restoreMana 150
 	}
 }
 
@@ -2584,9 +2598,9 @@ consumable green_herb {
 	value 50
 	mesh "green_herb.qmsh"
 	type herb
-	flags {not_merchant ground_mesh}
+	flags {notMerchant groundMesh}
 	effects {
-		green_hair 0
+		greenHair 0
 	}
 }
 
@@ -2595,7 +2609,7 @@ consumable alchemist_herb {
 	value 25
 	mesh "woddruff_herb.qmsh"
 	type herb
-	flags {not_shop not_random ground_mesh}
+	flags {notShop notRandom groundMesh}
 }
 
 //------------------------------------------------------------------------------
@@ -2606,7 +2620,7 @@ other emerald {
 	value 250
 	tex "szmaragd.png"
 	type valuable
-	flags crystal_sound
+	flags crystalSound
 }
 
 other ruby {
@@ -2614,7 +2628,7 @@ other ruby {
 	value 500
 	tex "rubin.png"
 	type valuable
-	flags crystal_sound
+	flags crystalSound
 }
 
 other diamond {
@@ -2622,7 +2636,7 @@ other diamond {
 	value 750
 	tex "diament.png"
 	type valuable
-	flags crystal_sound
+	flags crystalSound
 }
 
 other krystal {
@@ -2630,7 +2644,7 @@ other krystal {
 	value 1000
 	tex "krystal.png"
 	type valuable
-	flags {not_shop crystal_sound}
+	flags {notShop crystalSound}
 }
 
 other golden_bar {
@@ -2638,7 +2652,7 @@ other golden_bar {
 	value 600
 	mesh "golden_bar.qmsh"
 	type valuable
-	flags ground_mesh
+	flags groundMesh
 }
 
 other golden_cup {
@@ -2646,7 +2660,7 @@ other golden_cup {
 	value 300
 	mesh "golden_cup.qmsh"
 	type valuable
-	flags ground_mesh
+	flags groundMesh
 }
 
 other ladle {
@@ -2660,14 +2674,14 @@ other cup {
 	weight 0.2
 	value 3
 	mesh "cup.qmsh"
-	flags ground_mesh
+	flags groundMesh
 }
 
 other plate {
 	weight 0.2
 	value 3
 	mesh "plate.qmsh"
-	flags ground_mesh
+	flags groundMesh
 }
 
 other wolf_pelt {
@@ -2705,7 +2719,7 @@ other heal_crystal {
 	value 25
 	mesh "heal_crystal.qmsh"
 	type ingredient
-	flags {ground_mesh ingredient}
+	flags {groundMesh ingredient}
 }
 
 other magic_crystal {
@@ -2713,7 +2727,7 @@ other magic_crystal {
 	value 25
 	mesh "magic_crystal.qmsh"
 	type ingredient
-	flags {ground_mesh ingredient}
+	flags {groundMesh ingredient}
 }
 
 other tallow {
@@ -2721,7 +2735,7 @@ other tallow {
 	value 10
 	mesh "tallow.qmsh"
 	type ingredient
-	flags {ground_mesh ingredient}
+	flags {groundMesh ingredient}
 }
 
 other troll_blood {
@@ -2739,252 +2753,245 @@ other a_amulet {
 	weight 0.1
 	value 100
 	tex "a_amulet.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_amulet2 {
 	weight 0.1
 	value 100
 	tex "a_amulet2.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_amulet3 {
 	weight 0.1
 	value 100
 	tex "a_amulet3.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_brosza {
 	weight 0.1
 	value 100
 	tex "a_brosza.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_butelka {
 	weight 0.5
 	value 50
 	tex "a_butelka.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_cos {
 	weight 0.5
 	value 50
 	tex "a_cos.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_czaszka {
 	weight 1
 	value 50
 	tex "a_czaszka.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_figurka {
 	weight 0.2
 	value 100
 	tex "a_figurka.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_figurka2 {
 	weight 0.2
 	value 100
 	tex "a_figurka2.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_figurka3 {
 	weight 0.2
 	value 100
 	tex "a_figurka3.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_ksiega {
 	weight 0.5
 	value 50
 	tex "a_ksiega.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_maska {
 	weight 0.5
 	value 100
 	tex "a_maska.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_maska2 {
 	weight 0.5
 	value 100
 	tex "a_maska2.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_misa {
 	weight 0.5
 	value 50
 	tex "a_misa.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_moneta {
 	weight 0.1
 	value 50
 	tex "a_moneta.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_pierscien {
 	weight 0.1
 	value 100
 	tex "a_pierscien.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_pierscien2 {
 	weight 0.1
 	value 100
 	tex "a_pierscien2.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_pierscien3 {
 	weight 0.1
 	value 100
 	tex "a_pierscien3.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_talizman {
 	weight 0.1
 	value 75
 	tex "a_talizman.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other a_talizman2 {
 	weight 0.1
 	value 75
 	tex "a_talizman2.png"
-	flags {quest not_shop not_random important}
+	flags {quest notShop notRandom important}
 }
 
 other key_kopalnia {
 	weight 0.1
 	value 0
 	tex "old-key.png"
-	flags {not_shop not_random important}
+	flags {notShop notRandom important}
 }
 
 other q_bandyci_paczka {
 	weight 5
 	value 0
 	tex "paczka.png"
-	flags {not_shop not_random important dont_drop}
+	flags {notShop notRandom important dontDrop}
 }
 
 other q_bandyci_list {
 	weight 0.1
 	value 0
 	tex "list.png"
-	flags {not_shop not_random important}
+	flags {notShop notRandom important}
 }
 
 other q_magowie_kula {
 	weight 1
 	value 0
 	tex "magic_sphere.png"
-	flags {not_shop not_random important}
+	flags {notShop notRandom important}
 }
 
 other q_magowie_kula2 {
 	weight 1
 	value 5000
 	tex "magic_sphere.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 other q_orkowie_klucz {
 	weight 1
 	value 0
 	tex "rusty-key.png"
-	flags {not_shop not_random important}
+	flags {notShop notRandom important}
 }
 
 other key_lunar {
 	weight 0.1
 	value 100
 	tex "moon_key.png"
-	flags {not_shop not_random important}
+	flags {notShop notRandom important}
 }
 
 other q_szaleni_kamien {
 	weight 5
 	value 0
 	tex "kamien2.png"
-	flags {not_shop not_random important not_team}
+	flags {notShop notRandom important notTeam}
 }
 
 other sekret_kartka {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 other sekret_kartka2 {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
-	flags {not_shop not_random}
-}
-
-other q_main_letter {
-	weight 0.1
-	value 0
-	tex "list.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 other letter {
 	weight 0.1
 	value 0
 	tex "list.png"
-	flags {quest not_shop not_random dont_drop}
+	flags {quest notShop notRandom dontDrop}
 }
 
 other parcel {
 	weight 1
 	value 0
 	tex "paczka.png"
-	flags {quest not_shop not_random important dont_drop}
+	flags {quest notShop notRandom important dontDrop}
 }
 
 other wanted_letter {
 	weight 0.1
 	value 0
 	tex "wanted.png"
-	flags {quest not_shop not_random}
+	flags {quest notShop notRandom}
 }
 
 other q_resources {
 	weight 10
 	value 0
 	mesh "resources_box.qmsh"
-	flags {quest not_shop not_random important dont_drop ground_mesh}
+	flags {quest notShop notRandom important dontDrop groundMesh}
 }
 
 other q_infected_organ {
 	weight 0.3
 	value 0
 	tex "infectedOrgan.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 other q_yellow_crystal {
@@ -2992,20 +2999,20 @@ other q_yellow_crystal {
 	value 100
 	tex "yellowCrystal.png"
 	type valuable
-	flags {not_shop not_random crystal_sound}
+	flags {notShop notRandom crystalSound}
 }
 
 other q_yellow_herbs {
 	weight 0.1
 	value 100
 	tex "yellowHerbs.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 //------------------------------------------------------------------------------
 // BOOKS
 //------------------------------------------------------------------------------
-book_scheme book {
+bookScheme book {
 	texture "book.png"
 	// assuming 1024x768 resolution, this values are scaled
 	size {800 600}
@@ -3017,7 +3024,7 @@ book_scheme book {
 	next {737 497}
 }
 
-book_scheme page {
+bookScheme page {
 	texture "page.jpg"
 	size {437 566}
 	regions {
@@ -3032,7 +3039,7 @@ book book_history {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags ground_mesh
+	flags groundMesh
 }
 
 book book_orcs {
@@ -3040,7 +3047,7 @@ book book_orcs {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags ground_mesh
+	flags groundMesh
 }
 
 book book_undead {
@@ -3048,7 +3055,7 @@ book book_undead {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags ground_mesh
+	flags groundMesh
 }
 
 book book_behind_the_wall {
@@ -3056,7 +3063,7 @@ book book_behind_the_wall {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags ground_mesh
+	flags groundMesh
 }
 
 book book_adventurer {
@@ -3064,7 +3071,7 @@ book book_adventurer {
 	value 10
 	mesh "book.qmsh"
 	scheme book
-	flags ground_mesh
+	flags groundMesh
 }
 
 book book_ld {
@@ -3072,7 +3079,7 @@ book book_ld {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {not_shop not_random ground_mesh}
+	flags {notShop notRandom groundMesh}
 }
 
 book book_runic {
@@ -3080,7 +3087,7 @@ book book_runic {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {not_shop not_random ground_mesh}
+	flags {notShop notRandom groundMesh}
 	runic 1
 }
 
@@ -3089,7 +3096,7 @@ book q_zlo_ksiega {
 	value 100
 	tex "summoning.png"
 	scheme book
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 	runic 1
 }
 
@@ -3098,7 +3105,7 @@ book magic_scroll {
 	value 100
 	mesh "scroll.qmsh"
 	scheme book
-	flags {not_shop not_random magic_scroll magical}
+	flags {notShop notRandom magicScroll magical}
 }
 
 book book_q_cleric {
@@ -3106,7 +3113,7 @@ book book_q_cleric {
 	value 100
 	mesh "book.qmsh"
 	scheme book
-	flags {not_shop not_random ground_mesh important}
+	flags {notShop notRandom groundMesh important}
 	runic 1
 }
 
@@ -3115,7 +3122,7 @@ book book_q_journal {
 	value 0
 	mesh "book.qmsh"
 	scheme book
-	flags {not_shop not_random ground_mesh important}
+	flags {notShop notRandom groundMesh important}
 }
 
 book crypt_note {
@@ -3123,7 +3130,7 @@ book crypt_note {
 	value 0
 	scheme page
 	tex "piece_of_paper.png"
-	flags {not_shop not_random}
+	flags {notShop notRandom}
 }
 
 book recipe_antidote {
@@ -3133,7 +3140,7 @@ book recipe_antidote {
 	scheme page
 	recipes p_antidote
 	type recipe
-	flags single_use
+	flags singleUse
 }
 
 book recipe_reg {
@@ -3143,7 +3150,7 @@ book recipe_reg {
 	scheme page
 	recipes p_reg
 	type recipe
-	flags single_use
+	flags singleUse
 }
 
 book recipe_antimagic {
@@ -3153,7 +3160,7 @@ book recipe_antimagic {
 	scheme page
 	recipes p_antimagic
 	type recipe
-	flags single_use
+	flags singleUse
 }
 
 book recipe_book_nreg {
@@ -3166,7 +3173,7 @@ book recipe_book_nreg {
 		p_nreg2
 	}
 	type recipe
-	flags {ground_mesh hq}
+	flags {groundMesh hq}
 }
 
 //------------------------------------------------------------------------------
@@ -3838,15 +3845,15 @@ stock alchemist_shelve {
 //------------------------------------------------------------------------------
 // START ITEMS
 //------------------------------------------------------------------------------
-start_items {
-	short_blade {
+startItems {
+	shortBlade {
 		0 dagger_knife
 		10 dagger_short
 		20 dagger_sword
 		30 dagger_rapier
 		* dagger_assassin
 	}
-	long_blade {
+	longBlade {
 		0 sword_wooden
 		10 sword_long
 		20 sword_scimitar
@@ -3880,7 +3887,7 @@ start_items {
 		30 shield_steel
 		* shield_mithril
 	}
-	light_armor {
+	lightArmor {
 		0 al_padded
 		10 al_padded_hq
 		15 al_leather_hq
@@ -3892,7 +3899,7 @@ start_items {
 		mage 25 al_mage2
 		mage * al_mage3
 	}
-	medium_armor {
+	mediumArmor {
 		0 am_hide
 		10 am_chainmail
 		15 am_chainmail_hq
@@ -3900,18 +3907,18 @@ start_items {
 		30 am_scale_hq
 		* am_breastplate
 	}
-	heavy_armor {
+	heavyArmor {
 		0 ah_splint_rusted
 		20 ah_splint
 		30 ah_splint_hq
 		* ah_plate
 	}
-	mystic_magic {
+	mysticMagic {
 		0 wand_novice
 		25 wand_adept
 		* wand_expert
 	}
-	gods_magic {
+	godsMagic {
 		* a_mana
 	}
 }
@@ -3920,7 +3927,7 @@ start_items {
 // BETTER ITEMS
 // This is for ai buying better items for gold, shouldn't contain unique items
 //------------------------------------------------------------------------------
-better_items {
+betterItems {
 	dagger_knife dagger_short
 	dagger_short dagger_sword
 	dagger_sword dagger_rapier

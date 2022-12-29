@@ -49,7 +49,7 @@ code
 quest global_init
 {
 	type unique
-	flags dont_count
+	flags dontCount
 	
 	// pre V_DEV
 	alias {
@@ -187,51 +187,51 @@ quest deliver_letter
 		{
 			talk 2
 			talk 3
-			set_quest_progress P_LETTER_STARTED
+			setQuestProgress P_LETTER_STARTED
 			end
 		}
 		escape choice 4
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog target {
-		if have_quest_item
+		if haveQuestItem
 			choice 0
 			{
 				talk 1
 				talk 2
-				if quest_progress == P_LETTER_ON_TIMEOUT
+				if questProgress == P_LETTER_ON_TIMEOUT
 				{
 					talk 3
-					set_quest_progress P_LETTER_TIMEOUT
+					setQuestProgress P_LETTER_TIMEOUT
 					end
 				}
 				talk 4
 				talk 5
-				set_quest_progress P_LETTER_GOT_RESPONSE
+				setQuestProgress P_LETTER_GOT_RESPONSE
 				end
 			}
 		end
 	}
 
 	dialog end {
-		if quest_progress == P_LETTER_ON_TIMEOUT
+		if questProgress == P_LETTER_ON_TIMEOUT
 		{
-			do_once
+			doOnce
 			talk 0
-			set_quest_progress P_LETTER_TIMEOUT
+			setQuestProgress P_LETTER_TIMEOUT
 			end
 		}
-		else if quest_progress == P_LETTER_GOT_RESPONSE
-			 if have_quest_item
+		else if questProgress == P_LETTER_GOT_RESPONSE
+			 if haveQuestItem
 		{
 			choice 1
 			{
 				talk 2
 				talk 3
 				talk 4
-				set_quest_progress P_LETTER_FINISHED
+				setQuestProgress P_LETTER_FINISHED
 				end
 			}
 		}
@@ -372,28 +372,28 @@ quest deliver_resources
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_DELIVER_STARTED
+			setQuestProgress P_DELIVER_STARTED
 			talk 4
 			end
 		}
 		escape choice 3
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_DELIVER_STARTED
+		if questProgress == P_DELIVER_STARTED
 		{
-			do_once
+			doOnce
 			talk 2
-			if not have_quest_item
+			if not haveQuestItem
 				talk 3
-			set_quest_progress P_DELIVER_TALKED
+			setQuestProgress P_DELIVER_TALKED
 		}
-		if have_quest_item
+		if haveQuestItem
 			choice 0
 			{
-				set_quest_progress P_DELIVER_FINISHED
+				setQuestProgress P_DELIVER_FINISHED
 				talk 1
 				end
 			}
@@ -567,29 +567,29 @@ quest bandits_collect_toll
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_TOLL_STARTED
+			setQuestProgress P_TOLL_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_TOLL_ON_TIMEOUT
+		if questProgress == P_TOLL_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_TOLL_TIMEOUT
+			doOnce
+			setQuestProgress P_TOLL_TIMEOUT
 			talk 0
 			talk 1
 			end
 		}
-		else if quest_progress == P_TOLL_KILLED_BANDITS
+		else if questProgress == P_TOLL_KILLED_BANDITS
 		{
-			do_once
-			set_quest_progress P_TOLL_FINISHED
+			doOnce
+			setQuestProgress P_TOLL_FINISHED
 			talk 2
 			talk 3
 			end
@@ -622,7 +622,7 @@ quest bandits_collect_toll
 			script "target.OrderAttack()"
 			end2
 		}
-		show_choices
+		showChoices
 	}
 	
 	// pre V_DEV
@@ -757,28 +757,28 @@ quest camp_near_city
 		talk 2
 		choice 3
 		{
-			set_quest_progress P_CAMP_STARTED
+			setQuestProgress P_CAMP_STARTED
 			talk 4
 			talk 5
 			end
 		}
 		escape choice 6
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_CAMP_CLEARED
+		if questProgress == P_CAMP_CLEARED
 		{
-			do_once
-			set_quest_progress P_CAMP_FINISHED
+			doOnce
+			setQuestProgress P_CAMP_FINISHED
 			talk 0
 			talk 1
 		}
-		else if quest_progress == P_CAMP_ON_TIMEOUT
+		else if questProgress == P_CAMP_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_CAMP_TIMEOUT
+			doOnce
+			setQuestProgress P_CAMP_TIMEOUT
 			talk 2
 			talk 3
 		}
@@ -926,29 +926,29 @@ quest kill_animals
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_KILLANI_STARTED
+			setQuestProgress P_KILLANI_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog captain
 	{
-		if quest_progress == P_KILLANI_CLEARED
+		if questProgress == P_KILLANI_CLEARED
 		{
-			do_once
-			set_quest_progress P_KILLANI_FINISHED
+			doOnce
+			setQuestProgress P_KILLANI_FINISHED
 			talk 0
 			talk 1
 		}
-		else if quest_progress == P_KILLANI_ON_TIMEOUT
+		else if questProgress == P_KILLANI_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_KILLANI_TIMEOUT
+			doOnce
+			setQuestProgress P_KILLANI_TIMEOUT
 			talk 2
 		}
 		end
@@ -1078,30 +1078,30 @@ quest find_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_FINDART_STARTED
+			setQuestProgress P_FINDART_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_FINDART_FINISHED
+				setQuestProgress P_FINDART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_FINDART_ON_TIMEOUT
+		else if questProgress == P_FINDART_ON_TIMEOUT
 		{
-			set_quest_progress P_FINDART_TIMEOUT
+			setQuestProgress P_FINDART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -1270,30 +1270,30 @@ quest lost_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_LOSTART_STARTED
+			setQuestProgress P_LOSTART_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_LOSTART_FINISHED
+				setQuestProgress P_LOSTART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_LOSTART_ON_TIMEOUT
+		else if questProgress == P_LOSTART_ON_TIMEOUT
 		{
-			set_quest_progress P_LOSTART_TIMEOUT
+			setQuestProgress P_LOSTART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -1457,30 +1457,30 @@ quest stolen_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_STOLENART_STARTED
+			setQuestProgress P_STOLENART_STARTED
 			talk 3
 			talk 4
 			end2
 		}
 		escape choice 5
 			end2
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_STOLENART_FINISHED
+				setQuestProgress P_STOLENART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_STOLENART_ON_TIMEOUT
+		else if questProgress == P_STOLENART_ON_TIMEOUT
 		{
-			set_quest_progress P_STOLENART_TIMEOUT
+			setQuestProgress P_STOLENART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -1677,20 +1677,20 @@ quest alchemist_apprentice
 	//-------------------------------------
 	// dialogs
 	dialog alchemist {
-		if quest_progress between P_ALCH_ACCEPTED and P_ALCH_ALL_PICKED_MANUALLY
+		if questProgress between P_ALCH_ACCEPTED and P_ALCH_ALL_PICKED_MANUALLY
 		{
 			if once
 			{
 				talk 11
-				do_once
+				doOnce
 			}
-			if quest_progress between P_ALCH_ALL_PICKED and P_ALCH_ALL_PICKED_MANUALLY
+			if questProgress between P_ALCH_ALL_PICKED and P_ALCH_ALL_PICKED_MANUALLY
 			{
 				if script "Team::HaveItem(herb)"
 				{
 					choice 12
 					{
-						set_quest_progress P_ALCH_FINISHED
+						setQuestProgress P_ALCH_FINISHED
 						talk 14
 						if script "alive"
 						{
@@ -1706,7 +1706,7 @@ quest alchemist_apprentice
 				{
 					choice 13
 					{
-						set_quest_progress P_ALCH_FAILED
+						setQuestProgress P_ALCH_FAILED
 						talk 15
 						restart
 					}
@@ -1718,7 +1718,7 @@ quest alchemist_apprentice
 			if once
 			{
 				talk 0
-				do_once
+				doOnce
 			}
 			choice 1
 			{
@@ -1728,7 +1728,7 @@ quest alchemist_apprentice
 				choice 5
 				{
 					talk 7
-					set_quest_progress P_ALCH_ACCEPTED
+					setQuestProgress P_ALCH_ACCEPTED
 					talk 8
 					talk 9
 					talk 10
@@ -1739,14 +1739,14 @@ quest alchemist_apprentice
 					talk 18
 					restart
 				}
-				show_choices
+				showChoices
 			}
 		}
 		end
 	}
 
 	dialog xwokloiz {
-		if quest_progress P_ALCH_ACCEPTED
+		if questProgress P_ALCH_ACCEPTED
 		{
 			script "target.knownName = true;"
 			talk 0
@@ -1754,24 +1754,24 @@ quest alchemist_apprentice
 			talk 2
 			choice 3
 			{
-				set_quest_progress P_ALCH_JOINED
+				setQuestProgress P_ALCH_JOINED
 				talk 5
 				end
 			}
 			choice 4
 			{
-				set_quest_progress P_ALCH_REFUSED
+				setQuestProgress P_ALCH_REFUSED
 				talk 6
 				end
 			}
-			show_choices
+			showChoices
 		}
-		else if quest_progress P_ALCH_REFUSED
+		else if questProgress P_ALCH_REFUSED
 		{
 			talk 7
 			choice 3
 			{
-				set_quest_progress P_ALCH_JOINED
+				setQuestProgress P_ALCH_JOINED
 				talk 5
 				end
 			}
@@ -1780,22 +1780,22 @@ quest alchemist_apprentice
 				talk 6
 				end
 			}
-			show_choices
+			showChoices
 		}
-		else if quest_progress P_ALCH_JOINED
+		else if questProgress P_ALCH_JOINED
 		{
 			talk 8
 			end
 		}
-		else if quest_progress P_ALCH_ALL_PICKED_MANUALLY
+		else if questProgress P_ALCH_ALL_PICKED_MANUALLY
 		{
 			talk 9
 			end
 		}
-		else if quest_progress P_ALCH_ALL_PICKED
+		else if questProgress P_ALCH_ALL_PICKED
 		{
 			talk 10
-			set_quest_progress P_ALCH_ALL_PICKED_AND_TALKED
+			setQuestProgress P_ALCH_ALL_PICKED_AND_TALKED
 			talk 11
 			talk 12
 			end
@@ -1973,7 +1973,7 @@ quest alchemist_apprentice
 quest main
 {
 	type unique
-	flags dont_count
+	flags dontCount
 	progress {
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
@@ -1991,11 +1991,11 @@ quest main
 	}
 
 	dialog trainer {
-		if quest_progress == P_MAIN_NONE
+		if questProgress == P_MAIN_NONE
 		{
 			talk 0
 			talk 1
-			set_quest_progress P_MAIN_TALKED_TRAINER
+			setQuestProgress P_MAIN_TALKED_TRAINER
 			end
 		}
 		talk 2
@@ -2007,7 +2007,7 @@ quest main
 				special "select_hero"
 				escape choice 7
 					end
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -2017,15 +2017,15 @@ quest main
 		}
 		escape choice 4
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog messenger {
-		if quest_progress == P_MAIN_TALKED_TRAINER
+		if questProgress == P_MAIN_TALKED_TRAINER
 		{
 			talk 0
 			talk 1
-			set_quest_progress P_MAIN_START
+			setQuestProgress P_MAIN_START
 			talk 2
 			talk 3
 			talk 4
@@ -2041,23 +2041,23 @@ quest main
 			talk 0
 		choice 1
 		{
-			switch quest_progress
+			switch questProgress
 			{
 			case P_MAIN_START
 				talk 2
 				talk 3
-				set_quest_progress P_MAIN_TALKED_SOLTYS
+				setQuestProgress P_MAIN_TALKED_SOLTYS
 				talk 4
 			case P_MAIN_TALKED_SOLTYS
 				talk 5
 			case P_MAIN_ATTACKED
 				talk 6
 				talk 7
-				set_quest_progress P_MAIN_TALKED_SOLTYS2
+				setQuestProgress P_MAIN_TALKED_SOLTYS2
 				talk 8
 				talk 9
 			case default
-				if quest_progress < P_MAIN_CLERIC_IN_VILLAGE
+				if questProgress < P_MAIN_CLERIC_IN_VILLAGE
 					talk 10
 				else
 					talk 11
@@ -2069,7 +2069,7 @@ quest main
 
 	dialog ill_villager {
 		talk 0
-		if quest_progress == P_MAIN_TALKED_SOLTYS
+		if questProgress == P_MAIN_TALKED_SOLTYS
 		if script "!target.vars.IsSet(\"talked\")"
 		{
 			choice 1
@@ -2089,13 +2089,13 @@ quest main
 					talk 8
 				case 5
 					talk 9
-					set_quest_progress P_MAIN_ATTACKED
+					setQuestProgress P_MAIN_ATTACKED
 				}
 				end
 			}
 			escape choice 2
 				end
-			show_choices
+			showChoices
 		}
 		end
 	}
@@ -2104,7 +2104,7 @@ quest main
 		choice 0
 		{
 			talk 1
-			set_quest_progress P_MAIN_TALKED_CLERIC
+			setQuestProgress P_MAIN_TALKED_CLERIC
 			talk 2
 			talk 3
 			talk 4
@@ -2114,24 +2114,24 @@ quest main
 	}
 
 	dialog cleric {
-		switch quest_progress
+		switch questProgress
 		{
 		case P_MAIN_TALKED_CLERIC
 			talk 0
 			talk 1
 			talk 2
-			set_quest_progress P_MAIN_TALKED_CLERIC_HERO
+			setQuestProgress P_MAIN_TALKED_CLERIC_HERO
 			talk 3
 			restart
 		case P_MAIN_TALKED_CLERIC_HERO
 			talk 4
 			talk 5
-			set_quest_progress P_MAIN_TALKED_CLERIC_HERO2
+			setQuestProgress P_MAIN_TALKED_CLERIC_HERO2
 			talk 6
 		case P_MAIN_TALKED_CLERIC_HERO2
 			talk 7
 		case P_MAIN_CLERIC_RETURNED
-			set_quest_progress P_MAIN_CLERIC_RETURNED_TALKED
+			setQuestProgress P_MAIN_CLERIC_RETURNED_TALKED
 			talk 9
 			talk 10
 		case P_MAIN_CLERIC_RETURNED_TALKED
@@ -2141,7 +2141,7 @@ quest main
 			talk 11
 			talk 12
 			talk 13
-			set_quest_progress P_MAIN_CLERIC_GO_TO_VILLAGES
+			setQuestProgress P_MAIN_CLERIC_GO_TO_VILLAGES
 			talk 14
 			talk 15
 		case P_MAIN_CLERIC_GO_TO_VILLAGES
@@ -2149,9 +2149,9 @@ quest main
 			{
 				choice 19
 				{
-					do_once
+					doOnce
 					talk 20
-					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE;"
+					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2160,9 +2160,9 @@ quest main
 			{
 				choice 22
 				{
-					do_once
+					doOnce
 					talk 23
-					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE;"
+					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2171,9 +2171,9 @@ quest main
 			{
 				choice 26
 				{
-					do_once
+					doOnce
 					talk 27
-					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE;"
+					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2182,18 +2182,18 @@ quest main
 			{
 				choice 28
 				{
-					do_once
+					doOnce
 					talk 29
-					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE;"
+					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE; ++counter;"
 					talk 21
 					restart
 				}
 			}
-			if have_item q_infected_organ
+			if haveItem q_infected_organ
 			{
 				choice 24
 				{
-					do_once
+					doOnce
 					script "int count = pc.unit.RemoveItem(Item::Get(\"q_infected_organ\"), 0); Team::AddExp(count * 100);"
 					talk 25
 					restart
@@ -2202,19 +2202,29 @@ quest main
 			if once
 			{
 				if choices == 0
-					talk 16
+				{
+					if script "counter == 4"
+						talk 30
+					else
+						talk 16
+				}
 				else
 					talk 17
 			}
 			else if choices == 0
-				talk 18
+			{
+				if script "counter == 4"
+					talk 30
+				else
+					talk 18
+			}
 		}
 		
 		if choices > 0
 		{
 			escape choice 8
 				end2
-			show_choices
+			showChoices
 		}
 		end2
 	}
@@ -2385,7 +2395,7 @@ quest main
 				else if(Level::dungeonLevel == 1 && e.onGenerate.stage == 1)
 				{
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
-					@room.type = RoomType::Get("crypt_library");
+					@room.type = RoomType::Get("cryptLibrary");
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}
@@ -2501,6 +2511,7 @@ quest main
 					}
 					
 					quest.AddEntry(TEXT(16));
+					counter = 0;
 				}
 				break;
 			}
@@ -2522,11 +2533,11 @@ quest side_cleric
 	}
 
 	dialog end {
-		if have_item book_q_cleric
+		if haveItem book_q_cleric
 			choice 0
 			{
 				talk 1
-				set_quest_progress P_CLERIC_END
+				setQuestProgress P_CLERIC_END
 				talk 2
 				end2
 			}
@@ -2598,21 +2609,21 @@ quest dire_wolf
 	}
 
 	dialog hunter {
-		if quest_progress == P_WOLF_NONE
+		if questProgress == P_WOLF_NONE
 		{
 			choice 0
 			{
-				set_quest_progress P_WOLF_STARTED
+				setQuestProgress P_WOLF_STARTED
 				talk 1
 				talk 2
 				talk 3
 				end
 			}
 		}
-		else if quest_progress == P_WOLF_KILLED
+		else if questProgress == P_WOLF_KILLED
 		{
-			set_quest_progress P_WOLF_COMPLETE
-			do_once
+			setQuestProgress P_WOLF_COMPLETE
+			doOnce
 			talk 4
 			end
 		}
@@ -3098,16 +3109,16 @@ quest main_village4
 	}
 	
 	dialog oldman {
-		if quest_progress >= P_MAIN_V4_LEAVE
+		if questProgress >= P_MAIN_V4_LEAVE
 		{
 			talk 10
 			end
 		}
-		if quest_progress == P_MAIN_V4_FOLLOW
+		if questProgress == P_MAIN_V4_FOLLOW
 		{
 			if script "Level::IsSafeSettlement()"
 			{
-				set_quest_progress P_MAIN_V4_LEAVE
+				setQuestProgress P_MAIN_V4_LEAVE
 				talk 8
 				talk 9
 			}
@@ -3119,10 +3130,10 @@ quest main_village4
 		{
 			talk 0
 			talk 1
-			if quest_progress == P_MAIN_V4_CLEARED
+			if questProgress == P_MAIN_V4_CLEARED
 			{
 				talk 3
-				set_quest_progress P_MAIN_V4_FOLLOW
+				setQuestProgress P_MAIN_V4_FOLLOW
 				talk 4
 			}
 			else
@@ -3133,11 +3144,11 @@ quest main_village4
 		}
 		else
 		{
-			if quest_progress == P_MAIN_V4_CLEARED
+			if questProgress == P_MAIN_V4_CLEARED
 			{
 				talk 6
 				talk 3
-				set_quest_progress P_MAIN_V4_FOLLOW
+				setQuestProgress P_MAIN_V4_FOLLOW
 				talk 4
 			}
 			else
@@ -3180,7 +3191,8 @@ quest main_village4
 			case P_MAIN_V4_ENTER:
 				{
 					// enemies
-					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					UnitGroup@ group = UnitGroup::Get("plague");
+					Level::SpawnUnits(group, 10);
 					
 					// inn people
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
@@ -3194,6 +3206,13 @@ quest main_village4
 					building.canEnter = false;
 					Usable@ usable = Level::SpawnUsable(BaseObject::Get("barricade"), building.entryArea.Midpoint(), building.rot);
 					usable.AddEventHandler(quest, EVENT_DESTROY);
+					
+					// units attacking barricade
+					for(int i = 0; i < 2; ++i)
+					{
+						@unit = Level::SpawnUnitNearLocation(group.GetRandom(), usable.pos, 3);
+						unit.OrderAttackObject(usable);
+					}
 					
 					village.image = LI_VILLAGE_DESTROYED;
 					village.RemoveEventHandler(quest, EVENT_ENTER);
@@ -3255,7 +3274,7 @@ quest main_village4
 //=============================================================================
 // QUEST LISTS
 //=============================================================================
-quest_list mayor {
+questList mayor {
 	deliver_letter 3
 	deliver_parcel 3
 	deliver_resources 3
@@ -3264,7 +3283,7 @@ quest_list mayor {
 	none 2
 }
 
-quest_list captain {
+questList captain {
 	rescue_captive 2
 	bandits_collect_toll 2
 	camp_near_city 2
@@ -3273,7 +3292,7 @@ quest_list captain {
 	none 1
 }
 
-quest_list random {
+questList random {
 	find_artifact 1
 	lost_artifact 1
 	stolen_artifact 1

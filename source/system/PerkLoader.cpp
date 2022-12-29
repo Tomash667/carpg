@@ -83,15 +83,15 @@ void PerkLoader::InitTokenizer()
 		t.AddKeyword(EffectInfo::effects[i].id, i, G_EFFECT);
 
 	t.AddKeywords(G_SPECIAL_REQUIRED, {
-		{ "no_perk", SR_NO_PERK },
-		{ "can_mod", SR_CAN_MOD }
+		{ "noPerk", SR_NO_PERK },
+		{ "canMod", SR_CAN_MOD }
 		});
 
 	t.AddKeywords(G_SPECIAL_EFFECT, {
 		{ "aptitude", SE_APTITUDE },
-		{ "picked_attribute", SE_PICKED_ATTRIBUTE },
-		{ "picked_skill", SE_PICKED_SKILL },
-		{ "skill_point", SE_SKILL_POINT },
+		{ "pickedAttribute", SE_PICKED_ATTRIBUTE },
+		{ "pickedSkill", SE_PICKED_SKILL },
+		{ "skillPoint", SE_SKILL_POINT },
 		{ "gold", SE_GOLD }
 		});
 }

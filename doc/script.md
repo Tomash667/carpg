@@ -171,17 +171,18 @@ Game enums & constans
 
 ### Enum UNIT_ORDER
 * ORDER_NONE
-* ORDER_WANDER - for heroes, they wander freely around city.
-* ORDER_WAIT - for heroes, stay close to current position.
-* ORDER_FOLLOW - for heroes, follow team leader.
-* ORDER_LEAVE - unit goes to nearest location exit and leave.
-* ORDER_MOVE - unit moves to position.
-* ORDER_LOOK_AT - unit looks at position.
+* ORDER_ATTACK_OBJECT - attack destroyable object.
+* ORDER_AUTO_TALK - talk with nearest player or leader.
 * ORDER_ESCAPE_TO - unit runs toward position and ignore enemies.
 * ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies.
-* ORDER_GOTO_INN - unit goes to inn.
-* ORDER_GUARD - unit stays close to another unit and remove dontAttack flag when target is attacked.
-* ORDER_AUTO_TALK - ai will talk with nearest player or leader.
+* ORDER_FOLLOW - for heroes, follow team leader.
+* ORDER_GOTO_INN - go to inn.
+* ORDER_GUARD - stay close to another unit and remove dontAttack flag when target is attacked.
+* ORDER_LEAVE - go to nearest location exit and leave.
+* ORDER_LOOK_AT - looks at position.
+* ORDER_MOVE - moves to position.
+* ORDER_WAIT - for heroes, stay close to current position.
+* ORDER_WANDER - for heroes, they wander freely around city.
 
 Game system types
 -------------------------------------------------------------------------------------------------------------
@@ -284,6 +285,7 @@ Members:
 Methods:
 
 * UnitData@ GetLeader(int level) - get group leader that is closest to selected level.
+* UnitData@ GetRandom() - return random unit from group.
 
 Static properties:
 
@@ -557,17 +559,18 @@ Methods:
 * void OrderClear() - remove all unit orders.
 * void OrderNext() - end current order and start next one.
 * void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dontAttack).
-* UnitOrderBuilder@ OrderWander() - order unit to wander.
-* UnitOrderBuilder@ OrderWait() - order unit to wait.
-* UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
-* UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
-* UnitOrderBuilder@ OrderMove(const Vec3& in pos) - order unit to move to position.
-* UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
+* UnitOrderBuilder@ OrderAttackObject(Usable@) - attack destroyable object.
+* UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 * UnitOrderBuilder@ OrderEscapeTo(const Vec3& in pos) - order unit to escape to position (will ignore enemies).
 * UnitOrderBuilder@ OrderEscapeToUnit(Unit@) - order unit to escape to unit (will ignore enemies).
+* UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
 * UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
 * UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
-* UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
+* UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
+* UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
+* UnitOrderBuilder@ OrderMove(const Vec3& in pos) - order unit to move to position.
+* UnitOrderBuilder@ OrderWait() - order unit to wait.
+* UnitOrderBuilder@ OrderWander() - order unit to wander.
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
@@ -589,23 +592,28 @@ Helper class used to set multiple unit orders one after another (for example: `u
 
 Methods:
 
-* UnitOrderBuilder@ WithTimer(float timer) - set order timer.
 * UnitOrderBuilder@ WithMoveType(MOVE_TYPE) - set move type for last order (currently only used for move order).
 * UnitOrderBuilder@ WithRange(float range) - set range for last order (currently only used for move order).
-* UnitOrderBuilder@ ThenWander()
-* UnitOrderBuilder@ ThenWait()
-* UnitOrderBuilder@ ThenFollow(Unit@)
-* UnitOrderBuilder@ ThenLeave()
-* UnitOrderBuilder@ ThenMove(const Vec3& in)
-* UnitOrderBuilder@ ThenLookAt(const Vec3& in)
-* UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
+* UnitOrderBuilder@ WithTimer(float timer) - set order timer.
+* UnitOrderBuilder@ ThenAttackObject(Usable@)
+* UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)
 * UnitOrderBuilder@ ThenEscapeToUnit(Unit@)
+* UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
+* UnitOrderBuilder@ ThenFollow(Unit@)
 * UnitOrderBuilder@ ThenGoToInn()
 * UnitOrderBuilder@ ThenGuard(Unit@)
-* UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)
+* UnitOrderBuilder@ ThenLeave()
+* UnitOrderBuilder@ ThenLookAt(const Vec3& in)
+* UnitOrderBuilder@ ThenMove(const Vec3& in)
+* UnitOrderBuilder@ ThenWait()
+* UnitOrderBuilder@ ThenWander()
 
 ### Usable type
 Object that can be used or destroyed.
+
+Properties:
+
+* const Vec3 pos
 
 Methods:
 
