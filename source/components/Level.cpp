@@ -161,6 +161,9 @@ void Level::ProcessUnitWarps()
 			// unit left location
 			if(warp.unit->eventHandler)
 				warp.unit->eventHandler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
+			ScriptEvent event(EVENT_LEAVE);
+			event.onLeave.unit = warp.unit;
+			warp.unit->FireEvent(event);
 			RemoveUnit(warp.unit);
 		}
 		else if(warp.where == WARP_OUTSIDE)

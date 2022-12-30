@@ -16,7 +16,8 @@ enum EventType
 	EVENT_TIMER,
 	EVENT_DESTROY,
 	EVENT_RECRUIT,
-	EVENT_KICK
+	EVENT_KICK,
+	EVENT_LEAVE
 };
 
 //-----------------------------------------------------------------------------
@@ -92,6 +93,10 @@ struct ScriptEvent
 		{
 			Unit* unit;
 		} onKick;
+		struct
+		{
+			Unit* unit;
+		} onLeave;
 		struct
 		{
 			Unit* unit;

@@ -109,3 +109,11 @@ Unit* LocationHelper::FindQuestUnit(Location* loc, Quest* quest)
 		return unit->questId == questId;
 	});
 }
+
+//=================================================================================================
+bool LocationHelper::RemoveUnit(Location* loc, Unit* unit)
+{
+	assert(loc && unit);
+	return ForLocation(loc)->RemoveUnit(unit);
+}
+

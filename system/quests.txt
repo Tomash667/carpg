@@ -1212,6 +1212,7 @@ quest wanted
 					UnitData@ unitToSpawn = crazy ? clas.crazy : clas.hero;
 					@targetUnit = Level::SpawnUnitInsideInn(unitToSpawn, level);
 					targetUnit.AddEventHandler(quest, EVENT_DIE);
+					targetUnit.AddEventHandler(quest, EVENT_RECRUIT);
 					targetUnit.AddDialog(quest, "wanted");
 					targetUnit.name = unitName;
 					targetUnit.dontAttack = true;
@@ -1221,19 +1222,24 @@ quest wanted
 			case EVENT_DIE:
 				progress = P_WANTED_KILLED;
 				targetUnit.RemoveEventHandler(quest);
+				targetUnit.RemoveDialog(quest);
 				targetUnit = null;
 				break;
 			case EVENT_TIMEOUT:
-				if(targetUnit is null)
+				if(progress == P_WANTED_STARTED)
 				{
-					// remove handler if not spawned
-					targetLoc.RemoveEventHandler(quest);
+					if(targetUnit is null)
+					{
+						// remove handler if not spawned
+						targetLoc.RemoveEventHandler(quest);
+					}
+					else
+					{
+						targetLoc.RemoveUnit(targetUnit); // spr: usunięcie jednostki powinno usunąć eventy z questa
+						targetUnit = null;
+					}
+					progress = P_WANTED_ON_TIMEOUT;
 				}
-				else
-				{
-					
-				}
-				progress = P_WANTED_ON_TIMEOUT;
 				quest.AddEntry(TEXT(6));
 				break;
 			}

@@ -53,4 +53,5 @@ namespace LocationHelper
 	Unit* GetCaptain(Location* loc);
 	Unit* GetUnit(Location* loc, UnitData* ud);
 	Unit* FindQuestUnit(Location* loc, Quest* quest);
+	bool RemoveUnit(Location* loc, Unit* unit);
 }

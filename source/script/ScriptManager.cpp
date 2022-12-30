@@ -543,7 +543,8 @@ void ScriptManager::RegisterGame()
 		{ "EVENT_TIMER", EVENT_TIMER },
 		{ "EVENT_DESTROY", EVENT_DESTROY },
 		{ "EVENT_RECRUIT", EVENT_RECRUIT },
-		{ "EVENT_KICK", EVENT_KICK }
+		{ "EVENT_KICK", EVENT_KICK },
+		{ "EVENT_LEAVE", EVENT_LEAVE }
 		});
 
 	AddEnum("LOCATION", {
@@ -955,7 +956,8 @@ void ScriptManager::RegisterGame()
 		.Method("LocationPart@ GetLocationPart(int)", asFUNCTIONPR(LocationHelper::GetLocationPart, (Location*, int), LocationPart*))
 		.Method("LocationPart@ GetBuildingLocationPart(const string& in)", asFUNCTION(LocationHelper::GetBuildingLocationPart))
 		.Method("int GetRandomLevel()", asMETHOD(Location, GetRandomLevel))
-		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
+		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit))
+		.Method("bool RemoveUnit(Unit@)", asFUNCTION(LocationHelper::RemoveUnit));
 
 	ForType("LocationPart")
 		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LocationPart, RemoveItemFromChest))

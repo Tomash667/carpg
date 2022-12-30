@@ -72,6 +72,7 @@ Game enums & constans
 * EVENT_ENTER - for locations and units. Send when player enter specified location or every time specified unit changes location.
 * EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
 * EVENT_KICK - for units, send when hero is kicked out of team.
+* EVENT_LEAVE - for units, send when hero leave location.
 * EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
 * EVENT_RECRUIT - for units, send when hero is added to team.
 * EVENT_TIMEOUT - for quests, send when quest timeout expired.
@@ -360,6 +361,8 @@ Properties:
   * bool onGenerate.cancel - can be used in stage 0 to cancel some default logic.
 * For EVENT_KICK:
   * Unit@ onKick.unit - kicked out unit.
+* For EVENT_LEAVE:
+  * Unit@ onLeave.unit = leaving unit.
 * For EVENT_PICKUP:
   * Unit@ onPickup.unit - unit picking item.
   * GroundItem@ onPickup.groundItem - picked ground item.
@@ -423,6 +426,7 @@ Method:
 * LocationPart@ GetBuildingLocationPart(const string& id) - get inside building location part (by building group id).
 * int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
 * Unit@ FindQuestUnit(Quest@) - find unit with quest set.
+* bool RemoveUnit(Unit@) - remove unit.
 
 ### LocationPart type
 Part of location - dungeon level, outside, inside of building.
