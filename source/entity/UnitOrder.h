@@ -12,7 +12,7 @@ enum UnitOrder
 	ORDER_LOOK_AT, // look at position
 	ORDER_ESCAPE_TO, // unit runs toward position and ignore enemies
 	ORDER_ESCAPE_TO_UNIT, // unit runs toward other unit and ignore enemies
-	ORDER_GOTO_INN, // go to inn
+	ORDER_GOTO, // go to building
 	ORDER_GUARD, // stay close to another unit and remove dontAttack flag when target is attacked
 	ORDER_AUTO_TALK, // talk with nearest player or leader
 	ORDER_ATTACK_OBJECT, // attack destroyable object
@@ -56,6 +56,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 			GameDialog* autoTalkDialog;
 			Quest* autoTalkQuest;
 		};
+		int insideBuilding;
 		Entity<Usable> usable;
 	};
 	UnitOrderEntry* next;
@@ -80,7 +81,7 @@ struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
 	UnitOrderEntry* ThenLookAt(const Vec3& pos);
 	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
 	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
-	UnitOrderEntry* ThenGoToInn();
+	UnitOrderEntry* ThenGoTo(CityBuilding* building);
 	UnitOrderEntry* ThenGuard(Unit* target);
 	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest);
 	UnitOrderEntry* ThenAttackObject(Usable* usable);

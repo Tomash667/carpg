@@ -197,7 +197,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			if(captive->hero->teamMember)
 				team->RemoveMember(captive);
 			captive->dontAttack = false;
-			captive->OrderGoToInn();
+			captive->OrderGoTo(gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_INN));
 			captive->temporary = true;
 			captive->eventHandler = nullptr;
 			captive = nullptr;

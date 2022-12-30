@@ -2,6 +2,7 @@
 #include "AIController.h"
 
 #include "Ability.h"
+#include "City.h"
 #include "Game.h"
 #include "GameGui.h"
 #include "GameMessages.h"
@@ -10,6 +11,7 @@
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
 #include "Unit.h"
+#include "World.h"
 
 //=================================================================================================
 void AIController::Init(Unit* unit)
@@ -231,7 +233,14 @@ void AIController::Load(GameReader& f)
 		bool gotoInn;
 		f >> gotoInn;
 		if(gotoInn)
-			unit->OrderGoToInn();
+		{
+			Location* loc = world->GetCurrentLocation();
+			if(loc->type == L_CITY)
+			{
+				CityBuilding* building = static_cast<City*>(loc)->FindBuilding(BuildingGroup::BG_INN);
+				unit->OrderGoTo(building);
+			}
+		}
 	}
 	if(LOAD_VERSION >= V_0_19)
 		f >> scanTimer;
@@ -414,24 +423,25 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(gameLevel->cityCtx && locTimer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(!gameLevel->cityCtx
+		|| locTimer > 0.f
+		|| game->dontWander
+		|| !IsSet(unit->data->flags, F_AI_WANDERS)
+		|| unit->busy != Unit::Busy_No
+		|| unit->GetOrder() == ORDER_WAIT)
+		return false;
+
+	if(unit->IsHero())
 	{
-		if(unit->busy != Unit::Busy_No)
+		if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
 			return false;
-		if(unit->IsHero())
-		{
-			if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
-				return false;
-			else if(questMgr->questTournament->IsGenerated())
-				return false;
-			else
-				return true;
-		}
-		else if(unit->locPart->partType == LocationPart::Type::Outside)
-			return true;
+		else if(questMgr->questTournament->IsGenerated())
+			return false;
 		else
-			return false;
+			return true;
 	}
+	else if(unit->locPart->partType == LocationPart::Type::Outside)
+		return true;
 	else
 		return false;
 }

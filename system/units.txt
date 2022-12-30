@@ -1584,7 +1584,7 @@ unit captive : base_human {
 
 unit traveler : base_human {
 	level {4 8}
-	flags | {aiWanders contest25}
+	flags | contest25
 	items {
 		!light_armor
 		random {!long_blade !blunt !axe}
@@ -1695,7 +1695,7 @@ unit mistrz_agentow : base_human {
 }
 
 unit guard_q_bandyci : base_guard {
-	flags | {aiWanders aiTrain}
+	flags | aiTrain
 	items q_guard
 	dialog q_bandits
 }
@@ -1909,7 +1909,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero aiWanders specificName boss sitOnThrone rootedRes}
+	flags | {archer hero specificName boss sitOnThrone rootedRes}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -2700,7 +2700,7 @@ unit q_bandyci_szef : base_bandit {
 	level 15
 	hp 750
 	attack -30 // too good weapon
-	flags | {aiWanders melee boss backstab guarded rootedRes}
+	flags | {melee boss backstab guarded rootedRes}
 	items {
 		dagger_spinesheath
 		!light_armor

@@ -645,54 +645,52 @@ void Game::UpdateAi(float dt)
 						break;
 					}
 					break;
-				case ORDER_GOTO_INN:
-					if(!(u.IsHero() && tournament->IsGenerated()))
+				case ORDER_GOTO:
+					if(u.usable)
 					{
-						if(u.usable)
+						if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animationState != AS_USE_USABLE_MOVE_TO_ENDPOINT))
 						{
-							if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animationState != AS_USE_USABLE_MOVE_TO_ENDPOINT))
+							u.StopUsingUsable();
+							ai.st.idle.action = AIController::Idle_None;
+							ai.timer = Random(1.f, 2.f);
+							useIdle = false;
+						}
+					}
+					else
+					{
+						InsideBuilding* building = gameLevel->cityCtx->insideBuildings[u.order->insideBuilding];
+						if(u.locPart->partType == LocationPart::Type::Outside)
+						{
+							// go to building
+							if(ai.timer <= 0.f)
 							{
-								u.StopUsingUsable();
-								ai.st.idle.action = AIController::Idle_None;
-								ai.timer = Random(1.f, 2.f);
-								useIdle = false;
+								ai.st.idle.action = AIController::Idle_MoveRegion;
+								ai.st.idle.region.locPart = building;
+								ai.st.idle.region.exit = false;
+								ai.st.idle.region.pos = building->enterRegion.Midpoint().XZ();
+								ai.timer = Random(30.f, 40.f);
+								ai.cityWander = true;
 							}
 						}
 						else
 						{
-							InsideBuilding* inn = gameLevel->cityCtx->FindInn();
-							if(u.locPart->partType == LocationPart::Type::Outside)
+							if(u.locPart == building)
 							{
-								// go to inn
-								if(ai.timer <= 0.f)
-								{
-									ai.st.idle.action = AIController::Idle_MoveRegion;
-									ai.st.idle.region.locPart = inn;
-									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = inn->enterRegion.Midpoint().XZ();
-									ai.timer = Random(30.f, 40.f);
-									ai.cityWander = true;
-								}
+								// is inside building - move to random point
+								u.OrderNext();
+								ai.timer = Random(5.f, 7.5f);
+								ai.st.idle.action = AIController::Idle_Move;
+								ai.st.idle.pos = (Rand() % 5 == 0 ? building->region2.Midpoint() : building->region1.Midpoint()).XZ();
+								FIXME;
 							}
 							else
 							{
-								if(u.locPart == inn)
-								{
-									// is inside inn - move to random point
-									u.OrderNext();
-									ai.timer = Random(5.f, 7.5f);
-									ai.st.idle.action = AIController::Idle_Move;
-									ai.st.idle.pos = (Rand() % 5 == 0 ? inn->region2.Midpoint() : inn->region1.Midpoint()).XZ();
-								}
-								else
-								{
-									// is not inside inn - go outside
-									ai.timer = Random(15.f, 30.f);
-									ai.st.idle.action = AIController::Idle_MoveRegion;
-									ai.st.idle.region.locPart = gameLevel->localPart;
-									ai.st.idle.region.exit = false;
-									ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
-								}
+								// is not inside building - go outside
+								ai.timer = Random(15.f, 30.f);
+								ai.st.idle.action = AIController::Idle_MoveRegion;
+								ai.st.idle.region.locPart = gameLevel->localPart;
+								ai.st.idle.region.exit = false;
+								ai.st.idle.region.pos = static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 							}
 						}
 					}

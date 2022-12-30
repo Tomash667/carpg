@@ -176,7 +176,7 @@ Game enums & constans
 * ORDER_ESCAPE_TO - unit runs toward position and ignore enemies.
 * ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies.
 * ORDER_FOLLOW - for heroes, follow team leader.
-* ORDER_GOTO_INN - go to inn.
+* ORDER_GOTO - go to building.
 * ORDER_GUARD - stay close to another unit and remove dontAttack flag when target is attacked.
 * ORDER_LEAVE - go to nearest location exit and leave.
 * ORDER_LOOK_AT - looks at position.
@@ -564,7 +564,7 @@ Methods:
 * UnitOrderBuilder@ OrderEscapeTo(const Vec3& in pos) - order unit to escape to position (will ignore enemies).
 * UnitOrderBuilder@ OrderEscapeToUnit(Unit@) - order unit to escape to unit (will ignore enemies).
 * UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
-* UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
+* UnitOrderBuilder@ OrderGoTo(CityBuilding@) - order unit to go to building.
 * UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
 * UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
 * UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
@@ -600,7 +600,7 @@ Methods:
 * UnitOrderBuilder@ ThenEscapeToUnit(Unit@)
 * UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
 * UnitOrderBuilder@ ThenFollow(Unit@)
-* UnitOrderBuilder@ ThenGoToInn()
+* UnitOrderBuilder@ ThenGoTo(CityBuilding@)
 * UnitOrderBuilder@ ThenGuard(Unit@)
 * UnitOrderBuilder@ ThenLeave()
 * UnitOrderBuilder@ ThenLookAt(const Vec3& in)
@@ -649,6 +649,7 @@ Static methods:
 * bool IsTutorial() - true when inside tutorial.
 * bool IsSafe() - true when current location is safe.
 * bool IsOutside() - true when current location is outside type.
+* bool CanSee(Unit@, Unit@) - true if one unit can see another.
 * Unit@ FindUnit(UnitData@) - finds unit with this unit data.
 * Unit@ GetNearestEnemy(Unit@) - finds nearest unit that is enemy of this unit.
 * GroundItem@ FindItem(Item@) - finds first item.

@@ -590,7 +590,7 @@ void ScriptManager::RegisterGame()
 		{ "ORDER_LOOK_AT", ORDER_LOOK_AT },
 		{ "ORDER_ESCAPE_TO", ORDER_ESCAPE_TO },
 		{ "ORDER_ESCAPE_TO_UNIT", ORDER_ESCAPE_TO_UNIT },
-		{ "ORDER_GOTO_INN", ORDER_GOTO_INN },
+		{ "ORDER_GOTO", ORDER_GOTO },
 		{ "ORDER_GUARD", ORDER_GUARD },
 		{ "ORDER_AUTO_TALK", ORDER_AUTO_TALK },
 		{ "ORDER_ATTACK_OBJECT", ORDER_ATTACK_OBJECT }
@@ -778,7 +778,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ ThenLookAt(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenLookAt))
 		.Method("UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenEscapeTo))
 		.Method("UnitOrderBuilder@ ThenEscapeToUnit(Unit@)", asMETHOD(UnitOrderEntry, ThenEscapeToUnit))
-		.Method("UnitOrderBuilder@ ThenGoToInn()", asMETHOD(UnitOrderEntry, ThenGoToInn))
+		.Method("UnitOrderBuilder@ ThenGoTo(CityBuilding@)", asMETHOD(UnitOrderEntry, ThenGoTo))
 		.Method("UnitOrderBuilder@ ThenGuard(Unit@)", asMETHOD(UnitOrderEntry, ThenGuard))
 		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk))
 		.Method("UnitOrderBuilder@ ThenAttackObject(Usable@)", asMETHOD(UnitOrderEntry, ThenAttackObject));
@@ -829,7 +829,7 @@ void ScriptManager::RegisterGame()
 		.Method("UnitOrderBuilder@ OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
 		.Method("UnitOrderBuilder@ OrderEscapeTo(const Vec3& in)", asMETHOD(Unit, OrderEscapeTo))
 		.Method("UnitOrderBuilder@ OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
-		.Method("UnitOrderBuilder@ OrderGoToInn()", asMETHOD(Unit, OrderGoToInn))
+		.Method("UnitOrderBuilder@ OrderGoTo(CityBuilding@)", asMETHOD(Unit, OrderGoTo))
 		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
 		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null, Quest@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("UnitOrderBuilder@ OrderAttackObject(Usable@)", asMETHOD(Unit, OrderAttackObject))
@@ -1011,6 +1011,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("bool IsTutorial()", asMETHOD(Level, IsTutorial))
 		.AddFunction("bool IsSafe()", asMETHOD(Level, IsSafe))
 		.AddFunction("bool IsOutside()", asMETHOD(Level, IsOutside))
+		.AddFunction("bool CanSee(Unit@, Unit@)", asMETHODPR(Level, CanSee, (Unit&, Unit&), bool))
 		.AddFunction("Unit@ FindUnit(UnitData@)", asMETHODPR(Level, FindUnit, (UnitData*), Unit*))
 		.AddFunction("Unit@ GetNearestEnemy(Unit@)", asMETHOD(Level, GetNearestEnemy))
 		.AddFunction("GroundItem@ FindItem(Item@)", asMETHOD(Level, FindItem))

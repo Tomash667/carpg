@@ -6262,10 +6262,12 @@ UnitOrderEntry* Unit::OrderEscapeToUnit(Unit* unit)
 }
 
 //=================================================================================================
-UnitOrderEntry* Unit::OrderGoToInn()
+UnitOrderEntry* Unit::OrderGoTo(CityBuilding* building)
 {
+	assert(building);
 	OrderReset();
-	order->order = ORDER_GOTO_INN;
+	order->order = ORDER_GOTO;
+	order->insideBuilding = building->GetInsideBuilding()->partId;
 	return order;
 }
 

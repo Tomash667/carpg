@@ -2891,17 +2891,18 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 
 						if(unit.IsAlive())
 						{
-							// warp to inn if unit wanted to go there
-							if(order == ORDER_GOTO_INN)
+							// warp to building if unit wanted to go there
+							if(order == ORDER_GOTO)
 							{
+								int insideBuildingIndex = unit.order->insideBuilding;
 								unit.OrderNext();
 								if(gameLevel->cityCtx)
 								{
-									InsideBuilding* inn = gameLevel->cityCtx->FindInn();
-									gameLevel->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									InsideBuilding* insideBuilding = gameLevel->cityCtx->insideBuildings[insideBuildingIndex];
+									gameLevel->WarpToRegion(*insideBuilding, (Rand() % 5 == 0 ? insideBuilding->region2 : insideBuilding->region1), unit.GetUnitRadius(), unit.pos, 20);
 									unit.visualPos = unit.pos;
-									unit.locPart = inn;
-									inn->units.push_back(&unit);
+									unit.locPart = insideBuilding;
+									insideBuilding->units.push_back(&unit);
 									return true;
 								}
 							}

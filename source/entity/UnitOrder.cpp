@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "UnitOrder.h"
 
+#include "CityBuilding.h"
+#include "InsideBuilding.h"
 #include "Unit.h"
 
 //=================================================================================================
@@ -107,10 +109,12 @@ UnitOrderEntry* UnitOrderEntry::ThenEscapeToUnit(Unit* target)
 }
 
 //=================================================================================================
-UnitOrderEntry* UnitOrderEntry::ThenGoToInn()
+UnitOrderEntry* UnitOrderEntry::ThenGoTo(CityBuilding* building)
 {
+	assert(building);
 	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_GOTO_INN;
+	o->order = ORDER_GOTO;
+	o->insideBuilding = building->GetInsideBuilding()->partId;
 	return o;
 }
 

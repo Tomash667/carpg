@@ -2,6 +2,7 @@
 #include "Quest_Mages.h"
 
 #include "AIController.h"
+#include "City.h"
 #include "Encounter.h"
 #include "Game.h"
 #include "Journal.h"
@@ -301,7 +302,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			hdMage.Get(*u->humanData);
 
 			if(world->GetCurrentLocationIndex() == mageLoc)
-				u->OrderGoToInn();
+				u->OrderGoTo(gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_INN));
 			else
 			{
 				u->OrderLeave();

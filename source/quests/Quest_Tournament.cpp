@@ -235,12 +235,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 		if(IsSet(u.data->flags2, F2_TOURNAMENT))
 			return true;
 		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState >= Quest_Mages2::State::MageCured)
-		{
-			// go back to inn
-			if(!u.IsTeamMember())
-				u.OrderGoToInn();
 			return true;
-		}
 	}
 	return false;
 }

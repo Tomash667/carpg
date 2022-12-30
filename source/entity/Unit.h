@@ -861,7 +861,7 @@ public:
 	UnitOrderEntry* OrderLookAt(const Vec3& pos);
 	UnitOrderEntry* OrderEscapeTo(const Vec3& pos);
 	UnitOrderEntry* OrderEscapeToUnit(Unit* unit);
-	UnitOrderEntry* OrderGoToInn();
+	UnitOrderEntry* OrderGoTo(CityBuilding* building);
 	UnitOrderEntry* OrderGuard(Unit* target);
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
 	UnitOrderEntry* OrderAttackObject(Usable* usable);
