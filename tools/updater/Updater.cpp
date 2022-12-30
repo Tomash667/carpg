@@ -6,10 +6,19 @@
 #include "Updater.h"
 #include "Pak.h"
 
-bool DoWork(cstring exe)
+bool DoWork(cstring exeInput, int resumeVer)
 {
+    cstring exe = exeInput;
     if(!exe)
         exe = "carpg.exe";
+
+    if(resumeVer != 0)
+    {
+        printf("Updater update finished.\n");
+        io::DeleteFile("updater.exe~");
+        RunInstallScripts();
+        printf(Format("Update to %s done.\n", VersionToString(resumeVer)));
+    }
 
     // get current version
     int currentVer = GetCurrentVersion(exe);
@@ -30,6 +39,11 @@ bool DoWork(cstring exe)
     }
     if(updates.empty())
     {
+        if(resumeVer != 0)
+        {
+            printf("Updated carpg succesfuly!\n");
+            return true;
+        }
         printf("Version up to date.\n");
         return false;
     }
@@ -53,13 +67,40 @@ bool DoWork(cstring exe)
             delete pak;
             return false;
         }
+
+        bool restart = false;
+        if(pak->HaveFile("updater.exe"))
+        {
+            // can't replace itself, need to restart new updater
+            io::MoveFile("updater.exe", "updater.exe~");
+            restart = true;
+        }
+
+        // extract files
         pak->Extract();
         delete pak;
+        io::DeleteFile(filename.c_str());
+
+        // restart if needed
+        if(restart)
+        {
+            printf("Restarting updater.\n");
+            STARTUPINFO si{};
+            si.cb = sizeof(STARTUPINFO);
+            PROCESS_INFORMATION pi{};
+            string cmdLine = Format("updater.exe -resume %d", update.ver);
+            if(exeInput)
+            {
+                cmdLine += " ";
+                cmdLine += exeInput;
+            }
+            CreateProcess(nullptr, (char*)cmdLine.c_str(), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+            exit(0);
+        }
 
         // install scripts
         printf("Checking for install script.\n");
         RunInstallScripts();
-        DeleteFileA(filename.c_str());
         printf(Format("Update to %s done.\n", VersionToString(update.ver)));
     }
 
@@ -69,16 +110,30 @@ bool DoWork(cstring exe)
 
 int main(int argc, char** argv)
 {
-    printf("CaRpg auto-updater v0\n");
+    printf("CaRpg auto-updater v1\n");
     printf("==================================================\n");
-    cstring exe = (argc == 2 ? argv[1] : nullptr);
-    bool ok = DoWork(exe);
+
+    cstring exe = nullptr;
+    int resumeVer = 0;
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "-resume") == 0)
+        {
+            ++i;
+            if(i < argc)
+                resumeVer = atoi(argv[i]);
+        }
+        else
+            exe = argv[i];
+    }
+
+    bool ok = DoWork(exe, resumeVer);
     if(ok && exe)
     {
         // start game
-        STARTUPINFO si = { 0 };
+        STARTUPINFO si{};
         si.cb = sizeof(STARTUPINFO);
-        PROCESS_INFORMATION pi = { 0 };
+        PROCESS_INFORMATION pi{};
         CreateProcess(nullptr, (char*)exe, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
     }
     else

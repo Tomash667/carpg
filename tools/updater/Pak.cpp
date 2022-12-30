@@ -34,6 +34,16 @@ bool Pak::Open(Cstring filename)
 	return true;
 }
 
+bool Pak::HaveFile(Cstring filename)
+{
+	for(uint i = 0; i < file_count; ++i)
+	{
+		if(strcmp(file_table[i].filename, "updater.exe") == 0)
+			return true;
+	}
+	return false;
+}
+
 void Pak::Extract()
 {
 	string dir;

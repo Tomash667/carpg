@@ -121,65 +121,23 @@ bool RunInstallScripts()
 {
 	Info("Reading install scripts.");
 
+	// find install scripts
 	vector<InstallScript> scripts;
-
-	Tokenizer t;
-	t.AddKeyword("install", 0);
-	t.AddKeyword("version", 1);
-	t.AddKeyword("remove", 2);
-
 	io::FindFiles("install/*.txt", [&](const io::FileInfo& info)
 	{
 		int major, minor, patch;
 
-		// read file to find version info
-		try
+		if(sscanf_s(info.filename, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
 		{
-			if(t.FromFile(Format("install/%s", info.filename)))
-			{
-				t.Next();
-				if(t.MustGetKeywordId() == 2)
-				{
-					// old install script
-					if(sscanf_s(info.filename, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
-					{
-						if(sscanf_s(info.filename, "%d.%d.txt", &major, &minor) == 2)
-							patch = 0;
-						else
-						{
-							// unknown version
-							major = 0;
-							minor = 0;
-							patch = 0;
-						}
-					}
-				}
-				else
-				{
-					t.AssertKeyword(0);
-					t.Next();
-					if(t.MustGetInt() != 1)
-						t.Throw("Unknown install script version '%d'.", t.MustGetInt());
-					t.Next();
-					t.AssertKeyword(1);
-					t.Next();
-					major = t.MustGetInt();
-					t.Next();
-					minor = t.MustGetInt();
-					t.Next();
-					patch = t.MustGetInt();
-				}
-
-				InstallScript& s = Add1(scripts);
-				s.filename = info.filename;
-				s.version = (((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF));
-			}
-		}
-		catch(const Tokenizer::Exception& e)
-		{
-			Warn("Unknown install script '%s': %s", info.filename, e.ToString());
+			if(sscanf_s(info.filename, "%d.%d.txt", &major, &minor) == 2)
+				patch = 0;
+			else
+				return true;
 		}
 
+		InstallScript& s = Add1(scripts);
+		s.filename = info.filename;
+		s.version = (((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF));
 		return true;
 	});
 
@@ -188,14 +146,19 @@ bool RunInstallScripts()
 
 	std::sort(scripts.begin(), scripts.end());
 
+	// get full path to directory with exe, this is to prevent changing files from parent directory
 	GetModuleFileName(nullptr, BUF, 256);
-	char buf[512], buf2[512];
-	char* filename;
-	GetFullPathName(BUF, 512, buf, &filename);
-	*filename = 0;
-	uint len = strlen(buf);
+	char origin[512], filePath[512], filePath2[512];
+	char* originFilename;
+	GetFullPathName(BUF, 512, origin, &originFilename);
+	*originFilename = 0;
+	uint len = strlen(origin);
 
-	LocalString s, s2;
+	Tokenizer t;
+	t.AddKeyword("remove", 0);
+	t.AddKeyword("move", 1);
+
+	LocalString filename, filename2;
 
 	for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
 	{
@@ -211,51 +174,60 @@ bool RunInstallScripts()
 			Info("Using install script %s.", it->filename.c_str());
 
 			t.Next();
-			t.AssertKeyword();
-			if(t.MustGetKeywordId() == 0)
-			{
-				// skip install 1, version X Y Z W
-				t.Next();
-				t.AssertInt();
-				t.Next();
-				t.AssertKeyword(1);
-				t.Next();
-				t.AssertInt();
-				t.Next();
-				t.AssertInt();
-				t.Next();
-				t.AssertInt();
-				t.Next();
-				t.AssertInt();
-				t.Next();
-			}
-
 			while(true)
 			{
 				if(t.IsEof())
 					break;
-				t.AssertKeyword(2);
 
+				int keyword = t.MustGetKeywordId();
 				t.Next();
-				s2 = t.MustGetString();
-
-				if(GetFullPathName(s2->c_str(), 512, buf2, nullptr) == 0 || strncmp(buf, buf2, len) != 0)
+				if(keyword == 0)
 				{
-					Error("Invalid file path '%s'.", s2->c_str());
-					return false;
-				}
+					// remove
+					filename = t.MustGetString();
+					t.Next();
 
-				io::DeleteFile(buf2);
-				t.Next();
+					if(GetFullPathName(filename->c_str(), 512, filePath, nullptr) == 0 || strncmp(origin, filePath, len) != 0)
+					{
+						Error("Invalid file path '%s'.", filename->c_str());
+						return false;
+					}
+
+					io::DeleteFile(filePath);
+				}
+				else
+				{
+					// move
+					filename = t.MustGetString();
+					t.Next();
+					filename2 = t.MustGetString();
+					t.Next();
+
+					if(GetFullPathName(filename->c_str(), 512, filePath, nullptr) == 0 || strncmp(origin, filePath, len) != 0)
+					{
+						Error("Invalid file path '%s'.", filename->c_str());
+						return false;
+					}
+
+					if(GetFullPathName(filename2->c_str(), 512, filePath2, nullptr) == 0 || strncmp(origin, filePath2, len) != 0)
+					{
+						Error("Invalid file path '%s'.", filename2->c_str());
+						return false;
+					}
+
+					io::MoveFile(filePath, filePath2);
+				}
 			}
 
 			io::DeleteFile(path);
 		}
-		catch(cstring err)
+		catch(const Tokenizer::Exception& ex)
 		{
-			Error("Failed to parse install script '%s': %s", path, err);
+			Error("Failed to parse install script '%s': %s", path, ex.ToString());
 		}
 	}
+
+	io::DeleteDirectory("install");
 
 	return true;
 }

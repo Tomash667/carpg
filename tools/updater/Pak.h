@@ -49,5 +49,6 @@ struct Pak
 	Pak() : table(nullptr) {}
 	~Pak() { delete[] table; }
 	bool Open(Cstring filename);
+	bool HaveFile(Cstring filename);
 	void Extract();
 };
