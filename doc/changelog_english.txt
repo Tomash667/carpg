@@ -4,14 +4,15 @@ Changelog
 Version 0.20 (???):
 ! cannot load saves from version 0.9 or older
 + continued storyline with 4 subquests
-+ converted quests "kill animals", "dire wolf" to script
 + destroyable barricade
 + improvements to raise spell
++ converted quests "kill animals", "dire wolf" to script
 + update libraries: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
 - inconsistency in quest "kill animals" between dialog and received gold
 - adding notest on second page didn't work
 - missing hit effect for client training targets
 - missing hit effect for npc training targets
+- bugged news text after completing bandits collect toll quest
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):
