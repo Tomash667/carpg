@@ -592,21 +592,6 @@ quest main_village3 {
 
 //=============================================================================
 quest main_village4 {
-	texts {
-		0 "Source of the plague in $(village.name)"
-		1 "Started at $date$."
-		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
-		3 "After reaching the village, I saw a fight. I must quickly help the villagers who have not yet fallen ill to repel the attack. I also need to find some information on the source of the plague."
-		4 "One of the villagers hid in the inn. He said that one of the first infected was an alchemist. Maybe I can find some proof on him."
-		5 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
-		6 "I found some strange herbs. Did they cause the plague?"
-		7 "I did all I could. Time to go back to $(cleric.realName)."
-		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
-	}
-}
-
-//=============================================================================
-quest main_village4 {
 	dialog oldman {
 		0 "Hello young man."
 		1 "Thank you for the rescue, our barricade wouldn't last long."
