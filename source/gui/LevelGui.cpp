@@ -443,14 +443,18 @@ void LevelGui::DrawFront()
 				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
+			Rect r2 = { r.Left() + 5, r.Top() - off, r.Right() - 5, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game->dialogContext.dialogText)
+		{
+			r.Left() += 5;
+			r.Right() -= 5;
 			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		}
 	}
 
 	// health bar
@@ -673,6 +677,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
+
 			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);

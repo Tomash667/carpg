@@ -416,6 +416,7 @@ void GameGui::OnResize()
 	gui->OnResize();
 	if(levelGui)
 		levelGui->PositionPanels();
+	book->Event(GuiEvent_WindowResize);
 	console->Event(GuiEvent_WindowResize);
 	craft->Event(GuiEvent_WindowResize);
 }
