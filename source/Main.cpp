@@ -329,7 +329,7 @@ void LoadConfiguration(char* cmdLine)
 		{ "full", 3 }
 		}, 1);
 	Info("Settings: crashMode = %d", crashMode);
-	CrashHandler::Register("CaRpg", VERSION_STR, "http://carpg.pl/crashrpt.php", crashMode);
+	CrashHandler::Register("CaRpg", VERSION_STR, "http://carpg.pl/crashrpt.php", crashMode, VoidF(game, &Game::CrashCallback));
 
 	// more configuration
 	engine->LoadConfiguration(cfg);

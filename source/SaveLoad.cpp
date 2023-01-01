@@ -307,6 +307,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	try
 	{
 		inLoad = true;
+		savePath = filename;
 		LoadGame(f);
 		inLoad = false;
 	}

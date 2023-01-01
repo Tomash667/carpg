@@ -75,6 +75,7 @@
 #include "WorldMapGui.h"
 
 #include <BasicShader.h>
+#include <CrashHandler.h>
 #include <DirectX.h>
 #include <Engine.h>
 #include <GlowShader.h>
@@ -3889,4 +3890,10 @@ void Game::OnEnterLevelOrLocation()
 
 	if(Net::IsClient() && gameLevel->boss)
 		gameGui->levelGui->SetBoss(gameLevel->boss, true);
+}
+
+void Game::CrashCallback()
+{
+	if(inLoad)
+		CrashHandler::AddFile(savePath.c_str(), "Save file");
 }
