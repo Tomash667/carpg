@@ -62,7 +62,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			atLevel = 0;
 			targetLoc->activeQuest = this;
 			targetLoc->SetKnown();
-			if(targetLoc->state >= LS_ENTERED)
+			if(targetLoc->state >= LS_VISITED)
 				targetLoc->reset = true;
 			targetLoc->st = 8;
 

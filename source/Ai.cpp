@@ -309,7 +309,12 @@ void Game::UpdateAi(float dt)
 								if(&target == &u)
 									prio *= 1.5f;
 								if(!target.IsAlive())
-									prio /= 10;
+								{
+									if(Any(ai.state, AIController::Fighting, AIController::Dodge, AIController::Block, AIController::Wait))
+										continue; // don't waste time healing "dead" allies
+									else
+										prio *= 10;
+								}
 								prio -= dist * 10;
 								if(prio > bestPrio)
 								{

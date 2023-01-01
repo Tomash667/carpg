@@ -16,6 +16,8 @@ Wersja 0.20 (???):
 - lepsze działanie wyszukiwarki lokalizacji
 - npc nie mógł rzucać leczenia na siebie w budynku
 - złe losowe pijane teksty npc w karczmie
+- niezgodność w działaniu mapy świata pomiędzy klientem a serwerem
+- zadanie "zabij zwierzęta" mogło wybrać lokalizację w której już byliśmy i nie było wtedy wrogów
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

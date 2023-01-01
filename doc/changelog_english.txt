@@ -16,6 +16,8 @@ Version 0.20 (???):
 - better search box for locations
 - npc couldn't cast heal on himself inside building
 - wrong drunk idle texts inside inn
+- incompatibility in world map between client and server
+- quest "kill animals" could pick already cleared location and there would be no enemies
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

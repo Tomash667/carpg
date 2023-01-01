@@ -1430,8 +1430,10 @@ unit citizen : base_human {
 	dialog citizen
 }
 
-unit tut_czlowiek : citizen {
-	flags | {aiStay ~aiWanders limitedRot}
+unit tut_czlowiek : base_human {
+	level 3
+	flags | {aiStay limitedRot}
+	gold {50 100}
 	trader {
 		stock merchant
 		groups {weapon bow shield armor amulet ring consumable other book}
@@ -1498,8 +1500,9 @@ unit trainer : base_human {
 	dialog trainer
 }
 
-unit clerk : citizen {
-	flags | {~aiWanders aiClerk aiStay dontEat limitedRot}
+unit clerk : base_human {
+	level 3
+	flags | {aiClerk aiStay dontEat limitedRot}
 	gold {150 250}
 	dialog clerk
 }
@@ -1562,8 +1565,10 @@ unit arena_master : base_human {
 	dialog arena_master
 }
 
-unit viewer : citizen {
-	flags | {~aiWanders aiGuard aiStay limitedRot dontEat}
+unit viewer : base_human {
+	level 3
+	flags | {aiGuard aiStay limitedRot dontEat}
+	gold {30 60}
 	dialog viewer
 }
 

@@ -246,7 +246,7 @@ void World::UpdateLocations()
 		{
 			loc->reset = true;
 			if(loc->state == LS_CLEARED)
-				loc->state = LS_ENTERED;
+				loc->state = LS_VISITED;
 			if(loc->type == L_DUNGEON)
 			{
 				InsideLocation* inside = static_cast<InsideLocation*>(loc);
@@ -873,7 +873,7 @@ void World::StartInLocation()
 	state = State::ON_MAP;
 	currentLocationIndex = startLocation->index;
 	currentLocation = startLocation;
-	currentLocation->state = LS_ENTERED;
+	currentLocation->state = LS_VISITED;
 	worldPos = currentLocation->pos;
 	gameLevel->locationIndex = currentLocationIndex;
 	gameLevel->location = currentLocation;
@@ -2555,12 +2555,10 @@ void World::EndTravel()
 	{
 		currentLocation = travelLocation;
 		currentLocationIndex = travelLocation->index;
+		worldPos = currentLocation->pos;
 		travelLocation = nullptr;
 		gameLevel->locationIndex = currentLocationIndex;
 		gameLevel->location = currentLocation;
-		Location& loc = *gameLevel->location;
-		loc.SetVisited();
-		worldPos = loc.pos;
 	}
 	else
 		worldPos = travelTargetPos;
@@ -2579,11 +2577,9 @@ void World::Warp(int index, bool order)
 
 	currentLocationIndex = index;
 	currentLocation = locations[currentLocationIndex];
+	worldPos = currentLocation->pos;
 	gameLevel->locationIndex = currentLocationIndex;
 	gameLevel->location = currentLocation;
-	Location& loc = *currentLocation;
-	loc.SetVisited();
-	worldPos = loc.pos;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{

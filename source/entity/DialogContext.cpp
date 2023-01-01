@@ -1364,7 +1364,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			for(Location* loc : locations)
 			{
 				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, worldPos) <= 150.f && loc->state != LS_HIDDEN)
-					activeLocations.push_back(pair<int, bool>(index, loc->state == LS_UNKNOWN));
+					activeLocations.push_back(std::make_pair(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
 

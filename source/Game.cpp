@@ -1450,7 +1450,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 
 		// mark as visited
 		if(l.state != LS_HIDDEN)
-			l.state = LS_ENTERED;
+			l.state = LS_VISITED;
 
 		LoadingStep(txGeneratingMap);
 

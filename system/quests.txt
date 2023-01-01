@@ -977,6 +977,7 @@ quest kill_animals
 					@targetLoc.activeQuest = quest;
 					targetLoc.SetKnown();
 					targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+					targetLoc.reset = true;
 					if(targetLoc.st < 5)
 						targetLoc.st = 5;
 					st = targetLoc.st;
@@ -2663,6 +2664,9 @@ quest dire_wolf
 				@forest.activeQuest = quest;
 				forest.AddEventHandler(quest, EVENT_ENTER);
 				forest.SetKnown();
+				forest.reset = true;
+				if(forest.st < 5)
+					forest.st = 5;
 
 				quest.SetStarted(TEXT(0));
 				quest.AddEntry(TEXT(1));
