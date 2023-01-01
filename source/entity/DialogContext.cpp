@@ -1712,10 +1712,13 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	}
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
-	else if(strcmp(msg, "is_inside_inn") == 0)
-		return talker->locPart->partType == LocationPart::Type::Building && gameLevel->cityCtx->FindInn() == talker->locPart;
-	else if(strcmp(msg, "is_before_contest") == 0)
-		return questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
+	else if(strcmp(msg, "is_drunk_inside_inn") == 0)
+	{
+		return (IsSet(talker->data->flags, F_AI_DRUNKMAN) || IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
+			&& talker->locPart->partType == LocationPart::Type::Building && talker->locPart == gameLevel->cityCtx->FindInn();
+	}
+	else if(strcmp(msg, "is_drunk_before_contest") == 0)
+		return IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST) && questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "is_drunkmage") == 0)
 		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState < Quest_Mages2::State::MageCured;
 	else if(strcmp(msg, "is_guard") == 0)

@@ -3758,6 +3758,9 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 //=================================================================================================
 bool Level::CanSee(Unit& u1, Unit& u2)
 {
+	if(&u1 == &u2)
+		return true;
+
 	if(u1.locPart != u2.locPart)
 		return false;
 

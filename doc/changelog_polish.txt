@@ -13,6 +13,9 @@ Wersja 0.20 (???):
 - brak efektu uderzenia w cel treningowy u klienta
 - brak efektu uderzenia w cel treningowy przez npc
 - popsuty tekst newsa po wykonaniu zadania z bandytami pobierającymi opłatę
+- lepsze działanie wyszukiwarki lokalizacji
+- npc nie mógł rzucać leczenia na siebie w budynku
+- złe losowe pijane teksty npc w karczmie
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

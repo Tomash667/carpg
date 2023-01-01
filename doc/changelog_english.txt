@@ -13,6 +13,9 @@ Version 0.20 (???):
 - missing hit effect for client training targets
 - missing hit effect for npc training targets
 - bugged news text after completing bandits collect toll quest
+- better search box for locations
+- npc couldn't cast heal on himself inside building
+- wrong drunk idle texts inside inn
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

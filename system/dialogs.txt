@@ -4454,9 +4454,9 @@ dialog citizen_idle
 	}
 	else
 	{
-		if special "is_inside_inn"
+		if special "is_drunk_inside_inn"
 		{
-			if special "is_before_contest"
+			if special "is_drunk_before_contest"
 				talk 2
 			else if rand 3
 				talk 3
