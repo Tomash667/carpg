@@ -226,6 +226,7 @@ void GameResources::LoadData()
 	sItem[7] = resMgr->Load<Sound>("interface3.wav"); // other
 	sItem[8] = resMgr->Load<Sound>("amulet.mp3"); // amulet
 	sItem[9] = resMgr->Load<Sound>("ring.mp3"); // ring
+	sItem[10] = resMgr->Load<Sound>("splat.mp3"); // meat
 	sChestOpen = resMgr->Load<Sound>("chest_open.mp3");
 	sChestClose = resMgr->Load<Sound>("chest_close.mp3");
 	sDoorBudge = resMgr->Load<Sound>("door_budge.mp3");
@@ -665,6 +666,8 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_OTHER:
 		if(IsSet(item->flags, ITEM_CRYSTAL_SOUND))
 			return sItem[3];
+		else if(IsSet(item->flags, ITEM_MEAT_SOUND))
+			return sItem[10];
 		else
 			return sItem[7];
 	case IT_GOLD:
