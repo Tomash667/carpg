@@ -17,6 +17,7 @@
 #include "GameStats.h"
 #include "GroundItem.h"
 #include "Inventory.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "Language.h"
 #include "Level.h"
@@ -29,6 +30,7 @@
 #include "TeamPanel.h"
 
 #include <Engine.h>
+#include <GetNumberDialog.h>
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
@@ -108,6 +110,9 @@ void LevelGui::LoadLanguage()
 	txHealthPotionDesc = s.Get("healthPotionDesc");
 	txManaPotionDesc = s.Get("manaPotionDesc");
 	txSkipCutscene = s.Get("skipCutscene");
+	txRestPick = s.Get("restPick");
+	txDay = s.Get("day");
+	txDays = s.Get("days");
 	BuffInfo::LoadText();
 }
 
@@ -2224,4 +2229,25 @@ void LevelGui::SetBoss(Unit* boss, bool instant)
 		if(instant)
 			boss = nullptr;
 	}
+}
+
+//=================================================================================================
+void LevelGui::ShowRestDialog()
+{
+	counter = 1;
+	GetNumberDialogParams params(counter, 1, 60);
+	params.parent = this;
+	params.event = [this](int result)
+	{
+		const int days = result == BUTTON_OK ? counter : -1;
+		if(Net::IsLocal())
+			game->dialogContext.OnPickRestDays(days);
+		else
+		{
+			NetChange& c = Net::PushChange(NetChange::PICK_REST);
+			c.id = days;
+		}
+	};
+	params.getText = [this] { return Format(txRestPick, counter, counter == 1 ? txDay : txDays, ItemHelper::GetRestCost(counter)); };
+	GetNumberDialog::Show(params);
 }

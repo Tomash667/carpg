@@ -731,8 +731,12 @@ void InventoryPanel::Update(float dt)
 					{
 						// drop selected count
 						counter = 1;
+						GetNumberDialogParams params(counter, 1, slot->count);
+						params.parent = this;
+						params.event = DialogEvent(this, &InventoryPanel::OnDropItem);
+						params.text = base.txDropItemCount;
 						base.lock.Lock(iIndex, *slot);
-						base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
+						base.lockDialog = GetNumberDialog::Show(params);
 						lastIndex = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -844,8 +848,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnSellItem);
+							params.text = base.txSellItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -872,8 +880,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnBuyItem);
+							params.text = base.txBuyItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -900,8 +912,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnPutItem);
+							params.text = base.txPutItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -960,8 +976,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnLootItem);
+							params.text = base.txLootItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1014,9 +1034,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->teamCount);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnShareGiveItem);
+							params.text = base.txShareGiveItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
-								base.txShareGiveItemCount, 1, slot->teamCount, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1053,9 +1076,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->teamCount);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnShareTakeItem);
+							params.text = base.txShareTakeItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
-								1, slot->teamCount, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1142,9 +1168,12 @@ void InventoryPanel::Update(float dt)
 							else
 							{
 								counter = 1;
+								GetNumberDialogParams params(counter, 1, slot->count);
+								params.parent = this;
+								params.event = DialogEvent(this, &InventoryPanel::OnGivePotion);
+								params.text = base.txGivePotionCount;
 								base.lock.Lock(iIndex, *slot);
-								base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount,
-									1, slot->count, &counter);
+								base.lockDialog = GetNumberDialog::Show(params);
 								lastIndex = INDEX_INVALID;
 								if(mode == INVENTORY)
 									base.tooltip.Clear();
@@ -1216,12 +1245,24 @@ void InventoryPanel::Update(float dt)
 			if(mode == INVENTORY)
 				base.tooltip.Clear();
 			counter = 1;
+			GetNumberDialogParams params(counter, 1, unit->gold);
+			params.parent = this;
 			if(mode == INVENTORY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnDropGold);
+				params.text = base.txDropGoldCount;
+			}
 			else if(mode == LOOT_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutGold), base.txPutGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnPutGold);
+				params.text = base.txPutGoldCount;
+			}
 			else if(mode == GIVE_MY || mode == SHARE_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnGiveGold);
+				params.text = base.txGiveGoldCount;
+			}
+			GetNumberDialog::Show(params);
 		}
 	}
 }

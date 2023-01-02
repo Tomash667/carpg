@@ -611,115 +611,66 @@ dialog innkeeper
 	choice 12
 	{
 		talk 13
-		choice 14
-		{
-			talk 15
-			choice 16
-			{
-				special "rest1"
-				end
-			}
-			escape choice 17
-				restart
-			showChoices
-		}
-		choice 18
-		{
-			talk 19
-			choice 20
-			{
-				special "rest5"
-				end
-			}
-			escape choice 21
-				restart
-			showChoices
-		}
-		choice 22
-		{
-			talk 23
-			choice 24
-			{
-				special "rest10"
-				end
-			}
-			escape choice 25
-				restart
-			showChoices
-		}
-		choice 26
-		{
-			talk 27
-			choice 28
-			{
-				special "rest30"
-				end
-			}
-			escape choice 29
-				restart
-			showChoices
-		}
-		escape choice 30
-			restart
-		showChoices
+		special "rest_pick"
+		restart
 	}
-	choice 31
+	choice 14
 	{
 		if special "contest_done"
 		{
-			talk 32
+			talk 15
 			restart
 		}
 		if special "contest_here"
 		{
 			if special "contest_today"
 			{
-				talk 33
-				talk 34
-				choice 35
+				talk 16
+				talk 17
+				choice 18
 				{
 					special "contest_start"
-					talk 36
+					talk 19
 					end
 				}
-				escape choice 37
+				escape choice 20
 				{
-					talk 38
+					talk 21
 					restart
 				}
 				showChoices
 			}
 			else
 			{
-				talk 39
+				talk 22
 				restart
 			}
 		}
 		else
 		{
-			talk 40
+			talk 23
 			restart
 		}
 	}
-	choice 41
+	choice 24
 	{
-		talk 42
+		talk 25
 		restart
 	}
-	choice 43
+	choice 26
 	{
 		special "gossip"
 		restart
 	}
 	if haveItem q_szaleni_kamien
 	{
-		choice 44
+		choice 27
 		{
-			talk 45
+			talk 28
 			restart
 		}
 	}
-	escape choice 46
+	escape choice 29
 		end
 	showChoices
 }

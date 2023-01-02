@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Unit.h"
 #include "CreatedCharacter.h"
+#include "NetChangePlayer.h"
 
 //-----------------------------------------------------------------------------
 // Server side player info
@@ -54,6 +55,12 @@ struct PlayerInfo
 	vector<NetChangePlayer> changes;
 
 	PlayerInfo();
+	NetChangePlayer& PushChange(NetChangePlayer::TYPE type)
+	{
+		NetChangePlayer& c = Add1(changes);
+		c.type = type;
+		return c;
+	}
 	void UpdateGold() { updateFlags |= PlayerInfo::UF_GOLD; }
 	void Save(GameWriter& f);
 	void Load(GameReader& f);

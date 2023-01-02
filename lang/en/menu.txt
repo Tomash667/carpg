@@ -107,6 +107,9 @@ rangedWeaponDesc = "Draw ranged weapon."
 healthPotionDesc = "Drink best healing potion that will heal most damage."
 manaPotionDesc = "Drink best mana potion that will restore most mana."
 skipCutscene = "Esc - skip"
+restPick = "Do you want to rest %d %s for %d gold?"
+day = "day"
+days = "days"
 
 [Inventory]
 inventory = "Inventory"

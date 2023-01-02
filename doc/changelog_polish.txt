@@ -5,6 +5,7 @@ Wersja 0.20 (???):
 ! nie można wczytywać już zapisów z wersji 0.9 lub starszej
 + kontynuacja fabuły z 4 podzadaniami
 + zniszczalna barykada
++ można dokładnie wybrać ile dni chce się odpoczywać w karczmie
 + poprawki dla czaru ożywienia
 + konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
 + dodawanie wczytywanego zapisu do raportu z crasha

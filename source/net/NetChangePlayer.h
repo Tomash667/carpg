@@ -54,6 +54,7 @@ struct NetChangePlayer
 		AFTER_CRAFT, // after crafting - update ingredients, play sound
 		ADD_RECIPE, // add recipe to player [int(recipe->hash)]
 		END_PREPARE, // end prepare action []
+		PICK_REST, // show pick rest days dialog []
 
 		MAX
 	} type;

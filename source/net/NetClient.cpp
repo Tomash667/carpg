@@ -317,6 +317,7 @@ void Net::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::IS_BETTER_ITEM:
 		case NetChange::CONSUME_ITEM:
 		case NetChange::USE_ITEM:
+		case NetChange::PICK_REST:
 			f << c.id;
 			break;
 		case NetChange::TAKE_WEAPON:
@@ -4094,6 +4095,10 @@ bool Net::ProcessControlMessageClientForMe(BitStreamReader& f)
 		case NetChangePlayer::END_PREPARE:
 			if(pc.unit->action == A_PREPARE)
 				pc.unit->action = A_NONE;
+			break;
+		// show pick rest days dialog
+		case NetChangePlayer::PICK_REST:
+			gameGui->levelGui->ShowRestDialog();
 			break;
 		default:
 			Warn("Update single client: Unknown player change type %d.", type);

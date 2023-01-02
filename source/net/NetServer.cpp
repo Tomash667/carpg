@@ -2872,6 +2872,19 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
+		// response to pick rest days dialog
+		case NetChange::PICK_REST:
+			{
+				int days;
+				f >> days;
+				if(!f)
+				{
+					Error("Update server: Broken PICK_REST from %s.", info.name.c_str());
+					break;
+				}
+				player.dialogCtx->OnPickRestDays(days);
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3456,6 +3469,7 @@ void Net::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		case NetChangePlayer::END_FALLBACK:
 		case NetChangePlayer::AFTER_CRAFT:
 		case NetChangePlayer::END_PREPARE:
+		case NetChangePlayer::PICK_REST:
 			break;
 		case NetChangePlayer::START_TRADE:
 			f << c.id;

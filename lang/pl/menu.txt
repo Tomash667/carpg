@@ -107,6 +107,9 @@ rangedWeaponDesc = "Wyjmujesz broñ dystansowej."
 healthPotionDesc = "Wypij najlepsz¹ miksturê lecznicz¹ która wyleczy najwiêcej obra¿eñ."
 manaPotionDesc = "Wypij najlepsz¹ miksturê many która przywróci najwiêcej many."
 skipCutscene = "Esc - pomiñ"
+restPick = "Czy chcesz odpoczywaæ %d %s za %d sztuk z³ota?"
+day = "dzieñ"
+days = "dni"
 
 [Inventory]
 inventory = "Ekwipunek"
