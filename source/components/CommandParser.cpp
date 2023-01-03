@@ -101,7 +101,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
+	cmds.push_back(ConsoleCommand(CMD_QUICKSTART, "quickstart", "pick random character, get ready and start game", F_MENU | F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "breakAction", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
@@ -208,7 +208,10 @@ void CommandParser::ParseCommand(const string& commandStr, PrintMsgFunc printMsg
 				{
 					if(!IsSet(it->flags, F_MULTIPLAYER))
 					{
-						Msg("You can't use command '%s' in multiplayer.", token.c_str());
+						if(IsSet(it->flags, F_SINGLEPLAYER))
+							Msg("You can't use command '%s' in multiplayer.", token.c_str());
+						else
+							Msg("You can't use command '%s' in game.", token.c_str());
 						return;
 					}
 					else if(IsSet(it->flags, F_SERVER) && !Net::IsServer())
@@ -229,7 +232,10 @@ void CommandParser::ParseCommand(const string& commandStr, PrintMsgFunc printMsg
 				{
 					if(!IsSet(it->flags, F_SINGLEPLAYER))
 					{
-						Msg("You can't use command '%s' in singleplayer.", token.c_str());
+						if(IsSet(it->flags, F_MULTIPLAYER))
+							Msg("You can't use command '%s' in singleplayer.", token.c_str());
+						else
+							Msg("You can't use command '%s' in game.", token.c_str());
 						return;
 					}
 				}
@@ -1252,9 +1258,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			Msg(s);
 		}
 		break;
-	case CMD_QS:
-		if(!gameGui->server->Quickstart())
-			Msg("Not everyone is ready.");
+	case CMD_QUICKSTART:
+		if(gameGui->server->visible)
+		{
+			if(!gameGui->server->Quickstart())
+				Msg("Not everyone is ready.");
+		}
+		else
+			game->StartQuickGame();
 		break;
 	case CMD_CLEAR:
 		switch(source)
