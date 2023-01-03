@@ -309,7 +309,12 @@ void Game::UpdateAi(float dt)
 								if(&target == &u)
 									prio *= 1.5f;
 								if(!target.IsAlive())
-									prio /= 10;
+								{
+									if(Any(ai.state, AIController::Fighting, AIController::Dodge, AIController::Block, AIController::Wait))
+										continue; // don't waste time healing "dead" allies
+									else
+										prio *= 10;
+								}
 								prio -= dist * 10;
 								if(prio > bestPrio)
 								{
@@ -801,6 +806,7 @@ void Game::UpdateAi(float dt)
 								what = Rand() % 3;
 							else
 								what = Rand() % 2 + 1;
+
 							switch(what)
 							{
 							case 0: // drink
@@ -834,18 +840,10 @@ void Game::UpdateAi(float dt)
 								what = Rand() % 2;
 							else
 								what = 1;
-							switch(what)
-							{
-							case 0: // drink
-								u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
-								ai.timer = Random(10.f, 15.f);
-								break;
-							case 1: // eat
-								u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
-								ai.timer = Random(10.f, 15.f);
-								break;
-							}
+
+							u.ConsumeItem(ItemList::GetItem(what == 0 ? "drink" : "normal_food")->ToConsumable());
 							ai.st.idle.action = AIController::Idle_Use;
+							ai.timer = Random(10.f, 15.f);
 						}
 						else
 						{
@@ -1098,7 +1096,6 @@ void Game::UpdateAi(float dt)
 									ai.timer = Random(3.f, 6.f);
 									if(ai.st.idle.usable->base == stool && Rand() % 3 == 0)
 										ai.st.idle.action = AIController::Idle_WalkUseEat;
-									uses.clear();
 									break;
 								}
 							}

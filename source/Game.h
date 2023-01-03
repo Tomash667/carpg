@@ -111,6 +111,7 @@ public:
 	void SetTitle(cstring mode, bool initial = false);
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
+	void CrashCallback();
 
 	// initialization & loading
 	void PreconfigureGame();
@@ -295,6 +296,7 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE gameState, prevGameState;
 	PlayerController* pc;
+	string savePath;
 	bool testing, endOfGame, deathSolo, cutscene, inLoad;
 	int deathScreen;
 	float deathFade, gameSpeed;

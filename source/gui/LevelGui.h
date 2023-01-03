@@ -95,6 +95,7 @@ public:
 	void SetCutsceneImage(Texture* tex, float time);
 	void SetCutsceneText(const string& text, float time);
 	void SetBoss(Unit* boss, bool instant);
+	void ShowRestDialog();
 
 	Int2 dialogCursorPos;
 	bool useCursor;
@@ -152,7 +153,7 @@ private:
 	vector<BuffImage> buffImages;
 	vector<SortedUnitView> sortedUnits;
 	float buffScale, sidebar, cutsceneImageTimer, cutsceneTextTimer, bossAlpha;
-	int sidebarState[(int)SideButtonId::Max], dragAndDrop, dragAndDropType, dragAndDropIndex;
+	int sidebarState[(int)SideButtonId::Max], dragAndDrop, dragAndDropType, dragAndDropIndex, counter;
 	CutsceneState cutsceneImageState, cutsceneTextState;
 	Int2 dragAndDropPos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
@@ -166,7 +167,7 @@ private:
 	string cutsceneText;
 	vector<pair<string, float>> cutsceneNextTexts;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
-		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene;
+		txHealthPotion, txManaPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txHealthPotionDesc, txManaPotionDesc, txSkipCutscene, txRestPick, txDay, txDays;
 	Int2 debugInfoSize, dialogPos, dialogSize;
 	vector<UnitView> unitViews;
 	bool debugInfo, debugInfo2, bossState;

@@ -17,6 +17,7 @@
 #include "GameStats.h"
 #include "GroundItem.h"
 #include "Inventory.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "Language.h"
 #include "Level.h"
@@ -29,6 +30,7 @@
 #include "TeamPanel.h"
 
 #include <Engine.h>
+#include <GetNumberDialog.h>
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
@@ -108,6 +110,9 @@ void LevelGui::LoadLanguage()
 	txHealthPotionDesc = s.Get("healthPotionDesc");
 	txManaPotionDesc = s.Get("manaPotionDesc");
 	txSkipCutscene = s.Get("skipCutscene");
+	txRestPick = s.Get("restPick");
+	txDay = s.Get("day");
+	txDays = s.Get("days");
 	BuffInfo::LoadText();
 }
 
@@ -443,14 +448,18 @@ void LevelGui::DrawFront()
 				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
+			Rect r2 = { r.Left() + 5, r.Top() - off, r.Right() - 5, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game->dialogContext.dialogText)
+		{
+			r.Left() += 5;
+			r.Right() -= 5;
 			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		}
 	}
 
 	// health bar
@@ -673,6 +682,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
+
 			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
@@ -2219,4 +2229,25 @@ void LevelGui::SetBoss(Unit* boss, bool instant)
 		if(instant)
 			boss = nullptr;
 	}
+}
+
+//=================================================================================================
+void LevelGui::ShowRestDialog()
+{
+	counter = 1;
+	GetNumberDialogParams params(counter, 1, 60);
+	params.parent = this;
+	params.event = [this](int result)
+	{
+		const int days = result == BUTTON_OK ? counter : -1;
+		if(Net::IsLocal())
+			game->dialogContext.OnPickRestDays(days);
+		else
+		{
+			NetChange& c = Net::PushChange(NetChange::PICK_REST);
+			c.id = days;
+		}
+	};
+	params.getText = [this] { return Format(txRestPick, counter, counter == 1 ? txDay : txDays, ItemHelper::GetRestCost(counter)); };
+	GetNumberDialog::Show(params);
 }

@@ -548,6 +548,7 @@ quest main_village1 {
 		3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
 		4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
 		5 "I returned the diary to $(cleric.realName) and got rewarded for it. Quest done!"
+		6 "All the residents of $(village.name) have disappeared somewhere..."
 	}
 }
 
@@ -562,6 +563,7 @@ quest main_village2 {
 		5 "I found some strange crystal on the soltys's body. Maybe it is responsible for this plague?"
 		6 "I did all I could. Time to go back to $(cleric.realName)."
 		7 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		8 "The plague has hit $(village.name). Nobody survived..."
 	}
 }
 
@@ -587,6 +589,7 @@ quest main_village3 {
 		6 "I found some strange herbs. Did they cause the plague?"
 		7 "I did all I could. Time to go back to $(cleric.realName)."
 		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		9 "In $(village.name), infected residents fought with other residents. Fortunately, the situation was brought under control. At least that's what I heard..."
 	}
 }
 
@@ -617,5 +620,6 @@ quest main_village4 {
 		7 "The old man claims he has lost his memory and asked me to take him to any village or town."
 		8 "I led the old man to $(Level::location.name). He thanked me and headed towards the inn. Time to go back to $(cleric.realName)."
 		9 "I passed $(cleric.realName) information and got rewarded for it. Quest done!"
+		10 "The plague has hit $(village.name). Nobody survived..."
 	}
 }

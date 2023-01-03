@@ -2991,7 +2991,7 @@ other q_infected_organ {
 	weight 0.3
 	value 0
 	tex "infectedOrgan.png"
-	flags {notShop notRandom}
+	flags {notShop notRandom meatSound}
 }
 
 other q_yellow_crystal {

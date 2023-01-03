@@ -35,7 +35,7 @@ public:
 	MeshPtr aArrow, aSkybox, aBag, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun,
 		aPortal, aDungeonDoor, mVine;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
-	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
+	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[11], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
 		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel, sCoughs;
 
 private:

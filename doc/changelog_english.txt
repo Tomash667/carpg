@@ -4,14 +4,22 @@ Changelog
 Version 0.20 (???):
 ! cannot load saves from version 0.9 or older
 + continued storyline with 4 subquests
-+ converted quests "kill animals", "dire wolf" to script
 + destroyable barricade
++ can pick exact value how long to rest in inn
 + improvements to raise spell
++ converted quests "kill animals", "dire wolf" to script
++ adding loading save file to crash report
 + update libraries: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
 - inconsistency in quest "kill animals" between dialog and received gold
 - adding notest on second page didn't work
 - missing hit effect for client training targets
 - missing hit effect for npc training targets
+- bugged news text after completing bandits collect toll quest
+- better search box for locations
+- npc couldn't cast heal on himself inside building
+- wrong drunk idle texts inside inn
+- incompatibility in world map between client and server
+- quest "kill animals" could pick already cleared location and there would be no enemies
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

@@ -603,20 +603,26 @@ void WorldMapGui::Event(GuiEvent e)
 			comboSearch.ClearItems();
 			if(str.length() < 3)
 				break;
-			int count = 0;
+
+			LocalVector<Location*> matchingLocations;
 			for(Location* loc : world->GetLocations())
 			{
 				if(!loc || loc->state == LS_HIDDEN || loc->state == LS_UNKNOWN)
 					continue;
 				if(StringContainsStringI(loc->name.c_str(), str.c_str()))
-				{
-					LocationElement* le = LocationElement::Get();
-					le->loc = loc;
-					comboSearch.AddItem(le);
-					++count;
-					if(count == 5)
-						break;
-				}
+					matchingLocations.push_back(loc);
+			}
+
+			std::sort(matchingLocations.begin(), matchingLocations.end(), [](Location* loc1, Location* loc2) -> bool
+			{
+				return strcmp(loc1->name.c_str(), loc2->name.c_str()) < 0;
+			});
+
+			for(uint i = 0; i < min(5u, matchingLocations.size()); ++i)
+			{
+				LocationElement* le = LocationElement::Get();
+				le->loc = matchingLocations[i];
+				comboSearch.AddItem(le);
 			}
 		}
 		break;

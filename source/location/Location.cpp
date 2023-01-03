@@ -125,7 +125,28 @@ void Location::Load(GameReader& f)
 	}
 	f >> pos;
 	f >> name;
-	f >> state;
+	if(LOAD_VERSION >= V_DEV)
+		f >> state;
+	else
+	{
+		old::LOCATION_STATE oldState;
+		f >> oldState;
+		switch(oldState)
+		{
+		case old::LS_VISITED:
+			state = LS_KNOWN;
+			break;
+		case old::LS_ENTERED:
+			state = LS_VISITED;
+			break;
+		case old::LS_CLEARED:
+			state = LS_CLEARED;
+			break;
+		default:
+			state = (LOCATION_STATE)oldState;
+			break;
+		}
+	}
 	if(LOAD_VERSION >= V_0_12)
 		f >> target;
 	int questId = f.Read<int>();

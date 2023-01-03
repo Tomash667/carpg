@@ -562,6 +562,7 @@ quest main_village1 {
 		3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
 		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
 		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+		6 "Wszyscy mieszkañcy $(village.name) gdzieœ zniknêli..."
 	}
 }
 
@@ -576,6 +577,7 @@ quest main_village2 {
 		5 "Znalaz³em jakiœ dziwny kryszta³ przy ciele so³tysa. Mo¿e to on odpowiada za t¹ zarazê?"
 		6 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
 		7 "Odda³em dziwny kryszta³ $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+		8 "Zaraza zaatakowa³a w $(village.name). Nikt nie prze¿y³..."
 	}
 }
 
@@ -601,6 +603,7 @@ quest main_village3 {
 		6 "Znalaz³em jakieœ dziwne zio³a. Czy to one wywo³a³y tê zarazê?"
 		7 "Zrobi³em tu wszystko co mog³em. Czas wracaæ do $(cleric.realName)."
 		8 "Odda³em dziwne zio³a $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+		9 "W $(village.name) zara¿eni mieszkañcy walczyli z pozosta³ymi mieszkañcami. Na szczêœcie sytuacjê uda³o siê opanowaæ. Przynajmniej tak s³ysza³em..."
 	}
 }
 
@@ -631,5 +634,6 @@ quest main_village4 {
 		7 "Starzec twierdzi ¿e straci³ pamiêæ i poprosi³ ¿ebym go zaprowadzi³ do dowolnej wioski lub miasta."
 		8 "Doprowadzi³em starca do $(Level::location.name). Podziêkowa³ mi i ruszy³ w stronê karczmy. Czas wracaæ do $(cleric.realName)."
 		9 "Przekaza³em informacje $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
+		10 "Zaraza zaatakowa³a w $(village.name). Nikt nie prze¿y³..."
 	}
 }

@@ -247,7 +247,11 @@ void CraftPanel::Event(GuiEvent e)
 		else
 		{
 			counter = 1;
-			GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+			GetNumberDialogParams params(counter, 1, max);
+			params.parent = this;
+			params.event = DialogEvent(this, &CraftPanel::OnCraft);
+			params.text = txCraftCount;
+			GetNumberDialog::Show(params);
 		}
 	}
 }

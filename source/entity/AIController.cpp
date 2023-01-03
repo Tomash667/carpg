@@ -414,24 +414,25 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(gameLevel->cityCtx && locTimer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(!gameLevel->cityCtx
+		|| locTimer > 0.f
+		|| game->dontWander
+		|| !IsSet(unit->data->flags, F_AI_WANDERS)
+		|| unit->busy != Unit::Busy_No
+		|| unit->GetOrder() == ORDER_WAIT)
+		return false;
+
+	if(unit->IsHero())
 	{
-		if(unit->busy != Unit::Busy_No)
+		if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
 			return false;
-		if(unit->IsHero())
-		{
-			if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
-				return false;
-			else if(questMgr->questTournament->IsGenerated())
-				return false;
-			else
-				return true;
-		}
-		else if(unit->locPart->partType == LocationPart::Type::Outside)
-			return true;
+		else if(questMgr->questTournament->IsGenerated())
+			return false;
 		else
-			return false;
+			return true;
 	}
+	else if(unit->locPart->partType == LocationPart::Type::Outside)
+		return true;
 	else
 		return false;
 }

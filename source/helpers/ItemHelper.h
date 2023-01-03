@@ -12,4 +12,5 @@ namespace ItemHelper
 	void SkipStock(GameReader& f);
 	void AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int priceLimit, int flags, uint count);
 	int CalculateReward(int level, const Int2& levelRange, const Int2& priceRange);
+	int GetRestCost(int days);
 }

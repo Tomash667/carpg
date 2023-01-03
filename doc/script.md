@@ -667,6 +667,7 @@ Static methods:
 * bool IsTutorial() - true when inside tutorial.
 * bool IsSafe() - true when current location is safe.
 * bool IsOutside() - true when current location is outside type.
+* bool CanSee(Unit@, Unit@) - true if one unit can see another.
 * Unit@ FindUnit(UnitData@) - finds unit with this unit data.
 * Unit@ GetNearestEnemy(Unit@) - finds nearest unit that is enemy of this unit.
 * GroundItem@ FindItem(Item@) - finds first item.

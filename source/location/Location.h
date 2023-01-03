@@ -77,6 +77,16 @@ namespace old
 		LT_MULTI_DUNGEON,
 		LT_CAMP
 	};
+
+	enum LOCATION_STATE
+	{
+		LS_HIDDEN,
+		LS_UNKNOWN,
+		LS_KNOWN,
+		LS_VISITED,
+		LS_ENTERED,
+		LS_CLEARED
+	};
 };
 
 //-----------------------------------------------------------------------------
@@ -86,7 +96,6 @@ enum LOCATION_STATE
 	LS_UNKNOWN,
 	LS_KNOWN,
 	LS_VISITED,
-	LS_ENTERED,
 	LS_CLEARED
 };
 
@@ -141,11 +150,6 @@ struct Location
 	bool ReadPortals(BitStreamReader& f, int atLevel);
 	LOCATION_IMAGE GetImage() const { return image; }
 	const string& GetName() const { return name; }
-	void SetVisited()
-	{
-		if(state == LS_KNOWN)
-			state = LS_VISITED;
-	}
 	void SetKnown();
 	void SetImage(LOCATION_IMAGE image);
 	void SetName(cstring name);

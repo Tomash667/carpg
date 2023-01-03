@@ -81,6 +81,13 @@ void Journal::Draw()
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawSpriteRect(tBook, r);
 
+	// regions
+	if(IsDebug() && input->Down(Key::B))
+	{
+		gui->DrawRect(Color::Red, rect);
+		gui->DrawRect(Color::Red, rect2);
+	}
+
 	// buttons
 	for(int i = 0; i < Max; ++i)
 	{

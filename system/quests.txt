@@ -435,9 +435,9 @@ quest deliver_resources
 		{
 			uint count = World::GetSettlements();
 			uint index = Rand() % count;
-			uint start_index = index;
-			int best_index = -1;
-			float best_dist = 0;
+			uint startIndex = index;
+			int bestIndex = -1;
+			float bestDist = 0;
 			while(true)
 			{
 				Location@ loc = World::GetLocation(index);
@@ -447,17 +447,17 @@ quest deliver_resources
 					float days = World::GetTravelDays(dist);
 					if(days >= 8 && days < 14)
 						return loc;
-					if(days < 10 && (best_index == -1 || best_dist < dist))
+					if(days < 10 && (bestIndex == -1 || bestDist < dist))
 					{
-						best_index = index;
-						best_dist = dist;
+						bestIndex = index;
+						bestDist = dist;
 					}
 				}
 				index = (index + 1) % count;
-				if(index == start_index)
+				if(index == startIndex)
 					break;
 			}
-			return World::GetLocation(best_index);
+			return World::GetLocation(bestIndex);
 		}
 
 		void SetProgress()
@@ -702,7 +702,7 @@ quest bandits_collect_toll
 			@startLoc = World::GetLocation(int(vars["startLoc"]));
 			@otherLoc = World::GetLocation(int(vars["otherLoc"]));
 			int startTime = int(vars["startTime"]);
-			int enc_index = int(vars["enc"]);
+			int encIndex = int(vars["enc"]);
 			bool inEnc = bool(vars["inEnc"]);
 
 			if(quest.state != Q_STARTED)
@@ -714,9 +714,9 @@ quest bandits_collect_toll
 			else if(progress == P_TOLL_STARTED)
 				progress = P_TOLL_ON_TIMEOUT;
 
-			if(enc_index != -1)
+			if(encIndex != -1)
 			{
-				Encounter@ enc = World::RecreateEncounter(quest, enc_index);
+				Encounter@ enc = World::RecreateEncounter(quest, encIndex);
 				enc.pos = (startLoc.pos + otherLoc.pos) / 2;
 				enc.dontAttack = true;
 				enc.text = TEXT(3);
@@ -977,6 +977,7 @@ quest kill_animals
 					@targetLoc.activeQuest = quest;
 					targetLoc.SetKnown();
 					targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+					targetLoc.reset = true;
 					if(targetLoc.st < 5)
 						targetLoc.st = 5;
 					st = targetLoc.st;
@@ -2130,7 +2131,7 @@ quest alchemist_apprentice
 			}
 		}
 
-		void SetProgress(int prev_progress)
+		void SetProgress(int prevProgress)
 		{
 			switch(progress)
 			{
@@ -2150,7 +2151,7 @@ quest alchemist_apprentice
 				target.OrderClear();
 				break;
 			case P_ALCH_JOINED:
-				if(prev_progress == P_ALCH_REFUSED)
+				if(prevProgress == P_ALCH_REFUSED)
 					quest.AddEntry(TEXT(5));
 				else
 					quest.AddEntry(TEXT(4));
@@ -2476,51 +2477,63 @@ quest main
 					if(Level::dungeonLevel == 0)
 					{
 						// find room for cleric
-						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
-						uint target_depth = 0;
+						array<Room@> path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
+						uint targetDepth = 0;
 						for(uint len = path.length(), i = len*2/3; i<len; ++i)
 						{
 							if(path[i].target != ROOM_CORRIDOR)
 							{
-								target_depth = i;
+								targetDepth = i;
 								break;
 							}
 						}
-						Room@ target_room = path[target_depth];
+						Room@ targetRoom = path[targetDepth];
 
 						// kill units on path
 						Unit@ player = Team::leader;
-						for(uint i=0; i<target_depth; ++i)
+						bool skip = false;
+						for(uint i=0; i<targetDepth; ++i)
 						{
-							array<Unit@>@ units = Level::GetUnits(path[i]);
+							array<Unit@> units = Level::GetUnits(path[i]);
 							for(uint j=0; j<units.length(); ++j)
 							{
 								Unit@ u = units[j];
-								if(u.IsEnemy(player) && Rand() % 2 == 0)
-									units[j].Kill();
+								if(u.IsEnemy(player))
+								{
+									if(skip || Rand() % 2 == 0)
+									{
+										u.Kill();
+										skip = false;
+									}
+									else
+										skip = true;
+								}
 							}
 						}
-						array<Unit@>@ units = Level::GetUnits(target_room);
-						for(uint j=0; j<units.length(); ++j)
-						{
-							Unit@ u = units[j];
-							if(u.IsEnemy(player))
-								units[j].Kill();
-						}
+						
 
 						// spawn dead guards
 						UnitData@ guard = UnitData::Get("guard");
-						Unit@ u = Level::SpawnUnit(target_room, guard);
-						u.Kill();
-						@u = Level::SpawnUnit(path[target_depth == 0 ? 0 : target_depth - 1], guard);
-						u.Kill();
+						Unit@ uGuard = Level::SpawnUnit(targetRoom, guard);
+						uGuard.Kill();
+						@uGuard = Level::SpawnUnit(path[targetDepth == 0 ? 0 : targetDepth - 1], guard);
+						uGuard.Kill();
 
 						// spawn cleric
-						Vec3 pos = Level::FindSpawnPos(target_room, cleric);
+						Vec3 pos = Level::FindSpawnPos(targetRoom, cleric);
 						cleric.MoveToLocation(Level::location.locPart, pos);
 						cleric.AddDialog(quest, "cleric");
 						cleric.dontAttack = true;
 						cleric.OrderAutoTalk();
+						
+						// kill nearby units
+						array<Unit@> units = Level::GetNearbyUnits(cleric.pos, 20);
+						for(uint j=0; j<units.length(); ++j)
+						{
+							Unit@ u = units[j];
+							if(u.IsEnemy(player) && Level::CanSee(cleric, u))
+								u.Kill();
+						}
 					}
 					else
 					{
@@ -2578,6 +2591,7 @@ quest main
 							LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
 							Vec3 pos = Level::FindSpawnPos(locPart, cleric);
 							cleric.MoveToLocation(locPart, pos);
+							cleric.OrderWait();
 						}
 						break;
 					}
@@ -2702,6 +2716,7 @@ quest main
 					LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
 					Vec3 pos = Level::FindSpawnPos(locPart, cleric);
 					cleric.MoveToLocation(locPart, pos);
+					cleric.OrderWait();
 				}
 				else
 				{
@@ -2714,7 +2729,7 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					array<int>@ quests = { 1, 2, 3, 4 };
+					array<int> quests = { 1, 2, 3, 4 };
 					quests.shuffle();
 					villages.resize(4);
 					
@@ -2864,6 +2879,9 @@ quest dire_wolf
 				@forest.activeQuest = quest;
 				forest.AddEventHandler(quest, EVENT_ENTER);
 				forest.SetKnown();
+				forest.reset = true;
+				if(forest.st < 5)
+					forest.st = 5;
 
 				quest.SetStarted(TEXT(0));
 				quest.AddEntry(TEXT(1));
@@ -3000,6 +3018,7 @@ quest main_village1
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("book_q_journal"));
 				Team::AddReward(1000, 3000);
+				World::AddNews(TEXT(6));
 				break;
 			}
 		}
@@ -3090,6 +3109,7 @@ quest main_village2
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
 				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(8));
 				break;
 			}
 		}
@@ -3232,6 +3252,7 @@ quest main_village3
 				quest.SetCompleted();
 				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
 				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(9));
 				break;
 			}
 		}
@@ -3455,6 +3476,7 @@ quest main_village4
 				quest.AddEntry(TEXT(9));
 				quest.SetCompleted();
 				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(10));
 				break;
 			}
 		}
