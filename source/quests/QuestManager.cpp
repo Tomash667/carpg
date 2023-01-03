@@ -639,7 +639,7 @@ void QuestManager::Load(GameReader& f)
 		q = FindQuest(f.Read<int>(), false);
 
 	// timers
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 	{
 		timers.resize(f.Read<uint>());
 		for(pair<Quest2*, int>& timer : timers)
@@ -664,7 +664,7 @@ void QuestManager::Load(GameReader& f)
 	}
 
 	// item event handlers
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 	{
 		itemEventHandlers.resize(f.Read<uint>());
 		for(pair<Quest2*, const Item*>& p : itemEventHandlers)

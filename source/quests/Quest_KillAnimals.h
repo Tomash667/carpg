@@ -4,7 +4,7 @@
 #include "Quest2.h"
 
 //-----------------------------------------------------------------------------
-// Converted to script in V_DEV
+// Converted to script in V_0_20
 class Quest_KillAnimals final : public Quest2, public LocationEventHandler
 {
 public:

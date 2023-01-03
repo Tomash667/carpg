@@ -51,7 +51,7 @@ quest global_init
 	type unique
 	flags dontCount
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		artifactsLoc artifacts_loc
 	}
@@ -238,7 +238,7 @@ quest deliver_letter
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		endLoc end_loc
@@ -412,7 +412,7 @@ quest deliver_resources
 		end2
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		targetLoc target_loc
@@ -625,7 +625,7 @@ quest bandits_collect_toll
 		showChoices
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		otherLoc other_loc
@@ -785,7 +785,7 @@ quest camp_near_city
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 	}
@@ -1111,7 +1111,7 @@ quest find_artifact
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		targetLoc target_loc
@@ -1808,7 +1808,7 @@ quest alchemist_apprentice
 		}
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		lastItem last_item
 		lastPos last_pos
@@ -2230,7 +2230,7 @@ quest main
 		end2
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		shrineLoc shrine_loc
 	}
