@@ -329,8 +329,7 @@ void CraftPanel::OnCraft(int id)
 	}
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CRAFT;
+		NetChange& c = Net::PushChange(NetChange::CRAFT);
 		c.recipe = recipe;
 		c.count = counter;
 	}
@@ -389,8 +388,7 @@ bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint co
 	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
 	player.Train(TrainWhat::Craft, value, 0);
 
-	NetChangePlayer& c = Add1(player.playerInfo->changes);
-	c.type = NetChangePlayer::AFTER_CRAFT;
+	player.playerInfo->PushChange(NetChangePlayer::AFTER_CRAFT);
 
 	return true;
 }

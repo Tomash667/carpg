@@ -74,8 +74,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 		game->arena->units.push_back(ctx.talker);
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_ARENA_STATE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 			c.unit = ctx.talker;
 		}
 
@@ -85,8 +84,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 			game->arena->units.push_back(&unit);
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 				c.unit = &unit;
 			}
 		}
@@ -191,8 +189,7 @@ void Quest_Secret::UpdateFight()
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 				c.unit = unit;
 			}
 		}
@@ -200,8 +197,7 @@ void Quest_Secret::UpdateFight()
 		arena->units[0]->hp = arena->units[0]->hpmax;
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = arena->units[0];
 		}
 

@@ -321,8 +321,7 @@ void Item::CreateCopy(Item& item) const
 
 	if(Net::IsServer() || net->mpLoad)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REGISTER_ITEM;
+		NetChange& c = Net::PushChange(NetChange::REGISTER_ITEM);
 		c.item2 = &item;
 		c.baseItem = this;
 	}
@@ -382,8 +381,7 @@ void Item::Rename(cstring name)
 	this->name = name;
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RENAME_ITEM;
+		NetChange& c = Net::PushChange(NetChange::RENAME_ITEM);
 		c.baseItem = this;
 	}
 }

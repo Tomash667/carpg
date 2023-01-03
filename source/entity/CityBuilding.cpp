@@ -59,8 +59,7 @@ void CityBuilding::SetCanEnter(bool value)
 		inside->canEnter = value;
 		if(gameLevel->ready && Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SET_CAN_ENTER;
+			NetChange& c = Net::PushChange(NetChange::SET_CAN_ENTER);
 			c.id = inside->partId;
 			c.count = value ? 1 : 0;
 		}

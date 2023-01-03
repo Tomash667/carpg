@@ -1427,8 +1427,7 @@ void Game::UpdateServerTransfer(float dt)
 				else
 				{
 					// too many team members, kick ai
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HERO_LEAVE;
+					NetChange& c = Net::PushChange(NetChange::HERO_LEAVE);
 					c.unit = unit;
 
 					gameGui->mpBox->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));

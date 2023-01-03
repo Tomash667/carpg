@@ -760,8 +760,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ENCOUNTER;
+		NetChange& c = Net::PushChange(NetChange::ENCOUNTER);
 		c.str = StringPool.Get();
 		*c.str = text;
 

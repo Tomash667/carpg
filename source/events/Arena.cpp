@@ -117,8 +117,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 			}
 			else
 			{
-				NetChangePlayer& c = Add1(nearPlayers[id]->player->playerInfo->changes);
-				c.type = NetChangePlayer::PVP;
+				NetChangePlayer& c = nearPlayers[id]->player->playerInfo->PushChange(NetChangePlayer::PVP);
 				c.id = ctx.pc->id;
 			}
 
@@ -245,8 +244,7 @@ void Arena::UpdatePvpRequest(float dt)
 					gameGui->AddMsg(Format(game->txPvpRefuse, pvpResponse.to->player->name.c_str()));
 				else
 				{
-					NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
-					c.type = NetChangePlayer::NO_PVP;
+					NetChangePlayer& c = pvpResponse.from->player->playerInfo->PushChange(NetChangePlayer::NO_PVP);
 					c.id = pvpResponse.to->player->id;
 				}
 			}
@@ -279,8 +277,7 @@ void Arena::StartArenaCombat(int level)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
-		c.type = NetChangePlayer::ENTER_ARENA;
+		ctx.pc->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 		ctx.pc->arenaFights++;
 	}
 
@@ -290,8 +287,7 @@ void Arena::StartArenaCombat(int level)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_ARENA_STATE;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 		c.unit = ctx.pc->unit;
 	}
 
@@ -316,13 +312,9 @@ void Arena::StartArenaCombat(int level)
 				game->fallbackTimer = -1.f;
 			}
 			else
-			{
-				NetChangePlayer& c = Add1(unit.player->playerInfo->changes);
-				c.type = NetChangePlayer::ENTER_ARENA;
-			}
+				unit.player->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_ARENA_STATE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 			c.unit = &unit;
 		}
 		else if(unit.IsHero() && unit.CanFollowWarp() && !unit.dontAttack)
@@ -333,8 +325,7 @@ void Arena::StartArenaCombat(int level)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 				c.unit = &unit;
 			}
 		}
@@ -395,8 +386,7 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 				gameGui->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
 			else
 			{
-				NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
-				c.type = NetChangePlayer::NO_PVP;
+				NetChangePlayer& c = pvpResponse.from->player->playerInfo->PushChange(NetChangePlayer::NO_PVP);
 				c.id = pvpResponse.to->player->id;
 			}
 		}
@@ -427,10 +417,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 		game->fallbackTimer = -1.f;
 	}
 	else
-	{
-		NetChangePlayer& c = Add1(player->playerInfo->changes);
-		c.type = NetChangePlayer::ENTER_ARENA;
-	}
+		player->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 
 	// fallback postaci
 	if(unit->IsPlayer())
@@ -441,10 +428,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 			game->fallbackTimer = -1.f;
 		}
 		else
-		{
-			NetChangePlayer& c = Add1(unit->player->playerInfo->changes);
-			c.type = NetChangePlayer::ENTER_ARENA;
-		}
+			unit->player->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 	}
 
 	// dodaj do areny
@@ -513,8 +497,7 @@ void Arena::Update(float dt)
 					units[0]->inArena = 0;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
+						NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 						c.unit = units[0];
 					}
 					if(units.size() >= 2)
@@ -522,8 +505,7 @@ void Arena::Update(float dt)
 						units[1]->inArena = 1;
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
+							NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 							c.unit = units[1];
 						}
 					}
@@ -550,8 +532,7 @@ void Arena::Update(float dt)
 				soundMgr->PlaySound2d(gameRes->sArenaFight);
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ARENA_SOUND;
+				NetChange& c = Net::PushChange(NetChange::ARENA_SOUND);
 				c.id = 0;
 			}
 			state = IN_PROGRESS;
@@ -559,10 +540,7 @@ void Arena::Update(float dt)
 			{
 				(*it)->frozen = FROZEN::NO;
 				if((*it)->IsPlayer() && (*it)->player != game->pc)
-				{
-					NetChangePlayer& c = Add1((*it)->player->playerInfo->changes);
-					c.type = NetChangePlayer::START_ARENA_COMBAT;
-				}
+					(*it)->player->playerInfo->PushChange(NetChangePlayer::START_ARENA_COMBAT);
 			}
 		}
 	}
@@ -623,8 +601,7 @@ void Arena::Update(float dt)
 				soundMgr->PlaySound2d(victorySound ? gameRes->sArenaWin : gameRes->sArenaLost);
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ARENA_SOUND;
+				NetChange& c = Net::PushChange(NetChange::ARENA_SOUND);
 				c.id = victorySound ? 1 : 2;
 			}
 		}
@@ -645,10 +622,7 @@ void Arena::Update(float dt)
 						game->fallbackTimer = -1.f;
 					}
 					else
-					{
-						NetChangePlayer& c = Add1((*it)->player->playerInfo->changes);
-						c.type = NetChangePlayer::EXIT_ARENA;
-					}
+						(*it)->player->playerInfo->PushChange(NetChangePlayer::EXIT_ARENA);
 				}
 			}
 
@@ -703,8 +677,7 @@ void Arena::Update(float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
+						NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 						c.unit = unit;
 					}
 				}
@@ -722,8 +695,7 @@ void Arena::Update(float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
+						NetChange& c = Net::PushChange(NetChange::CHANGE_ARENA_STATE);
 						c.unit = unit;
 					}
 				}
@@ -793,15 +765,13 @@ void Arena::PvpEvent(int id)
 		else
 		{
 			// nie akceptuj pvp
-			NetChangePlayer& c = Add1(pvpResponse.from->player->playerInfo->changes);
-			c.type = NetChangePlayer::NO_PVP;
+			NetChangePlayer& c = pvpResponse.from->player->playerInfo->PushChange(NetChangePlayer::NO_PVP);
 			c.id = pvpResponse.to->player->id;
 		}
 	}
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PVP;
+		NetChange& c = Net::PushChange(NetChange::PVP);
 		c.unit = pvpUnit;
 		if(id == BUTTON_YES)
 			c.id = 1;

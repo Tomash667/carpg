@@ -175,8 +175,7 @@ public:
 	void OnChangeLevel(int level);
 	void OnLeaveLocation(int where)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::LEAVE_LOCATION;
+		NetChange& c = PushChange(NetChange::LEAVE_LOCATION);
 		c.id = where;
 	}
 

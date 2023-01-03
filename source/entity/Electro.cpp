@@ -157,8 +157,7 @@ bool Electro::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ELECTRO_HIT;
+				NetChange& c = Net::PushChange(NetChange::ELECTRO_HIT);
 				c.pos = targetPos;
 			}
 
@@ -176,8 +175,7 @@ bool Electro::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_ELECTRO;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_ELECTRO);
 					c.extraId = id;
 					c.pos = to;
 				}
@@ -225,8 +223,7 @@ bool Electro::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ELECTRO_HIT;
+				NetChange& c = Net::PushChange(NetChange::ELECTRO_HIT);
 				c.pos = targetPos;
 			}
 		}

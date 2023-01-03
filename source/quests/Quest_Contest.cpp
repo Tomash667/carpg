@@ -224,8 +224,7 @@ void Quest_Contest::Update(float dt)
 				u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				if(u.player != game->pc)
 				{
-					NetChangePlayer& c = Add1(u.player->playerInfo->changes);
-					c.type = NetChangePlayer::LOOK_AT;
+					NetChangePlayer& c = u.player->playerInfo->PushChange(NetChangePlayer::LOOK_AT);
 					c.id = -1;
 				}
 			}
@@ -320,8 +319,7 @@ void Quest_Contest::Update(float dt)
 					u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 					if(u.IsPlayer() && u.player != game->pc)
 					{
-						NetChangePlayer& c = Add1(u.player->playerInfo->changes);
-						c.type = NetChangePlayer::LOOK_AT;
+						NetChangePlayer& c = u.player->playerInfo->PushChange(NetChangePlayer::LOOK_AT);
 						c.id = innkeeper.id;
 					}
 					u.busy = Unit::Busy_Yes;
@@ -527,8 +525,7 @@ void Quest_Contest::Update(float dt)
 						u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != game->pc)
 						{
-							NetChangePlayer& c = Add1(u.player->playerInfo->changes);
-							c.type = NetChangePlayer::LOOK_AT;
+							NetChangePlayer& c = u.player->playerInfo->PushChange(NetChangePlayer::LOOK_AT);
 							c.id = -1;
 						}
 					}
@@ -554,8 +551,7 @@ void Quest_Contest::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != game->pc)
 		{
-			NetChangePlayer& c = Add1(unit->player->playerInfo->changes);
-			c.type = NetChangePlayer::LOOK_AT;
+			NetChangePlayer& c = unit->player->playerInfo->PushChange(NetChangePlayer::LOOK_AT);
 			c.id = -1;
 		}
 	}

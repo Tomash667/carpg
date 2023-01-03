@@ -1336,8 +1336,7 @@ void Game::PauseGame()
 	if(Net::IsOnline())
 	{
 		gameGui->mpBox->Add(paused ? txGamePaused : txGameResumed);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PAUSED;
+		NetChange& c = Net::PushChange(NetChange::PAUSED);
 		c.id = (paused ? 1 : 0);
 		if(paused && gameState == GS_WORLDMAP && world->GetState() == World::State::TRAVEL)
 			Net::PushChange(NetChange::UPDATE_MAP_POS);
@@ -1655,8 +1654,7 @@ void Game::CutsceneStart(bool instant)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_START;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_START);
 		c.id = (instant ? 1 : 0);
 	}
 }
@@ -1678,8 +1676,7 @@ void Game::CutsceneImage(const string& image, float time)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_IMAGE;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_IMAGE);
 		c.str = StringPool.Get();
 		*c.str = image;
 		c.f[0] = time;
@@ -1695,8 +1692,7 @@ void Game::CutsceneText(const string& text, float time)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_TEXT;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_TEXT);
 		c.str = StringPool.Get();
 		*c.str = text;
 		c.f[0] = time;
@@ -1717,10 +1713,7 @@ void Game::CutsceneEnded(bool cancel)
 	if(cancel)
 	{
 		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CUTSCENE_SKIP;
-		}
+			Net::PushChange(NetChange::CUTSCENE_SKIP);
 
 		if(Net::IsClient())
 			return;
@@ -1840,8 +1833,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_WARP_TO_ENTRY);
 						c.id = 0;
 					}
 				}
@@ -1855,8 +1847,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_CHANGE_LEVEL;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_CHANGE_LEVEL);
 						c.id = 0;
 					}
 				}
@@ -1876,8 +1867,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_WARP_TO_ENTRY);
 						c.id = 1;
 					}
 				}
@@ -1891,8 +1881,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_CHANGE_LEVEL;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_CHANGE_LEVEL);
 						c.id = 1;
 					}
 				}
@@ -2044,8 +2033,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallbackType = FALLBACK::CLIENT;
 					fallbackTimer = 0.f;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRAIN;
+					NetChange& c = Net::PushChange(NetChange::TRAIN);
 					c.id = fallbackValue;
 					c.count = fallbackValue2;
 				}
@@ -2063,8 +2051,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallbackType = FALLBACK::CLIENT;
 					fallbackTimer = 0.f;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REST;
+					NetChange& c = Net::PushChange(NetChange::REST);
 					c.id = fallbackValue;
 				}
 				break;
@@ -3489,8 +3476,7 @@ void Game::RemoveUnit(Unit* unit)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT);
 		c.id = unit->id;
 	}
 }
@@ -3525,8 +3511,7 @@ void Game::OnCloseInventory()
 		{
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
+				NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 				c.unit = pc->unit;
 				c.id = pc->unit->usable->id;
 				c.count = USE_USABLE_END;

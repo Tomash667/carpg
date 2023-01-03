@@ -85,8 +85,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(net->changes);
-		c.type = NetChange::REMOVE_BULLET;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_BULLET);
 		c.id = id;
 		c.extraId = (hitted != nullptr ? 1 : 0);
 	}
@@ -142,8 +141,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					soundMgr->PlaySound3d(ability->soundHit, hitpoint, ability->soundHitDist);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SPELL_SOUND;
+						NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 						c.extraId = 1;
 						c.ability = ability;
 						c.pos = hitpoint;

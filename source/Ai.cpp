@@ -231,8 +231,7 @@ void Game::UpdateAi(float dt)
 				u.meshInst->Deactivate(1);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ATTACK;
+					NetChange& c = Net::PushChange(NetChange::ATTACK);
 					c.unit = &u;
 					c.id = AID_Cancel;
 					c.f[1] = 1.f;
@@ -430,8 +429,7 @@ void Game::UpdateAi(float dt)
 					u.meshInst->Deactivate(1);
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = &u;
 						c.id = AID_Cancel;
 						c.f[1] = 1.f;
@@ -1109,8 +1107,7 @@ void Game::UpdateAi(float dt)
 								u.animation = ANI_IDLE;
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::IDLE;
+									NetChange& c = Net::PushChange(NetChange::IDLE);
 									c.unit = &u;
 									c.id = id;
 								}
@@ -1311,8 +1308,7 @@ void Game::UpdateAi(float dt)
 
 									if(Net::IsOnline())
 									{
-										NetChange& c = Add1(Net::changes);
-										c.type = NetChange::TALK;
+										NetChange& c = Net::PushChange(NetChange::TALK);
 										c.unit = &u;
 										c.str = StringPool.Get();
 										*c.str = msg;
@@ -1429,8 +1425,7 @@ void Game::UpdateAi(float dt)
 										}
 										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::USE_USABLE;
+											NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 											c.unit = &u;
 											c.id = use.id;
 											c.count = (readPapers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
@@ -1725,8 +1720,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CAST_SPELL;
+									NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 									c.unit = &u;
 									c.ability = &ability;
 								}
@@ -1857,8 +1851,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ATTACK;
+									NetChange& c = Net::PushChange(NetChange::ATTACK);
 									c.unit = &u;
 									c.id = AID_Block;
 									c.f[1] = speed;
@@ -2261,8 +2254,7 @@ void Game::UpdateAi(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
+								NetChange& c = Net::PushChange(NetChange::ATTACK);
 								c.unit = &u;
 								c.id = AID_Bash;
 								c.f[1] = speed;
@@ -2283,8 +2275,7 @@ void Game::UpdateAi(float dt)
 					ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = &u;
 						c.id = AID_Cancel;
 						c.f[1] = 1.f;
@@ -2421,8 +2412,7 @@ void Game::UpdateAi(float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CAST_SPELL;
+						NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 						c.unit = &u;
 						c.ability = &ability;
 					}

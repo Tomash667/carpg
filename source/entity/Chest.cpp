@@ -134,8 +134,7 @@ bool Chest::AddItem(const Item* item, uint count, uint teamCount, bool notify)
 			gameGui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
-			NetChangePlayer& c = Add1(user->player->playerInfo->changes);
-			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
+			NetChangePlayer& c = user->player->playerInfo->PushChange(NetChangePlayer::ADD_ITEMS_CHEST);
 			c.item = item;
 			c.id = id;
 			c.count = count;
@@ -160,8 +159,7 @@ void Chest::OpenClose(Unit* unit)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_CHEST;
+			NetChange& c = Net::PushChange(NetChange::USE_CHEST);
 			c.id = id;
 			c.count = unit->id;
 		}
@@ -175,8 +173,7 @@ void Chest::OpenClose(Unit* unit)
 		soundMgr->PlaySound3d(gameRes->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_CHEST;
+			NetChange& c = Net::PushChange(NetChange::USE_CHEST);
 			c.id = id;
 			c.count = -1;
 		}

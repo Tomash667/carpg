@@ -477,8 +477,7 @@ int World::AddLocation(Location* loc)
 				loc->index = index;
 				if(Net::IsOnline() && !net->prepareWorld)
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_LOCATION;
+					NetChange& c = Net::PushChange(NetChange::ADD_LOCATION);
 					c.id = index;
 				}
 				return index;
@@ -491,8 +490,7 @@ int World::AddLocation(Location* loc)
 	{
 		if(Net::IsOnline() && !net->prepareWorld)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ADD_LOCATION;
+			NetChange& c = Net::PushChange(NetChange::ADD_LOCATION);
 			c.id = locations.size();
 		}
 		loc->index = locations.size();
@@ -2264,8 +2262,7 @@ void World::Travel(int index, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::TRAVEL);
 		c.id = index;
 	}
 }
@@ -2298,8 +2295,7 @@ void World::TravelPos(const Vec2& pos, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TRAVEL_POS;
+		NetChange& c = Net::PushChange(NetChange::TRAVEL_POS);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2538,8 +2534,7 @@ void World::StopTravel(const Vec2& pos, bool send)
 	state = State::ON_MAP;
 	if(Net::IsOnline() && send)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STOP_TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::STOP_TRAVEL);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2583,8 +2578,7 @@ void World::Warp(int index, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::CHEAT_TRAVEL);
 		c.id = index;
 	}
 }
@@ -2606,8 +2600,7 @@ void World::WarpPos(const Vec2& pos, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_TRAVEL_POS;
+		NetChange& c = Net::PushChange(NetChange::CHEAT_TRAVEL_POS);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2852,8 +2845,7 @@ void World::DeleteCamp(Camp* camp, bool remove)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_CAMP;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_CAMP);
 		c.id = index;
 	}
 

@@ -332,8 +332,7 @@ void Location::SetKnown()
 		state = LS_KNOWN;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_STATE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_STATE);
 			c.id = index;
 		}
 	}
@@ -409,8 +408,7 @@ void Location::SetImage(LOCATION_IMAGE image)
 		this->image = image;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_IMAGE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_IMAGE);
 			c.id = index;
 		}
 	}
@@ -424,8 +422,7 @@ void Location::SetName(cstring name)
 		this->name = name;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_NAME;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 			c.id = index;
 		}
 	}
@@ -440,8 +437,7 @@ void Location::SetNamePrefix(cstring prefix)
 	name = Format("%s %s", prefix, strs[1].c_str());
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LOCATION_NAME;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 		c.id = index;
 	}
 }
