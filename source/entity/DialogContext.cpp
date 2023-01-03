@@ -8,6 +8,7 @@
 #include "GameGui.h"
 #include "GameResources.h"
 #include "Inventory.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "Level.h"
 #include "LevelGui.h"
@@ -103,8 +104,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 			game->PlayAttachedSound(*talker, sound, Unit::TALK_SOUND_DIST);
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UNIT_SOUND;
+				NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 				c.unit = talker;
 				c.id = SOUND_TALK;
 			}
@@ -114,7 +114,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 	{
 		if(!predialog.empty())
 		{
-			mode = DialogContext::WAIT_TALK;
+			mode = WAIT_TALK;
 			dialogString = predialog;
 			dialogText = dialogString.c_str();
 			timer = 1.f;
@@ -122,7 +122,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 		}
 		else if(talker->bubble && talker->bubble != predialogBubble)
 		{
-			mode = DialogContext::WAIT_TALK;
+			mode = WAIT_TALK;
 			dialogString = talker->bubble->text;
 			dialogText = dialogString.c_str();
 			timer = 1.f;
@@ -135,13 +135,13 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 }
 
 //=================================================================================================
-void DialogContext::StartNextDialog(GameDialog* new_dialog, Quest* quest, bool returns)
+void DialogContext::StartNextDialog(GameDialog* newDialog, Quest* quest, bool returns)
 {
-	assert(new_dialog);
+	assert(newDialog);
 
 	if(returns)
 		prev.push_back({ dialog, dialogQuest, dialogPos });
-	dialog = new_dialog;
+	dialog = newDialog;
 	dialogQuest = quest;
 	dialogPos = -1;
 }
@@ -203,8 +203,7 @@ void DialogContext::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TALK;
+					NetChange& c = Net::PushChange(NetChange::TALK);
 					c.unit = pc->unit;
 					c.str = StringPool.Get();
 					*c.str = msg;
@@ -213,7 +212,7 @@ void DialogContext::Update(float dt)
 					net->netStrs.push_back(c.str);
 				}
 
-				bool use_return = false;
+				bool useReturn = false;
 				switch(choice.type)
 				{
 				case DialogChoice::Normal:
@@ -227,17 +226,17 @@ void DialogContext::Update(float dt)
 					dialogPos = choice.pos;
 					break;
 				case DialogChoice::Perk:
-					use_return = LearnPerk((Perk*)choice.pos);
+					useReturn = LearnPerk((Perk*)choice.pos);
 					break;
 				case DialogChoice::Hero:
-					use_return = RecruitHero((Class*)choice.pos);
+					useReturn = RecruitHero((Class*)choice.pos);
 					break;
 				}
 
 				ClearChoices();
 				choiceSelected = -1;
 				dialogEsc = -1;
-				if(use_return)
+				if(useReturn)
 					return;
 			}
 			else
@@ -284,6 +283,9 @@ void DialogContext::Update(float dt)
 			return;
 		mode = NONE;
 		break;
+
+	case WAIT_DIALOG:
+		return;
 	}
 
 	if(forceEnd)
@@ -312,8 +314,7 @@ void DialogContext::UpdateClient()
 			const int prevChoice = choiceSelected;
 			if(gameGui->levelGui->UpdateChoice())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHOICE;
+				NetChange& c = Net::PushChange(NetChange::CHOICE);
 				c.id = choiceSelected;
 
 				mode = WAIT_MP_RESPONSE;
@@ -327,8 +328,7 @@ void DialogContext::UpdateClient()
 			GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
 			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SKIP_DIALOG;
+			NetChange& c = Net::PushChange(NetChange::SKIP_DIALOG);
 			c.id = skipId;
 			skipId = -1;
 		}
@@ -339,7 +339,7 @@ void DialogContext::UpdateClient()
 //=================================================================================================
 void DialogContext::UpdateLoop()
 {
-	bool cmp_result = false;
+	bool cmpResult = false;
 	while(true)
 	{
 		DialogEntry& de = *(dialog->code.data() + dialogPos);
@@ -370,7 +370,7 @@ void DialogContext::UpdateLoop()
 				EndDialog();
 				return;
 			}
-			else if(questDialogIndex == QUEST_INDEX_NONE || questDialogIndex + 1 == (int)questDialogs.size())
+			else if(questDialogIndex == QUEST_INDEX_NONE || questDialogIndex + 1 >= (int)questDialogs.size())
 			{
 				// finished all quest dialogs, use normal dialog
 				Entry& p = prev.back();
@@ -408,8 +408,7 @@ void DialogContext::UpdateLoop()
 			else
 			{
 				choiceSelected = -1;
-				NetChangePlayer& c = Add1(pc->playerInfo->changes);
-				c.type = NetChangePlayer::SHOW_DIALOG_CHOICES;
+				pc->playerInfo->PushChange(NetChangePlayer::SHOW_DIALOG_CHOICES);
 			}
 			return;
 		case DTF_RESTART:
@@ -467,8 +466,7 @@ void DialogContext::UpdateLoop()
 				gameGui->inventory->StartTrade(I_TRADE, *pc->chestTrade, talker);
 			else
 			{
-				NetChangePlayer& c = Add1(pc->playerInfo->changes);
-				c.type = NetChangePlayer::START_TRADE;
+				NetChangePlayer& c = pc->playerInfo->PushChange(NetChangePlayer::START_TRADE);
 				c.id = talker->id;
 			}
 			return;
@@ -498,25 +496,25 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_QUEST_TIMEOUT:
 			assert(dialogQuest);
-			cmp_result = (dialogQuest->IsActive() && dialogQuest->IsTimedout());
+			cmpResult = (dialogQuest->IsActive() && dialogQuest->IsTimedout());
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_RAND:
-			cmp_result = (Rand() % de.value == 0);
+			cmpResult = (Rand() % de.value == 0);
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_RAND_P:
-			cmp_result = (Rand() % 100 < de.value);
+			cmpResult = (Rand() % 100 < de.value);
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_ONCE:
-			cmp_result = once;
+			cmpResult = once;
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
-			if(cmp_result)
+				cmpResult = !cmpResult;
+			if(cmpResult)
 				once = false;
 			break;
 		case DTF_DO_ONCE:
@@ -538,22 +536,22 @@ void DialogContext::UpdateLoop()
 				int questId = -1;
 				if(msg[0] == '$' && msg[1] == '$')
 					questId = talker->questId;
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, questId);
+				cmpResult = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, questId);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_HAVE_QUEST_ITEM_CURRENT:
-			cmp_result = (dialogQuest && pc->unit->HaveQuestItem(dialogQuest->id));
+			cmpResult = (dialogQuest && pc->unit->HaveQuestItem(dialogQuest->id));
 			if(de.op == OP_NOT_EQUAL)
-				cmp_result = !cmp_result;
+				cmpResult = !cmpResult;
 			break;
 		case DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, true);
+				cmpResult = pc->unit->FindQuestItem(msg, nullptr, nullptr, true);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_DO_QUEST_ITEM:
@@ -569,7 +567,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_IF_QUEST_PROGRESS:
 			assert(dialogQuest);
-			cmp_result = DoIfOp(dialogQuest->prog, de.value, de.op);
+			cmpResult = DoIfOp(dialogQuest->prog, de.value, de.op);
 			break;
 		case DTF_IF_NEED_TALK:
 			{
@@ -577,10 +575,10 @@ void DialogContext::UpdateLoop()
 				bool negate = (de.op == OP_NOT_EQUAL);
 				for(Quest* quest : questMgr->quests)
 				{
-					cmp_result = (quest->IsActive() && quest->IfNeedTalk(msg));
+					cmpResult = (quest->IsActive() && quest->IfNeedTalk(msg));
 					if(negate)
-						cmp_result = !cmp_result;
-					if(cmp_result)
+						cmpResult = !cmpResult;
+					if(cmpResult)
 						break;
 				}
 			}
@@ -601,13 +599,13 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_SPECIAL:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = ExecuteSpecialIf(msg);
+				cmpResult = ExecuteSpecialIf(msg);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_CHOICES:
-			cmp_result = DoIfOp(choices.size(), de.value, de.op);
+			cmpResult = DoIfOp(choices.size(), de.value, de.op);
 			break;
 		case DTF_DO_QUEST2:
 			{
@@ -638,17 +636,17 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_HAVE_ITEM:
 			{
 				const Item* item = (const Item*)de.value;
-				cmp_result = pc->unit->HaveItem(item);
+				cmpResult = pc->unit->HaveItem(item);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_IF_QUEST_EVENT:
 			{
 				assert(dialogQuest);
-				cmp_result = dialogQuest->IfQuestEvent();
+				cmpResult = dialogQuest->IfQuestEvent();
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_END_OF_DIALOG:
@@ -658,9 +656,9 @@ void DialogContext::UpdateLoop()
 			{
 				assert(dialogQuest);
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = dialogQuest->SpecialIf(*this, msg);
+				cmpResult = dialogQuest->SpecialIf(*this, msg);
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_QUEST_SPECIAL:
@@ -675,29 +673,32 @@ void DialogContext::UpdateLoop()
 				ScriptContext& ctx = scriptMgr->GetContext();
 				ctx.pc = pc;
 				ctx.target = talker;
+
 				DialogScripts* scripts;
+				Quest2* quest;
 				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
+
 				int index = de.value;
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, [index](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, quest, [index](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
 						CHECKED(ctx->SetArgDWord(0, index));
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.target = nullptr;
 				ctx.pc = nullptr;
 			}
@@ -705,24 +706,27 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_SCRIPT:
 			{
 				ScriptContext& ctx = scriptMgr->GetContext();
-				DialogScripts* scripts;
-				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
+
+				DialogScripts* scripts;
+				Quest2* quest;
+				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
+
 				int index = de.value;
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &cmp_result](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, quest, [index, &cmpResult](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -730,25 +734,25 @@ void DialogContext::UpdateLoop()
 					}
 					else if(stage == 1)
 					{
-						cmp_result = (ctx->GetReturnByte() != 0);
+						cmpResult = (ctx->GetReturnByte() != 0);
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
 				if(de.op == OP_NOT_EQUAL)
-					cmp_result = !cmp_result;
+					cmpResult = !cmpResult;
 			}
 			break;
 		case DTF_JMP:
 			dialogPos = de.value - 1;
 			break;
 		case DTF_CJMP:
-			if(!cmp_result)
+			if(!cmpResult)
 				dialogPos = de.value - 1;
 			break;
 		case DTF_IF_VAR:
-			cmp_result = DoIfOp(var, de.value, de.op);
+			cmpResult = DoIfOp(var, de.value, de.op);
 			break;
 		case DTF_NEXT:
 			{
@@ -779,10 +783,7 @@ void DialogContext::EndDialog()
 	if(talker->busy == Unit::Busy_Trading)
 	{
 		if(!isLocal)
-		{
-			NetChangePlayer& c = Add1(pc->playerInfo->changes);
-			c.type = NetChangePlayer::END_DIALOG;
-		}
+			pc->playerInfo->PushChange(NetChangePlayer::END_DIALOG);
 		return;
 	}
 	talker->busy = Unit::Busy_No;
@@ -791,10 +792,7 @@ void DialogContext::EndDialog()
 	pc->action = PlayerAction::None;
 
 	if(!isLocal)
-	{
-		NetChangePlayer& c = Add1(pc->playerInfo->changes);
-		c.type = NetChangePlayer::END_DIALOG;
-	}
+		pc->playerInfo->PushChange(NetChangePlayer::END_DIALOG);
 }
 
 //=================================================================================================
@@ -831,23 +829,26 @@ cstring DialogContext::GetText(int index, bool multi)
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
 				ScriptContext& ctx = scriptMgr->GetContext();
-				DialogScripts* scripts;
-				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
+
+				Quest2* quest;
+				DialogScripts* scripts;
+				void* instance;
 				if(dialogQuest && dialogQuest->isNew)
 				{
-					Quest2* quest = (Quest2*)dialogQuest;
+					quest = static_cast<Quest2*>(dialogQuest);
 					scripts = &quest->GetScheme()->scripts;
 					instance = quest->GetInstance();
-					ctx.quest = quest;
 				}
 				else
 				{
+					quest = nullptr;
 					scripts = &DialogScripts::global;
 					instance = nullptr;
 				}
-				scriptMgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+
+				scriptMgr->RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, quest, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -859,7 +860,7 @@ cstring DialogContext::GetText(int index, bool multi)
 						dialogString += *result;
 					}
 				});
-				ctx.quest = nullptr;
+
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
 				i = pos;
@@ -871,6 +872,7 @@ cstring DialogContext::GetText(int index, bool multi)
 					strPart.push_back(str[i]);
 					++i;
 				}
+
 				if(dialogQuest)
 					dialogString += dialogQuest->FormatString(strPart);
 				else
@@ -893,7 +895,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 	if(strcmp(msg, "mayor_quest") == 0)
 	{
-		bool have_quest = true;
+		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questMayorTime > 30
 			|| gameLevel->cityCtx->questMayorTime == -1
 			|| gameLevel->cityCtx->questMayor == CityQuestState::Failed)
@@ -913,7 +915,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
-				have_quest = false;
+				haveQuest = false;
 		}
 		else if(gameLevel->cityCtx->questMayor == CityQuestState::InProgress)
 		{
@@ -934,12 +936,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					return true;
 				}
 				else
-					have_quest = false;
+					haveQuest = false;
 			}
 		}
 		else
-			have_quest = false;
-		if(!have_quest)
+			haveQuest = false;
+
+		if(!haveQuest)
 		{
 			Talk(RandomString(game->txMayorNoQ));
 			++dialogPos;
@@ -948,7 +951,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "captain_quest") == 0)
 	{
-		bool have_quest = true;
+		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questCaptainTime > 30
 			|| gameLevel->cityCtx->questCaptainTime == -1
 			|| gameLevel->cityCtx->questCaptain == CityQuestState::Failed)
@@ -968,7 +971,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 			else
-				have_quest = false;
+				haveQuest = false;
 		}
 		else if(gameLevel->cityCtx->questCaptain == CityQuestState::InProgress)
 		{
@@ -989,12 +992,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 					return true;
 				}
 				else
-					have_quest = false;
+					haveQuest = false;
 			}
 		}
 		else
-			have_quest = false;
-		if(!have_quest)
+			haveQuest = false;
+
+		if(!haveQuest)
 		{
 			Talk(RandomString(game->txCaptainNoQ));
 			++dialogPos;
@@ -1015,56 +1019,14 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 	}
-	else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
+	else if(strcmp(msg, "rest_pick") == 0)
 	{
-		// rest in inn
-		int days, cost;
-		if(strcmp(msg, "rest1") == 0)
-		{
-			days = 1;
-			cost = 5;
-		}
-		else if(strcmp(msg, "rest5") == 0)
-		{
-			days = 5;
-			cost = 20;
-		}
-		else if(strcmp(msg, "rest10") == 0)
-		{
-			days = 10;
-			cost = 35;
-		}
-		else
-		{
-			days = 30;
-			cost = 100;
-		}
-
-		// does player have enough gold?
-		if(pc->unit->gold < cost)
-		{
-			// restart dialog
-			dialogString = Format(game->txNeedMoreGold, cost - pc->unit->gold);
-			Talk(dialogString.c_str());
-			dialogPos = 0;
-			return true;
-		}
-
-		// give gold and freeze
-		pc->unit->ModGold(-cost);
-		pc->unit->frozen = FROZEN::YES;
 		if(isLocal)
-		{
-			game->fallbackType = FALLBACK::REST;
-			game->fallbackTimer = -1.f;
-			game->fallbackValue = days;
-		}
+			gameGui->levelGui->ShowRestDialog();
 		else
-		{
-			NetChangePlayer& c = Add1(pc->playerInfo->changes);
-			c.type = NetChangePlayer::REST;
-			c.id = days;
-		}
+			pc->playerInfo->PushChange(NetChangePlayer::PICK_REST);
+		mode = WAIT_DIALOG;
+		return true;
 	}
 	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
 	{
@@ -1140,26 +1102,26 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			case 1:
 				// info about unknown camp
 				{
-					Location* new_camp = nullptr;
+					Location* newCamp = nullptr;
 					static vector<Location*> camps;
 					for(vector<Location*>::const_iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 					{
 						if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
 						{
 							camps.push_back(*it);
-							if((*it)->state == LS_UNKNOWN && !new_camp)
-								new_camp = *it;
+							if((*it)->state == LS_UNKNOWN && !newCamp)
+								newCamp = *it;
 						}
 					}
 
-					if(!new_camp && !camps.empty())
-						new_camp = camps[Rand() % camps.size()];
+					if(!newCamp && !camps.empty())
+						newCamp = camps[Rand() % camps.size()];
 
 					camps.clear();
 
-					if(new_camp)
+					if(newCamp)
 					{
-						Location& loc = *new_camp;
+						Location& loc = *newCamp;
 						Location& cloc = *gameLevel->location;
 						cstring distance;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
@@ -1213,7 +1175,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			int count = countof(game->txRumor);
 			if(drunkman)
-				count += countof(game->txRumorD);
+				count += countof(game->txRumorDrunk);
 			cstring rumor;
 			do
 			{
@@ -1221,7 +1183,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				if(what < countof(game->txRumor))
 					rumor = game->txRumor[what];
 				else
-					rumor = game->txRumorD[what - countof(game->txRumor)];
+					rumor = game->txRumorDrunk[what - countof(game->txRumor)];
 			}
 			while(lastRumor == rumor);
 			lastRumor = rumor;
@@ -1252,7 +1214,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strncmp(msg, "train/", 6) == 0)
 	{
-		const int gold_cost = 200;
+		const int goldCost = 200;
 		cstring s = msg + 6;
 		int type, what, cost;
 		int* train;
@@ -1309,9 +1271,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 
 		// does player have enough gold?
-		if(pc->unit->gold < gold_cost)
+		if(pc->unit->gold < goldCost)
 		{
-			dialogString = Format(game->txNeedMoreGold, gold_cost - pc->unit->gold);
+			dialogString = Format(game->txNeedMoreGold, goldCost - pc->unit->gold);
 			Talk(dialogString.c_str());
 			forceEnd = true;
 			return true;
@@ -1321,7 +1283,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(train)
 			*train += 1;
 		pc->learningPoints -= cost;
-		pc->unit->ModGold(-gold_cost);
+		pc->unit->ModGold(-goldCost);
 		pc->unit->frozen = FROZEN::YES;
 		if(isLocal)
 		{
@@ -1332,8 +1294,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 		else
 		{
-			NetChangePlayer& c = Add1(pc->playerInfo->changes);
-			c.type = NetChangePlayer::TRAIN;
+			NetChangePlayer& c = pc->playerInfo->PushChange(NetChangePlayer::TRAIN);
 			c.id = type;
 			c.count = what;
 
@@ -1346,13 +1307,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(updateLocations == 1)
 		{
 			activeLocations.clear();
-			const Vec2& world_pos = world->GetWorldPos();
+			const Vec2& worldPos = world->GetWorldPos();
 
 			int index = 0;
 			for(Location* loc : locations)
 			{
-				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
-					activeLocations.push_back(pair<int, bool>(index, loc->state == LS_UNKNOWN));
+				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, worldPos) <= 150.f && loc->state != LS_HIDDEN)
+					activeLocations.push_back(std::make_pair(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
 
@@ -1449,10 +1410,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(isLocal)
 			gameGui->inventory->StartTrade(I_GIVE, *t);
 		else
-		{
-			NetChangePlayer& c = Add1(pc->playerInfo->changes);
-			c.type = NetChangePlayer::START_GIVE;
-		}
+			pc->playerInfo->PushChange(NetChangePlayer::START_GIVE);
 		return true;
 	}
 	else if(strcmp(msg, "share_items") == 0)
@@ -1466,16 +1424,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(isLocal)
 			gameGui->inventory->StartTrade(I_SHARE, *t);
 		else
-		{
-			NetChangePlayer& c = Add1(pc->playerInfo->changes);
-			c.type = NetChangePlayer::START_SHARE;
-		}
+			pc->playerInfo->PushChange(NetChangePlayer::START_SHARE);
 		return true;
 	}
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
 		team->RemoveMember(talker);
-		if(gameLevel->cityCtx)
+		if(gameLevel->IsSafeSettlement())
 			talker->OrderWander();
 		else
 			talker->OrderLeave();
@@ -1502,8 +1457,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->unit->humanData->hairColor = gHairColors[8];
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
+			NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 			c.unit = pc->unit;
 		}
 	}
@@ -1529,8 +1483,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
+			NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 			c.unit = pc->unit;
 		}
 	}
@@ -1587,7 +1540,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "show_perks") == 0)
 	{
-		LocalVector<Perk*> to_pick;
+		LocalVector<Perk*> toPick;
 		PerkContext ctx(pc, false);
 		for(Perk* perk : Perk::perks)
 		{
@@ -1597,13 +1550,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				continue;
 			TakenPerk tp(perk);
 			if(tp.CanTake(ctx))
-				to_pick->push_back(perk);
+				toPick->push_back(perk);
 		}
-		std::sort(to_pick->begin(), to_pick->end(), [](const Perk* info1, const Perk* info2)
+		std::sort(toPick->begin(), toPick->end(), [](const Perk* info1, const Perk* info2)
 		{
 			return info1->name < info2->name;
 		});
-		for(Perk* perk : to_pick)
+		for(Perk* perk : toPick)
 		{
 			string* str = StringPool.Get();
 			*str = Format("%s (%s %d %s)", perk->name.c_str(), perk->desc.c_str(), perk->cost,
@@ -1639,8 +1592,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		talker->PlaySound(gameRes->sCoughs, Unit::COUGHS_SOUND_DIST);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UNIT_MISC_SOUND;
+			NetChange& c = Net::PushChange(NetChange::UNIT_MISC_SOUND);
 			c.unit = talker;
 		}
 	}
@@ -1700,10 +1652,13 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	}
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
-	else if(strcmp(msg, "is_inside_inn") == 0)
-		return talker->locPart->partType == LocationPart::Type::Building && gameLevel->cityCtx->FindInn() == talker->locPart;
-	else if(strcmp(msg, "is_before_contest") == 0)
-		return questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
+	else if(strcmp(msg, "is_drunk_inside_inn") == 0)
+	{
+		return (IsSet(talker->data->flags, F_AI_DRUNKMAN) || IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
+			&& talker->locPart->partType == LocationPart::Type::Building && talker->locPart == gameLevel->cityCtx->FindInn();
+	}
+	else if(strcmp(msg, "is_drunk_before_contest") == 0)
+		return IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST) && questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "is_drunkmage") == 0)
 		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState < Quest_Mages2::State::MageCured;
 	else if(strcmp(msg, "is_guard") == 0)
@@ -1844,8 +1799,7 @@ void DialogContext::Talk(cstring msg)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK;
+		NetChange& c = Net::PushChange(NetChange::TALK);
 		c.unit = talker;
 		c.str = StringPool.Get();
 		*c.str = msg;
@@ -1871,11 +1825,11 @@ void DialogContext::ClientTalk(Unit* unit, const string& text, int skipId, int a
 
 	if(dialogMode && talker == unit)
 	{
-		if(mode == DialogContext::WAIT_MP_RESPONSE)
+		if(mode == WAIT_MP_RESPONSE)
 			ClearChoices();
 		dialogString = text;
 		dialogText = dialogString.c_str();
-		mode = DialogContext::WAIT_TALK;
+		mode = WAIT_TALK;
 		this->skipId = skipId;
 	}
 	else if(pc->action == PlayerAction::Talk && pc->actionUnit == unit)
@@ -1945,8 +1899,7 @@ bool DialogContext::LearnPerk(Perk* perk)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(pc->playerInfo->changes);
-		c.type = NetChangePlayer::TRAIN;
+		NetChangePlayer& c = pc->playerInfo->PushChange(NetChangePlayer::TRAIN);
 		c.id = 3;
 		c.count = perk->hash;
 
@@ -2018,4 +1971,39 @@ void DialogContext::RemoveQuestDialog(Quest2* quest)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void DialogContext::OnPickRestDays(int days)
+{
+	mode = NONE;
+	dialogPos = 0;
+	if(days == -1)
+		return;
+
+	// does player have enough gold?
+	const int cost = ItemHelper::GetRestCost(days);
+	if(pc->unit->gold < cost)
+	{
+		// restart dialog
+		dialogString = Format(game->txNeedMoreGold, cost - pc->unit->gold);
+		Talk(dialogString.c_str());
+		return;
+	}
+
+	// give gold and freeze
+	pc->unit->ModGold(-cost);
+	pc->unit->frozen = FROZEN::YES;
+	if(isLocal)
+	{
+		game->fallbackType = FALLBACK::REST;
+		game->fallbackTimer = -1.f;
+		game->fallbackValue = days;
+	}
+	else
+	{
+		NetChangePlayer& c = pc->playerInfo->PushChange(NetChangePlayer::REST);
+		c.id = days;
+	}
+	EndDialog();
 }

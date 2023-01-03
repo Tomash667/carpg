@@ -21,8 +21,7 @@ public:
 	void Start(Vars* vars);
 	void Save(GameWriter& f) override;
 	LoadResult Load(GameReader& f) override;
-	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
-	GameDialog* GetDialog(const string& dialog_id);
+	GameDialog* GetDialog(const string& dialogId);
 	void SetProgress(int prog2) override;
 	int GetProgress() const { return prog; }
 	void AddEntry(const string& str);
@@ -35,13 +34,15 @@ public:
 	void AddRumor(const string& str);
 	void RemoveRumor();
 	void Upgrade(Quest* quest);
+	bool PostRun() override;
 
 private:
-	void BeforeCall();
-	void AfterCall();
+	void CreateInstance();
+	void SaveVar(GameWriter& f, Var::Type varType, void* ptr);
+	void LoadVar(GameReader& f, Var::Type varType, void* ptr);
 
 	asIScriptObject* instance;
 	JournalState journalState;
-	int journalChanges, cellDepth;
+	int journalChanges;
 	bool inUpgrade;
 };

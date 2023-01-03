@@ -93,7 +93,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			targetLoc = &tl;
 			locationEventHandler = this;
 			atLevel = tl.GetLastLevel();
-			dungeon_levels = atLevel + 1;
+			dungeonLevels = atLevel + 1;
 			wholeLocationEventHandler = true;
 			itemToGive[0] = Item::Get("q_orkowie_klucz");
 			spawnItem = Quest_Event::Item_GiveSpawned2;
@@ -183,7 +183,7 @@ void Quest_Orcs::Save(GameWriter& f)
 {
 	Quest_Dungeon::Save(f);
 
-	f << dungeon_levels;
+	f << dungeonLevels;
 }
 
 //=================================================================================================
@@ -191,7 +191,7 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	f >> dungeon_levels;
+	f >> dungeonLevels;
 	if(LOAD_VERSION < V_0_16)
 		f.Skip<int>(); // old levels_cleared
 
@@ -224,7 +224,7 @@ void Quest_Orcs2::Start()
 	type = Q_ORCS2;
 	category = QuestCategory::Unique;
 	startLoc = nullptr;
-	near_loc = -1;
+	nearLoc = -1;
 	talked = Talked::No;
 	orcsState = State::None;
 	guard = nullptr;
@@ -319,7 +319,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			targetLoc->state = LS_HIDDEN;
 			targetLoc->st = 11;
 			targetLoc->activeQuest = this;
-			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
+			nearLoc = world->GetNearestSettlement(targetLoc->pos)->index;
 			OnUpdate(questMgr->txQuest[198]);
 			orcsState = Quest_Orcs2::State::ToldAboutCamp;
 		}
@@ -328,7 +328,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			if(prog == Progress::TalkedWhereIsCamp)
 				break;
-			Location& nearl = *world->GetLocation(near_loc);
+			Location& nearl = *world->GetLocation(nearLoc);
 			targetLoc->SetKnown();
 			done = false;
 			locationEventHandler = this;
@@ -365,16 +365,16 @@ void Quest_Orcs2::SetProgress(int prog2)
 		break;
 	case Progress::SelectRandom:
 		{
-			Class* player_class = DialogContext::current->pc->unit->GetClass();
+			Class* playerClass = DialogContext::current->pc->unit->GetClass();
 			OrcClass clas;
-			if(player_class->id == "warrior")
+			if(playerClass->id == "warrior")
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
-			else if(player_class->id == "hunter")
+			else if(playerClass->id == "hunter")
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;
@@ -424,8 +424,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			atLevel = targetLoc->GetLastLevel();
 			locationEventHandler = nullptr;
 			unitEventHandler = this;
-			near_loc = world->GetNearestSettlement(targetLoc->pos)->index;
-			Location& nearl = *world->GetLocation(near_loc);
+			nearLoc = world->GetNearestSettlement(targetLoc->pos)->index;
+			Location& nearl = *world->GetLocation(nearLoc);
 			OnUpdate(Format(questMgr->txQuest[203], GetLocationDirName(nearl.pos, targetLoc->pos), nearl.name.c_str(), targetLoc->name.c_str()));
 			done = false;
 			orcsState = State::GenerateOrcs;
@@ -468,14 +468,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
 				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
 			};
-			UnitData* ud_weak_orc = UnitData::Get("q_orkowie_slaby");
+			UnitData* udWeakOrc = UnitData::Get("q_orkowie_slaby");
 
 			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsAlive())
 				{
-					if(u.data == ud_weak_orc)
+					if(u.data == udWeakOrc)
 					{
 						u.dontAttack = false;
 						u.ai->changeAiMode = true;
@@ -493,8 +493,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 								u.ai->changeAiMode = true;
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CHANGE_UNIT_BASE;
+									NetChange& c = Net::PushChange(NetChange::CHANGE_UNIT_BASE);
 									c.unit = &u;
 								}
 								break;
@@ -540,9 +539,9 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	if(str == "name")
 		return orc->hero->name.c_str();
 	else if(str == "close")
-		return world->GetLocation(near_loc)->name.c_str();
+		return world->GetLocation(nearLoc)->name.c_str();
 	else if(str == "close_dir")
-		return GetLocationDirName(world->GetLocation(near_loc)->pos, targetLoc->pos);
+		return GetLocationDirName(world->GetLocation(nearLoc)->pos, targetLoc->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -611,7 +610,7 @@ void Quest_Orcs2::Save(GameWriter& f)
 {
 	Quest_Dungeon::Save(f);
 
-	f << near_loc;
+	f << nearLoc;
 	f << talked;
 	f << orcsState;
 	f << days;
@@ -625,7 +624,7 @@ Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	f >> near_loc;
+	f >> nearLoc;
 	f >> talked;
 	f >> orcsState;
 	f >> days;
@@ -653,7 +652,7 @@ Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 //=================================================================================================
 void Quest_Orcs2::ChangeClass(OrcClass newOrcClass)
 {
-	cstring class_name, udi;
+	cstring className, udi;
 
 	orcClass = newOrcClass;
 
@@ -661,15 +660,15 @@ void Quest_Orcs2::ChangeClass(OrcClass newOrcClass)
 	{
 	case OrcClass::Warrior:
 	default:
-		class_name = questMgr->txQuest[207];
+		className = questMgr->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
 		break;
 	case OrcClass::Hunter:
-		class_name = questMgr->txQuest[208];
+		className = questMgr->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
 		break;
 	case OrcClass::Shaman:
-		class_name = questMgr->txQuest[209];
+		className = questMgr->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
 		break;
 	}
@@ -677,7 +676,7 @@ void Quest_Orcs2::ChangeClass(OrcClass newOrcClass)
 	UnitData* ud = UnitData::Get(udi);
 	orc->ChangeBase(ud, true);
 
-	OnUpdate(Format(questMgr->txQuest[210], class_name));
+	OnUpdate(Format(questMgr->txQuest[210], className));
 
 	prog = Progress::ChangedClass;
 	orcsState = State::PickedClass;

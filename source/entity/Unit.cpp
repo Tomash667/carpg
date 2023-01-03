@@ -60,6 +60,7 @@ const float Unit::YELL_SOUND_DIST = 2.f;
 const float Unit::COUGHS_SOUND_DIST = 1.f;
 EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
+vector<int> effectsToRemove;
 
 //=================================================================================================
 Unit::~Unit()
@@ -251,6 +252,7 @@ float Unit::CalculateAttack() const
 		return CalculateAttack(&GetWeapon());
 	else if(IsSet(data->flags2, F2_FIXED_STATS))
 		return (float)(data->attack + data->attackLvl * (level - data->level.x));
+	else
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
 		return Get(SkillId::UNARMED) + (Get(AttributeId::STR) + Get(AttributeId::DEX)) / 2 - 25.f + bonus;
@@ -355,11 +357,11 @@ float Unit::CalculateDefense(const Item* armor) const
 		if(armor)
 		{
 			const Armor& a = armor->ToArmor();
-			float skill_val = (float)Get(a.GetSkill());
+			float skillVal = (float)Get(a.GetSkill());
 			int str = Get(AttributeId::STR);
 			if(str < a.reqStr)
-				skill_val *= float(str) / a.reqStr;
-			def += a.def + skill_val;
+				skillVal *= float(str) / a.reqStr;
+			def += a.def + skillVal;
 		}
 	}
 	else
@@ -389,12 +391,12 @@ Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 }
 
 //=================================================================================================
-void Unit::SetGold(int new_gold)
+void Unit::SetGold(int newGold)
 {
-	if(new_gold == gold)
+	if(newGold == gold)
 		return;
-	int dif = new_gold - gold;
-	gold = new_gold;
+	int dif = newGold - gold;
+	gold = newGold;
 	if(IsPlayer())
 	{
 		gameGui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
@@ -402,8 +404,7 @@ void Unit::SetGold(int new_gold)
 			soundMgr->PlaySound2d(gameRes->sCoins);
 		else
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::SOUND;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::SOUND);
 			c.id = 0;
 			player->playerInfo->UpdateGold();
 		}
@@ -499,8 +500,7 @@ bool Unit::DropItem(int index, uint count)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 		}
 	}
@@ -513,8 +513,7 @@ bool Unit::DropItem(int index, uint count)
 			items.erase(items.begin() + index);
 		}
 
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_ITEM;
+		NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -551,16 +550,14 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 
 			if(IsVisible(slot))
 			{
-				NetChange& c2 = Add1(Net::changes);
+				NetChange& c2 = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 				c2.unit = this;
 				c2.id = slot;
-				c2.type = NetChange::CHANGE_EQUIPMENT;
 			}
 		}
 	}
@@ -568,8 +565,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	{
 		item = nullptr;
 
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_ITEM;
+		NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
@@ -678,8 +674,7 @@ int Unit::ConsumeItem(int index)
 	// wyœlij komunikat
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CONSUME_ITEM;
+		NetChange& c = Net::PushChange(NetChange::CONSUME_ITEM);
 		if(Net::IsServer())
 		{
 			c.unit = this;
@@ -714,8 +709,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 	{
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CONSUME_ITEM;
+			NetChange& c = Net::PushChange(NetChange::CONSUME_ITEM);
 			c.unit = this;
 			c.id = (int)&item;
 			c.count = (force ? 1 : 0);
@@ -786,10 +780,10 @@ bool Unit::AddItem(const Item* item, uint count, uint teamCount)
 			if(teamCount && IsTeamMember())
 			{
 				team->AddGold(teamCount);
-				uint normal_gold = count - teamCount;
-				if(normal_gold)
+				uint normalGold = count - teamCount;
+				if(normalGold)
 				{
-					gold += normal_gold;
+					gold += normalGold;
 					if(IsPlayer() && !player->isLocal)
 						player->playerInfo->UpdateGold();
 				}
@@ -825,8 +819,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 		{
 			if(!player->isLocal)
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::ADD_ITEMS;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::ADD_ITEMS);
 				c.item = item;
 				c.count = count;
 				c.id = teamCount;
@@ -847,8 +840,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 
 			if(u && !u->player->isLocal)
 			{
-				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
-				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
+				NetChangePlayer& c = u->player->playerInfo->PushChange(NetChangePlayer::ADD_ITEMS_TRADER);
 				c.item = item;
 				c.id = id;
 				c.count = count;
@@ -861,16 +853,16 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 		gameGui->messages->AddItemMessage(player, count);
 
 	// rebuild inventory
-	int rebuild_id = -1;
+	int rebuildId = -1;
 	if(IsLocalPlayer())
 	{
 		if(gameGui->inventory->invMine->visible || gameGui->inventory->gpTrade->visible)
-			rebuild_id = 0;
+			rebuildId = 0;
 	}
 	else if(gameGui->inventory->gpTrade->visible && gameGui->inventory->invTradeOther->unit == this)
-		rebuild_id = 1;
-	if(rebuild_id != -1)
-		gameGui->inventory->BuildTmpInventory(rebuild_id);
+		rebuildId = 1;
+	if(rebuildId != -1)
+		gameGui->inventory->BuildTmpInventory(rebuildId);
 }
 
 //=================================================================================================
@@ -899,8 +891,7 @@ void Unit::AddEffect(Effect& e, bool send)
 	{
 		if(player && !player->IsLocal())
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::ADD_EFFECT;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::ADD_EFFECT);
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
 			c.a1 = e.sourceId;
@@ -911,8 +902,7 @@ void Unit::AddEffect(Effect& e, bool send)
 
 		if(e.IsVisible())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ADD_UNIT_EFFECT;
+			NetChange& c = Net::PushChange(NetChange::ADD_UNIT_EFFECT);
 			c.unit = this;
 			c.id = (int)e.effect;
 			c.extraFloat = e.time;
@@ -989,8 +979,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					hp = hpmax;
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 					c.unit = this;
 				}
 			}
@@ -998,8 +987,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		case EffectId::Poison:
 		case EffectId::Alcohol:
 			{
-				float poison_res = GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = effect.effect;
@@ -1007,7 +996,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					e.sourceId = -1;
 					e.value = -1;
 					e.time = item.time;
-					e.power = effect.power / item.time * poison_res;
+					e.power = effect.power / item.time * poisonRes;
 					AddEffect(e);
 				}
 			}
@@ -1018,7 +1007,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 				{
 					if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
-						_toRemove.push_back(index);
+						effectsToRemove.push_back(index);
 				}
 
 				RemoveEffects();
@@ -1049,8 +1038,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				humanData->hairColor = Vec4(0, 1, 0, 1);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HAIR_COLOR;
+					NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 					c.unit = this;
 				}
 			}
@@ -1063,8 +1051,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					mp = mpmax;
 				if(Net::IsOnline() && IsTeamMember())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_MP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 					c.unit = this;
 				}
 			}
@@ -1098,11 +1085,11 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 			&& (value == -1 || e.value == value)
 			&& (source == EffectSource::None || e.source == source)
 			&& (sourceId == -1 || e.sourceId == sourceId))
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 		++index;
 	}
 
-	uint count = _toRemove.size();
+	uint count = effectsToRemove.size();
 	RemoveEffects();
 	return count;
 }
@@ -1110,7 +1097,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int sourceId, int
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
+	float regen = 0.f, tmpRegen = 0.f, poisonDmg = 0.f, alcoSum = 0.f, bestStamina = 0.f, staminaMod = 1.f, foodHeal = 0.f;
 
 	// update effects timer
 	for(uint index = 0, count = effects.size(); index < count; ++index)
@@ -1124,27 +1111,27 @@ void Unit::UpdateEffects(float dt)
 		case EffectId::Regeneration:
 			if(effect.source == EffectSource::Temporary && effect.power > 0.f)
 			{
-				if(effect.power > temp_regen)
-					temp_regen = effect.power;
+				if(effect.power > tmpRegen)
+					tmpRegen = effect.power;
 			}
 			else
 				regen += effect.power;
 			break;
 		case EffectId::Poison:
-			poison_dmg += effect.power;
+			poisonDmg += effect.power;
 			break;
 		case EffectId::Alcohol:
-			alco_sum += effect.power;
+			alcoSum += effect.power;
 			break;
 		case EffectId::FoodRegeneration:
-			food_heal += effect.power;
+			foodHeal += effect.power;
 			break;
 		case EffectId::StaminaRegeneration:
-			if(effect.power > best_stamina)
-				best_stamina = effect.power;
+			if(effect.power > bestStamina)
+				bestStamina = effect.power;
 			break;
 		case EffectId::StaminaRegenerationMod:
-			stamina_mod *= effect.power;
+			staminaMod *= effect.power;
 			break;
 		case EffectId::SlowMove:
 			effect.power = effect.time;
@@ -1155,7 +1142,7 @@ void Unit::UpdateEffects(float dt)
 		{
 			if((effect.time -= dt) <= 0.f)
 			{
-				_toRemove.push_back(index);
+				effectsToRemove.push_back(index);
 				if(Net::IsLocal() && effect.effect == EffectId::Rooted && effect.value == EffectValue_Rooted_Vines)
 				{
 					Effect e;
@@ -1178,24 +1165,23 @@ void Unit::UpdateEffects(float dt)
 		return;
 
 	// healing from food / regeneration
-	if(hp != hpmax && (regen > 0 || temp_regen > 0 || food_heal > 0))
+	if(hp != hpmax && (regen > 0 || tmpRegen > 0 || foodHeal > 0))
 	{
 		float natural = GetEffectMul(EffectId::NaturalHealingMod);
-		hp += ((regen + temp_regen) + natural * food_heal) * dt;
+		hp += ((regen + tmpRegen) + natural * foodHeal) * dt;
 		if(hp > hpmax)
 			hp = hpmax;
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = this;
 		}
 	}
 
 	// update alcohol value
-	if(alco_sum > 0.f)
+	if(alcoSum > 0.f)
 	{
-		alcohol += alco_sum * dt;
+		alcohol += alcoSum * dt;
 		if(alcohol >= hpmax && liveState == ALIVE)
 			Fall();
 		if(IsPlayer() && !player->isLocal)
@@ -1211,13 +1197,13 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// update poison damage
-	if(poison_dmg != 0.f)
-		GiveDmg(poison_dmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
+	if(poisonDmg != 0.f)
+		GiveDmg(poisonDmg * dt, nullptr, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
-		if(Net::IsOnline() && !player->isLocal && player->lastDmgPoison != poison_dmg)
+		if(Net::IsOnline() && !player->isLocal && player->lastDmgPoison != poisonDmg)
 			player->playerInfo->updateFlags |= PlayerInfo::UF_POISON_DAMAGE;
-		player->lastDmgPoison = poison_dmg;
+		player->lastDmgPoison = poisonDmg;
 	}
 
 	// restore mana
@@ -1228,8 +1214,7 @@ void Unit::UpdateEffects(float dt)
 			mp = mpmax;
 		if(Net::IsServer() && IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 			c.unit = this;
 		}
 	}
@@ -1238,36 +1223,35 @@ void Unit::UpdateEffects(float dt)
 	if(staminaTimer > 0)
 	{
 		staminaTimer -= dt;
-		if(best_stamina > 0.f && stamina != staminaMax)
+		if(bestStamina > 0.f && stamina != staminaMax)
 		{
-			stamina += best_stamina * dt * stamina_mod;
+			stamina += bestStamina * dt * staminaMod;
 			if(stamina > staminaMax)
 				stamina = staminaMax;
 			if(Net::IsServer() && IsTeamMember())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_STAMINA;
+				NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 				c.unit = this;
 			}
 		}
 	}
-	else if(stamina != staminaMax && (staminaAction != SA_DONT_RESTORE || best_stamina > 0.f))
+	else if(stamina != staminaMax && (staminaAction != SA_DONT_RESTORE || bestStamina > 0.f))
 	{
-		float stamina_restore;
+		float staminaRestore;
 		switch(staminaAction)
 		{
 		case SA_RESTORE_MORE:
-			stamina_restore = 66.66f;
+			staminaRestore = 66.66f;
 			break;
 		case SA_RESTORE:
 		default:
-			stamina_restore = 33.33f;
+			staminaRestore = 33.33f;
 			break;
 		case SA_RESTORE_SLOW:
-			stamina_restore = 20.f;
+			staminaRestore = 20.f;
 			break;
 		case SA_DONT_RESTORE:
-			stamina_restore = 0.f;
+			staminaRestore = 0.f;
 			break;
 		}
 		switch(GetLoadState())
@@ -1277,24 +1261,23 @@ void Unit::UpdateEffects(float dt)
 		case LS_MEDIUM:
 			break;
 		case LS_HEAVY:
-			stamina_restore -= 1.f;
+			staminaRestore -= 1.f;
 			break;
 		case LS_OVERLOADED:
-			stamina_restore -= 2.5f;
+			staminaRestore -= 2.5f;
 			break;
 		case LS_MAX_OVERLOADED:
-			stamina_restore -= 5.f;
+			staminaRestore -= 5.f;
 			break;
 		}
-		if(stamina_restore < 0)
-			stamina_restore = 0;
-		stamina += ((staminaMax * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
+		if(staminaRestore < 0)
+			staminaRestore = 0;
+		stamina += ((staminaMax * staminaRestore / 100) + bestStamina) * dt * staminaMod;
 		if(stamina > staminaMax)
 			stamina = staminaMax;
 		if(Net::IsServer() && IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 			c.unit = this;
 		}
 	}
@@ -1316,7 +1299,7 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 	}
 
 	uint index = 0;
-	float best_reg = 0.f, food = 0.f, natural_mod = 1.f, natural_tmp_mod = 1.f;
+	float bestReg = 0.f, food = 0.f, naturalMod = 1.f, naturalTmpMod = 1.f;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		bool remove = true;
@@ -1326,12 +1309,12 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 		{
 		case EffectId::Regeneration:
 			if(it->source == EffectSource::Permanent)
-				best_reg = -1.f;
-			else if(best_reg >= 0.f)
+				bestReg = -1.f;
+			else if(bestReg >= 0.f)
 			{
 				float regen = it->power * it->time;
-				if(regen > best_reg)
-					best_reg = regen;
+				if(regen > bestReg)
+					bestReg = regen;
 			}
 			break;
 		case EffectId::Poison:
@@ -1344,29 +1327,29 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 			if(it->source == EffectSource::Temporary)
 			{
 				float val = it->power * min((float)days, it->time) / days;
-				if(val > natural_tmp_mod)
-					natural_tmp_mod = val;
+				if(val > naturalTmpMod)
+					naturalTmpMod = val;
 			}
 			else
-				natural_mod *= it->power;
+				naturalMod *= it->power;
 			it->time -= days;
 			if(it->time > 0.f)
 				remove = false;
 			break;
 		}
 		if(remove)
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 	}
 
-	natural_mod *= natural_tmp_mod;
+	naturalMod *= naturalTmpMod;
 	if(outNaturalMod)
-		*outNaturalMod = natural_mod;
+		*outNaturalMod = naturalMod;
 
-	if(best_reg < 0.f)
+	if(bestReg < 0.f)
 		hp = hpmax; // hp regen from perk - full heal
 	else
 	{
-		hp += best_reg + food * natural_mod;
+		hp += bestReg + food * naturalMod;
 		if(hp < 1.f)
 			hp = 1.f;
 		else if(hp > hpmax)
@@ -1382,53 +1365,53 @@ void Unit::EndEffects(int days, float* outNaturalMod)
 float Unit::GetEffectSum(EffectId effect) const
 {
 	float value = 0.f,
-		tmp_value = 0.f;
+		tmpValue = 0.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
 		{
 			if(e.source == EffectSource::Temporary && e.power > 0.f)
 			{
-				if(e.power > tmp_value)
-					tmp_value = e.power;
+				if(e.power > tmpValue)
+					tmpValue = e.power;
 			}
 			else
 				value += e.power;
 		}
 	}
-	return value + tmp_value;
+	return value + tmpValue;
 }
 
 //=================================================================================================
 float Unit::GetEffectMul(EffectId effect) const
 {
 	float value = 1.f,
-		tmp_value_low = 1.f,
-		tmp_value_high = 1.f;
+		tmpValueLow = 1.f,
+		tmpValueHigh = 1.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
 		{
 			if(e.source == EffectSource::Temporary)
 			{
-				if(e.power > tmp_value_high)
-					tmp_value_high = e.power;
-				else if(e.power < tmp_value_low)
-					tmp_value_low = e.power;
+				if(e.power > tmpValueHigh)
+					tmpValueHigh = e.power;
+				else if(e.power < tmpValueLow)
+					tmpValueLow = e.power;
 			}
 			else
 				value *= e.power;
 		}
 	}
-	return value * tmp_value_low * tmp_value_high;
+	return value * tmpValueLow * tmpValueHigh;
 }
 
 //=================================================================================================
 float Unit::GetEffectMulInv(EffectId effect) const
 {
 	float value = 1.f,
-		tmp_value_low = 1.f,
-		tmp_value_high = 1.f;
+		tmpValueLow = 1.f,
+		tmpValueHigh = 1.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
@@ -1436,16 +1419,16 @@ float Unit::GetEffectMulInv(EffectId effect) const
 			float power = (1.f - e.power);
 			if(e.source == EffectSource::Temporary)
 			{
-				if(power > tmp_value_high)
-					tmp_value_high = power;
-				else if(power < tmp_value_low)
-					tmp_value_low = power;
+				if(power > tmpValueHigh)
+					tmpValueHigh = power;
+				else if(power < tmpValueLow)
+					tmpValueLow = power;
 			}
 			else
 				value *= power;
 		}
 	}
-	return value * tmp_value_low * tmp_value_high;
+	return value * tmpValueLow * tmpValueHigh;
 }
 
 //=================================================================================================
@@ -1474,14 +1457,14 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 		return;
 	}
 
-	ITEM_SLOT item_slot = ItemTypeToSlot(item->type);
-	if(item_slot == SLOT_RING1 && slots[item_slot])
-		item_slot = SLOT_RING2;
+	ITEM_SLOT itemSlot = ItemTypeToSlot(item->type);
+	if(itemSlot == SLOT_RING1 && slots[itemSlot])
+		itemSlot = SLOT_RING2;
 
-	if(!slots[item_slot])
+	if(!slots[itemSlot])
 	{
-		slots[item_slot] = item;
-		ApplyItemEffects(item, item_slot);
+		slots[itemSlot] = item;
+		ApplyItemEffects(item, itemSlot);
 		--count;
 	}
 
@@ -1560,10 +1543,10 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prevValue) cons
 	if(value)
 	{
 		float v = CalculateWeaponPros(weapon);
-		float prev_v = CalculateWeaponPros(GetWeapon());
+		float prevV = CalculateWeaponPros(GetWeapon());
 		*value = (int)v;
-		*prevValue = (int)prev_v;
-		return prev_v < v;
+		*prevValue = (int)prevV;
+		return prevV < v;
 	}
 	else
 		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
@@ -1585,10 +1568,10 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prevValue) const
 	if(value)
 	{
 		float v = CalculateDefense(&armor);
-		float prev_v = CalculateDefense();
+		float prevV = CalculateDefense();
 		*value = (int)v;
-		*prevValue = (int)prev_v;
-		return prev_v < v;
+		*prevValue = (int)prevV;
+		return prevV < v;
 	}
 	else
 		return CalculateDefense() < CalculateDefense(&armor);
@@ -1647,22 +1630,22 @@ float Unit::GetAttackFrame(int frame) const
 {
 	assert(InRange(frame, 0, 2));
 
-	int attack_id = act.attack.index;
-	assert(attack_id < data->frames->attacks);
+	int attackId = act.attack.index;
+	assert(attackId < data->frames->attacks);
 
 	if(!data->frames->extra)
 	{
 		switch(frame)
 		{
 		case 0:
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 0];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 0];
 		case 1:
-			return data->frames->Lerp(F_ATTACK1_START + attack_id * 2);
+			return data->frames->Lerp(F_ATTACK1_START + attackId * 2);
 		case 2:
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 1];
 		default:
 			assert(0);
-			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
+			return data->frames->t[F_ATTACK1_START + attackId * 2 + 1];
 		}
 	}
 	else
@@ -1670,14 +1653,14 @@ float Unit::GetAttackFrame(int frame) const
 		switch(frame)
 		{
 		case 0:
-			return data->frames->extra->e[attack_id].start;
+			return data->frames->extra->e[attackId].start;
 		case 1:
-			return data->frames->extra->e[attack_id].Lerp();
+			return data->frames->extra->e[attackId].Lerp();
 		case 2:
-			return data->frames->extra->e[attack_id].end;
+			return data->frames->extra->e[attackId].end;
 		default:
 			assert(0);
-			return data->frames->extra->e[attack_id].end;
+			return data->frames->extra->e[attackId].end;
 		}
 	}
 }
@@ -1895,45 +1878,48 @@ void Unit::Save(GameWriter& f)
 	}
 
 	// orders
-	UnitOrderEntry* current_order = order;
-	while(current_order)
+	UnitOrderEntry* currentOrder = order;
+	while(currentOrder)
 	{
 		f.Write1();
-		f << current_order->order;
-		f << current_order->timer;
-		switch(current_order->order)
+		f << currentOrder->order;
+		f << currentOrder->timer;
+		switch(currentOrder->order)
 		{
 		case ORDER_FOLLOW:
 		case ORDER_GUARD:
-			f << current_order->unit;
+			f << currentOrder->unit;
 			break;
 		case ORDER_LOOK_AT:
-			f << current_order->pos;
+			f << currentOrder->pos;
 			break;
 		case ORDER_MOVE:
-			f << current_order->pos;
-			f << current_order->moveType;
-			f << current_order->range;
+			f << currentOrder->pos;
+			f << currentOrder->moveType;
+			f << currentOrder->range;
 			break;
 		case ORDER_ESCAPE_TO:
-			f << current_order->pos;
+			f << currentOrder->pos;
 			break;
 		case ORDER_ESCAPE_TO_UNIT:
-			f << current_order->unit;
-			f << current_order->pos;
+			f << currentOrder->unit;
+			f << currentOrder->pos;
 			break;
 		case ORDER_AUTO_TALK:
-			f << current_order->autoTalk;
-			if(current_order->autoTalkDialog)
+			f << currentOrder->autoTalk;
+			if(currentOrder->autoTalkDialog)
 			{
-				f << current_order->autoTalkDialog->id;
-				f << (current_order->autoTalkQuest ? current_order->autoTalkQuest->id : -1);
+				f << currentOrder->autoTalkDialog->id;
+				f << (currentOrder->autoTalkQuest ? currentOrder->autoTalkQuest->id : -1);
 			}
 			else
 				f.Write0();
 			break;
+		case ORDER_ATTACK_OBJECT:
+			f << currentOrder->usable;
+			break;
 		}
-		current_order = current_order->next;
+		currentOrder = currentOrder->next;
 	}
 	f.Write0();
 
@@ -1982,32 +1968,23 @@ void Unit::Load(GameReader& f)
 	data = UnitData::Get(f.ReadString1());
 
 	// items
-	bool can_sort = true;
-	int max_slots;
-	if(LOAD_VERSION >= V_0_10)
-		max_slots = SLOT_MAX;
-	else
-	{
-		max_slots = 5;
-		slots[SLOT_RING1] = nullptr;
-		slots[SLOT_RING2] = nullptr;
-	}
-	for(int i = 0; i < max_slots; ++i)
+	bool canSort = true;
+	for(int i = 0; i < SLOT_MAX; ++i)
 		f >> slots[i];
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f >> slot.count;
 		f >> slot.teamCount;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
+		if(itemId[0] != '$')
+			slot.item = Item::Get(itemId);
 		else
 		{
-			int quest_item_id = f.Read<int>();
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
+			int questItemId = f.Read<int>();
+			questMgr->AddQuestItemRequest(&slot.item, itemId.c_str(), questItemId, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
+			canSort = false;
 		}
 	}
 	if(f.Read0())
@@ -2037,13 +2014,13 @@ void Unit::Load(GameReader& f)
 		{
 			// upgrade unit - previously there was 'mage' unit, now it is split into 'mage novice', 'mage' and 'master mage'
 			// calculate which one to use
-			int best_dif = data->GetLevelDif(level);
+			int bestDif = data->GetLevelDif(level);
 			for(UnitData* u : *data->upgrade)
 			{
 				int dif = u->GetLevelDif(level);
-				if(dif < best_dif)
+				if(dif < bestDif)
 				{
-					best_dif = dif;
+					bestDif = dif;
 					data = u;
 				}
 			}
@@ -2056,14 +2033,6 @@ void Unit::Load(GameReader& f)
 		stats->fixed = false;
 		stats->subprofile.value = 0;
 		stats->Load(f);
-		if(LOAD_VERSION < V_0_10)
-		{
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-			{
-				if(stats->skill[i] == -1)
-					stats->skill[i] = 0;
-			}
-		}
 	}
 	else
 	{
@@ -2072,9 +2041,6 @@ void Unit::Load(GameReader& f)
 		stats = data->GetStats(sub);
 	}
 	f >> gold;
-	bool old_invisible = false;
-	if(LOAD_VERSION < V_0_10)
-		f >> old_invisible;
 	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old inside_building
 	f >> toRemove;
@@ -2082,20 +2048,20 @@ void Unit::Load(GameReader& f)
 	f >> questId;
 	f >> assist;
 
-	AutoTalkMode old_auto_talk = AutoTalkMode::No;
-	GameDialog* old_auto_talk_dialog = nullptr;
-	float old_auto_talk_timer = 0;
+	AutoTalkMode oldAutoTalk = AutoTalkMode::No;
+	GameDialog* oldAutoTalkDialog = nullptr;
+	float oldAutoTalkTimer = 0;
 	if(LOAD_VERSION < V_0_12)
 	{
 		// old auto talk
-		f >> old_auto_talk;
-		if(old_auto_talk != AutoTalkMode::No)
+		f >> oldAutoTalk;
+		if(oldAutoTalk != AutoTalkMode::No)
 		{
 			if(const string& dialogId = f.ReadString1(); !dialogId.empty())
-				old_auto_talk_dialog = GameDialog::TryGet(dialogId.c_str());
+				oldAutoTalkDialog = GameDialog::TryGet(dialogId.c_str());
 			else
-				old_auto_talk_dialog = nullptr;
-			f >> old_auto_talk_timer;
+				oldAutoTalkDialog = nullptr;
+			f >> oldAutoTalkTimer;
 		}
 	}
 
@@ -2103,25 +2069,25 @@ void Unit::Load(GameReader& f)
 	f >> attackTeam;
 	if(LOAD_VERSION < V_0_12)
 		f.Skip<int>(); // old netid
-	int unit_event_handler_quest_id = f.Read<int>();
-	if(unit_event_handler_quest_id == -2)
+	int unitEventHandlerQuestId = f.Read<int>();
+	if(unitEventHandlerQuestId == -2)
 		eventHandler = questMgr->questContest;
-	else if(unit_event_handler_quest_id == -1)
+	else if(unitEventHandlerQuestId == -1)
 		eventHandler = nullptr;
 	else
 	{
-		eventHandler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
+		eventHandler = reinterpret_cast<UnitEventHandler*>(unitEventHandlerQuestId);
 		game->loadUnitHandler.push_back(this);
 	}
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		SortItems(items);
 	f >> weight;
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		RecalculateWeight();
 
-	Entity<Unit> guard_target;
+	Entity<Unit> guardTarget;
 	if(LOAD_VERSION < V_0_12)
-		f >> guard_target;
+		f >> guardTarget;
 	f >> summoner;
 
 	if(liveState >= DYING)
@@ -2145,8 +2111,8 @@ void Unit::Load(GameReader& f)
 
 	if(f.isLocal)
 	{
-		float old_attack_power = 1.f;
-		bool old_run_attack = false, old_hitted = false;
+		float oldAttackPower = 1.f;
+		bool oldRunAttack = false, oldHitted = false;
 
 		CreateMesh(CREATE_MESH::LOAD);
 		meshInst->Load(f, LOAD_VERSION >= V_0_13 ? 1 : 0);
@@ -2158,13 +2124,13 @@ void Unit::Load(GameReader& f)
 		f >> prevSpeed;
 		f >> animationState;
 		if(LOAD_VERSION < V_0_13)
-			f >> aiMode; // old attack_id, assigned to unused variable at client side to pass to AIController
+			f >> aiMode; // old attackId, assigned to unused variable at client side to pass to AIController
 		f >> action;
 		f >> weaponTaken;
 		f >> weaponHiding;
 		f >> weaponState;
 		if(LOAD_VERSION < V_0_13)
-			f >> old_hitted;
+			f >> oldHitted;
 		f >> hurtTimer;
 		f >> targetPos;
 		f >> targetPos2;
@@ -2172,8 +2138,8 @@ void Unit::Load(GameReader& f)
 		f >> talkTimer;
 		if(LOAD_VERSION < V_0_13)
 		{
-			f >> old_attack_power;
-			f >> old_run_attack;
+			f >> oldAttackPower;
+			f >> oldRunAttack;
 		}
 		f >> timer;
 		f >> alcohol;
@@ -2187,14 +2153,21 @@ void Unit::Load(GameReader& f)
 				f >> act.attack.index;
 				f >> act.attack.power;
 				f >> act.attack.run;
-				f >> act.attack.hitted;
+				if(LOAD_VERSION >= V_0_20)
+					f >> act.attack.hitted;
+				else
+				{
+					bool oldHitted;
+					f >> oldHitted;
+					act.attack.hitted = oldHitted ? 2 : 0;
+				}
 			}
 			else
 			{
 				act.attack.index = aiMode;
-				act.attack.power = old_attack_power;
-				act.attack.run = old_run_attack;
-				act.attack.hitted = old_hitted;
+				act.attack.power = oldAttackPower;
+				act.attack.run = oldRunAttack;
+				act.attack.hitted = oldHitted;
 			}
 			break;
 		case A_CAST:
@@ -2241,27 +2214,24 @@ void Unit::Load(GameReader& f)
 				act.shoot.ability = nullptr;
 			break;
 		case A_USE_USABLE:
-			if(LOAD_VERSION >= V_0_10)
-				f >> act.useUsable.rot;
-			else
-				act.useUsable.rot = 0.f;
+			f >> act.useUsable.rot;
 			break;
 		}
 
-		const string& item_id = f.ReadString1();
-		if(!item_id.empty())
+		const string& itemId = f.ReadString1();
+		if(!itemId.empty())
 		{
-			usedItem = Item::Get(item_id);
+			usedItem = Item::Get(itemId);
 			f >> usedItemIsTeam;
 		}
 		else
 			usedItem = nullptr;
 
-		int usable_id = f.Read<int>();
-		if(usable_id == -1)
+		int usableId = f.Read<int>();
+		if(usableId == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_id);
+			Usable::AddRequest(&usable, usableId);
 
 		if(action == A_SHOOT)
 		{
@@ -2296,33 +2266,16 @@ void Unit::Load(GameReader& f)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_0_10)
+	f.ReadVector4(effects);
+	if(LOAD_VERSION < V_0_14)
 	{
-		f.ReadVector4(effects);
-		if(LOAD_VERSION < V_0_14)
-		{
-			for(Effect& e : effects)
-			{
-				if(e.source == EffectSource::Perk)
-					e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
-			}
-		}
-	}
-	else
-	{
-		effects.resize(f.Read<uint>());
 		for(Effect& e : effects)
 		{
-			f >> e.effect;
-			f >> e.source;
-			f >> e.sourceId;
-			f >> e.time;
-			f >> e.power;
-			e.value = -1;
 			if(e.source == EffectSource::Perk)
 				e.sourceId = old::Convert((old::Perk)e.sourceId)->hash;
 		}
 	}
+
 	if(content.requireUpdate)
 	{
 		RemoveEffects(EffectId::None, EffectSource::Item, -1, -1);
@@ -2352,150 +2305,151 @@ void Unit::Load(GameReader& f)
 			dialog.priority = 0;
 	}
 
-	if(LOAD_VERSION >= V_0_10)
+	// events
+	events.resize(f.Read<uint>());
+	for(Event& e : events)
 	{
-		// events
-		events.resize(f.Read<uint>());
-		for(Event& e : events)
+		int questId;
+		f >> e.type;
+		f >> questId;
+		questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
 		{
-			int questId;
-			f >> e.type;
-			f >> questId;
-			questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
-			{
-				EventPtr event;
-				event.source = EventPtr::UNIT;
-				event.type = e.type;
-				event.unit = this;
-				e.quest->AddEventPtr(event);
-			});
-		}
+			EventPtr event;
+			event.source = EventPtr::UNIT;
+			event.type = e.type;
+			event.unit = this;
+			e.quest->AddEventPtr(event);
+		});
+	}
 
-		// orders
-		if(LOAD_VERSION >= V_0_12)
+	// orders
+	if(LOAD_VERSION >= V_0_12)
+	{
+		UnitOrderEntry* currentOrder = nullptr;
+		while(f.Read1())
 		{
-			UnitOrderEntry* current_order = nullptr;
-			while(f.Read1())
+			if(currentOrder)
 			{
-				if(current_order)
+				currentOrder->next = UnitOrderEntry::Get();
+				currentOrder = currentOrder->next;
+			}
+			else
+			{
+				order = UnitOrderEntry::Get();
+				currentOrder = order;
+			}
+
+			f >> currentOrder->order;
+			f >> currentOrder->timer;
+			switch(currentOrder->order)
+			{
+			case ORDER_FOLLOW:
+				f >> currentOrder->unit;
+				break;
+			case ORDER_LOOK_AT:
+				f >> currentOrder->pos;
+				break;
+			case ORDER_MOVE:
+				f >> currentOrder->pos;
+				f >> currentOrder->moveType;
+				if(LOAD_VERSION >= V_0_14)
+					f >> currentOrder->range;
+				else
+					currentOrder->range = 0.1f;
+				break;
+			case ORDER_ESCAPE_TO:
+				f >> currentOrder->pos;
+				break;
+			case ORDER_ESCAPE_TO_UNIT:
+				f >> currentOrder->unit;
+				f >> currentOrder->pos;
+				break;
+			case ORDER_GUARD:
+				f >> currentOrder->unit;
+				break;
+			case ORDER_AUTO_TALK:
+				f >> currentOrder->autoTalk;
+				if(const string& dialogId = f.ReadString1(); !dialogId.empty())
 				{
-					current_order->next = UnitOrderEntry::Get();
-					current_order = current_order->next;
+					currentOrder->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
+					int questId;
+					f >> questId;
+					if(questId != -1)
+						questMgr->AddQuestRequest(questId, &currentOrder->autoTalkQuest);
+					else
+						currentOrder->autoTalkQuest = nullptr;
 				}
 				else
 				{
-					order = UnitOrderEntry::Get();
-					current_order = order;
+					currentOrder->autoTalkDialog = nullptr;
+					currentOrder->autoTalkQuest = nullptr;
 				}
-
-				f >> current_order->order;
-				f >> current_order->timer;
-				switch(current_order->order)
-				{
-				case ORDER_FOLLOW:
-					f >> current_order->unit;
-					break;
-				case ORDER_LOOK_AT:
-					f >> current_order->pos;
-					break;
-				case ORDER_MOVE:
-					f >> current_order->pos;
-					f >> current_order->moveType;
-					if(LOAD_VERSION >= V_0_14)
-						f >> current_order->range;
-					else
-						current_order->range = 0.1f;
-					break;
-				case ORDER_ESCAPE_TO:
-					f >> current_order->pos;
-					break;
-				case ORDER_ESCAPE_TO_UNIT:
-					f >> current_order->unit;
-					f >> current_order->pos;
-					break;
-				case ORDER_GUARD:
-					f >> current_order->unit;
-					break;
-				case ORDER_AUTO_TALK:
-					f >> current_order->autoTalk;
-					if(const string& dialogId = f.ReadString1(); !dialogId.empty())
-					{
-						current_order->autoTalkDialog = GameDialog::TryGet(dialogId.c_str());
-						int questId;
-						f >> questId;
-						if(questId != -1)
-							questMgr->AddQuestRequest(questId, &current_order->autoTalkQuest);
-						else
-							current_order->autoTalkQuest = nullptr;
-					}
-					else
-					{
-						current_order->autoTalkDialog = nullptr;
-						current_order->autoTalkQuest = nullptr;
-					}
-					break;
-				}
-			}
-		}
-		else
-		{
-			UnitOrder unit_order;
-			float timer;
-			f >> unit_order;
-			f >> timer;
-			if(unit_order != ORDER_NONE)
-			{
-				order = UnitOrderEntry::Get();
-				order->order = unit_order;
-				order->timer = timer;
-				switch(order->order)
-				{
-				case ORDER_FOLLOW:
-					if(LOAD_VERSION >= V_0_11)
-						f >> order->unit;
-					else
-						team->GetLeaderRequest(&order->unit);
-					break;
-				case ORDER_LOOK_AT:
-					f >> order->pos;
-					break;
-				case ORDER_MOVE:
-					f >> order->pos;
-					f >> order->moveType;
-					order->range = 0.1f;
-					break;
-				case ORDER_ESCAPE_TO:
-					f >> order->pos;
-					break;
-				case ORDER_ESCAPE_TO_UNIT:
-					f >> order->unit;
-					f >> order->pos;
-					break;
-				case ORDER_GUARD:
-					f >> order->unit;
-					break;
-				}
+				break;
+			case ORDER_ATTACK_OBJECT:
+				f >> currentOrder->usable;
+				break;
 			}
 		}
 	}
-	if(guard_target)
+	else
+	{
+		UnitOrder unitOrder;
+		float timer;
+		f >> unitOrder;
+		f >> timer;
+		if(unitOrder != ORDER_NONE)
+		{
+			order = UnitOrderEntry::Get();
+			order->order = unitOrder;
+			order->timer = timer;
+			switch(order->order)
+			{
+			case ORDER_FOLLOW:
+				if(LOAD_VERSION >= V_0_11)
+					f >> order->unit;
+				else
+					team->GetLeaderRequest(&order->unit);
+				break;
+			case ORDER_LOOK_AT:
+				f >> order->pos;
+				break;
+			case ORDER_MOVE:
+				f >> order->pos;
+				f >> order->moveType;
+				order->range = 0.1f;
+				break;
+			case ORDER_ESCAPE_TO:
+				f >> order->pos;
+				break;
+			case ORDER_ESCAPE_TO_UNIT:
+				f >> order->unit;
+				f >> order->pos;
+				break;
+			case ORDER_GUARD:
+				f >> order->unit;
+				break;
+			}
+		}
+	}
+
+	if(guardTarget)
 	{
 		if(order)
 			order->Free();
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_GUARD;
-		order->unit = guard_target;
+		order->unit = guardTarget;
 		order->timer = 0.f;
 	}
-	if(old_auto_talk != AutoTalkMode::No)
+	if(oldAutoTalk != AutoTalkMode::No)
 	{
 		if(order)
 			order->Free();
 		order = UnitOrderEntry::Get();
 		order->order = ORDER_AUTO_TALK;
-		order->timer = old_auto_talk_timer;
-		order->autoTalk = old_auto_talk;
-		order->autoTalkDialog = old_auto_talk_dialog;
+		order->timer = oldAutoTalkTimer;
+		order->autoTalk = oldAutoTalk;
+		order->autoTalkDialog = oldAutoTalkDialog;
 		order->autoTalkQuest = nullptr;
 	}
 
@@ -2504,8 +2458,6 @@ void Unit::Load(GameReader& f)
 		player = new PlayerController;
 		player->unit = this;
 		player->Load(f);
-		if(LOAD_VERSION < V_0_10)
-			player->invisible = old_invisible;
 	}
 	else
 		player = nullptr;
@@ -2579,25 +2531,25 @@ void Unit::LoadStock(GameReader& f)
 		return;
 	}
 
-	bool can_sort = true;
+	bool canSort = true;
 	cnt.resize(count);
 	for(ItemSlot& slot : cnt)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		f >> slot.count;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
+		if(itemId[0] != '$')
+			slot.item = Item::Get(itemId);
 		else
 		{
 			int questId;
 			f >> questId;
-			questMgr->AddQuestItemRequest(&slot.item, item_id.c_str(), questId, &cnt);
+			questMgr->AddQuestItemRequest(&slot.item, itemId.c_str(), questId, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
+			canSort = false;
 		}
 	}
 
-	if(can_sort && content.requireUpdate)
+	if(canSort && content.requireUpdate)
 		SortItems(cnt);
 }
 
@@ -2742,14 +2694,14 @@ bool Unit::Read(BitStreamReader& f)
 {
 	// main
 	f >> id;
-	const string& unit_data_id = f.ReadString1();
+	const string& unitDataId = f.ReadString1();
 	if(!f)
 		return false;
 	Register();
-	data = UnitData::TryGet(unit_data_id);
+	data = UnitData::TryGet(unitDataId);
 	if(!data)
 	{
-		Error("Missing base unit id '%s'!", unit_data_id.c_str());
+		Error("Missing base unit id '%s'!", unitDataId.c_str());
 		return false;
 	}
 
@@ -2791,14 +2743,14 @@ bool Unit::Read(BitStreamReader& f)
 	{
 		for(int i = 0; i < SLOT_MAX_VISIBLE; ++i)
 		{
-			const string& item_id = f.ReadString1();
+			const string& itemId = f.ReadString1();
 			if(!f)
 				return false;
-			if(item_id.empty())
+			if(itemId.empty())
 				slots[i] = nullptr;
 			else
 			{
-				const Item* item = Item::TryGet(item_id);
+				const Item* item = Item::TryGet(itemId);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
 				{
 					gameRes->PreloadItem(item);
@@ -2967,16 +2919,16 @@ bool Unit::Read(BitStreamReader& f)
 		f >> targetPos;
 		f >> targetPos2;
 		f >> timer;
-		const string& used_item_id = f.ReadString1();
-		int usable_id = f.Read<int>();
+		const string& usedItemId = f.ReadString1();
+		int usableId = f.Read<int>();
 
 		// used item
-		if(!used_item_id.empty())
+		if(!usedItemId.empty())
 		{
-			usedItem = Item::TryGet(used_item_id);
+			usedItem = Item::TryGet(usedItemId);
 			if(!usedItem)
 			{
-				Error("Missing used item '%s'.", used_item_id.c_str());
+				Error("Missing used item '%s'.", usedItemId.c_str());
 				return false;
 			}
 		}
@@ -2984,10 +2936,10 @@ bool Unit::Read(BitStreamReader& f)
 			usedItem = nullptr;
 
 		// usable
-		if(usable_id == -1)
+		if(usableId == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_id);
+			Usable::AddRequest(&usable, usableId);
 
 		// action
 		switch(action)
@@ -3083,9 +3035,9 @@ bool Unit::FindEffect(EffectId effect, float* value)
 // szuka miksturek leczniczych w ekwipunku, zwraca -1 jeœli nie odnaleziono
 int Unit::FindHealingPotion() const
 {
-	float healed_hp,
-		missing_hp = hpmax - hp;
-	int potion_index = -1, index = 0;
+	float healedHp,
+		missingHp = hpmax - hp;
+	int potionIndex = -1, index = 0;
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
@@ -3097,30 +3049,30 @@ int Unit::FindHealingPotion() const
 			continue;
 
 		float power = pot.GetEffectPower(EffectId::Heal);
-		if(potion_index == -1)
+		if(potionIndex == -1)
 		{
-			potion_index = index;
-			healed_hp = power;
+			potionIndex = index;
+			healedHp = power;
 		}
 		else
 		{
-			if(power > missing_hp)
+			if(power > missingHp)
 			{
-				if(power < healed_hp)
+				if(power < healedHp)
 				{
-					potion_index = index;
-					healed_hp = power;
+					potionIndex = index;
+					healedHp = power;
 				}
 			}
-			else if(power > healed_hp)
+			else if(power > healedHp)
 			{
-				potion_index = index;
-				healed_hp = power;
+				potionIndex = index;
+				healedHp = power;
 			}
 		}
 	}
 
-	return potion_index;
+	return potionIndex;
 }
 
 //=================================================================================================
@@ -3179,18 +3131,17 @@ void Unit::ReequipItems()
 	assert(Net::IsLocal());
 	if(net->activePlayers > 1)
 	{
-		const Item* prev_slots[SLOT_MAX];
+		const Item* prevSlots[SLOT_MAX];
 		for(int i = 0; i < SLOT_MAX; ++i)
-			prev_slots[i] = slots[i];
+			prevSlots[i] = slots[i];
 
 		ReequipItemsInternal();
 
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
+			if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 				c.unit = this;
 				c.id = i;
 			}
@@ -3204,38 +3155,38 @@ void Unit::ReequipItems()
 void Unit::ReequipItemsInternal()
 {
 	bool changes = false;
-	for(ItemSlot& item_slot : items)
+	for(ItemSlot& itemSlot : items)
 	{
-		if(!item_slot.item)
+		if(!itemSlot.item)
 			continue;
 
-		if(item_slot.item->type == IT_GOLD)
+		if(itemSlot.item->type == IT_GOLD)
 		{
-			gold += item_slot.count;
-			item_slot.item = nullptr;
+			gold += itemSlot.count;
+			itemSlot.item = nullptr;
 			changes = true;
 		}
-		else if(CanWear(item_slot.item))
+		else if(CanWear(itemSlot.item))
 		{
-			ITEM_SLOT slot = ItemTypeToSlot(item_slot.item->type);
+			ITEM_SLOT slot = ItemTypeToSlot(itemSlot.item->type);
 			assert(slot != SLOT_INVALID);
 
 			if(slots[slot])
 			{
-				if(slots[slot]->value < item_slot.item->value)
+				if(slots[slot]->value < itemSlot.item->value)
 				{
 					const Item* item = slots[slot];
 					RemoveItemEffects(item, slot);
-					ApplyItemEffects(item_slot.item, slot);
-					slots[slot] = item_slot.item;
-					item_slot.item = item;
+					ApplyItemEffects(itemSlot.item, slot);
+					slots[slot] = itemSlot.item;
+					itemSlot.item = item;
 				}
 			}
 			else
 			{
-				ApplyItemEffects(item_slot.item, slot);
-				slots[slot] = item_slot.item;
-				item_slot.item = nullptr;
+				ApplyItemEffects(itemSlot.item, slot);
+				slots[slot] = itemSlot.item;
+				itemSlot.item = nullptr;
 				changes = true;
 			}
 		}
@@ -3277,8 +3228,7 @@ void Unit::RemoveQuestItem(int questId)
 			items.erase(it);
 			if(IsOtherPlayer())
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_QUEST_ITEM);
 				c.id = questId;
 			}
 			return;
@@ -3297,9 +3247,9 @@ void Unit::RemoveQuestItemS(Quest* quest)
 //=================================================================================================
 bool Unit::HaveItem(const Item* item, bool owned) const
 {
-	for(const Item* slot_item : slots)
+	for(const Item* slotItem : slots)
 	{
-		if(slot_item == item)
+		if(slotItem == item)
 			return true;
 	}
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it)
@@ -3313,13 +3263,13 @@ bool Unit::HaveItem(const Item* item, bool owned) const
 //=================================================================================================
 bool Unit::HaveItemEquipped(const Item* item) const
 {
-	ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
-	if(slot_type == SLOT_INVALID)
+	ITEM_SLOT slotType = ItemTypeToSlot(item->type);
+	if(slotType == SLOT_INVALID)
 		return false;
-	else if(slot_type == SLOT_RING1)
+	else if(slotType == SLOT_RING1)
 		return slots[SLOT_RING1] == item || slots[SLOT_RING2] == item;
 	else
-		return slots[slot_type] == item;
+		return slots[slotType] == item;
 }
 
 //=================================================================================================
@@ -3352,15 +3302,15 @@ bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
 }
 
 //=================================================================================================
-float Unit::GetAttackSpeed(const Weapon* used_weapon) const
+float Unit::GetAttackSpeed(const Weapon* usedWeapon) const
 {
 	if(IsSet(data->flags2, F2_FIXED_STATS))
 		return 1.f;
 
 	const Weapon* wep;
 
-	if(used_weapon)
-		wep = used_weapon;
+	if(usedWeapon)
+		wep = usedWeapon;
 	else if(HaveWeapon())
 		wep = &GetWeapon();
 	else
@@ -3405,9 +3355,9 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
-	float base_mod = GetStaminaAttackSpeedMod();
+	float baseMod = GetStaminaAttackSpeedMod();
 	if(IsSet(data->flags2, F2_FIXED_STATS))
-		return base_mod;
+		return baseMod;
 
 	// values range
 	//	1 dex, 0 skill = 0.8
@@ -3421,7 +3371,7 @@ float Unit::GetBowAttackSpeed() const
 	else if(mobility > 100)
 		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
 
-	mod *= base_mod;
+	mod *= baseMod;
 	if(mod < 0.5f)
 		mod = 0.5f;
 
@@ -3463,7 +3413,7 @@ void Unit::HealPoison()
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
 		if(it->effect == EffectId::Poison)
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 	}
 
 	RemoveEffects();
@@ -3478,7 +3428,7 @@ void Unit::RemoveEffect(EffectId effect)
 	{
 		if(it->effect == effect)
 		{
-			_toRemove.push_back(index);
+			effectsToRemove.push_back(index);
 			if(it->IsVisible())
 				visible = true;
 		}
@@ -3486,8 +3436,7 @@ void Unit::RemoveEffect(EffectId effect)
 
 	if(visible && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT_EFFECT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT_EFFECT);
 		c.unit = this;
 		c.id = (int)effect;
 	}
@@ -3549,7 +3498,7 @@ int Unit::FindQuestItem(int questId) const
 }
 
 //=================================================================================================
-bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notActive, int questId)
+bool Unit::FindQuestItem(cstring id, Quest** outQuest, int* iIndex, bool notActive, int questId)
 {
 	assert(id);
 
@@ -3565,8 +3514,8 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 				{
 					if(iIndex)
 						*iIndex = SlotToIIndex(ITEM_SLOT(i));
-					if(out_quest)
-						*out_quest = quest;
+					if(outQuest)
+						*outQuest = quest;
 					return true;
 				}
 			}
@@ -3583,8 +3532,8 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 				{
 					if(iIndex)
 						*iIndex = index;
-					if(out_quest)
-						*out_quest = quest;
+					if(outQuest)
+						*outQuest = quest;
 					return true;
 				}
 			}
@@ -3602,8 +3551,8 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 				{
 					if(iIndex)
 						*iIndex = SlotToIIndex(ITEM_SLOT(i));
-					if(out_quest)
-						*out_quest = quest;
+					if(outQuest)
+						*outQuest = quest;
 					return true;
 				}
 			}
@@ -3620,8 +3569,8 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* iIndex, bool notAct
 				{
 					if(iIndex)
 						*iIndex = index;
-					if(out_quest)
-						*out_quest = quest;
+					if(outQuest)
+						*outQuest = quest;
 					return true;
 				}
 			}
@@ -3673,8 +3622,7 @@ void Unit::EquipItem(int index)
 
 	if(Net::IsServer() && IsVisible(slot))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.unit = this;
 		c.id = slot;
 	}
@@ -3693,25 +3641,24 @@ void Unit::EquipItem(const Item* item)
 
 //=================================================================================================
 // currently using this on pc, looted units is not written
-void Unit::RemoveItem(int iindex, bool activeLocation)
+void Unit::RemoveItem(int iIndex, bool activeLocation)
 {
 	assert(!player);
 	assert(Net::IsLocal());
-	if(iindex >= 0)
+	if(iIndex >= 0)
 	{
-		assert(iindex < (int)items.size());
-		RemoveElementIndex(items, iindex);
+		assert(iIndex < (int)items.size());
+		RemoveElementIndex(items, iIndex);
 	}
 	else
 	{
-		ITEM_SLOT s = IIndexToSlot(iindex);
+		ITEM_SLOT s = IIndexToSlot(iIndex);
 		assert(slots[s]);
 		slots[s] = nullptr;
 		if(activeLocation && IsVisible(s))
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
-			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.id = s;
 		}
 	}
@@ -3743,8 +3690,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 
 		if(Net::IsServer() && net->activePlayers > 1 && IsVisible(type))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
 			c.id = type;
 		}
@@ -3757,10 +3703,9 @@ uint Unit::RemoveItem(int iIndex, uint count)
 		{
 			if(!player->isLocal)
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS);
 				c.id = iIndex;
-				c.count = count;
+				c.count = removed;
 			}
 		}
 		else
@@ -3778,10 +3723,9 @@ uint Unit::RemoveItem(int iIndex, uint count)
 
 			if(t && t->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(t->player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
+				NetChangePlayer& c = t->player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS_TRADER);
 				c.id = id;
-				c.count = count;
+				c.count = removed;
 				c.a = iIndex;
 			}
 		}
@@ -3809,9 +3753,9 @@ uint Unit::RemoveItem(const Item* item, uint count)
 }
 
 //=================================================================================================
-uint Unit::RemoveItemS(const string& item_id, uint count)
+uint Unit::RemoveItemS(const string& itemId, uint count)
 {
-	const Item* item = Item::TryGet(item_id);
+	const Item* item = Item::TryGet(itemId);
 	if(!item)
 		return 0;
 	return RemoveItem(item, count);
@@ -3826,8 +3770,7 @@ void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 		usedItem = nullptr;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_USED_ITEM;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_USED_ITEM);
 			c.unit = this;
 		}
 	}
@@ -3835,8 +3778,7 @@ void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 		RemoveItemEffects(item, slot);
 	if(Net::IsServer() && IsVisible(slot))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.unit = this;
 		c.id = slot;
 	}
@@ -3858,8 +3800,7 @@ void Unit::RemoveAllEquippedItems()
 
 		if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
 			c.id = i;
 		}
@@ -3972,35 +3913,35 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 		else
 		{
 			int v = item->aiValue;
-			int prev_v = HaveWeapon() ? GetWeapon().aiValue : 0;
+			int prevV = HaveWeapon() ? GetWeapon().aiValue : 0;
 			if(value)
 			{
 				*value = v;
-				*prevValue = prev_v;
+				*prevValue = prevV;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_BOW:
 		{
 			int v = item->ToBow().dmg;
-			int prev_v = HaveBow() ? GetBow().dmg : 0;
+			int prevV = HaveBow() ? GetBow().dmg : 0;
 			if(value)
 			{
 				*value = v * 2;
-				*prevValue = prev_v * 2;
+				*prevValue = prevV * 2;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_SHIELD:
 		{
 			int v = item->ToShield().block;
-			int prev_v = HaveShield() ? GetShield().block : 0;
+			int prevV = HaveShield() ? GetShield().block : 0;
 			if(value)
 			{
 				*value = v * 2;
-				*prevValue = prev_v * 2;
+				*prevValue = prevV * 2;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_ARMOR:
 		if(!IsSet(data->flags, F_MAGE))
@@ -4008,63 +3949,63 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prevValue, ITEM_SLOT*
 		else
 		{
 			int v = item->aiValue;
-			int prev_v = HaveArmor() ? GetArmor().aiValue : 0;
+			int prevV = HaveArmor() ? GetArmor().aiValue : 0;
 			if(value)
 			{
 				*value = v;
-				*prevValue = prev_v;
+				*prevValue = prevV;
 			}
-			return v > prev_v;
+			return v > prevV;
 		}
 	case IT_AMULET:
 		{
 			float v = GetItemAiValue(item);
-			float prev_v = HaveAmulet() ? GetItemAiValue(&GetAmulet()) : 0;
+			float prevV = HaveAmulet() ? GetItemAiValue(&GetAmulet()) : 0;
 			if(value)
 			{
 				*value = (int)v;
-				*prevValue = (int)prev_v;
+				*prevValue = (int)prevV;
 			}
-			return v > prev_v && v > 0;
+			return v > prevV && v > 0;
 		}
 	case IT_RING:
 		{
 			float v = GetItemAiValue(item);
-			float prev_v;
-			ITEM_SLOT best_slot;
+			float prevV;
+			ITEM_SLOT bestSlot;
 			if(!slots[SLOT_RING1])
 			{
-				prev_v = 0;
-				best_slot = SLOT_RING1;
+				prevV = 0;
+				bestSlot = SLOT_RING1;
 			}
 			else if(!slots[SLOT_RING2])
 			{
-				prev_v = 0;
-				best_slot = SLOT_RING2;
+				prevV = 0;
+				bestSlot = SLOT_RING2;
 			}
 			else
 			{
-				float prev_v1 = GetItemAiValue(slots[SLOT_RING1]),
-					prev_v2 = GetItemAiValue(slots[SLOT_RING2]);
-				if(prev_v1 > prev_v2)
+				float prevV1 = GetItemAiValue(slots[SLOT_RING1]),
+					prevV2 = GetItemAiValue(slots[SLOT_RING2]);
+				if(prevV1 > prevV2)
 				{
-					prev_v = prev_v2;
-					best_slot = SLOT_RING2;
+					prevV = prevV2;
+					bestSlot = SLOT_RING2;
 				}
 				else
 				{
-					prev_v = prev_v1;
-					best_slot = SLOT_RING1;
+					prevV = prevV1;
+					bestSlot = SLOT_RING1;
 				}
 			}
 			if(value)
 			{
 				*value = (int)v;
-				*prevValue = (int)prev_v;
+				*prevValue = (int)prevV;
 			}
 			if(targetSlot)
-				*targetSlot = best_slot;
-			return v > prev_v && v > 0;
+				*targetSlot = bestSlot;
+			return v > prevV && v > 0;
 		}
 	default:
 		assert(0);
@@ -4136,9 +4077,9 @@ const Item* Unit::GetIIndexItem(int iIndex) const
 	}
 	else
 	{
-		ITEM_SLOT slot_type = IIndexToSlot(iIndex);
-		if(slot_type < SLOT_MAX)
-			return slots[slot_type];
+		ITEM_SLOT slotType = IIndexToSlot(iIndex);
+		if(slotType < SLOT_MAX)
+			return slots[slotType];
 		else
 			return nullptr;
 	}
@@ -4187,8 +4128,8 @@ float Unit::CalculateMagicResistance() const
 		mres = 0.5f;
 	else if(IsSet(data->flags2, F2_MAGIC_RES25))
 		mres = 0.75f;
-	float effect_mres = GetEffectMulInv(EffectId::MagicResistance);
-	return mres * effect_mres;
+	float effectMres = GetEffectMulInv(EffectId::MagicResistance);
+	return mres * effectMres;
 }
 
 //=================================================================================================
@@ -4231,26 +4172,25 @@ bool Unit::HaveEffect(EffectId e, int value) const
 //=================================================================================================
 void Unit::RemoveEffects(bool send)
 {
-	if(_toRemove.empty())
+	if(effectsToRemove.empty())
 		return;
 
 	send = (send && player && !player->IsLocal() && Net::IsServer());
 
-	while(!_toRemove.empty())
+	while(!effectsToRemove.empty())
 	{
-		uint index = _toRemove.back();
+		uint index = effectsToRemove.back();
 		Effect e = effects[index];
 		if(send)
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::REMOVE_EFFECT;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_EFFECT);
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
 			c.a1 = e.sourceId;
 			c.a2 = e.value;
 		}
 
-		_toRemove.pop_back();
+		effectsToRemove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
@@ -4344,92 +4284,92 @@ bool Unit::CanAct() const
 int Unit::Get(AttributeId a, StatState* state) const
 {
 	int value = stats->attrib[(int)a];
-	StatInfo stat_info;
+	StatInfo statInfo;
 
 	for(const Effect& e : effects)
 	{
 		if(e.effect == EffectId::Attribute && e.value == (int)a)
 		{
 			value += (int)e.power;
-			stat_info.Mod((int)e.power);
+			statInfo.Mod((int)e.power);
 		}
 	}
 
 	if(state)
-		*state = stat_info.GetState();
+		*state = statInfo.GetState();
 	return value;
 }
 
 //=================================================================================================
-int Unit::Get(SkillId s, StatState* state, bool skill_bonus) const
+int Unit::Get(SkillId s, StatState* state, bool skillBonus) const
 {
 	int index = (int)s;
 	int base = stats->skill[index];
 	int value = base;
-	StatInfo stat_info;
+	StatInfo statInfo;
 
 	for(const Effect& e : effects)
 	{
 		if(e.effect == EffectId::Skill && e.value == (int)s)
 		{
 			value += (int)e.power;
-			stat_info.Mod((int)e.power);
+			statInfo.Mod((int)e.power);
 		}
 	}
 
 	// apply skill synergy
-	if(skill_bonus && base > 0)
+	if(skillBonus && base > 0)
 	{
 		switch(s)
 		{
 		case SkillId::LIGHT_ARMOR:
 		case SkillId::HEAVY_ARMOR:
 			{
-				int other_val = GetBase(SkillId::MEDIUM_ARMOR);
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = GetBase(SkillId::MEDIUM_ARMOR);
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		case SkillId::MEDIUM_ARMOR:
 			{
-				int other_val = max(GetBase(SkillId::LIGHT_ARMOR), GetBase(SkillId::HEAVY_ARMOR));
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = max(GetBase(SkillId::LIGHT_ARMOR), GetBase(SkillId::HEAVY_ARMOR));
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		case SkillId::SHORT_BLADE:
 			{
-				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		case SkillId::LONG_BLADE:
 			{
-				int other_val = max(max(GetBase(SkillId::SHORT_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = max(max(GetBase(SkillId::SHORT_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		case SkillId::BLUNT:
 			{
-				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::SHORT_BLADE)), GetBase(SkillId::AXE));
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::SHORT_BLADE)), GetBase(SkillId::AXE));
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		case SkillId::AXE:
 			{
-				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::SHORT_BLADE));
-				if(other_val > value)
-					value += (other_val - value) / 2;
+				int otherVal = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::SHORT_BLADE));
+				if(otherVal > value)
+					value += (otherVal - value) / 2;
 			}
 			break;
 		}
 	}
 
 	if(state)
-		*state = stat_info.GetState();
+		*state = statInfo.GetState();
 	return value;
 }
 
@@ -4525,31 +4465,31 @@ float Unit::CalculateMobility(const Armor* armor) const
 	float mobility = 75.f + 0.5f * Get(AttributeId::DEX);
 
 	// add bonus
-	float mobility_bonus = GetEffectSum(EffectId::Mobility);
-	mobility += mobility_bonus;
+	float mobilityBonus = GetEffectSum(EffectId::Mobility);
+	mobility += mobilityBonus;
 
 	if(armor)
 	{
 		// calculate armor mobility (0-100)
-		int armor_mobility = armor->mobility;
+		int armorMobility = armor->mobility;
 		int skill = min(Get(armor->GetSkill()), 100);
-		armor_mobility += skill / 4;
-		if(armor_mobility > 100)
-			armor_mobility = 100;
+		armorMobility += skill / 4;
+		if(armorMobility > 100)
+			armorMobility = 100;
 		int str = Get(AttributeId::STR);
 		if(str < armor->reqStr)
 		{
-			armor_mobility -= armor->reqStr - str;
-			if(armor_mobility < 0)
-				armor_mobility = 0;
+			armorMobility -= armor->reqStr - str;
+			if(armorMobility < 0)
+				armorMobility = 0;
 		}
 
 		// multiply mobility by armor mobility
-		mobility = (float(armor_mobility) / 100 * mobility);
+		mobility = (float(armorMobility) / 100 * mobility);
 	}
 
-	LoadState load_state = GetLoadState();
-	switch(load_state)
+	LoadState loadState = GetLoadState();
+	switch(loadState)
 	{
 	case LS_NONE:
 	case LS_LIGHT:
@@ -4586,14 +4526,14 @@ float Unit::GetMobilityMod(bool run) const
 WEAPON_TYPE Unit::GetBestWeaponType() const
 {
 	WEAPON_TYPE best = (WEAPON_TYPE)0;
-	int best_value = GetBase(WeaponTypeInfo::info[0].skill);
+	int bestValue = GetBase(WeaponTypeInfo::info[0].skill);
 	for(int i = 1; i < WT_MAX; ++i)
 	{
 		int value = GetBase(WeaponTypeInfo::info[i].skill);
-		if(value > best_value)
+		if(value > bestValue)
 		{
 			best = (WEAPON_TYPE)i;
-			best_value = value;
+			bestValue = value;
 		}
 	}
 	return best;
@@ -4603,14 +4543,14 @@ WEAPON_TYPE Unit::GetBestWeaponType() const
 ARMOR_TYPE Unit::GetBestArmorType() const
 {
 	ARMOR_TYPE best = (ARMOR_TYPE)0;
-	int best_value = GetBase(GetArmorTypeSkill(best));
+	int bestValue = GetBase(GetArmorTypeSkill(best));
 	for(int i = 1; i < AT_MAX; ++i)
 	{
 		int value = GetBase(GetArmorTypeSkill((ARMOR_TYPE)i));
-		if(value > best_value)
+		if(value > bestValue)
 		{
 			best = (ARMOR_TYPE)i;
-			best_value = value;
+			bestValue = value;
 		}
 	}
 	return best;
@@ -4714,8 +4654,7 @@ void Unit::RemoveMana(float value)
 		player->Train(TrainWhat::Mana, value, 0);
 	if(Net::IsServer() && IsTeamMember())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_MP;
+		NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 		c.unit = this;
 	}
 }
@@ -4731,8 +4670,7 @@ void Unit::RemoveStamina(float value)
 		player->Train(TrainWhat::Stamina, value, 0);
 	if(Net::IsServer() && IsTeamMember())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_STAMINA;
+		NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 		c.unit = this;
 	}
 }
@@ -4802,10 +4740,10 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 				if(data->tex)
 				{
-					for(TexOverride& tex_o : data->tex->textures)
+					for(TexOverride& texOverride : data->tex->textures)
 					{
-						if(tex_o.diffuse)
-							resMgr->Load(tex_o.diffuse);
+						if(texOverride.diffuse)
+							resMgr->Load(texOverride.diffuse);
 					}
 				}
 				data->state = ResourceState::Loading;
@@ -4829,10 +4767,10 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			}
 			if(data->tex)
 			{
-				for(TexOverride& tex_o : data->tex->textures)
+				for(TexOverride& texOverride : data->tex->textures)
 				{
-					if(tex_o.diffuse)
-						resMgr->Load(tex_o.diffuse);
+					if(texOverride.diffuse)
+						resMgr->Load(texOverride.diffuse);
 				}
 			}
 			data->state = ResourceState::Loaded;
@@ -4861,7 +4799,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 			}
 
-			if(meshInst->mesh->head.n_groups > 1)
+			if(meshInst->mesh->head.nGroups > 1)
 				meshInst->groups[1].state = 0;
 			if(humanData)
 				humanData->ApplyScale(meshInst);
@@ -4880,12 +4818,12 @@ void Unit::CreateMesh(CREATE_MESH mode)
 }
 
 //=================================================================================================
-void Unit::UseUsable(Usable* new_usable)
+void Unit::UseUsable(Usable* newUsable)
 {
-	if(new_usable)
+	if(newUsable)
 	{
-		assert(!usable && !new_usable->user);
-		usable = new_usable;
+		assert(!usable && !newUsable->user);
+		usable = newUsable;
 		usable->user = this;
 	}
 	else
@@ -4904,8 +4842,7 @@ void Unit::RevealName(bool setName)
 	hero->knowName = true;
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TELL_NAME;
+		NetChange& c = Net::PushChange(NetChange::TELL_NAME);
 		c.unit = this;
 		c.id = setName ? 1 : 0;
 	}
@@ -4927,8 +4864,7 @@ void Unit::SetKnownName(bool known)
 	hero->knowName = true;
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TELL_NAME;
+		NetChange& c = Net::PushChange(NetChange::TELL_NAME);
 		c.unit = this;
 		c.id = 0;
 	}
@@ -4990,9 +4926,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 {
 	if(notify && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
+		NetChange& c = Net::PushChange(NetChange::BREAK_ACTION);
 		c.unit = this;
-		c.type = NetChange::BREAK_ACTION;
 	}
 
 	switch(action)
@@ -5071,12 +5006,12 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 		else
 		{
 			targetPos2 = targetPos = pos;
-			const Item* prev_used_item = usedItem;
+			const Item* prevUsedItem = usedItem;
 			StopUsingUsable(mode != BREAK_ACTION_MODE::FALL && notify);
-			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
+			if(prevUsedItem && slots[SLOT_WEAPON] == prevUsedItem && !HaveShield())
 				SetWeaponStateInstant(WeaponState::Taken, W_ONE_HANDED);
 			else if(mode == BREAK_ACTION_MODE::FALL)
-				usedItem = prev_used_item;
+				usedItem = prevUsedItem;
 			action = A_POSITION;
 			animationState = AS_POSITION_NORMAL;
 		}
@@ -5160,7 +5095,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 //=================================================================================================
 void Unit::Fall()
 {
-	ACTION prev_action = action;
+	ACTION prevAction = action;
 	liveState = FALLING;
 
 	if(Net::IsLocal())
@@ -5179,8 +5114,7 @@ void Unit::Fall()
 		// komunikat
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::FALL;
+			NetChange& c = Net::PushChange(NetChange::FALL);
 			c.unit = this;
 		}
 
@@ -5201,7 +5135,7 @@ void Unit::Fall()
 		}
 	}
 
-	if(prev_action == A_ANIMATION)
+	if(prevAction == A_ANIMATION)
 	{
 		action = A_NONE;
 		currentAnimation = ANI_STAND;
@@ -5303,29 +5237,26 @@ void Unit::Standup(bool warp, bool leave)
 	}
 	else
 	{
+		action = A_STAND_UP;
 		Mesh::Animation* anim = meshInst->mesh->GetAnimation("wstaje2");
 		if(anim)
 		{
 			meshInst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-			action = A_STAND_UP;
 			animation = ANI_PLAY;
 		}
 		else
-		{
-			action = A_NONE;
 			animation = ANI_STAND;
-		}
 	}
 	usedItem = nullptr;
 	if(weaponState != WeaponState::Hidden)
 	{
-		WeaponType target_weapon;
+		WeaponType targetWeapon;
 		if(weaponState == WeaponState::Taken || weaponState == WeaponState::Taking)
-			target_weapon = weaponTaken;
+			targetWeapon = weaponTaken;
 		else
-			target_weapon = weaponHiding;
-		if((target_weapon == W_ONE_HANDED && !HaveWeapon())
-			|| (target_weapon == W_BOW && !HaveBow()))
+			targetWeapon = weaponHiding;
+		if((targetWeapon == W_ONE_HANDED && !HaveWeapon())
+			|| (targetWeapon == W_BOW && !HaveBow()))
 		{
 			SetWeaponStateInstant(WeaponState::Hidden, W_NONE);
 		}
@@ -5345,8 +5276,7 @@ void Unit::Standup(bool warp, bool leave)
 
 	if(Net::IsServer() && gameLevel->ready && !leave)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STAND_UP;
+		NetChange& c = Net::PushChange(NetChange::STAND_UP);
 		c.unit = this;
 	}
 }
@@ -5354,7 +5284,7 @@ void Unit::Standup(bool warp, bool leave)
 //=================================================================================================
 void Unit::Die(Unit* killer)
 {
-	ACTION prev_action = action;
+	ACTION prevAction = action;
 
 	if(liveState == FALL)
 	{
@@ -5383,8 +5313,7 @@ void Unit::Die(Unit* killer)
 				mark = true;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::MARK_UNIT;
+					NetChange& c = Net::PushChange(NetChange::MARK_UNIT);
 					c.unit = this;
 					c.id = 1;
 				}
@@ -5418,22 +5347,15 @@ void Unit::Die(Unit* killer)
 		// event
 		if(eventHandler)
 			eventHandler->HandleUnitEvent(UnitEventHandler::DIE, this);
-		for(Event& event : events)
-		{
-			if(event.type == EVENT_DIE)
-			{
-				ScriptEvent e(EVENT_DIE);
-				e.onDie.unit = this;
-				event.quest->FireEvent(e);
-			}
-		}
+		ScriptEvent event(EVENT_DIE);
+		event.onDie.unit = this;
+		FireEvent(event);
 
 		// message
 		if(Net::IsOnline())
 		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::DIE;
-			c2.unit = this;
+			NetChange& c = Net::PushChange(NetChange::DIE);
+			c.unit = this;
 		}
 
 		// stats
@@ -5488,7 +5410,7 @@ void Unit::Die(Unit* killer)
 	if(IsSet(data->flags2, F2_BOSS))
 		gameLevel->EndBossFight();
 
-	if(prev_action == A_ANIMATION)
+	if(prevAction == A_ANIMATION)
 	{
 		action = A_NONE;
 		currentAnimation = ANI_STAND;
@@ -5537,16 +5459,14 @@ void Unit::DropGold(int count)
 		// wyœlij info o animacji
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 		}
 	}
 	else
 	{
 		// wyœlij komunikat o wyrzucaniu z³ota
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_GOLD;
+		NetChange& c = Net::PushChange(NetChange::DROP_GOLD);
 		c.id = count;
 	}
 }
@@ -5592,16 +5512,14 @@ void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::HIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::HIT_SOUND);
 		c.pos = hitpoint;
 		c.id = mat2;
 		c.count = mat;
 
 		if(playBodyHit)
 		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::HIT_SOUND;
+			NetChange& c2 = Net::PushChange(NetChange::HIT_SOUND);
 			c2.pos = hitpoint;
 			c2.id = mat2;
 			c2.count = MAT_BODY;
@@ -5629,27 +5547,26 @@ void Unit::CreatePhysics(bool position)
 //=================================================================================================
 void Unit::UpdatePhysics(const Vec3* targetPos)
 {
-	Vec3 phy_pos = targetPos ? *targetPos : pos;
+	Vec3 phyPos = targetPos ? *targetPos : pos;
 	if(liveState == ALIVE)
-		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
+		phyPos.y += max(MIN_H, GetUnitHeight()) / 2;
 
-	btVector3 a_min, a_max;
-	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
-	phyWorld->UpdateAabb(cobj);
+	cobj->getWorldTransform().setOrigin(ToVector3(phyPos));
+	physics->UpdateAabb(cobj);
 }
 
 //=================================================================================================
-Sound* Unit::GetSound(SOUND_ID sound_id) const
+Sound* Unit::GetSound(SOUND_ID soundId) const
 {
-	if(data->sounds->Have(sound_id))
-		return data->sounds->Random(sound_id);
+	if(data->sounds->Have(soundId))
+		return data->sounds->Random(soundId);
 	return nullptr;
 }
 
 //=================================================================================================
-bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
+bool Unit::SetWeaponState(bool takesOut, WeaponType type, bool send)
 {
-	if(takes_out)
+	if(takesOut)
 	{
 		switch(weaponState)
 		{
@@ -5794,10 +5711,9 @@ bool Unit::SetWeaponState(bool takes_out, WeaponType type, bool send)
 
 	if(send && Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TAKE_WEAPON;
+		NetChange& c = Net::PushChange(NetChange::TAKE_WEAPON);
 		c.unit = this;
-		c.id = takes_out ? 0 : 1;
+		c.id = takesOut ? 0 : 1;
 	}
 
 	return true;
@@ -5837,9 +5753,9 @@ void Unit::UpdateInventory(bool notify)
 {
 	bool changes = false;
 	int index = 0;
-	const Item* prev_slots[SLOT_MAX];
+	const Item* prevSlots[SLOT_MAX];
 	for(int i = 0; i < SLOT_MAX; ++i)
-		prev_slots[i] = slots[i];
+		prevSlots[i] = slots[i];
 
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
@@ -5874,11 +5790,10 @@ void Unit::UpdateInventory(bool notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
-				if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
+				if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 				{
-					NetChange& c = Add1(Net::changes);
+					NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 					c.unit = this;
-					c.type = NetChange::CHANGE_EQUIPMENT;
 					c.id = i;
 				}
 			}
@@ -6048,12 +5963,14 @@ void Unit::AddDialogS(Quest2* quest, const string& dialogId, int priority)
 void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 {
 	assert(quest);
+
 	LoopAndRemove(dialogs, [quest](QuestDialog& dialog)
 	{
 		if(dialog.quest == quest)
 			return true;
 		return false;
 	});
+
 	if(!cleanup)
 	{
 		quest->RemoveDialogPtr(this);
@@ -6069,7 +5986,7 @@ void Unit::RemoveDialog(Quest2* quest, bool cleanup)
 //=================================================================================================
 void Unit::AddEventHandler(Quest2* quest, EventType type)
 {
-	assert(type == EVENT_UPDATE || type == EVENT_DIE);
+	assert(Any(type, EVENT_DIE, EVENT_ENTER, EVENT_PICKUP, EVENT_UPDATE));
 
 	Event e;
 	e.quest = quest;
@@ -6193,10 +6110,7 @@ void Unit::OrderAttack()
 		{
 			team->craziesAttack = true;
 			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_FLAGS;
-			}
+				Net::PushChange(NetChange::CHANGE_FLAGS);
 		}
 	}
 	else
@@ -6340,6 +6254,16 @@ UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog, Quest* ques
 }
 
 //=================================================================================================
+UnitOrderEntry* Unit::OrderAttackObject(Usable* usable)
+{
+	assert(usable);
+	OrderReset();
+	order->order = ORDER_ATTACK_OBJECT;
+	order->usable = usable;
+	return order;
+}
+
+//=================================================================================================
 void Unit::Talk(cstring text, int playAnim)
 {
 	assert(text && Net::IsLocal());
@@ -6368,8 +6292,7 @@ void Unit::Talk(cstring text, int playAnim)
 	// sent
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK;
+		NetChange& c = Net::PushChange(NetChange::TALK);
 		c.unit = this;
 		c.str = StringPool.Get();
 		*c.str = text;
@@ -6412,17 +6335,17 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 	float dir = Vec3::LookAtAngle(this->pos, pos);
 	if(!Equal(rot, dir))
 	{
-		const float rot_speed = GetRotationSpeed() * dt;
-		const float rot_dif = AngleDiff(rot, dir);
+		const float rotSpeed = GetRotationSpeed() * dt;
+		const float rotDif = AngleDiff(rot, dir);
 		if(ShortestArc(rot, dir) > 0.f)
 			animation = ANI_RIGHT;
 		else
 			animation = ANI_LEFT;
-		if(rot_dif < rot_speed)
+		if(rotDif < rotSpeed)
 			rot = dir;
 		else
 		{
-			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
+			const float d = Sign(ShortestArc(rot, dir)) * rotSpeed;
 			rot = Clip(rot + d);
 		}
 		changed = true;
@@ -6439,6 +6362,7 @@ void Unit::RotateTo(const Vec3& pos)
 		changed = true;
 }
 
+//=================================================================================================
 void Unit::RotateTo(float rot)
 {
 	this->rot = rot;
@@ -6446,135 +6370,6 @@ void Unit::RotateTo(float rot)
 		ai->startRot = rot;
 	else
 		changed = true;
-}
-
-UnitOrderEntry* UnitOrderEntry::NextOrder()
-{
-	next = UnitOrderEntry::Get();
-	next->timer = -1.f;
-	return next;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithTimer(float timer)
-{
-	this->timer = timer;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithMoveType(MoveType moveType)
-{
-	this->moveType = moveType;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::WithRange(float range)
-{
-	this->range = range;
-	return this;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenWander()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_WANDER;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenWait()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_WAIT;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenFollow(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_FOLLOW;
-	o->unit = target;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenLeave()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_LEAVE;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_MOVE;
-	o->pos = pos;
-	o->moveType = MOVE_RUN;
-	o->range = 0.1f;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenLookAt(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_LOOK_AT;
-	o->pos = pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenEscapeTo(const Vec3& pos)
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_ESCAPE_TO;
-	o->pos = pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenEscapeToUnit(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_ESCAPE_TO_UNIT;
-	o->unit = target;
-	o->pos = target->pos;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenGoToInn()
-{
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_GOTO_INN;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenGuard(Unit* target)
-{
-	assert(target);
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_GUARD;
-	o->unit = target;
-	return o;
-}
-
-UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest)
-{
-	if(quest)
-		assert(dialog);
-
-	UnitOrderEntry* o = NextOrder();
-	o->order = ORDER_AUTO_TALK;
-	if(!leader)
-	{
-		o->autoTalk = AutoTalkMode::Yes;
-		o->timer = Unit::AUTO_TALK_WAIT;
-	}
-	else
-	{
-		o->autoTalk = AutoTalkMode::Leader;
-		o->timer = 0.f;
-	}
-	o->autoTalkDialog = dialog;
-	o->autoTalkQuest = quest;
-	return o;
 }
 
 //=================================================================================================
@@ -6585,30 +6380,30 @@ void Unit::StopUsingUsable(bool send)
 	timer = 0.f;
 	usedItem = nullptr;
 
-	const float unit_radius = GetUnitRadius();
+	const float unitRadius = GetUnitRadius();
 
 	gameLevel->globalCol.clear();
 	Level::IgnoreObjects ignore{};
 	const Unit* ignoredUnits[2]{ this };
 	ignore.ignoredUnits = ignoredUnits;
-	gameLevel->GatherCollisionObjects(*locPart, gameLevel->globalCol, pos, 2.f + unit_radius, &ignore);
+	gameLevel->GatherCollisionObjects(*locPart, gameLevel->globalCol, pos, 2.f + unitRadius, &ignore);
 
-	Vec3 tmp_pos = targetPos;
+	Vec3 tmpPos = targetPos;
 	bool ok = false;
-	float radius = unit_radius;
+	float radius = unitRadius;
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!gameLevel->Collide(gameLevel->globalCol, tmp_pos, unit_radius))
+		if(!gameLevel->Collide(gameLevel->globalCol, tmpPos, unitRadius))
 		{
 			if(i != 0 && locPart->haveTerrain)
-				tmp_pos.y = gameLevel->terrain->GetH(tmp_pos);
-			targetPos = tmp_pos;
+				tmpPos.y = gameLevel->terrain->GetH(tmpPos);
+			targetPos = tmpPos;
 			ok = true;
 			break;
 		}
 
-		tmp_pos = targetPos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+		tmpPos = targetPos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.2f;
@@ -6621,8 +6416,7 @@ void Unit::StopUsingUsable(bool send)
 
 	if(send && Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_USABLE;
+		NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 		c.unit = this;
 		c.id = usable->id;
 		c.count = USE_USABLE_STOP;
@@ -6654,27 +6448,27 @@ void Unit::CheckAutoTalk(float dt)
 		Unit* unit;
 		float dist;
 	};
-	static vector<NearUnit> near_units;
+	static vector<NearUnit> nearUnits;
 
-	const bool leader_mode = (order->autoTalk == AutoTalkMode::Leader);
+	const bool leaderMode = (order->autoTalk == AutoTalkMode::Leader);
 
 	for(Unit& u : team->members)
 	{
 		if(u.IsPlayer())
 		{
 			// if not leader (in leader mode) or busy - don't check this unit
-			if((leader_mode && &u != team->leader)
+			if((leaderMode && &u != team->leader)
 				|| (u.player->dialogCtx->dialogMode || u.busy != Busy_No
 				|| !u.IsStanding() || u.player->action != PlayerAction::None))
 				continue;
 			float dist = Vec3::Distance(pos, u.pos);
-			if(dist <= 8.f || leader_mode)
-				near_units.push_back({ &u, dist });
+			if(dist <= 8.f || leaderMode)
+				nearUnits.push_back({ &u, dist });
 		}
 	}
 
 	// if no nearby available players found, return
-	if(near_units.empty())
+	if(nearUnits.empty())
 	{
 		if(order->autoTalk == AutoTalkMode::Wait)
 			order->autoTalk = AutoTalkMode::Yes;
@@ -6682,24 +6476,24 @@ void Unit::CheckAutoTalk(float dt)
 	}
 
 	// sort by distance
-	std::sort(near_units.begin(), near_units.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
+	std::sort(nearUnits.begin(), nearUnits.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
 
 	// get near player that don't have enemies nearby
-	PlayerController* talk_player = nullptr;
-	for(auto& near_unit : near_units)
+	PlayerController* talkPlayer = nullptr;
+	for(auto& nearUnit : nearUnits)
 	{
-		Unit& talk_target = *near_unit.unit;
-		if(gameLevel->CanSee(*this, talk_target))
+		Unit& talkTarget = *nearUnit.unit;
+		if(gameLevel->CanSee(*this, talkTarget))
 		{
 			bool ok = true;
 			for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
 			{
-				Unit& check_unit = **it2;
-				if(&talk_target == &check_unit || this == &check_unit)
+				Unit& checkUnit = **it2;
+				if(&talkTarget == &checkUnit || this == &checkUnit)
 					continue;
 
-				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dontAttack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && gameLevel->CanSee(check_unit, talk_target))
+				if(checkUnit.IsAlive() && talkTarget.IsEnemy(checkUnit) && checkUnit.IsAI() && !checkUnit.dontAttack
+					&& Vec3::Distance2d(talkTarget.pos, checkUnit.pos) < ALERT_RANGE && gameLevel->CanSee(checkUnit, talkTarget))
 				{
 					ok = false;
 					break;
@@ -6708,14 +6502,14 @@ void Unit::CheckAutoTalk(float dt)
 
 			if(ok)
 			{
-				talk_player = talk_target.player;
+				talkPlayer = talkTarget.player;
 				break;
 			}
 		}
 	}
 
 	// start dialog or wait
-	if(talk_player)
+	if(talkPlayer)
 	{
 		if(order->autoTalk == AutoTalkMode::Yes)
 		{
@@ -6724,7 +6518,7 @@ void Unit::CheckAutoTalk(float dt)
 		}
 		else
 		{
-			talk_player->StartDialog(this, order->autoTalkDialog, order->autoTalkQuest);
+			talkPlayer->StartDialog(this, order->autoTalkDialog, order->autoTalkQuest);
 			OrderNext();
 		}
 	}
@@ -6734,7 +6528,7 @@ void Unit::CheckAutoTalk(float dt)
 		order->timer = AUTO_TALK_WAIT;
 	}
 
-	near_units.clear();
+	nearUnits.clear();
 }
 
 //=================================================================================================
@@ -6785,9 +6579,9 @@ void Unit::CastSpell()
 			if(IsSet(ability.flags, Ability::Triple))
 				count = 3;
 
-			float expected_rot = Clip(-Vec3::Angle2d(coord, targetPos) + PI / 2);
-			float current_rot = Clip(rot + PI);
-			AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
+			float expectedRot = Clip(-Vec3::Angle2d(coord, targetPos) + PI / 2);
+			float currentRot = Clip(rot + PI);
+			AdjustAngle(currentRot, expectedRot, ToRadians(10.f));
 
 			for(int i = 0; i < count; ++i)
 			{
@@ -6800,7 +6594,7 @@ void Unit::CastSpell()
 				bullet->backstab = 0.25f;
 				bullet->pos = coord;
 				bullet->attack = dmg;
-				bullet->rot = Vec3(0, Clip(current_rot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
+				bullet->rot = Vec3(0, Clip(currentRot + (IsPlayer() ? Random(-0.025f, 0.025f) : Random(-0.05f, 0.05f))), 0);
 				bullet->mesh = ability.mesh;
 				bullet->tex = ability.tex;
 				bullet->texSize = ability.size;
@@ -6836,18 +6630,15 @@ void Unit::CastSpell()
 					pe->life = -1;
 					pe->particleLife = 0.5f;
 					pe->emissions = -1;
-					pe->spawnMin = 3;
-					pe->spawnMax = 4;
+					pe->spawn = Int2(3, 4);
 					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
 					pe->speedMin = Vec3(-1, -1, -1);
 					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = ability.sizeParticle;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+					pe->size = Vec2(ability.sizeParticle, 0.f);
+					pe->alpha = Vec2(1.f, 0.f);
 					pe->mode = 1;
 					pe->Init();
 					locPart->lvlPart->pes.push_back(pe);
@@ -6856,8 +6647,7 @@ void Unit::CastSpell()
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CREATE_SPELL_BALL;
+					NetChange& c = Net::PushChange(NetChange::CREATE_SPELL_BALL);
 					c << ability.hash
 						<< bullet->id
 						<< id
@@ -6918,8 +6708,7 @@ void Unit::CastSpell()
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CREATE_ELECTRO;
+				NetChange& c = Net::PushChange(NetChange::CREATE_ELECTRO);
 				c.extraId = e->id;
 				c.pos = e->lines[0].from;
 				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
@@ -6955,12 +6744,10 @@ void Unit::CastSpell()
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
+						NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 						c.unit = this;
 
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::CREATE_DRAIN;
+						NetChange& c2 = Net::PushChange(NetChange::CREATE_DRAIN);
 						c2.unit = this;
 					}
 				}
@@ -7002,15 +6789,15 @@ void Unit::CastSpell()
 				target->hp = target->hpmax;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 					c.unit = target;
 				}
 
 				// particle effect
-				Vec3 pos = target->pos;
-				pos.y += target->GetUnitHeight() / 2;
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, Vec2::Zero);
+				Vec2 bounds(target->GetUnitRadius(), 0);
+				Vec3 pos = target->GetLootCenter();
+				pos.y += 0.5f;
+				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -7020,16 +6807,21 @@ void Unit::CastSpell()
 					target->hp = Min(target->hp + dmg, target->hpmax);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
+						NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 						c.unit = target;
 					}
 				}
 
 				// particle effect
 				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
-				Vec3 pos = target->pos;
-				pos.y += bounds.y / 2;
+				Vec3 pos;
+				if(target->liveState == Unit::FALL || target->liveState == Unit::DEAD)
+					pos = target->GetLootCenter();
+				else
+				{
+					pos = target->pos;
+					pos.y += bounds.y / 2;
+				}
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 		}
@@ -7037,24 +6829,24 @@ void Unit::CastSpell()
 	case Ability::Summon:
 		{
 			// despawn old
-			Unit* existing_unit = gameLevel->FindUnit([&](Unit* u) { return u->summoner == this; });
-			if(existing_unit)
+			Unit* existingUnit = gameLevel->FindUnit([&](Unit* u) { return u->summoner == this; });
+			if(existingUnit)
 			{
-				team->RemoveMember(existing_unit);
-				gameLevel->RemoveUnit(existing_unit);
+				team->RemoveMember(existingUnit);
+				gameLevel->RemoveUnit(existingUnit);
 			}
 
 			// spawn new
-			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
-			if(new_unit)
+			Unit* newUnit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
+			if(newUnit)
 			{
-				new_unit->summoner = this;
-				new_unit->inArena = inArena;
-				if(new_unit->inArena != -1)
-					game->arena->units.push_back(new_unit);
-				team->AddMember(new_unit, HeroType::Visitor);
-				new_unit->order->unit = this; // follow summoner
-				gameLevel->SpawnUnitEffect(*new_unit);
+				newUnit->summoner = this;
+				newUnit->inArena = inArena;
+				if(newUnit->inArena != -1)
+					game->arena->units.push_back(newUnit);
+				team->AddMember(newUnit, HeroType::Visitor);
+				newUnit->order->unit = this; // follow summoner
+				gameLevel->SpawnUnitEffect(*newUnit);
 			}
 		}
 		break;
@@ -7077,15 +6869,15 @@ void Unit::CastSpell()
 		{
 			float angle = Random(MAX_ANGLE);
 			Vec3 targetPos = pos + Vec3(sin(angle) * ability.range, 0, cos(angle) * ability.range);
-			Unit* new_unit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
-			if(new_unit)
+			Unit* newUnit = gameLevel->SpawnUnitNearLocation(*locPart, targetPos, *ability.unit, nullptr, level);
+			if(newUnit)
 			{
-				new_unit->inArena = inArena;
-				if(new_unit->inArena != -1)
-					game->arena->units.push_back(new_unit);
-				gameLevel->SpawnUnitEffect(*new_unit);
-				new_unit->ai->alertTarget = ai->target;
-				new_unit->ai->alertTargetPos = ai->targetLastPos;
+				newUnit->inArena = inArena;
+				if(newUnit->inArena != -1)
+					game->arena->units.push_back(newUnit);
+				gameLevel->SpawnUnitEffect(*newUnit);
+				newUnit->ai->alertTarget = ai->target;
+				newUnit->ai->alertTargetPos = ai->targetLastPos;
 			}
 		}
 		break;
@@ -7133,8 +6925,7 @@ void Unit::CastSpell()
 		soundMgr->PlaySound3d(ability.soundCast, coord, ability.soundCastDist);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
+			NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 			c.extraId = 0;
 			c.ability = &ability;
 			c.pos = coord;
@@ -7168,7 +6959,7 @@ void Unit::Update(float dt)
 				static vector<Unit*> targets;
 				targets.clear();
 				float t;
-				bool in_dash = false;
+				bool inDash = false;
 				gameLevel->ContactTest(cobj, [&](btCollisionObject* obj, bool first)
 				{
 					if(first)
@@ -7187,13 +6978,13 @@ void Unit::Update(float dt)
 					{
 						Unit* target = (Unit*)obj->getUserPointer();
 						if(target->action == A_DASH)
-							in_dash = true;
+							inDash = true;
 						targets.push_back(target);
 						return true;
 					}
 				}, true);
 
-				if(!in_dash)
+				if(!inDash)
 				{
 					if(targets.empty())
 						moved = false;
@@ -7345,7 +7136,7 @@ void Unit::Update(float dt)
 		}
 	}
 
-	const int group_index = meshInst->mesh->head.n_groups - 1;
+	const int groupIndex = meshInst->mesh->head.nGroups - 1;
 
 	// aktualizuj akcjê
 	switch(action)
@@ -7386,10 +7177,9 @@ void Unit::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
+					NetChange& c = Net::PushChange(NetChange::TAKE_WEAPON);
 					c.unit = this;
 					c.id = 0;
-					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
 			else if(meshInst->IsEnded(1))
@@ -7493,7 +7283,7 @@ void Unit::Update(float dt)
 			// fix na skutek, nie na przyczynê ;(
 			game->ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", GetName(), liveState, action, animation,
 				currentAnimation, animationState));
-			goto koniec_strzelania;
+			goto endShooting;
 		}
 		if(fakeUnit)
 		{
@@ -7566,42 +7356,42 @@ void Unit::Update(float dt)
 				if(sk < 50)
 				{
 					int chance;
-					float variation_x, variation_y;
+					Vec2 variation;
 					if(sk < 10)
 					{
 						chance = 100;
-						variation_x = PI / 16;
-						variation_y = 5.f;
+						variation.x = PI / 16;
+						variation.y = 5.f;
 					}
 					else if(sk < 20)
 					{
 						chance = 80;
-						variation_x = PI / 20;
-						variation_y = 4.f;
+						variation.x = PI / 20;
+						variation.y = 4.f;
 					}
 					else if(sk < 30)
 					{
 						chance = 60;
-						variation_x = PI / 26;
-						variation_y = 3.f;
+						variation.x = PI / 26;
+						variation.y = 3.f;
 					}
 					else if(sk < 40)
 					{
 						chance = 40;
-						variation_x = PI / 34;
-						variation_y = 2.f;
+						variation.x = PI / 34;
+						variation.y = 2.f;
 					}
 					else
 					{
 						chance = 20;
-						variation_x = PI / 48;
-						variation_y = 1.f;
+						variation.x = PI / 48;
+						variation.y = 1.f;
 					}
 
 					if(Rand() % 100 < chance)
-						bullet->rot.y += RandomNormalized(variation_x);
+						bullet->rot.y += RandomNormalized(variation.x);
 					if(Rand() % 100 < chance)
-						bullet->yspeed += RandomNormalized(variation_y);
+						bullet->yspeed += RandomNormalized(variation.y);
 				}
 
 				bullet->rot.y = Clip(bullet->rot.y);
@@ -7629,8 +7419,7 @@ void Unit::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SHOOT_ARROW;
+					NetChange& c = Net::PushChange(NetChange::SHOOT_ARROW);
 					c << bullet->id
 						<< id
 						<< bullet->startPos
@@ -7649,7 +7438,7 @@ void Unit::Update(float dt)
 			animationState = AS_SHOOT_FINISHED;
 			if(meshInst->IsEnded(1))
 			{
-			koniec_strzelania:
+			endShooting:
 				meshInst->Deactivate(1);
 				action = A_NONE;
 				gameLevel->FreeBowInstance(bowInstance);
@@ -7678,57 +7467,56 @@ void Unit::Update(float dt)
 		else if(animationState == AS_ATTACK_PREPARE)
 		{
 			float t = GetAttackFrame(0);
-			float p = meshInst->GetProgress(group_index);
+			float p = meshInst->GetProgress(groupIndex);
 			if(p > t)
 			{
 				if(Net::IsLocal() && IsAI())
 				{
 					float speed = (1.f + GetAttackSpeed()) * GetStaminaAttackSpeedMod();
-					meshInst->groups[group_index].speed = speed;
+					meshInst->groups[groupIndex].speed = speed;
 					act.attack.power = 2.f;
 					animationState = AS_ATTACK_CAN_HIT;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = this;
 						c.id = AID_Attack;
 						c.f[1] = speed;
 					}
 				}
 				else
-					meshInst->groups[group_index].time = t * meshInst->groups[group_index].anim->length;
+					meshInst->groups[groupIndex].time = t * meshInst->groups[groupIndex].anim->length;
 			}
 			else if(IsPlayer() && Net::IsLocal())
 			{
 				const Weapon& weapon = GetWeapon();
 				float dif = p - timer;
-				float stamina_to_remove_total = weapon.GetInfo().stamina / 2 * GetStaminaMod(weapon);
-				float stamina_used = dif / t * stamina_to_remove_total;
+				float staminaToRemoveTotal = weapon.GetInfo().stamina / 2 * GetStaminaMod(weapon);
+				float staminaUsed = dif / t * staminaToRemoveTotal;
 				timer = p;
-				RemoveStamina(stamina_used);
+				RemoveStamina(staminaUsed);
 			}
 		}
 		else
 		{
-			if(animationState == AS_ATTACK_CAN_HIT && meshInst->GetProgress(group_index) > GetAttackFrame(0))
+			if(animationState == AS_ATTACK_CAN_HIT && meshInst->GetProgress(groupIndex) > GetAttackFrame(0))
 			{
-				if(Net::IsLocal() && !act.attack.hitted && meshInst->GetProgress(group_index) >= GetAttackFrame(1))
+				if(Net::IsLocal() && act.attack.hitted != 2 && meshInst->GetProgress(groupIndex) >= GetAttackFrame(1))
 				{
 					if(DoAttack())
-						act.attack.hitted = true;
+						act.attack.hitted = 2;
 				}
-				if(meshInst->GetProgress(group_index) >= GetAttackFrame(2) || meshInst->IsEnded(group_index))
+				if(meshInst->GetProgress(groupIndex) >= GetAttackFrame(2) || meshInst->IsEnded(groupIndex))
 				{
 					// koniec mo¿liwego ataku
 					animationState = AS_ATTACK_FINISHED;
-					meshInst->groups[group_index].speed = 1.f;
+					meshInst->groups[groupIndex].speed = 1.f;
 					act.attack.run = false;
 				}
 			}
-			if(animationState == AS_ATTACK_FINISHED && meshInst->IsEnded(group_index))
+			if(animationState == AS_ATTACK_FINISHED && meshInst->IsEnded(groupIndex))
 			{
-				if(group_index == 0)
+				if(groupIndex == 0)
 				{
 					animation = ANI_BATTLE;
 					currentAnimation = ANI_STAND;
@@ -7825,7 +7613,7 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_PAIN:
-		if(meshInst->mesh->head.n_groups == 2)
+		if(meshInst->mesh->head.nGroups == 2)
 		{
 			if(meshInst->IsEnded(1))
 			{
@@ -7846,23 +7634,22 @@ void Unit::Update(float dt)
 			{
 				if(IsOtherPlayer()
 					? animationState == AS_CAST_TRIGGER
-					: (animationState == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST]))
+					: (animationState == AS_CAST_ANIMATION && meshInst->GetProgress(groupIndex) >= data->frames->t[F_CAST]))
 				{
 					animationState = AS_CAST_CASTED;
 					CastSpell();
 				}
 			}
-			else if(IsLocalPlayer() && animationState == AS_CAST_ANIMATION && meshInst->GetProgress(group_index) >= data->frames->t[F_CAST])
+			else if(IsLocalPlayer() && animationState == AS_CAST_ANIMATION && meshInst->GetProgress(groupIndex) >= data->frames->t[F_CAST])
 			{
 				animationState = AS_CAST_CASTED;
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CAST_SPELL;
+				NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 				c.pos = targetPos;
 			}
-			if(meshInst->IsEnded(group_index))
+			if(meshInst->IsEnded(groupIndex))
 			{
 				action = A_NONE;
-				if(group_index == 1)
+				if(groupIndex == 1)
 					meshInst->Deactivate(1);
 				else
 					animation = ANI_BATTLE;
@@ -7891,29 +7678,28 @@ void Unit::Update(float dt)
 		break;
 	case A_USE_USABLE:
 		{
-			bool allow_move = true;
+			bool allowMove = true;
 			if(Net::IsServer())
 			{
 				if(IsOtherPlayer())
-					allow_move = false;
+					allowMove = false;
 			}
 			else if(Net::IsClient())
 			{
 				if(!IsPlayer() || !player->isLocal)
-					allow_move = false;
+					allowMove = false;
 			}
 			if(animationState == AS_USE_USABLE_MOVE_TO_ENDPOINT)
 			{
 				timer += dt;
-				if(allow_move && timer >= 0.5f)
+				if(allowMove && timer >= 0.5f)
 				{
 					action = A_NONE;
 					visualPos = pos = targetPos;
 					changed = true;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::USE_USABLE;
+						NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 						c.unit = this;
 						c.id = usable->id;
 						c.count = USE_USABLE_END;
@@ -7923,23 +7709,23 @@ void Unit::Update(float dt)
 					break;
 				}
 
-				if(allow_move)
+				if(allowMove)
 				{
 					// przesuñ postaæ
 					visualPos = pos = Vec3::Lerp(targetPos2, targetPos, timer * 2);
 
 					// obrót
-					float target_rot = Vec3::LookAtAngle(targetPos, usable->pos);
-					float dif = AngleDiff(rot, target_rot);
+					float targetRot = Vec3::LookAtAngle(targetPos, usable->pos);
+					float dif = AngleDiff(rot, targetRot);
 					if(NotZero(dif))
 					{
-						const float rot_speed = GetRotationSpeed() * 2 * dt;
-						const float arc = ShortestArc(rot, target_rot);
+						const float rotSpeed = GetRotationSpeed() * 2 * dt;
+						const float arc = ShortestArc(rot, targetRot);
 
-						if(dif <= rot_speed)
-							rot = target_rot;
+						if(dif <= rotSpeed)
+							rot = targetRot;
 						else
-							rot = Clip(rot + Sign(arc) * rot_speed);
+							rot = Clip(rot + Sign(arc) * rotSpeed);
 					}
 
 					changed = true;
@@ -7962,8 +7748,7 @@ void Unit::Update(float dt)
 								soundMgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
 								if(Net::IsServer())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::USABLE_SOUND;
+									NetChange& c = Net::PushChange(NetChange::USABLE_SOUND);
 									c.unit = this;
 								}
 							}
@@ -7975,9 +7760,9 @@ void Unit::Update(float dt)
 				else if(Net::IsLocal() || IsLocalPlayer())
 				{
 					// ustal docelowy obrót postaci
-					float target_rot;
+					float targetRot;
 					if(bu.limitRot == 0)
-						target_rot = rot;
+						targetRot = rot;
 					else if(bu.limitRot == 1)
 					{
 						float rot1 = Clip(act.useUsable.rot + PI / 2),
@@ -7986,12 +7771,12 @@ void Unit::Update(float dt)
 							dif2 = AngleDiff(rot1, rot2);
 
 						if(dif1 < dif2)
-							target_rot = usable->rot;
+							targetRot = usable->rot;
 						else
-							target_rot = rot2;
+							targetRot = rot2;
 					}
 					else if(bu.limitRot == 2)
-						target_rot = usable->rot;
+						targetRot = usable->rot;
 					else if(bu.limitRot == 3)
 					{
 						float rot1 = Clip(act.useUsable.rot + PI),
@@ -8000,31 +7785,31 @@ void Unit::Update(float dt)
 							dif2 = AngleDiff(rot1, rot2);
 
 						if(dif1 < dif2)
-							target_rot = usable->rot;
+							targetRot = usable->rot;
 						else
-							target_rot = rot2;
+							targetRot = rot2;
 					}
 					else
-						target_rot = usable->rot + PI;
-					target_rot = Clip(target_rot);
+						targetRot = usable->rot + PI;
+					targetRot = Clip(targetRot);
 
 					// obrót w strone obiektu
-					const float dif = AngleDiff(rot, target_rot);
-					const float rot_speed = GetRotationSpeed() * 2;
-					if(allow_move && NotZero(dif))
+					const float dif = AngleDiff(rot, targetRot);
+					const float rotSpeed = GetRotationSpeed() * 2;
+					if(allowMove && NotZero(dif))
 					{
-						const float rot_speed_dt = rot_speed * dt;
-						if(dif <= rot_speed_dt)
-							rot = target_rot;
+						const float rotSpeedDt = rotSpeed * dt;
+						if(dif <= rotSpeedDt)
+							rot = targetRot;
 						else
 						{
-							const float arc = ShortestArc(rot, target_rot);
-							rot = Clip(rot + Sign(arc) * rot_speed_dt);
+							const float arc = ShortestArc(rot, targetRot);
+							rot = Clip(rot + Sign(arc) * rotSpeedDt);
 						}
 					}
 
 					// czy musi siê obracaæ zanim zacznie siê przesuwaæ?
-					if(dif < rot_speed * 0.5f)
+					if(dif < rotSpeed * 0.5f)
 					{
 						timer += dt;
 						if(timer >= 0.5f)
@@ -8036,12 +7821,12 @@ void Unit::Update(float dt)
 						}
 
 						// przesuñ postaæ i fizykê
-						if(allow_move)
+						if(allowMove)
 						{
 							visualPos = pos = Vec3::Lerp(targetPos, targetPos2, timer * 2);
 							changed = true;
 							gameLevel->globalCol.clear();
-							float my_radius = GetUnitRadius();
+							float myRadius = GetUnitRadius();
 							bool ok = true;
 							for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
 							{
@@ -8049,7 +7834,7 @@ void Unit::Update(float dt)
 									continue;
 
 								float radius = (*it2)->GetUnitRadius();
-								if(Distance((*it2)->pos.x, (*it2)->pos.z, pos.x, pos.z) <= radius + my_radius)
+								if(Distance((*it2)->pos.x, (*it2)->pos.z, pos.x, pos.z) <= radius + myRadius)
 								{
 									ok = false;
 									break;
@@ -8078,7 +7863,7 @@ void Unit::Update(float dt)
 		if(animationState == AS_POSITION_HURT)
 		{
 			// obs³uga animacji cierpienia
-			if(meshInst->mesh->head.n_groups == 2)
+			if(meshInst->mesh->head.nGroups == 2)
 			{
 				if(meshInst->IsEnded(1) || timer >= 0.5f)
 				{
@@ -8099,8 +7884,7 @@ void Unit::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
+				NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 				c.unit = this;
 				c.id = usable->id;
 				c.count = USE_USABLE_END;
@@ -8124,12 +7908,12 @@ void Unit::Update(float dt)
 	case A_DASH:
 		// update unit dash/bull charge
 		{
-			float dt_left = min(dt, timer);
+			float dtLeft = min(dt, timer);
 			float t;
 			const float eps = 0.05f;
-			float len = speed * dt_left;
+			float len = speed * dtLeft;
 			Vec3 dir(sin(act.dash.rot) * (len + eps), 0, cos(act.dash.rot) * (len + eps));
-			Vec3 dir_normal = dir.Normalized();
+			Vec3 dirNormal = dir.Normalized();
 			bool ok = true;
 			Vec3 from = GetPhysicsPos();
 
@@ -8184,13 +7968,13 @@ void Unit::Update(float dt)
 				// check all hitted
 				if(Net::IsLocal())
 				{
-					float move_angle = Angle(0, 0, dir.x, dir.z);
-					Vec3 dir_left(sin(act.dash.rot + PI / 2) * len, 0, cos(act.dash.rot + PI / 2) * len);
-					Vec3 dir_right(sin(act.dash.rot - PI / 2) * len, 0, cos(act.dash.rot - PI / 2) * len);
+					float moveAngle = Angle(0, 0, dir.x, dir.z);
+					Vec3 dirLeft(sin(act.dash.rot + PI / 2) * len, 0, cos(act.dash.rot + PI / 2) * len);
+					Vec3 dirRight(sin(act.dash.rot - PI / 2) * len, 0, cos(act.dash.rot - PI / 2) * len);
 					for(Unit* unit : targets)
 					{
 						// deal damage/stun
-						bool move_forward = true;
+						bool moveForward = true;
 						if(!unit->IsFriend(*this, true))
 						{
 							if(!act.dash.hit->IsInside(unit))
@@ -8223,9 +8007,9 @@ void Unit::Update(float dt)
 							}
 						}
 						else
-							move_forward = false;
+							moveForward = false;
 
-						auto unit_clbk = [unit](btCollisionObject* obj, bool)
+						auto unitClbk = [unit](btCollisionObject* obj, bool)
 						{
 							int flags = obj->getCollisionFlags();
 							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
@@ -8234,20 +8018,20 @@ void Unit::Update(float dt)
 						};
 
 						// try to push forward
-						if(move_forward)
+						if(moveForward)
 						{
-							Vec3 move_dir = unit->pos - pos;
-							move_dir.y = 0;
-							move_dir.Normalize();
-							move_dir += dir_normal;
-							move_dir.Normalize();
-							move_dir *= len;
+							Vec3 moveDir = unit->pos - pos;
+							moveDir.y = 0;
+							moveDir.Normalize();
+							moveDir += dirNormal;
+							moveDir.Normalize();
+							moveDir *= len;
 							float t;
-							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
+							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), moveDir, unitClbk, t);
 							if(t == 1.f)
 							{
 								unit->moved = true;
-								unit->pos += move_dir;
+								unit->pos += moveDir;
 								unit->Moved(false, true);
 								continue;
 							}
@@ -8255,33 +8039,33 @@ void Unit::Update(float dt)
 
 						// try to push, left or right
 						float angle = Angle(pos.x, pos.z, unit->pos.x, unit->pos.z);
-						float best_dir = ShortestArc(move_angle, angle);
-						bool inner_ok = false;
+						float bestDir = ShortestArc(moveAngle, angle);
+						bool innerOk = false;
 						for(int i = 0; i < 2; ++i)
 						{
 							float t;
-							Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
-							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
+							Vec3& actualDir = (bestDir < 0 ? dirLeft : dirRight);
+							gameLevel->LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actualDir, unitClbk, t);
 							if(t == 1.f)
 							{
-								inner_ok = true;
+								innerOk = true;
 								unit->moved = true;
-								unit->pos += actual_dir;
+								unit->pos += actualDir;
 								unit->Moved(false, true);
 								break;
 							}
 						}
-						if(!inner_ok)
+						if(!innerOk)
 							ok = false;
 					}
 				}
 			}
 
 			// move if there is free space
-			float actual_len = (len + eps) * t - eps;
-			if(actual_len > 0 && ok)
+			float actualLen = (len + eps) * t - eps;
+			if(actualLen > 0 && ok)
 			{
-				pos += Vec3(sin(act.dash.rot), 0, cos(act.dash.rot)) * actual_len;
+				pos += Vec3(sin(act.dash.rot), 0, cos(act.dash.rot)) * actualLen;
 				Moved(false, true);
 			}
 
@@ -8308,12 +8092,17 @@ void Unit::Update(float dt)
 		assert(Net::IsClient());
 		break;
 	case A_STAND_UP:
-		if(meshInst->IsEnded())
+		if(animation == ANI_PLAY)
 		{
-			action = A_NONE;
-			animation = ANI_STAND;
-			currentAnimation = (Animation)-1;
+			if(meshInst->IsEnded())
+			{
+				action = A_NONE;
+				animation = ANI_STAND;
+				currentAnimation = (Animation)-1;
+			}
 		}
+		else if(!meshInst->IsBlending())
+			action = A_NONE;
 		break;
 	case A_USE_ITEM:
 		if(meshInst->IsEnded(1))
@@ -8361,7 +8150,7 @@ void Unit::Moved(bool warped, bool dash)
 					return;
 				if(IsPlayer() && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 				{
-					bool allow_exit = false;
+					bool allowExit = false;
 
 					if(gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveExit))
 					{
@@ -8378,7 +8167,7 @@ void Unit::Moved(bool warped, bool dash)
 										CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 										if(result == CanLeaveLocationResult::Yes)
 										{
-											allow_exit = true;
+											allowExit = true;
 											world->SetTravelDir(pos);
 										}
 										else
@@ -8403,7 +8192,7 @@ void Unit::Moved(bool warped, bool dash)
 							CanLeaveLocationResult result = gameLevel->CanLeaveLocation(*this);
 							if(result == CanLeaveLocationResult::Yes)
 							{
-								allow_exit = true;
+								allowExit = true;
 								world->SetTravelDir(pos);
 							}
 							else
@@ -8411,7 +8200,7 @@ void Unit::Moved(bool warped, bool dash)
 						}
 					}
 
-					if(allow_exit)
+					if(allowExit)
 					{
 						game->fallbackType = FALLBACK::EXIT;
 						game->fallbackTimer = -1.f;
@@ -8430,17 +8219,16 @@ void Unit::Moved(bool warped, bool dash)
 
 			if(IsPlayer() && gameLevel->location->type == L_CITY && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
-				int id = 0;
-				for(vector<InsideBuilding*>::iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it, ++id)
+				for(InsideBuilding* insideBuilding : gameLevel->cityCtx->insideBuildings)
 				{
-					if((*it)->enterRegion.IsInside(pos))
+					if(insideBuilding->canEnter && insideBuilding->enterRegion.IsInside(pos))
 					{
 						if(Net::IsLocal())
 						{
 							// wejdŸ do budynku
 							game->fallbackType = FALLBACK::ENTER;
 							game->fallbackTimer = -1.f;
-							game->fallbackValue = id;
+							game->fallbackValue = insideBuilding->partId;
 							game->fallbackValue2 = -1;
 							frozen = FROZEN::YES;
 						}
@@ -8450,9 +8238,8 @@ void Unit::Moved(bool warped, bool dash)
 							game->fallbackType = FALLBACK::WAIT_FOR_WARP;
 							game->fallbackTimer = -1.f;
 							frozen = FROZEN::YES;
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ENTER_BUILDING;
-							c.id = id;
+							NetChange& c = Net::PushChange(NetChange::ENTER_BUILDING);
+							c.id = insideBuilding->partId;
 						}
 						break;
 					}
@@ -8686,8 +8473,7 @@ void Unit::ChangeBase(UnitData* ud, bool updateItems)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_UNIT_BASE;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_UNIT_BASE);
 		c.unit = this;
 	}
 }
@@ -8700,7 +8486,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 	if(newLocPart == locPart)
 		return;
 
-	const bool is_active = meshInst != nullptr;
+	const bool isActive = meshInst != nullptr;
 	const bool activate = newLocPart->IsActive();
 	RemoveElement(locPart->units, this);
 	newLocPart->units.push_back(this);
@@ -8708,7 +8494,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 	pos = newPos;
 	visualPos = newPos;
 
-	if(is_active != activate)
+	if(isActive != activate)
 	{
 		if(activate)
 		{
@@ -8740,8 +8526,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SPAWN_UNIT;
+					NetChange& c = Net::PushChange(NetChange::SPAWN_UNIT);
 					c.unit = this;
 				}
 			}
@@ -8814,12 +8599,11 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = gameRes->tBlood[data->blood];
-		pe->emissionInterval = 0.01f;
+		pe->emissionInterval = 0.f;
 		pe->life = 5.f;
 		pe->particleLife = 0.5f;
 		pe->emissions = 1;
-		pe->spawnMin = 10;
-		pe->spawnMax = 15;
+		pe->spawn = Int2(10, 15);
 		pe->maxParticles = 15;
 		if(hitpoint)
 			pe->pos = *hitpoint;
@@ -8832,18 +8616,15 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		pe->speedMax = Vec3(1, 1, 1);
 		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = 0.3f;
-		pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-		pe->alpha = 0.9f;
-		pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+		pe->size = Vec2(0.3f, 0.f);
+		pe->alpha = Vec2(0.9f, 0.f);
 		pe->mode = 0;
 		pe->Init();
 		locPart->lvlPart->pes.push_back(pe);
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_BLOOD;
+			NetChange& c = Net::PushChange(NetChange::SPAWN_BLOOD);
 			c.id = data->blood;
 			c.pos = pe->pos;
 		}
@@ -8893,8 +8674,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 				hurtTimer += 1.f;
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UNIT_SOUND;
+				NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 				c.unit = this;
 				c.id = SOUND_PAIN;
 			}
@@ -8907,8 +8687,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		// send update hp
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = this;
 		}
 	}
@@ -9014,7 +8793,7 @@ bool Unit::DoShieldSmash()
 		else
 			hitted->animationState = AS_POSITION_HURT;
 
-		if(hitted->meshInst->mesh->head.n_groups == 2)
+		if(hitted->meshInst->mesh->head.nGroups == 2)
 			hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 		else
 		{
@@ -9024,9 +8803,8 @@ bool Unit::DoShieldSmash()
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::STUNNED);
 			c.unit = hitted;
-			c.type = NetChange::STUNNED;
 		}
 	}
 
@@ -9053,30 +8831,29 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 		m += 0.1f;
 
 	// backstab bonus
-	float angle_dif = AngleDiff(Clip(rot + PI), hitted.rot);
-	float backstab_mod = GetBackstabMod(bash ? slots[SLOT_SHIELD] : slots[SLOT_WEAPON]);
+	float angleDif = AngleDiff(Clip(rot + PI), hitted.rot);
+	float backstabMod = GetBackstabMod(bash ? slots[SLOT_SHIELD] : slots[SLOT_WEAPON]);
 	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
-		backstab_mod /= 2;
-	m += angle_dif / PI * backstab_mod;
+		backstabMod /= 2;
+	m += angleDif / PI * backstabMod;
 
 	// apply modifiers
 	attack *= m;
 
 	// blocking
-	if(hitted.IsBlocking() && angle_dif < PI / 2)
+	if(hitted.IsBlocking() && angleDif < PI / 2)
 	{
 		// play sound
-		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
-		MATERIAL_TYPE weapon_mat = (!bash ? GetWeaponMaterial() : GetShield().material);
+		MATERIAL_TYPE hittedMat = hitted.GetShield().material;
+		MATERIAL_TYPE weaponMat = (!bash ? GetWeaponMaterial() : GetShield().material);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HIT_SOUND;
+			NetChange& c = Net::PushChange(NetChange::HIT_SOUND);
 			c.pos = hitpoint;
-			c.id = weapon_mat;
-			c.count = hitted_mat;
+			c.id = weaponMat;
+			c.count = hittedMat;
 		}
-		soundMgr->PlaySound3d(gameRes->GetMaterialSound(weapon_mat, hitted_mat), hitpoint, HIT_SOUND_DIST);
+		soundMgr->PlaySound3d(gameRes->GetMaterialSound(weaponMat, hittedMat), hitpoint, HIT_SOUND_DIST);
 
 		// train blocking
 		if(hitted.IsPlayer())
@@ -9104,7 +8881,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 				else
 					hitted.animationState = AS_POSITION_HURT;
 
-				if(hitted.meshInst->mesh->head.n_groups == 2)
+				if(hitted.meshInst->mesh->head.nGroups == 2)
 					hitted.meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				else
 				{
@@ -9171,15 +8948,15 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 	// apply poison
 	if(IsSet(data->flags, F_POISON_ATTACK))
 	{
-		float poison_res = hitted.GetPoisonResistance();
-		if(poison_res > 0.f)
+		float poisonRes = hitted.GetPoisonResistance();
+		if(poisonRes > 0.f)
 		{
 			Effect e;
 			e.effect = EffectId::Poison;
 			e.source = EffectSource::Temporary;
 			e.sourceId = -1;
 			e.value = -1;
-			e.power = dmg / 10 * poison_res;
+			e.power = dmg / 10 * poisonRes;
 			e.time = 5.f;
 			hitted.AddEffect(e);
 		}
@@ -9206,8 +8983,7 @@ void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 
 		if(Net::IsServer() && notify)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ATTACK;
+			NetChange& c = Net::PushChange(NetChange::ATTACK);
 			c.unit = this;
 			c.id = prepare ? AID_StartShoot : AID_Shoot;
 			c.f[1] = speed;
@@ -9232,3 +9008,30 @@ void Unit::AlertAllies(Unit* target)
 	}
 }
 
+//=================================================================================================
+void Unit::FireEvent(ScriptEvent& e)
+{
+	if(events.empty())
+		return;
+
+	for(Event& event : events)
+	{
+		if(event.type == e.type)
+			event.quest->FireEvent(e);
+	}
+}
+
+//=================================================================================================
+bool Unit::HaveEventHandler(EventType eventType) const
+{
+	if(!events.empty())
+	{
+		for(const Event& event : events)
+		{
+			if(event.type == eventType)
+				return true;
+		}
+	}
+
+	return false;
+}

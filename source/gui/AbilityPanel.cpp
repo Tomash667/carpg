@@ -80,7 +80,7 @@ void AbilityPanel::Refresh()
 void AbilityPanel::Draw()
 {
 	GamePanel::Draw();
-	grid_offset = 0;
+	gridOffset = 0;
 
 	// title
 	Rect rect = {
@@ -115,21 +115,21 @@ void AbilityPanel::Draw()
 //=================================================================================================
 void AbilityPanel::DrawGroup(cstring text)
 {
-	int count_w = (size.x - 48) / 63;
-	int count_h = images.size() / count_w + 1;
-	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
-	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
+	int countW = (size.x - 48) / 63;
+	int countH = images.size() / countW + 1;
+	int shiftX = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shiftY = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + gridOffset;
 
-	gui->DrawText(GameGui::fontBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
-	shift_y += 40;
+	gui->DrawText(GameGui::fontBig, text, DTF_LEFT, Color::Black, Rect(shiftX, shiftY, shiftX + 400, shiftY + 50));
+	shiftY += 40;
 
-	for(int y = 0; y < count_h; ++y)
+	for(int y = 0; y < countH; ++y)
 	{
-		for(int x = 0; x < count_w; ++x)
+		for(int x = 0; x < countW; ++x)
 		{
-			Int2 shift(shift_x + x * 63, shift_y + y * 63);
+			Int2 shift(shiftX + x * 63, shiftY + y * 63);
 			gui->DrawSprite(tItemBar, shift);
-			uint index = x + y * count_w;
+			uint index = x + y * countW;
 			if(index < images.size())
 			{
 				const float ratio = 62.f / 128.f;
@@ -141,7 +141,7 @@ void AbilityPanel::DrawGroup(cstring text)
 		}
 	}
 
-	grid_offset += count_h * 63 + 40;
+	gridOffset += countH * 63 + 40;
 }
 
 //=================================================================================================
@@ -210,7 +210,7 @@ void AbilityPanel::Update(float dt)
 	}
 
 	int group = G_NONE, id = -1;
-	grid_offset = 0;
+	gridOffset = 0;
 	if(!abilities.empty())
 		UpdateGroup(abilities.size(), G_ACTION, group, id);
 	UpdateGroup(4, G_OTHER, group, id);
@@ -238,19 +238,19 @@ void AbilityPanel::Update(float dt)
 //=================================================================================================
 void AbilityPanel::UpdateGroup(uint count, int group, int& groupResult, int& idResult)
 {
-	int count_w = (size.x - 48) / 63;
-	int count_h = count / count_w + 1;
-	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
-	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset + 40;
+	int countW = (size.x - 48) / 63;
+	int countH = count / countW + 1;
+	int shiftX = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shiftY = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + gridOffset + 40;
 
-	for(int y = 0; y < count_h; ++y)
+	for(int y = 0; y < countH; ++y)
 	{
-		for(int x = 0; x < count_w; ++x)
+		for(int x = 0; x < countW; ++x)
 		{
-			uint index = x + y * count_w;
+			uint index = x + y * countW;
 			if(index >= count)
 				break;
-			if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+			if(Rect::IsInside(gui->cursorPos, Int2(shiftX + x * 63, shiftY + y * 63), Int2(64, 64)))
 			{
 				groupResult = group;
 				idResult = index;
@@ -266,7 +266,7 @@ void AbilityPanel::UpdateGroup(uint count, int group, int& groupResult, int& idR
 		}
 	}
 
-	grid_offset += count_h * 63 + 40;
+	gridOffset += countH * 63 + 40;
 }
 
 //=================================================================================================

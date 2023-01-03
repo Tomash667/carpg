@@ -29,6 +29,7 @@ void InsideBuilding::Save(GameWriter& f)
 	f << region1;
 	f << region2;
 	f << enterY;
+	f << canEnter;
 
 	LocationPart::Save(f);
 }
@@ -50,6 +51,8 @@ void InsideBuilding::Load(GameReader& f)
 	f >> region1;
 	f >> region2;
 	f >> enterY;
+	if(LOAD_VERSION >= V_0_20)
+		f >> canEnter;
 
 	if(LOAD_VERSION >= V_0_11)
 		LocationPart::Load(f);
@@ -70,6 +73,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 	f << top;
 	f << xsphereRadius;
 	f << enterY;
+	f << canEnter;
 }
 
 //=================================================================================================
@@ -79,22 +83,23 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		return false;
 
 	f >> levelShift;
-	const string& building_id = f.ReadString1();
+	const string& buildingId = f.ReadString1();
 	f >> xspherePos;
 	f >> enterRegion;
 	f >> exitRegion;
 	f >> top;
 	f >> xsphereRadius;
 	f >> enterY;
+	f >> canEnter;
 	if(!f)
 	{
 		Error("Broken packet for inside building.");
 		return false;
 	}
-	building = Building::Get(building_id);
+	building = Building::Get(buildingId);
 	if(!building || !building->insideMesh)
 	{
-		Error("Invalid building id '%s'.", building_id.c_str());
+		Error("Invalid building id '%s'.", buildingId.c_str());
 		return false;
 	}
 	offset = Vec2(512.f * levelShift.x + 256.f, 512.f * levelShift.y + 256.f);

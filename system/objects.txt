@@ -5,27 +5,27 @@
 object barrel {
 	mesh "beczka.qmsh"
 	cylinder { 0.38 1.083 }
-	flags near_wall
+	flags nearWall
 }
 
 object barrels {
 	mesh "beczki.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object big_barrel {
 	mesh "beczka2.qmsh"
-	flags { near_wall blocks_camera }
+	flags { nearWall blocksCamera }
 }
 
 object box {
 	mesh "skrzynka.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object boxes {
 	mesh "skrzynki.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object table {
@@ -38,184 +38,184 @@ object table2 {
 
 object wagon {
 	mesh "woz.qmsh"
-	flags { multiple_physics }
+	flags { multiplePhysics }
 }
 
 object bow_target {
 	mesh "tarcza_strzelnicza.qmsh"
-	flags { near_wall physics_ptr }
+	flags { nearWall physicsPtr }
 }
 
 object torch {
 	mesh "pochodnia.qmsh"
 	cylinder { 0.0675 2.18 }
-	center_y 2.2
-	extra_dist 0.5
-	flags { near_wall light important }
+	centerY 2.2
+	extraDist 0.5
+	flags { nearWall light important }
 }
 
 object torch_off {
 	mesh "pochodnia.qmsh"
 	cylinder { 0.0675 2.18 }
-	flags near_wall
+	flags nearWall
 }
 
 object tanning_rack {
 	mesh "tanning_rack.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object altar {
 	mesh "oltarz.qmsh"
-	flags { near_wall blocks_camera }
+	flags { nearWall blocksCamera }
 }
 
 object bloody_altar {
 	mesh "krwawy_oltarz.qmsh"
-	center_y 0.782
-	flags { near_wall important blood_effect blocks_camera }
+	centerY 0.782
+	flags { nearWall important bloodEffect blocksCamera }
 }
 
 object tent {
 	mesh "namiot.qmsh"
-	flags blocks_camera
+	flags blocksCamera
 }
 
 object hay {
 	mesh "snopek.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object firewood {
 	mesh "drewno_na_opal.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object wardrobe {
 	mesh "szafa.qmsh"
-	flags { near_wall blocks_camera }
+	flags { nearWall blocksCamera }
 }
 
 object bed {
 	mesh "lozko.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object bedding {
 	mesh "poslanie.qmsh"
-	flags no_physics
+	flags noPhysics
 }
 
 object painting1 {
 	mesh "obraz1.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting2 {
 	mesh "obraz2.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting3 {
 	mesh "obraz3.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting4 {
 	mesh "obraz4.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting5 {
 	mesh "obraz5.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting6 {
 	mesh "obraz6.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting7 {
 	mesh "obraz7.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting8 {
 	mesh "obraz8.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting_elf {
 	mesh "painting_elf.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
-	center_y 0.4
-	flags { tmp_physics light campfire_effect }
+	centerY 0.4
+	flags { tmpPhysics light campfireEffect }
 }
 
 object campfire_off {
 	mesh "ognisko2.qmsh"
 	cylinder { 1.0735 0.43 }
-	flags tmp_physics
+	flags tmpPhysics
 }
 
 object chest {
 	mesh "chest.qmsh"
-	extra_dist 0.2
-	flags { near_wall is_chest }
+	extraDist 0.2
+	flags { nearWall isChest }
 }
 
 // removed in V_0_14
 object chest_r {
 	mesh "chest.qmsh"
-	flags is_chest
+	flags isChest
 }
 
 object chest_silver {
 	mesh "chest2.qmsh"
-	extra_dist 0.2
-	flags is_chest
+	extraDist 0.2
+	flags isChest
 }
 
 object melee_target {
 	mesh "manekin.qmsh"
 	cylinder { 0.27 1.85 }
-	flags physics_ptr
+	flags physicsPtr
 }
 
 object emblem {
 	mesh "emblemat.qmsh"
-	flags { near_wall no_physics on_wall }
+	flags { nearWall noPhysics onWall }
 }
 
 object emblem_t {
 	mesh "emblemat_t.qmsh"
-	flags { near_wall no_physics on_wall }
+	flags { nearWall noPhysics onWall }
 }
 
 object gobelin {
 	mesh "gobelin.qmsh"
-	flags { near_wall no_physics on_wall }
+	flags { nearWall noPhysics onWall }
 }
 
 object table_and_chairs {
 	cylinder { 3 0.6 }
-	flags table_spawner
+	flags tableSpawner
 }
 
 object tablechairs {
 	cylinder { 3 0.6 }
-	flags table_spawner
+	flags tableSpawner
 }
 
 object grave {
 	mesh "grob.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object tombstone_1 {
@@ -224,12 +224,12 @@ object tombstone_1 {
 
 object mushrooms {
 	mesh "grzyby.qmsh"
-	flags no_physics
+	flags noPhysics
 }
 
 object stalactite {
 	mesh "stalactite.qmsh"
-	flags no_physics
+	flags noPhysics
 }
 
 object stalagmite {
@@ -244,7 +244,7 @@ object stalagmite2 {
 
 object plant2 {
 	mesh "krzak2.qmsh"
-	flags { no_physics no_culling }
+	flags { noPhysics noCulling }
 }
 
 object rock {
@@ -255,46 +255,46 @@ object rock {
 object tree {
 	mesh "drzewo.qmsh"
 	cylinder { 0.043 5 }
-	flags { scaleable no_culling }
+	flags { scaleable noCulling }
 }
 
 object tree2 {
 	mesh "drzewo2.qmsh"
 	cylinder { 0.024 5 }
-	flags { scaleable no_culling }
+	flags { scaleable noCulling }
 }
 
 object tree3 {
 	mesh "drzewo3.qmsh"
 	cylinder { 0.067 5 }
-	flags { scaleable no_culling }
+	flags { scaleable noCulling }
 }
 
 object grass {
 	mesh "trawa.qmsh"
-	flags { no_physics preload no_culling }
+	flags { noPhysics preload noCulling }
 }
 
 object plant {
 	mesh "krzak.qmsh"
-	flags { no_physics no_culling }
+	flags { noPhysics noCulling }
 }
 
 object plant_pot {
 	mesh "doniczka.qmsh"
 	cylinder { 0.257 0.05 }
-	flags no_culling
+	flags noCulling
 }
 
 object desk {
 	mesh "biurko.qmsh"
-	flags no_culling
+	flags noCulling
 }
 
 object withered_tree {
 	mesh "drzewo_uschniete.qmsh"
 	cylinder { 0.58 6 }
-	flags { scaleable blocks_camera }
+	flags { scaleable blocksCamera }
 }
 
 object tartak {
@@ -304,25 +304,25 @@ object tartak {
 
 object portal {
 	mesh "portal.qmsh"
-	flags double_physics
+	flags doublePhysics
 }
 
 object magic_thing {
 	mesh "magiczne_cos.qmsh"
 	cylinder { 0.561 0.844 }
-	center_y 0.844
+	centerY 0.844
 	flags light
 }
 
 object moonwell {
 	mesh "moonwell.qmsh"
 	cylinder { 1.031 0.755 }
-	flags water_effect
+	flags waterEffect
 }
 
 object moonwell_phy {
 	mesh "moonwell_phy.qmsh"
-	flags { double_physics rotate_physics }
+	flags { doublePhysics rotatePhysics }
 }
 
 object tomashu_dom {
@@ -332,7 +332,7 @@ object tomashu_dom {
 
 object shelves {
 	mesh "polki.qmsh"
-	flags near_wall
+	flags nearWall
 }
 
 object bania {
@@ -342,22 +342,22 @@ object bania {
 
 object painting_x1 {
 	mesh "obraz_x1.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting_x2 {
 	mesh "obraz_x2.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting_x3 {
 	mesh "obraz_x3.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object painting_x4 {
 	mesh "obraz_x4.qmsh"
-	flags { near_wall no_physics high on_wall }
+	flags { nearWall noPhysics high onWall }
 }
 
 object coveredwell {
@@ -367,7 +367,7 @@ object coveredwell {
 
 object obelisk {
 	mesh "obelisk.qmsh"
-	flags blocks_camera
+	flags blocksCamera
 }
 
 object tombstone_x1 {
@@ -408,17 +408,17 @@ object tombstone_x9 {
 
 object wall {
 	mesh "mur.qmsh"
-	flags blocks_camera
+	flags blocksCamera
 }
 
 object tower {
 	mesh "wieza.qmsh"
-	flags blocks_camera
+	flags blocksCamera
 }
 
 object gate {
 	mesh "brama.qmsh"
-	flags { double_physics blocks_camera }
+	flags { doublePhysics blocksCamera }
 }
 
 object grate {
@@ -440,32 +440,32 @@ object barrel_broken {
 
 object fern {
 	mesh "paproc.qmsh"
-	flags { no_physics no_culling }
+	flags { noPhysics noCulling }
 }
 
 object stocks {
 	mesh "dyby.qmsh"
-	flags multiple_physics
+	flags multiplePhysics
 }
 
 object winplant {
 	mesh "krzaki_okno.qmsh"
-	flags { no_physics no_culling }
+	flags { noPhysics noCulling }
 }
 
 object smallroof {
 	mesh "daszek.qmsh"
-	flags { no_physics camera_colliders }
+	flags { noPhysics cameraColliders }
 }
 
 object rope {
 	mesh "lina.qmsh"
-	flags no_physics
+	flags noPhysics
 }
 
 object wheel {
 	mesh "kolo.qmsh"
-	flags no_physics
+	flags noPhysics
 }
 
 object woodpile {
@@ -474,12 +474,12 @@ object woodpile {
 
 object grass2 {
 	mesh "trawa2.qmsh"
-	flags { no_physics no_culling }
+	flags { noPhysics noCulling }
 }
 
 object corn {
 	mesh "zboze.qmsh"
-	flags { no_physics preload no_culling }
+	flags { noPhysics preload noCulling }
 }
 
 object book_holder {
@@ -488,7 +488,7 @@ object book_holder {
 
 object vault_door {
 	mesh "vault_door.qmsh"
-	flags blocks_camera
+	flags blocksCamera
 }
 
 object scarecrow {
@@ -544,8 +544,8 @@ group random {
 usable chair {
 	mesh "krzeslo.qmsh"
 	animation "siedzi_krzeslo"
-	flags allow_use_item
-	limit_rot 2
+	flags allowUseItem
+	limitRot 2
 }
 
 usable bench {
@@ -556,66 +556,72 @@ usable bench {
 		"lawa4.qmsh"
 	}
 	animation "siedzi_lawa"
-	flags {near_wall allow_use_item is_bench}
-	limit_rot 3
+	flags {nearWall allowUseItem isBench}
+	limitRot 3
 }
 
 usable bench_dir : bench {
-	limit_rot 2
+	limitRot 2
 }
 
 usable anvil {
 	mesh "kowadlo.qmsh"
-	required_item blacksmith_hammer
+	requiredItem blacksmith_hammer
 	animation "kowalstwo"
-	animation_sound { "blacksmith.mp3" 0.333 }
-	flags slow_stamina_restore
-	limit_rot 1
+	animationSound { "blacksmith.mp3" 0.333 }
+	flags slowStaminaRestore
+	limitRot 1
 }
 
 usable cauldron {
 	mesh "kociol.qmsh"
-	required_item ladle
+	requiredItem ladle
 	animation "miesza"
-	flags {slow_stamina_restore alchemy}
-	limit_rot 0
+	flags {slowStaminaRestore alchemy}
+	limitRot 0
 }
 
 usable iron_vein {
 	mesh "iron_ore.qmsh"
-	required_item pickaxe
+	requiredItem pickaxe
 	animation "wydobywa"
-	animation_sound { "kilof.mp3" 0.55 }
-	flags slow_stamina_restore
-	limit_rot 4
+	animationSound { "kilof.mp3" 0.55 }
+	flags slowStaminaRestore
+	limitRot 4
 }
 
 usable gold_vein {
 	mesh "gold_ore.qmsh"
-	required_item pickaxe
+	requiredItem pickaxe
 	animation "wydobywa"
-	animation_sound { "kilof.mp3" 0.55 }
-	flags slow_stamina_restore
-	limit_rot 4
+	animationSound { "kilof.mp3" 0.55 }
+	flags slowStaminaRestore
+	limitRot 4
 }
 
 usable throne {
 	mesh "tron.qmsh"
 	animation "siedzi_tron"
-	flags { allow_use_item near_wall }
-	limit_rot 2
+	flags {allowUseItem nearWall}
+	limitRot 2
 }
 
 usable stool {
 	mesh "stolek.qmsh"
 	cylinder { 0.27 0.44 }
 	animation "siedzi_krzeslo"
-	flags allow_use_item
-	limit_rot 2
+	flags allowUseItem
+	limitRot 2
 }
 
 usable bookshelf {
 	mesh "biblioteczka.qmsh"
-	flags {container near_wall blocks_camera}
-	limit_rot 1
+	flags {container nearWall blocksCamera}
+	limitRot 1
+}
+
+usable barricade {
+	mesh "barricade.qmsh"
+	flags {blocksCamera destroyable physicsPtr}
+	sound "thud.wav"
 }

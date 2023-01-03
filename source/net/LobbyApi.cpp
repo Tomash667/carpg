@@ -13,7 +13,7 @@
 
 LobbyApi* api;
 
-cstring op_names[] = {
+cstring opNames[] = {
 	"NONE",
 	"GET_SERVERS",
 	"GET_CHANGES",
@@ -58,11 +58,11 @@ void LobbyApi::Update()
 
 void LobbyApi::UpdateInternal()
 {
-	int still_alive, msgs_left;
-	curl_multi_perform(cm, &still_alive);
+	int stillAlive, msgsLeft;
+	curl_multi_perform(cm, &stillAlive);
 
 	CURLMsg* msg;
-	while((msg = curl_multi_info_read(cm, &msgs_left)) != nullptr)
+	while((msg = curl_multi_info_read(cm, &msgsLeft)) != nullptr)
 	{
 		CURL* eh = msg->easy_handle;
 		Op* op;
@@ -76,12 +76,12 @@ void LobbyApi::UpdateInternal()
 		}
 		else if(msg->data.result != CURLE_OK)
 		{
-			Error("LobbyApi: Request failed %d for %s.", msg->data.result, op_names[op->o]);
+			Error("LobbyApi: Request failed %d for %s.", msg->data.result, opNames[op->o]);
 			SetStatus(op, false);
 		}
 		else if(code >= 400 || code == 0)
 		{
-			Error("LobbyApi: Bad server response %d for %s.", code, op_names[op->o]);
+			Error("LobbyApi: Bad server response %d for %s.", code, opNames[op->o]);
 			SetStatus(op, false);
 		}
 		else if(op->o == REPORT)
@@ -96,7 +96,7 @@ void LobbyApi::UpdateInternal()
 			}
 			catch(const nlohmann::json::exception& ex)
 			{
-				Error("LobbyApi: Failed to parse response for %s: %s\n%s", op_names[op->o], ex.what(), op->buf->AsString());
+				Error("LobbyApi: Failed to parse response for %s: %s\n%s", opNames[op->o], ex.what(), op->buf->AsString());
 				SetStatus(op, false);
 			}
 		}
@@ -139,7 +139,7 @@ void LobbyApi::ParseResponse(Op* op)
 	if(j["ok"] == false)
 	{
 		string& error = j["error"].get_ref<string&>();
-		Error("LobbyApi: Server returned error for method %s: %s", op_names[op->o], error.c_str());
+		Error("LobbyApi: Server returned error for method %s: %s", opNames[op->o], error.c_str());
 		SetStatus(op, false);
 		return;
 	}
@@ -305,14 +305,14 @@ void LobbyApi::EndPunchthrough()
 	}
 }
 
-int LobbyApi::GetVersion(delegate<bool()> cancel_clbk, string& changelog, bool& update)
+int LobbyApi::GetVersion(delegate<bool()> cancelClbk, string& changelog, bool& update)
 {
 	Op* op = AddOperation(GET_VERSION);
 	op->status = Status::KEEP_ALIVE;
 
 	while(true)
 	{
-		if(cancel_clbk())
+		if(cancelClbk())
 			return -2;
 
 		UpdateInternal();

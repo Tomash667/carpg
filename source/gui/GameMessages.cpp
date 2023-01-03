@@ -89,7 +89,7 @@ void GameMessages::Draw()
 //=================================================================================================
 void GameMessages::Update(float dt)
 {
-	int h = 0, total_h = msgsHeight;
+	int h = 0, totalH = msgsHeight;
 
 	for(list<GameMsg>::iterator it = msgs.begin(), end = msgs.end(); it != end; ++it)
 	{
@@ -118,8 +118,8 @@ void GameMessages::Update(float dt)
 			}
 		}
 
-		float target_h = float(gui->wndSize.y) / 2 - float(total_h) / 2 + h;
-		m.pos.y += (target_h - m.pos.y) * dt * 2;
+		float targetH = float(gui->wndSize.y) / 2 - float(totalH) / 2 + h;
+		m.pos.y += (targetH - m.pos.y) * dt * 2;
 	}
 }
 
@@ -356,8 +356,7 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 		AddGameMsg3(id);
 	else
 	{
-		NetChangePlayer& c = Add1(player->playerInfo->changes);
-		c.type = NetChangePlayer::GAME_MESSAGE;
+		NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::GAME_MESSAGE);
 		c.id = id;
 	}
 }
@@ -421,8 +420,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(player->playerInfo->changes);
-		c.type = NetChangePlayer::GAME_MESSAGE_FORMATTED;
+		NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::GAME_MESSAGE_FORMATTED);
 		c.id = id;
 		c.count = value;
 		c.a = subtype;

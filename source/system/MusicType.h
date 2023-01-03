@@ -14,6 +14,7 @@ enum class MusicType
 	Travel,
 	Moonwell,
 	Death,
+	EmptyCity,
 	Max
 };
 

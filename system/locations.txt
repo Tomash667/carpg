@@ -53,7 +53,7 @@ room magic {
 	objects {
 		torch
 		magic_thing {
-			flags in_middle
+			flags inMiddle
 		}
 		wardrobe 1 2
 		bookshelf 2 4
@@ -88,7 +88,7 @@ room saferoom {
 	}
 }
 
-room beer_storeroom {
+room beerStoreroom {
 	flags repeat
 	objects {
 		torch
@@ -108,7 +108,7 @@ room shrine {
 	}
 }
 
-room meeting_room {
+room meetingRoom {
 	objects {
 		torch
 		table_and_chairs 1 2
@@ -119,7 +119,7 @@ room meeting_room {
 	}
 }
 
-room training_room {
+room trainingRoom {
 	objects {
 		torch
 		melee_target 1 3
@@ -130,7 +130,7 @@ room training_room {
 	}
 }
 
-room crafting_room {
+room craftingRoom {
 	objects {
 		torch
 		tanning_rack 1 2
@@ -164,7 +164,7 @@ room stairs {
 	}
 }
 
-room crypt_stairs {
+room cryptStairs {
 	objects {
 		torch
 		box 1 3
@@ -189,7 +189,7 @@ room graves2 {
 	}
 }
 
-room crypt_room {
+room cryptRoom {
 	objects {
 		torch
 		chest 1 2
@@ -197,12 +197,12 @@ room crypt_room {
 	}
 }
 
-room crypt_treasure {
+room cryptTreasure {
 	flags treasure
 	objects {
 		torch
 		chest_silver {
-			flags {in_middle required}
+			flags {inMiddle required}
 		}
 		chest 1 2
 		emblem 1 3
@@ -213,11 +213,11 @@ room crypt_treasure {
 	}
 }
 
-room labyrinth_treasure {
+room labyrinthTreasure {
 	flags treasure
 	objects {
 		chest_silver {
-			flags {in_middle required}
+			flags {inMiddle required}
 		}
 		chest 1 2
 		box 1 3
@@ -244,17 +244,17 @@ room paintings {
 room portal {
 	objects {
 		portal {
-			flags {in_middle required}
+			flags {inMiddle required}
 		}
 		chest {
-			flags {in_middle required}
+			flags {inMiddle required}
 		}
 		torch
 		emblem_t 2 3
 	}
 }
 
-room crypt_library {
+room cryptLibrary {
 	flags treasure
 	objects {
 		book_holder {

@@ -114,25 +114,25 @@ void CraftPanel::Draw()
 	gui->DrawText(GameGui::fontBig, txIngredients, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// ingredients
-	int count_w = (right.size.x - 48) / 63;
-	int count_h = (right.size.y - 66) / 63;
-	int shift_x = right.pos.x + 24 + (right.size.x - 48 - count_w * 63) / 2;
-	int shift_y = right.pos.y + 50 + (right.size.y - 66 - count_h * 63) / 2;
+	int countW = (right.size.x - 48) / 63;
+	int countH = (right.size.y - 66) / 63;
+	int shiftX = right.pos.x + 24 + (right.size.x - 48 - countW * 63) / 2;
+	int shiftY = right.pos.y + 50 + (right.size.y - 66 - countH * 63) / 2;
 
-	for(int y = 0; y < count_h; ++y)
+	for(int y = 0; y < countH; ++y)
 	{
-		for(int x = 0; x < count_w; ++x)
+		for(int x = 0; x < countW; ++x)
 		{
-			Int2 shift(shift_x + x * 63, shift_y + y * 63);
+			Int2 shift(shiftX + x * 63, shiftY + y * 63);
 			gui->DrawSprite(tItemBar, shift);
-			uint index = x + y * count_w;
+			uint index = x + y * countW;
 			if(index < ingredients.size())
 			{
 				pair<const Item*, uint>& p = ingredients[index];
 				gui->DrawSprite(p.first->icon, Int2(shift + Int2(1)));
 				if(p.second > 1u)
 				{
-					Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
+					Rect rect3 = Rect::Create(Int2(shiftX + x * 63 + 2, shiftY + y * 63), Int2(64, 63));
 					gui->DrawText(GameGui::font, Format("%d", p.second), DTF_BOTTOM, Color::Black, rect3);
 				}
 			}
@@ -163,19 +163,19 @@ void CraftPanel::Update(float dt)
 	int group = -1, id = -1;
 	if(focus)
 	{
-		int count_w = (right.size.x - 48) / 63;
-		int count_h = (right.size.y - 66) / 63;
-		int shift_x = right.pos.x + 24 + (right.size.x - 48 - count_w * 63) / 2;
-		int shift_y = right.pos.y + 50 + (right.size.y - 66 - count_h * 63) / 2;
+		int countW = (right.size.x - 48) / 63;
+		int countH = (right.size.y - 66) / 63;
+		int shiftX = right.pos.x + 24 + (right.size.x - 48 - countW * 63) / 2;
+		int shiftY = right.pos.y + 50 + (right.size.y - 66 - countH * 63) / 2;
 
-		for(int y = 0; y < count_h; ++y)
+		for(int y = 0; y < countH; ++y)
 		{
-			for(int x = 0; x < count_w; ++x)
+			for(int x = 0; x < countW; ++x)
 			{
-				uint index = x + y * count_w;
+				uint index = x + y * countW;
 				if(index >= ingredients.size())
 					break;
-				if(Rect::IsInside(gui->cursorPos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+				if(Rect::IsInside(gui->cursorPos, Int2(shiftX + x * 63, shiftY + y * 63), Int2(64, 64)))
 				{
 					group = 0;
 					id = index;
@@ -247,7 +247,11 @@ void CraftPanel::Event(GuiEvent e)
 		else
 		{
 			counter = 1;
-			GetNumberDialog::Show(this, delegate<void(int)>(this, &CraftPanel::OnCraft), txCraftCount, 1, max, &counter);
+			GetNumberDialogParams params(counter, 1, max);
+			params.parent = this;
+			params.event = DialogEvent(this, &CraftPanel::OnCraft);
+			params.text = txCraftCount;
+			GetNumberDialog::Show(params);
 		}
 	}
 }
@@ -325,8 +329,7 @@ void CraftPanel::OnCraft(int id)
 	}
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CRAFT;
+		NetChange& c = Net::PushChange(NetChange::CRAFT);
 		c.recipe = recipe;
 		c.count = counter;
 	}
@@ -341,7 +344,7 @@ void CraftPanel::OnSelectionChange(int index)
 uint CraftPanel::HaveIngredients(Recipe* recipe)
 {
 	assert(recipe);
-	uint max_count = 999u;
+	uint maxCount = 999u;
 	for(pair<const Item*, uint>& p : recipe->ingredients)
 	{
 		bool ok = false;
@@ -352,7 +355,7 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 				if(p2.second >= p.second)
 				{
 					ok = true;
-					max_count = min(p2.second / p.second, max_count);
+					maxCount = min(p2.second / p.second, maxCount);
 					break;
 				}
 				return 0;
@@ -361,7 +364,7 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 		if(!ok)
 			return 0;
 	}
-	return max_count;
+	return maxCount;
 }
 
 void CraftPanel::Show()
@@ -385,8 +388,7 @@ bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint co
 	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
 	player.Train(TrainWhat::Craft, value, 0);
 
-	NetChangePlayer& c = Add1(player.playerInfo->changes);
-	c.type = NetChangePlayer::AFTER_CRAFT;
+	player.playerInfo->PushChange(NetChangePlayer::AFTER_CRAFT);
 
 	return true;
 }

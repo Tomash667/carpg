@@ -6,7 +6,6 @@
 #include "QuestManager.h"
 #include "QuestScheme.h"
 #include "ScriptManager.h"
-#include "Var.h"
 #include "World.h"
 
 #include <angelscript.h>
@@ -24,35 +23,6 @@ void Quest2::RemoveEventPtr(const EventPtr& event)
 	{
 		return event == e;
 	});
-}
-
-//=================================================================================================
-void Quest2::RemoveEvent(ScriptEvent& event)
-{
-	switch(event.type)
-	{
-	case EVENT_ENTER:
-		event.onEnter.location->RemoveEventHandler(this, EVENT_ENTER, false);
-		break;
-	case EVENT_PICKUP:
-		event.onPickup.unit->RemoveEventHandler(this, EVENT_PICKUP, false);
-		break;
-	case EVENT_UPDATE:
-		event.onUpdate.unit->RemoveEventHandler(this, EVENT_UPDATE, false);
-		break;
-	case EVENT_TIMEOUT:
-	case EVENT_ENCOUNTER:
-		break;
-	case EVENT_DIE:
-		event.onDie.unit->RemoveEventHandler(this, EVENT_DIE, false);
-		break;
-	case EVENT_CLEARED:
-		event.onCleared.location->RemoveEventHandler(this, EVENT_CLEARED, false);
-		break;
-	case EVENT_GENERATE:
-		event.onGenerate.location->RemoveEventHandler(this, EVENT_GENERATE, false);
-		break;
-	}
 }
 
 //=================================================================================================
@@ -103,126 +73,19 @@ cstring Quest2::FormatString(const string& str)
 }
 
 //=================================================================================================
-cstring Quest2::GetText(int index)
+void Quest2::LoadQuest2(GameReader& f, cstring schemeId)
 {
-	GameDialog* dialog = scheme->dialogs[0];
-	if(index < 0 || index >= (int)dialog->texts.size())
-		throw ScriptException("Invalid text index.");
-	GameDialog::Text& text = dialog->GetText(index);
-	const string& str = dialog->strs[text.index];
+	assert(schemeId);
 
-	if(!text.formatted)
-		return str.c_str();
-
-	asIScriptObject* instance = CreateInstance(true);
-	static string str_part;
-	static string dialog_s_text;
-	dialog_s_text.clear();
-
-	ScriptContext& ctx = scriptMgr->GetContext();
-	ctx.quest = this;
-
-	for(uint i = 0, len = str.length(); i < len; ++i)
-	{
-		if(str[i] == '$')
-		{
-			str_part.clear();
-			++i;
-			if(str[i] == '(')
-			{
-				uint pos = FindClosingPos(str, i);
-				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
-				{
-					if(stage == 0)
-					{
-						CHECKED(ctx->SetArgDWord(0, index));
-					}
-					else if(stage == 1)
-					{
-						string* result = (string*)ctx->GetAddressOfReturnValue();
-						dialog_s_text += *result;
-					}
-				});
-				i = pos;
-			}
-			else
-			{
-				while(str[i] != '$')
-				{
-					str_part.push_back(str[i]);
-					++i;
-				}
-				dialog_s_text += FormatString(str_part);
-			}
-		}
-		else
-			dialog_s_text.push_back(str[i]);
-	}
-
-	ctx.quest = nullptr;
-	return dialog_s_text.c_str();
-}
-
-//=================================================================================================
-Var* Quest2::GetValue(int offset)
-{
-	static Var var;
-	byte* base = reinterpret_cast<byte*>(this);
-	base += sizeof(Quest2) + offset;
-	var.SetPtr(*reinterpret_cast<void**>(base), Var::Type::Magic);
-	return &var;
-}
-
-//=================================================================================================
-void Quest2::Save(GameWriter& f)
-{
-	Quest::Save(f);
-	if(IsActive())
-	{
-		f << timeoutDays;
-		SaveDetails(f);
-	}
-}
-
-//=================================================================================================
-Quest::LoadResult Quest2::Load(GameReader& f)
-{
 	Quest::Load(f);
-	SetScheme(questMgr->FindQuestInfo(type)->scheme);
+
+	QuestScheme* scheme = questMgr->FindQuestInfo(schemeId)->scheme;
+	SetScheme(scheme);
 	if(IsActive())
 	{
 		f >> timeoutDays;
 		LoadDetails(f);
 	}
-	return LoadResult::Ok;
-}
-
-//=================================================================================================
-asIScriptObject* Quest2::CreateInstance(bool shared)
-{
-	if(shared)
-	{
-		asIScriptObject* instance = scriptMgr->GetSharedInstance(scheme);
-		if(instance)
-			return instance;
-	}
-
-	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
-	asIScriptObject* instance;
-	scriptMgr->RunScript(factory, nullptr, [&](asIScriptContext* ctx, int stage)
-	{
-		if(stage == 1)
-		{
-			void* ptr = ctx->GetAddressOfReturnValue();
-			instance = *(asIScriptObject**)ptr;
-			instance->AddRef();
-		}
-	});
-
-	if(shared)
-		scriptMgr->RegisterSharedInstance(scheme, instance);
-	return instance;
 }
 
 //=================================================================================================
@@ -244,6 +107,9 @@ void Quest2::Cleanup()
 		case EventPtr::UNIT:
 			e.unit->RemoveEventHandler(this, EVENT_ANY, true);
 			break;
+		case EventPtr::USABLE:
+			e.usable->RemoveEventHandler(this, EVENT_ANY, true);
+			break;
 		}
 	}
 	events.clear();
@@ -256,26 +122,6 @@ void Quest2::Cleanup()
 }
 
 //=================================================================================================
-void Quest2::SetState(State newState)
-{
-	assert(state != newState && state == State::Started && Any(newState, State::Completed, State::Failed));
-	state = newState;
-	switch(category)
-	{
-	case QuestCategory::Mayor:
-		static_cast<City*>(startLoc)->questMayor = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
-		break;
-	case QuestCategory::Captain:
-		static_cast<City*>(startLoc)->questCaptain = (state == State::Completed ? CityQuestState::None : CityQuestState::Failed);
-		break;
-	case QuestCategory::Unique:
-		questMgr->EndUniqueQuest();
-		break;
-	}
-	Cleanup();
-}
-
-//=================================================================================================
 void Quest2::SetTimeout(int days)
 {
 	assert(Any(state, Quest::Hidden, Quest::Started));
@@ -284,6 +130,12 @@ void Quest2::SetTimeout(int days)
 	timeoutDays = days;
 	startTime = world->GetWorldtime();
 	questMgr->questTimeouts2.push_back(this);
+}
+
+//=================================================================================================
+void Quest2::AddTimer(int days)
+{
+	questMgr->AddTimer(this, days);
 }
 
 //=================================================================================================

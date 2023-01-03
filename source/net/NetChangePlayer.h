@@ -21,8 +21,8 @@ struct NetChangePlayer
 		ADD_ITEMS, // add multiple same items to inventory [int(id)-team count, int(count)-count, Item(item)]
 		ADD_ITEMS_TRADER, // add items to trader which is trading with player [int(id)-unit, int(count)-count, int(a)-team count, Item(item)]
 		ADD_ITEMS_CHEST, // add items to chest which is open by player [int(id)-chest, int(count)-count, int(a)-team count, Item(item)]
-		REMOVE_ITEMS, // remove items from inventory [int(id)-i_index, int(count)-count]
-		REMOVE_ITEMS_TRADER, // remove items from traded inventory which is trading with player [int(id)-unit, int(count)-count, int(a)-i_index]
+		REMOVE_ITEMS, // remove items from inventory [int(id)-iIndex, int(count)-count]
+		REMOVE_ITEMS_TRADER, // remove items from traded inventory which is trading with player [int(id)-unit, int(count)-count, int(a)-iIndex]
 		PREPARE_WARP, // preparing to warp []
 		ENTER_ARENA, // entering arena []
 		START_ARENA_COMBAT, // start of arena combat []
@@ -44,8 +44,8 @@ struct NetChangePlayer
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 		RUN_SCRIPT_RESULT, // run script result [string(str)-output]
 		GENERIC_CMD_RESPONSE, // response to GENERIC_CMD [string(str)-result]
-		ADD_EFFECT, // add effect to player [char(id)-effect, char(count)-source, char(a1)-source_id, char(a2)-value, pos.x-power, pos.y-time]
-		REMOVE_EFFECT, // remove effect from player [char(id)-effect, char(count)-source, char(a1)-source_id, char(a2)-value]
+		ADD_EFFECT, // add effect to player [char(id)-effect, char(count)-source, char(a1)-sourceId, char(a2)-value, pos.x-power, pos.y-time]
+		REMOVE_EFFECT, // remove effect from player [char(id)-effect, char(count)-source, char(a1)-sourceId, char(a2)-value]
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
 		SOUND, // play sound [int(id)-sound id (0-gold)]
@@ -54,6 +54,7 @@ struct NetChangePlayer
 		AFTER_CRAFT, // after crafting - update ingredients, play sound
 		ADD_RECIPE, // add recipe to player [int(recipe->hash)]
 		END_PREPARE, // end prepare action []
+		PICK_REST, // show pick rest days dialog []
 
 		MAX
 	} type;

@@ -1,4 +1,46 @@
 //=============================================================================
+// Functions
+//=============================================================================
+code
+{
+	// Find place for village in quadrant
+	Vec2 GetVillagePos(int locQuadrant)
+	{
+		Box2d area = World::GetArea();
+		switch(locQuadrant)
+		{
+		case 0:
+			area.v2.x = area.v1.x + area.SizeX() / 2;
+			area.v2.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 1:
+			area.v1.x = area.v1.x + area.SizeX() / 2;
+			area.v2.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 2:
+			area.v2.x = area.v1.x + area.SizeX() / 2;
+			area.v1.y = area.v1.y + area.SizeY() / 2;
+			break;
+		case 3:
+			area.v1.x = area.v1.x + area.SizeX() / 2;
+			area.v1.y = area.v1.y + area.SizeY() / 2;
+			break;
+		}
+		
+		Vec2 pos;
+		for(int i=0; i<20; ++i)
+		{
+			pos = World::FindPlace(area);
+			Location@ nearCity = World::GetClosestLocation(L_CITY, pos);
+			if(Vec2::Distance(pos, nearCity.pos) > 100.f)
+				break;
+		}
+		
+		return pos;
+	}
+}
+
+//=============================================================================
 // Global initializer - not real quest
 // 1. set start date
 // 2. generate corner dungeon with gladiator armor
@@ -7,10 +49,15 @@
 quest global_init
 {
 	type unique
-	flags dont_count
+	flags dontCount
+	
+	// pre V_0_20
+	alias {
+		artifactsLoc artifacts_loc
+	}
 
 	code {
-		Location@ artifacts_loc;
+		Location@ artifactsLoc;
 		Location@ vault;
 
 		void Startup()
@@ -43,16 +90,16 @@ quest global_init
 				}
 				if(!World::TryFindPlace(pos, 64.f))
 					continue;
-				@artifacts_loc = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
-				if(artifacts_loc !is null)
+				@artifactsLoc = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
+				if(artifactsLoc !is null)
 					break;
 			}
-			@artifacts_loc.group = UnitGroup::Get("golems");
-			@artifacts_loc.activeQuest = quest;
-			artifacts_loc.st = 12;
-			artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+			@artifactsLoc.group = UnitGroup::Get("golems");
+			@artifactsLoc.activeQuest = quest;
+			artifactsLoc.st = 12;
+			artifactsLoc.AddEventHandler(quest, EVENT_ENTER);
 
-			DevInfo(Format("Gladiator armor - {0}.", artifacts_loc.name));
+			DevInfo(Format("Gladiator armor - {0}.", artifactsLoc.name));
 		}
 
 		void CreateVault()
@@ -69,11 +116,11 @@ quest global_init
 		{
 			if(e.event != EVENT_ENTER)
 				return;
-			if(Level::location is artifacts_loc)
+			if(Level::location is artifactsLoc)
 			{
 				if(Level::dungeonLevel == 1)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
 					Chest@ chest = Level::GetRandomChest(room);
 					chest.AddItem(Item::Get("am_gladiator"));
@@ -83,7 +130,7 @@ quest global_init
 			}
 			else if(Level::location is vault)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				BaseObject@ obj = BaseObject::Get("vault_door");
 				SpawnPoint point;
 				if(Level::FindPlaceNearWall(obj, point))
@@ -110,10 +157,10 @@ quest global_init
 
 		void OnUpgrade(Vars@ vars)
 		{
-			@artifacts_loc = World::GetLocation(int(vars["artifactsLoc"]));
-			@artifacts_loc.activeQuest = quest;
+			@artifactsLoc = World::GetLocation(int(vars["artifactsLoc"]));
+			@artifactsLoc.activeQuest = quest;
 			if(!bool(vars["done"]))
-				artifacts_loc.AddEventHandler(quest, EVENT_ENTER);
+				artifactsLoc.AddEventHandler(quest, EVENT_ENTER);
 		}
 	}
 }
@@ -140,66 +187,72 @@ quest deliver_letter
 		{
 			talk 2
 			talk 3
-			set_quest_progress P_LETTER_STARTED
+			setQuestProgress P_LETTER_STARTED
 			end
 		}
 		escape choice 4
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog target {
-		if have_quest_item
+		if haveQuestItem
 			choice 0
 			{
 				talk 1
 				talk 2
-				if quest_progress == P_LETTER_ON_TIMEOUT
+				if questProgress == P_LETTER_ON_TIMEOUT
 				{
 					talk 3
-					set_quest_progress P_LETTER_TIMEOUT
+					setQuestProgress P_LETTER_TIMEOUT
 					end
 				}
 				talk 4
 				talk 5
-				set_quest_progress P_LETTER_GOT_RESPONSE
+				setQuestProgress P_LETTER_GOT_RESPONSE
 				end
 			}
 		end
 	}
 
 	dialog end {
-		if quest_progress == P_LETTER_ON_TIMEOUT
+		if questProgress == P_LETTER_ON_TIMEOUT
 		{
-			do_once
+			doOnce
 			talk 0
-			set_quest_progress P_LETTER_TIMEOUT
+			setQuestProgress P_LETTER_TIMEOUT
 			end
 		}
-		else if quest_progress == P_LETTER_GOT_RESPONSE
-			 if have_quest_item
+		else if questProgress == P_LETTER_GOT_RESPONSE
+			 if haveQuestItem
 		{
 			choice 1
 			{
 				talk 2
 				talk 3
 				talk 4
-				set_quest_progress P_LETTER_FINISHED
+				setQuestProgress P_LETTER_FINISHED
 				end
 			}
 		}
 		end
 	}
+	
+	// pre V_0_20
+	alias {
+		startLoc start_loc
+		endLoc end_loc
+	}
 
 	code {
-		Location@ start_loc;
-		Location@ end_loc;
+		Location@ startLoc;
+		Location@ endLoc;
 		Item@ letter;
 
 		void Startup()
 		{
-			@start_loc = Level::location;
-			@end_loc = World::GetRandomSettlement(start_loc);
+			@startLoc = Level::location;
+			@endLoc = World::GetRandomSettlement(startLoc);
 		}
 
 		void SetProgress()
@@ -218,14 +271,14 @@ quest deliver_letter
 					pc.unit.AddTeamItem(letter);
 
 					target.AddDialog(quest, "end");
-					end_loc.AddEventHandler(quest, EVENT_ENTER);
+					endLoc.AddEventHandler(quest, EVENT_ENTER);
 				}
 				break;
 			case P_LETTER_TIMEOUT:
 				{
 					quest.AddEntry(TEXT(5));
 					quest.SetFailed();
-					if(Level::location is end_loc)
+					if(Level::location is endLoc)
 						pc.unit.RemoveQuestItem(quest);
 				}
 				break;
@@ -256,7 +309,7 @@ quest deliver_letter
 			}
 			else if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				Unit@ mayor = Level::GetMayor();
 				mayor.AddDialog(quest, "target");
 			}
@@ -264,8 +317,8 @@ quest deliver_letter
 
 		void OnUpgrade(Vars@ vars)
 		{
-			@start_loc = World::GetLocation(int(vars["startLoc"]));
-			@end_loc = World::GetLocation(int(vars["endLoc"]));
+			@startLoc = World::GetLocation(int(vars["startLoc"]));
+			@endLoc = World::GetLocation(int(vars["endLoc"]));
 			int startTime = int(vars["startTime"]);
 
 			if(quest.state != Q_HIDDEN)
@@ -283,15 +336,15 @@ quest deliver_letter
 			else if(progress == P_LETTER_STARTED)
 				progress = P_LETTER_ON_TIMEOUT;
 
-			if(end_loc.visited)
+			if(endLoc.visited)
 			{
-				Unit@ mayor = end_loc.GetMayor();
+				Unit@ mayor = endLoc.GetMayor();
 				mayor.AddDialog(quest, "target");
 			}
 			else
-				end_loc.AddEventHandler(quest, EVENT_ENTER);
+				endLoc.AddEventHandler(quest, EVENT_ENTER);
 
-			Unit@ mayor = start_loc.GetMayor();
+			Unit@ mayor = startLoc.GetMayor();
 			mayor.AddDialog(quest, "end");
 		}
 	}
@@ -319,28 +372,28 @@ quest deliver_resources
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_DELIVER_STARTED
+			setQuestProgress P_DELIVER_STARTED
 			talk 4
 			end
 		}
 		escape choice 3
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_DELIVER_STARTED
+		if questProgress == P_DELIVER_STARTED
 		{
-			do_once
+			doOnce
 			talk 2
-			if not have_quest_item
+			if not haveQuestItem
 				talk 3
-			set_quest_progress P_DELIVER_TALKED
+			setQuestProgress P_DELIVER_TALKED
 		}
-		if have_quest_item
+		if haveQuestItem
 			choice 0
 			{
-				set_quest_progress P_DELIVER_FINISHED
+				setQuestProgress P_DELIVER_FINISHED
 				talk 1
 				end
 			}
@@ -358,16 +411,22 @@ quest deliver_resources
 		script "target.OrderAttack()"
 		end2
 	}
+	
+	// pre V_0_20
+	alias {
+		startLoc start_loc
+		targetLoc target_loc
+	}
 
 	code {
-		Location@ start_loc;
-		Location@ target_loc;
+		Location@ startLoc;
+		Location@ targetLoc;
 
 		void Startup()
 		{
-			@start_loc = Level::location;
-			@target_loc = GetTargetLocation();
-			@target_loc.activeQuest = quest;
+			@startLoc = Level::location;
+			@targetLoc = GetTargetLocation();
+			@targetLoc.activeQuest = quest;
 		}
 
 		// get random village that is between 8 or 14 days of travel
@@ -376,29 +435,29 @@ quest deliver_resources
 		{
 			uint count = World::GetSettlements();
 			uint index = Rand() % count;
-			uint start_index = index;
-			int best_index = -1;
-			float best_dist = 0;
+			uint startIndex = index;
+			int bestIndex = -1;
+			float bestDist = 0;
 			while(true)
 			{
 				Location@ loc = World::GetLocation(index);
-				if(loc.IsVillage() && loc !is start_loc && loc.activeQuest is null)
+				if(loc.IsVillage() && loc !is startLoc && loc.activeQuest is null)
 				{
-					float dist = Vec2::Distance(start_loc.pos, loc.pos);
+					float dist = Vec2::Distance(startLoc.pos, loc.pos);
 					float days = World::GetTravelDays(dist);
 					if(days >= 8 && days < 14)
 						return loc;
-					if(days < 10 && (best_index == -1 || best_dist < dist))
+					if(days < 10 && (bestIndex == -1 || bestDist < dist))
 					{
-						best_index = index;
-						best_dist = dist;
+						bestIndex = index;
+						bestDist = dist;
 					}
 				}
 				index = (index + 1) % count;
-				if(index == start_index)
+				if(index == startIndex)
 					break;
 			}
-			return World::GetLocation(best_index);
+			return World::GetLocation(bestIndex);
 		}
 
 		void SetProgress()
@@ -410,7 +469,7 @@ quest deliver_resources
 					Item@ item = Item::Get("q_resources");
 					@item = item.QuestCopy(quest, TEXT(0));
 					pc.unit.AddTeamItem(item);
-					target_loc.AddEventHandler(quest, EVENT_ENTER);
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
 					quest.SetStarted(TEXT(1));
 					quest.AddEntry(TEXT(2));
 					quest.AddEntry(TEXT(3));
@@ -418,7 +477,7 @@ quest deliver_resources
 					if(Rand() % 4 != 0)
 					{
 						Encounter@ enc = World::AddEncounter(quest);
-						enc.pos = (start_loc.pos + target_loc.pos) / 2;
+						enc.pos = (startLoc.pos + targetLoc.pos) / 2;
 						enc.dontAttack = true;
 						enc.text = TEXT(6);
 						@enc.group = UnitGroup::Get("bandits");
@@ -434,9 +493,9 @@ quest deliver_resources
 			case P_DELIVER_FINISHED:
 				quest.AddEntry(TEXT(4));
 				quest.SetCompleted();
-				Team::AddReward(1500, 3000);
+				Team::AddReward(1500, 4500);
 				pc.unit.RemoveQuestItem(quest);
-				@target_loc.activeQuest = null;
+				@targetLoc.activeQuest = null;
 				break;
 			}
 		}
@@ -445,7 +504,7 @@ quest deliver_resources
 		{
 			if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				Unit@ mayor = Level::GetMayor();
 				mayor.AddDialog(quest, "end");
 				if(progress != P_DELIVER_ENCOUNTER)
@@ -476,7 +535,7 @@ quest deliver_resources
 				quest.AddEntry(TEXT(5));
 				quest.SetFailed();
 				progress = P_DELIVER_TIMEOUT;
-				@target_loc.activeQuest = null;
+				@targetLoc.activeQuest = null;
 			}
 			else if(e.event == EVENT_ENCOUNTER)
 			{
@@ -508,29 +567,29 @@ quest bandits_collect_toll
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_TOLL_STARTED
+			setQuestProgress P_TOLL_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_TOLL_ON_TIMEOUT
+		if questProgress == P_TOLL_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_TOLL_TIMEOUT
+			doOnce
+			setQuestProgress P_TOLL_TIMEOUT
 			talk 0
 			talk 1
 			end
 		}
-		else if quest_progress == P_TOLL_KILLED_BANDITS
+		else if questProgress == P_TOLL_KILLED_BANDITS
 		{
-			do_once
-			set_quest_progress P_TOLL_FINISHED
+			doOnce
+			setQuestProgress P_TOLL_FINISHED
 			talk 2
 			talk 3
 			end
@@ -563,17 +622,23 @@ quest bandits_collect_toll
 			script "target.OrderAttack()"
 			end2
 		}
-		show_choices
+		showChoices
 	}
-
+	
+	// pre V_0_20
+	alias {
+		startLoc start_loc
+		otherLoc other_loc
+	}
+	
 	code {
-		Location@ start_loc;
-		Location@ other_loc;
+		Location@ startLoc;
+		Location@ otherLoc;
 
 		void Startup()
 		{
-			@start_loc = Level::location;
-			@other_loc = World::GetRandomSettlement(start_loc);
+			@startLoc = Level::location;
+			@otherLoc = World::GetRandomSettlement(startLoc);
 		}
 
 		void SetProgress()
@@ -588,7 +653,7 @@ quest bandits_collect_toll
 					quest.SetTimeout(15);
 
 					Encounter@ enc = World::AddEncounter(quest);
-					enc.pos = (start_loc.pos + other_loc.pos) / 2;
+					enc.pos = (startLoc.pos + otherLoc.pos) / 2;
 					enc.dontAttack = true;
 					enc.text = TEXT(3);
 					@enc.group = UnitGroup::Get("bandits");
@@ -634,10 +699,10 @@ quest bandits_collect_toll
 
 		void OnUpgrade(Vars@ vars)
 		{
-			@start_loc = World::GetLocation(int(vars["startLoc"]));
-			@other_loc = World::GetLocation(int(vars["otherLoc"]));
+			@startLoc = World::GetLocation(int(vars["startLoc"]));
+			@otherLoc = World::GetLocation(int(vars["otherLoc"]));
 			int startTime = int(vars["startTime"]);
-			int enc_index = int(vars["enc"]);
+			int encIndex = int(vars["enc"]);
 			bool inEnc = bool(vars["inEnc"]);
 
 			if(quest.state != Q_STARTED)
@@ -649,10 +714,10 @@ quest bandits_collect_toll
 			else if(progress == P_TOLL_STARTED)
 				progress = P_TOLL_ON_TIMEOUT;
 
-			if(enc_index != -1)
+			if(encIndex != -1)
 			{
-				Encounter@ enc = World::RecreateEncounter(quest, enc_index);
-				enc.pos = (start_loc.pos + other_loc.pos) / 2;
+				Encounter@ enc = World::RecreateEncounter(quest, encIndex);
+				enc.pos = (startLoc.pos + otherLoc.pos) / 2;
 				enc.dontAttack = true;
 				enc.text = TEXT(3);
 				@enc.group = UnitGroup::Get("bandits");
@@ -665,7 +730,7 @@ quest bandits_collect_toll
 			if(inEnc)
 				Level::location.AddEventHandler(quest, EVENT_CLEARED);
 
-			start_loc.GetCaptain().AddDialog(quest, "end");
+			startLoc.GetCaptain().AddDialog(quest, "end");
 		}
 	}
 }
@@ -692,43 +757,48 @@ quest camp_near_city
 		talk 2
 		choice 3
 		{
-			set_quest_progress P_CAMP_STARTED
+			setQuestProgress P_CAMP_STARTED
 			talk 4
 			talk 5
 			end
 		}
 		escape choice 6
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end {
-		if quest_progress == P_CAMP_CLEARED
+		if questProgress == P_CAMP_CLEARED
 		{
-			do_once
-			set_quest_progress P_CAMP_FINISHED
+			doOnce
+			setQuestProgress P_CAMP_FINISHED
 			talk 0
 			talk 1
 		}
-		else if quest_progress == P_CAMP_ON_TIMEOUT
+		else if questProgress == P_CAMP_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_CAMP_TIMEOUT
+			doOnce
+			setQuestProgress P_CAMP_TIMEOUT
 			talk 2
 			talk 3
 		}
 		end
 	}
-
+	
+	// pre V_0_20
+	alias {
+		startLoc start_loc
+	}
+	
 	code {
-		Location@ start_loc;
+		Location@ startLoc;
 		Location@ camp;
 		UnitGroup@ group;
 		int st;
 
 		void Startup()
 		{
-			@start_loc = Level::location;
+			@startLoc = Level::location;
 			switch(Rand() % 3)
 			{
 			case 0:
@@ -749,7 +819,7 @@ quest camp_near_city
 			{
 			case P_CAMP_STARTED:
 				{
-					@camp = World::CreateCamp(World::FindPlace(start_loc.pos, 64.f, false), group);
+					@camp = World::CreateCamp(World::FindPlace(startLoc.pos, 64.f, false), group);
 					@camp.activeQuest = quest;
 					camp.SetKnown();
 					camp.st += Random(3, 5);
@@ -808,7 +878,7 @@ quest camp_near_city
 
 		void OnUpgrade(Vars@ vars)
 		{
-			@start_loc = vars["startLoc"];
+			@startLoc = vars["startLoc"];
 			@camp = vars["targetLoc"];
 			int startTime = vars["startTime"];
 			@group = vars["group"];
@@ -817,7 +887,7 @@ quest camp_near_city
 			if(quest.state != Q_STARTED)
 				return;
 
-			start_loc.GetCaptain().AddDialog(quest, "end");
+			startLoc.GetCaptain().AddDialog(quest, "end");
 
 			int days = 30 + startTime - World::worldtime;
 			if(days > 0)
@@ -841,8 +911,6 @@ quest camp_near_city
 quest kill_animals
 {
 	type captain
-	flags not_scripted
-
 	progress {
 		P_KILLANI_NONE
 		P_KILLANI_STARTED
@@ -851,43 +919,142 @@ quest kill_animals
 		P_KILLANI_TIMEOUT
 		P_KILLANI_ON_TIMEOUT
 	}
-
-	properties {
-		Location@ targetLoc;
-	}
-
+	
 	dialog start
 	{
 		talk 0
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_KILLANI_STARTED
+			setQuestProgress P_KILLANI_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog captain
 	{
-		if quest_progress == P_KILLANI_CLEARED
+		if questProgress == P_KILLANI_CLEARED
 		{
-			do_once
-			set_quest_progress P_KILLANI_FINISHED
+			doOnce
+			setQuestProgress P_KILLANI_FINISHED
 			talk 0
 			talk 1
 		}
-		else if quest_progress == P_KILLANI_ON_TIMEOUT
+		else if questProgress == P_KILLANI_ON_TIMEOUT
 		{
-			do_once
-			set_quest_progress P_KILLANI_TIMEOUT
+			doOnce
+			setQuestProgress P_KILLANI_TIMEOUT
 			talk 2
 		}
 		end
+	}
+	
+	code {
+		Location@ startLoc;
+		Location@ targetLoc;
+		int st;
+
+		void Startup()
+		{
+			@startLoc = Level::location;
+		}
+
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_KILLANI_STARTED:
+				{
+					if(Rand() % 2 == 0)
+						@targetLoc = World::GetClosestLocation(L_CAVE, startLoc.pos);
+					else
+						@targetLoc = World::GetClosestLocation(L_OUTSIDE, startLoc.pos, { FOREST, HILLS });
+					@targetLoc.activeQuest = quest;
+					targetLoc.SetKnown();
+					targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+					targetLoc.reset = true;
+					if(targetLoc.st < 5)
+						targetLoc.st = 5;
+					st = targetLoc.st;
+					
+					target.AddDialog(quest, "captain");
+
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.SetTimeout(30);
+				}
+				break;
+			case P_KILLANI_CLEARED:
+				targetLoc.RemoveEventHandler(quest);
+				@targetLoc.activeQuest = null;
+				quest.AddEntry(TEXT(3));
+				break;
+			case P_KILLANI_FINISHED:
+				{
+					int reward = GetReward();
+					Team::AddReward(reward, reward * 3);
+					quest.AddEntry(TEXT(4));
+					quest.SetCompleted();
+				}
+				break;
+			case P_KILLANI_ON_TIMEOUT:
+				quest.AddEntry(TEXT(5));
+				targetLoc.RemoveEventHandler(quest);
+				@targetLoc.activeQuest = null;
+				break;
+			case P_KILLANI_TIMEOUT:
+				quest.AddEntry(TEXT(6));
+				quest.SetFailed();
+				break;
+			}
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_CLEARED)
+				progress = P_KILLANI_CLEARED;
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				if(progress == P_KILLANI_STARTED)
+					progress = P_KILLANI_ON_TIMEOUT;
+			}
+		}
+
+		int GetReward()
+		{
+			return Quest::CalculateReward(st, Int2(5, 10), Int2(2500, 4000));
+		}
+
+		void OnUpgrade(Vars@ vars)
+		{
+			@startLoc = vars["startLoc"];
+			@targetLoc = vars["targetLoc"];
+			int startTime = vars["startTime"];
+			st = vars["st"];
+
+			if(quest.state != Q_STARTED)
+				return;
+
+			startLoc.GetCaptain().AddDialog(quest, "captain");
+
+			int days = 30 + startTime - World::worldtime;
+			if(days > 0)
+				quest.SetTimeout(days);
+			else if(progress == P_KILLANI_STARTED)
+				progress = P_KILLANI_ON_TIMEOUT;
+
+			if(progress == P_KILLANI_STARTED)
+			{
+				@targetLoc.activeQuest = quest;
+				targetLoc.AddEventHandler(quest, EVENT_CLEARED);
+			}
+		}
 	}
 }
 
@@ -912,30 +1079,30 @@ quest find_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_FINDART_STARTED
+			setQuestProgress P_FINDART_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_FINDART_FINISHED
+				setQuestProgress P_FINDART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_FINDART_ON_TIMEOUT
+		else if questProgress == P_FINDART_ON_TIMEOUT
 		{
-			set_quest_progress P_FINDART_TIMEOUT
+			setQuestProgress P_FINDART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -943,18 +1110,24 @@ quest find_artifact
 		}
 		end
 	}
-
+	
+	// pre V_0_20
+	alias {
+		startLoc start_loc
+		targetLoc target_loc
+	}
+	
 	code
 	{
-		Location@ start_loc;
-		Location@ target_loc;
+		Location@ startLoc;
+		Location@ targetLoc;
 		Item@ item;
 		int st;
 		bool spawned;
 
 		void Startup()
 		{
-			@start_loc = Level::location;
+			@startLoc = Level::location;
 			@item = ItemList::GetRandomItem("artifacts");
 			spawned = false;
 		}
@@ -968,13 +1141,13 @@ quest find_artifact
 					@item = item.QuestCopy(quest);
 
 					if(Rand() % 4 == 0)
-						@target_loc = World::GetClosestLocation(L_DUNGEON, World::pos, LABYRINTH);
+						@targetLoc = World::GetClosestLocation(L_DUNGEON, World::pos, LABYRINTH);
 					else
-						@target_loc = World::GetClosestLocation(L_DUNGEON, World::pos, { HERO_CRYPT, MONSTER_CRYPT });
-					target_loc.SetKnown();
-					@target_loc.activeQuest = quest;
-					target_loc.AddEventHandler(quest, EVENT_ENTER);
-					st = target_loc.st;
+						@targetLoc = World::GetClosestLocation(L_DUNGEON, World::pos, { HERO_CRYPT, MONSTER_CRYPT });
+					targetLoc.SetKnown();
+					@targetLoc.activeQuest = quest;
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+					st = targetLoc.st;
 
 					target.AddDialog(quest, "end");
 					target.temporary = false;
@@ -994,8 +1167,8 @@ quest find_artifact
 					pc.unit.RemoveItem(item);
 					target.temporary = true;
 
-					if(target_loc.activeQuest is quest)
-						@target_loc.activeQuest = null;
+					if(targetLoc.activeQuest is quest)
+						@targetLoc.activeQuest = null;
 
 					quest.AddEntry(TEXT(3));
 					quest.SetCompleted();
@@ -1005,8 +1178,8 @@ quest find_artifact
 				{
 					target.temporary = true;
 
-					if(target_loc.activeQuest is quest)
-						@target_loc.activeQuest = null;
+					if(targetLoc.activeQuest is quest)
+						@targetLoc.activeQuest = null;
 
 					quest.AddEntry(TEXT(4));
 					quest.SetFailed();
@@ -1019,9 +1192,9 @@ quest find_artifact
 		{
 			if(e.event == EVENT_ENTER)
 			{
-				if(Level::dungeonLevel == target_loc.levels - 1)
+				if(Level::dungeonLevel == targetLoc.levels - 1)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Chest@ chest = Level::GetTreasureChest();
 					chest.AddItem(item);
 					spawned = true;
@@ -1030,10 +1203,10 @@ quest find_artifact
 			else if(e.event == EVENT_TIMEOUT)
 			{
 				if(spawned)
-					target_loc.GetLocationPart(target_loc.levels - 1).RemoveItemFromChest(item);
+					targetLoc.GetLocationPart(targetLoc.levels - 1).RemoveItemFromChest(item);
 				else
-					target_loc.RemoveEventHandler(quest);
-				@target_loc.activeQuest = null;
+					targetLoc.RemoveEventHandler(quest);
+				@targetLoc.activeQuest = null;
 				quest.AddEntry(TEXT(5));
 				progress = P_FINDART_ON_TIMEOUT;
 			}
@@ -1047,8 +1220,8 @@ quest find_artifact
 		void OnUpgrade(Vars@ vars)
 		{
 			@item = vars["item"];
-			@start_loc = vars["startLoc"];
-			@target_loc = vars["targetLoc"];
+			@startLoc = vars["startLoc"];
+			@targetLoc = vars["targetLoc"];
 			int startTime = vars["startTime"];
 			st = vars["st"];
 			spawned = vars["done"];
@@ -1059,7 +1232,7 @@ quest find_artifact
 			if(quest.state != Q_STARTED)
 				return;
 
-			start_loc.FindQuestUnit(quest).AddDialog(quest, "end");
+			startLoc.FindQuestUnit(quest).AddDialog(quest, "end");
 
 			int days = 60 + startTime - World::worldtime;
 			if(days > 0)
@@ -1070,8 +1243,8 @@ quest find_artifact
 			if(progress == P_FINDART_STARTED)
 			{
 				if(!spawned)
-					target_loc.AddEventHandler(quest, EVENT_ENTER);
-				@target_loc.activeQuest = quest;
+					targetLoc.AddEventHandler(quest, EVENT_ENTER);
+				@targetLoc.activeQuest = quest;
 			}
 		}
 	}
@@ -1098,30 +1271,30 @@ quest lost_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_LOSTART_STARTED
+			setQuestProgress P_LOSTART_STARTED
 			talk 3
 			talk 4
 			end
 		}
 		escape choice 5
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_LOSTART_FINISHED
+				setQuestProgress P_LOSTART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_LOSTART_ON_TIMEOUT
+		else if questProgress == P_LOSTART_ON_TIMEOUT
 		{
-			set_quest_progress P_LOSTART_TIMEOUT
+			setQuestProgress P_LOSTART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -1208,7 +1381,7 @@ quest lost_artifact
 			{
 				if(Level::dungeonLevel == atLevel)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					Level::SpawnItemInsideAnyRoom(item);
 					spawned = true;
 				}
@@ -1285,30 +1458,30 @@ quest stolen_artifact
 		talk 1
 		choice 2
 		{
-			set_quest_progress P_STOLENART_STARTED
+			setQuestProgress P_STOLENART_STARTED
 			talk 3
 			talk 4
 			end2
 		}
 		escape choice 5
 			end2
-		show_choices
+		showChoices
 	}
 
 	dialog end
 	{
-		if have_quest_item
+		if haveQuestItem
 		{
 			choice 0
 			{
-				set_quest_progress P_STOLENART_FINISHED
+				setQuestProgress P_STOLENART_FINISHED
 				talk 1
 				end2
 			}
 		}
-		else if quest_progress == P_STOLENART_ON_TIMEOUT
+		else if questProgress == P_STOLENART_ON_TIMEOUT
 		{
-			set_quest_progress P_STOLENART_TIMEOUT
+			setQuestProgress P_STOLENART_TIMEOUT
 			talk 2
 			talk 3
 			talk 4
@@ -1409,7 +1582,7 @@ quest stolen_artifact
 			{
 				if(Level::dungeonLevel == atLevel)
 				{
-					e.location.RemoveEventHandler(quest);
+					e.onEnter.location.RemoveEventHandler(quest);
 					UnitData@ leader = group.GetLeader(st);
 					Unit@ unit;
 					if(Level::IsOutside())
@@ -1505,20 +1678,20 @@ quest alchemist_apprentice
 	//-------------------------------------
 	// dialogs
 	dialog alchemist {
-		if quest_progress between P_ALCH_ACCEPTED and P_ALCH_ALL_PICKED_MANUALLY
+		if questProgress between P_ALCH_ACCEPTED and P_ALCH_ALL_PICKED_MANUALLY
 		{
 			if once
 			{
 				talk 11
-				do_once
+				doOnce
 			}
-			if quest_progress between P_ALCH_ALL_PICKED and P_ALCH_ALL_PICKED_MANUALLY
+			if questProgress between P_ALCH_ALL_PICKED and P_ALCH_ALL_PICKED_MANUALLY
 			{
 				if script "Team::HaveItem(herb)"
 				{
 					choice 12
 					{
-						set_quest_progress P_ALCH_FINISHED
+						setQuestProgress P_ALCH_FINISHED
 						talk 14
 						if script "alive"
 						{
@@ -1534,7 +1707,7 @@ quest alchemist_apprentice
 				{
 					choice 13
 					{
-						set_quest_progress P_ALCH_FAILED
+						setQuestProgress P_ALCH_FAILED
 						talk 15
 						restart
 					}
@@ -1546,7 +1719,7 @@ quest alchemist_apprentice
 			if once
 			{
 				talk 0
-				do_once
+				doOnce
 			}
 			choice 1
 			{
@@ -1556,7 +1729,7 @@ quest alchemist_apprentice
 				choice 5
 				{
 					talk 7
-					set_quest_progress P_ALCH_ACCEPTED
+					setQuestProgress P_ALCH_ACCEPTED
 					talk 8
 					talk 9
 					talk 10
@@ -1567,14 +1740,14 @@ quest alchemist_apprentice
 					talk 18
 					restart
 				}
-				show_choices
+				showChoices
 			}
 		}
 		end
 	}
 
 	dialog xwokloiz {
-		if quest_progress P_ALCH_ACCEPTED
+		if questProgress P_ALCH_ACCEPTED
 		{
 			script "target.knownName = true;"
 			talk 0
@@ -1582,24 +1755,24 @@ quest alchemist_apprentice
 			talk 2
 			choice 3
 			{
-				set_quest_progress P_ALCH_JOINED
+				setQuestProgress P_ALCH_JOINED
 				talk 5
 				end
 			}
 			choice 4
 			{
-				set_quest_progress P_ALCH_REFUSED
+				setQuestProgress P_ALCH_REFUSED
 				talk 6
 				end
 			}
-			show_choices
+			showChoices
 		}
-		else if quest_progress P_ALCH_REFUSED
+		else if questProgress P_ALCH_REFUSED
 		{
 			talk 7
 			choice 3
 			{
-				set_quest_progress P_ALCH_JOINED
+				setQuestProgress P_ALCH_JOINED
 				talk 5
 				end
 			}
@@ -1608,22 +1781,22 @@ quest alchemist_apprentice
 				talk 6
 				end
 			}
-			show_choices
+			showChoices
 		}
-		else if quest_progress P_ALCH_JOINED
+		else if questProgress P_ALCH_JOINED
 		{
 			talk 8
 			end
 		}
-		else if quest_progress P_ALCH_ALL_PICKED_MANUALLY
+		else if questProgress P_ALCH_ALL_PICKED_MANUALLY
 		{
 			talk 9
 			end
 		}
-		else if quest_progress P_ALCH_ALL_PICKED
+		else if questProgress P_ALCH_ALL_PICKED
 		{
 			talk 10
-			set_quest_progress P_ALCH_ALL_PICKED_AND_TALKED
+			setQuestProgress P_ALCH_ALL_PICKED_AND_TALKED
 			talk 11
 			talk 12
 			end
@@ -1634,15 +1807,21 @@ quest alchemist_apprentice
 			end
 		}
 	}
-
+	
+	// pre V_0_20
+	alias {
+		lastItem last_item
+		lastPos last_pos
+	}
+	
 	//-------------------------------------
 	// quest code
 	code {
 		Location@ city;
 		Location@ forest;
 		Item@ herb;
-		GroundItem@ last_item;
-		Vec3 last_pos;
+		GroundItem@ lastItem;
+		Vec3 lastPos;
 		bool alive;
 
 		void Startup()
@@ -1659,7 +1838,7 @@ quest alchemist_apprentice
 		{
 			if(e.event == EVENT_ENTER)
 			{
-				e.location.RemoveEventHandler(quest);
+				e.onEnter.location.RemoveEventHandler(quest);
 				if(progress == P_ALCH_NONE)
 				{
 					Unit@ u = Level::FindUnit(UnitData::Get("alchemist"));
@@ -1679,34 +1858,35 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_UPDATE)
 			{
-				if(last_item is null)
+				Unit@ me = e.onUpdate.unit;
+				if(lastItem is null)
 				{
-					@last_item = Level::FindNearestItem(herb, e.unit.pos);
-					if(last_item !is null)
+					@lastItem = Level::FindNearestItem(herb, me.pos);
+					if(lastItem !is null)
 					{
 						// move to next herb
-						e.unit.OrderMove(last_item.pos)
+						me.OrderMove(lastItem.pos)
 							.WithMoveType(MOVE_RUN_WHEN_NEAR_TEAM);
 					}
 				}
-				else if(last_item.pos != last_pos)
+				else if(lastItem.pos != lastPos)
 				{
-					float dist = Vec3::Distance(e.unit.pos, last_item.pos);
+					float dist = Vec3::Distance(me.pos, lastItem.pos);
 					if(dist < 2)
 					{
-						e.unit.Talk(TEXT(9), 2);
-						e.unit.OrderLookAt(last_item.pos)
+						me.Talk(TEXT(9), 2);
+						me.OrderLookAt(lastItem.pos)
 							.WithTimer(1);
-						last_pos = last_item.pos;
+						lastPos = lastItem.pos;
 					}
 				}
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.item.base is herb)
+				if(e.onPickup.groundItem.base is herb)
 				{
-					if(last_item is e.item)
-						@last_item = null;
+					if(lastItem is e.onPickup.groundItem)
+						@lastItem = null;
 					GroundItem@ item = Level::FindItem(herb);
 					if(item is null)
 					{
@@ -1730,13 +1910,13 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_DIE)
 			{
-				e.unit.RemoveEventHandler(quest);
+				e.onDie.unit.RemoveEventHandler(quest);
 				alive = false;
 				quest.AddEntry(TEXT(10));
 			}
 		}
 
-		void SetProgress(int prev_progress)
+		void SetProgress(int prevProgress)
 		{
 			switch(progress)
 			{
@@ -1756,7 +1936,7 @@ quest alchemist_apprentice
 				target.OrderClear();
 				break;
 			case P_ALCH_JOINED:
-				if(prev_progress == P_ALCH_REFUSED)
+				if(prevProgress == P_ALCH_REFUSED)
 					quest.AddEntry(TEXT(5));
 				else
 					quest.AddEntry(TEXT(4));
@@ -1774,7 +1954,7 @@ quest alchemist_apprentice
 					quest.AddEntry(TEXT(7));
 					quest.SetCompleted();
 					uint count = Team::RemoveItem(herb, 0);
-					Team::AddReward(500*count, 7500);
+					Team::AddReward(500 * count, 7500);
 					@forest.activeQuest = null;
 				}
 				break;
@@ -1794,7 +1974,7 @@ quest alchemist_apprentice
 quest main
 {
 	type unique
-	flags dont_count
+	flags dontCount
 	progress {
 		P_MAIN_NONE
 		P_MAIN_TALKED_TRAINER
@@ -1808,14 +1988,15 @@ quest main
 		P_MAIN_CLERIC_RETURNED
 		P_MAIN_CLERIC_RETURNED_TALKED
 		P_MAIN_CLERIC_IN_VILLAGE
+		P_MAIN_CLERIC_GO_TO_VILLAGES
 	}
 
 	dialog trainer {
-		if quest_progress == P_MAIN_NONE
+		if questProgress == P_MAIN_NONE
 		{
 			talk 0
 			talk 1
-			set_quest_progress P_MAIN_TALKED_TRAINER
+			setQuestProgress P_MAIN_TALKED_TRAINER
 			end
 		}
 		talk 2
@@ -1827,7 +2008,7 @@ quest main
 				special "select_hero"
 				escape choice 7
 					end
-				show_choices
+				showChoices
 			}
 			else
 			{
@@ -1837,15 +2018,15 @@ quest main
 		}
 		escape choice 4
 			end
-		show_choices
+		showChoices
 	}
 
 	dialog messenger {
-		if quest_progress == P_MAIN_TALKED_TRAINER
+		if questProgress == P_MAIN_TALKED_TRAINER
 		{
 			talk 0
 			talk 1
-			set_quest_progress P_MAIN_START
+			setQuestProgress P_MAIN_START
 			talk 2
 			talk 3
 			talk 4
@@ -1861,23 +2042,23 @@ quest main
 			talk 0
 		choice 1
 		{
-			switch quest_progress
+			switch questProgress
 			{
 			case P_MAIN_START
 				talk 2
 				talk 3
-				set_quest_progress P_MAIN_TALKED_SOLTYS
+				setQuestProgress P_MAIN_TALKED_SOLTYS
 				talk 4
 			case P_MAIN_TALKED_SOLTYS
 				talk 5
 			case P_MAIN_ATTACKED
 				talk 6
 				talk 7
-				set_quest_progress P_MAIN_TALKED_SOLTYS2
+				setQuestProgress P_MAIN_TALKED_SOLTYS2
 				talk 8
 				talk 9
 			case default
-				if quest_progress < P_MAIN_CLERIC_IN_VILLAGE
+				if questProgress < P_MAIN_CLERIC_IN_VILLAGE
 					talk 10
 				else
 					talk 11
@@ -1889,7 +2070,7 @@ quest main
 
 	dialog ill_villager {
 		talk 0
-		if quest_progress == P_MAIN_TALKED_SOLTYS
+		if questProgress == P_MAIN_TALKED_SOLTYS
 		if script "!target.vars.IsSet(\"talked\")"
 		{
 			choice 1
@@ -1909,13 +2090,13 @@ quest main
 					talk 8
 				case 5
 					talk 9
-					set_quest_progress P_MAIN_ATTACKED
+					setQuestProgress P_MAIN_ATTACKED
 				}
 				end
 			}
 			escape choice 2
 				end
-			show_choices
+			showChoices
 		}
 		end
 	}
@@ -1924,7 +2105,7 @@ quest main
 		choice 0
 		{
 			talk 1
-			set_quest_progress P_MAIN_TALKED_CLERIC
+			setQuestProgress P_MAIN_TALKED_CLERIC
 			talk 2
 			talk 3
 			talk 4
@@ -1934,24 +2115,24 @@ quest main
 	}
 
 	dialog cleric {
-		switch quest_progress
+		switch questProgress
 		{
 		case P_MAIN_TALKED_CLERIC
 			talk 0
 			talk 1
 			talk 2
-			set_quest_progress P_MAIN_TALKED_CLERIC_HERO
+			setQuestProgress P_MAIN_TALKED_CLERIC_HERO
 			talk 3
 			restart
 		case P_MAIN_TALKED_CLERIC_HERO
 			talk 4
 			talk 5
-			set_quest_progress P_MAIN_TALKED_CLERIC_HERO2
+			setQuestProgress P_MAIN_TALKED_CLERIC_HERO2
 			talk 6
 		case P_MAIN_TALKED_CLERIC_HERO2
 			talk 7
 		case P_MAIN_CLERIC_RETURNED
-			set_quest_progress P_MAIN_CLERIC_RETURNED_TALKED
+			setQuestProgress P_MAIN_CLERIC_RETURNED_TALKED
 			talk 9
 			talk 10
 		case P_MAIN_CLERIC_RETURNED_TALKED
@@ -1960,23 +2141,107 @@ quest main
 		case P_MAIN_CLERIC_IN_VILLAGE
 			talk 11
 			talk 12
+			talk 13
+			setQuestProgress P_MAIN_CLERIC_GO_TO_VILLAGES
+			talk 14
+			talk 15
+		case P_MAIN_CLERIC_GO_TO_VILLAGES
+			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"main_village1\").progress == P_MAIN_V1_READ"
+			{
+				choice 19
+				{
+					doOnce
+					talk 20
+					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE; ++counter;"
+					talk 21
+					restart
+				}
+			}
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_crystal\")) && Quest::Find(\"main_village2\").progress == P_MAIN_V2_CLEARED_PICKED"
+			{
+				choice 22
+				{
+					doOnce
+					talk 23
+					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE; ++counter;"
+					talk 21
+					restart
+				}
+			}
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_herbs\")) && Quest::Find(\"main_village3\").progress == P_MAIN_V3_CLEARED_PICKED"
+			{
+				choice 26
+				{
+					doOnce
+					talk 27
+					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE; ++counter;"
+					talk 21
+					restart
+				}
+			}
+			if script "Quest::Find(\"main_village4\").progress == P_MAIN_V4_LEAVE"
+			{
+				choice 28
+				{
+					doOnce
+					talk 29
+					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE; ++counter;"
+					talk 21
+					restart
+				}
+			}
+			if haveItem q_infected_organ
+			{
+				choice 24
+				{
+					doOnce
+					script "int count = pc.unit.RemoveItem(Item::Get(\"q_infected_organ\"), 0); Team::AddExp(count * 100);"
+					talk 25
+					restart
+				}
+			}
+			if once
+			{
+				if choices == 0
+				{
+					if script "counter == 4"
+						talk 30
+					else
+						talk 16
+				}
+				else
+					talk 17
+			}
+			else if choices == 0
+			{
+				if script "counter == 4"
+					talk 30
+				else
+					talk 18
+			}
 		}
 		
 		if choices > 0
 		{
 			escape choice 8
 				end2
-			show_choices
+			showChoices
 		}
 		end2
 	}
-
+	
+	// pre V_0_20
+	alias {
+		shrineLoc shrine_loc
+	}
+	
 	code {
 		Location@ village;
-		Location@ shrine_loc;
+		Location@ shrineLoc;
 		Location@ dungeon;
 		int counter;
 		Unit@ cleric;
+		array<Location@> villages;
 
 		void Startup()
 		{
@@ -1997,51 +2262,63 @@ quest main
 					if(Level::dungeonLevel == 0)
 					{
 						// find room for cleric
-						array<Room@>@ path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
-						uint target_depth = 0;
+						array<Room@> path = Level::FindPath(Level::GetRoom(ROOM_ENTRY_PREV), Level::GetRoom(ROOM_ENTRY_NEXT));
+						uint targetDepth = 0;
 						for(uint len = path.length(), i = len*2/3; i<len; ++i)
 						{
 							if(path[i].target != ROOM_CORRIDOR)
 							{
-								target_depth = i;
+								targetDepth = i;
 								break;
 							}
 						}
-						Room@ target_room = path[target_depth];
+						Room@ targetRoom = path[targetDepth];
 
 						// kill units on path
 						Unit@ player = Team::leader;
-						for(uint i=0; i<target_depth; ++i)
+						bool skip = false;
+						for(uint i=0; i<targetDepth; ++i)
 						{
-							array<Unit@>@ units = Level::GetUnits(path[i]);
+							array<Unit@> units = Level::GetUnits(path[i]);
 							for(uint j=0; j<units.length(); ++j)
 							{
 								Unit@ u = units[j];
-								if(u.IsEnemy(player) && Rand() % 2 == 0)
-									units[j].Kill();
+								if(u.IsEnemy(player))
+								{
+									if(skip || Rand() % 2 == 0)
+									{
+										u.Kill();
+										skip = false;
+									}
+									else
+										skip = true;
+								}
 							}
 						}
-						array<Unit@>@ units = Level::GetUnits(target_room);
-						for(uint j=0; j<units.length(); ++j)
-						{
-							Unit@ u = units[j];
-							if(u.IsEnemy(player))
-								units[j].Kill();
-						}
+						
 
 						// spawn dead guards
 						UnitData@ guard = UnitData::Get("guard");
-						Unit@ u = Level::SpawnUnit(target_room, guard);
-						u.Kill();
-						@u = Level::SpawnUnit(path[target_depth == 0 ? 0 : target_depth - 1], guard);
-						u.Kill();
+						Unit@ uGuard = Level::SpawnUnit(targetRoom, guard);
+						uGuard.Kill();
+						@uGuard = Level::SpawnUnit(path[targetDepth == 0 ? 0 : targetDepth - 1], guard);
+						uGuard.Kill();
 
 						// spawn cleric
-						Vec3 pos = Level::FindSpawnPos(target_room, cleric);
+						Vec3 pos = Level::FindSpawnPos(targetRoom, cleric);
 						cleric.MoveToLocation(Level::location.locPart, pos);
 						cleric.AddDialog(quest, "cleric");
 						cleric.dontAttack = true;
 						cleric.OrderAutoTalk();
+						
+						// kill nearby units
+						array<Unit@> units = Level::GetNearbyUnits(cleric.pos, 20);
+						for(uint j=0; j<units.length(); ++j)
+						{
+							Unit@ u = units[j];
+							if(u.IsEnemy(player) && Level::CanSee(cleric, u))
+								u.Kill();
+						}
 					}
 					else
 					{
@@ -2049,12 +2326,12 @@ quest main
 						Room@ room = Level::GetRoom(ROOM_TREASURY);
 						Object@ obj = Level::FindObject(room, BaseObject::Get("book_holder"));
 						Level::SpawnItem(book, obj);
-						e.location.RemoveEventHandler(quest, EVENT_ENTER);
+						e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 					}
 				}
 				else
 				{
-					e.location.RemoveEventHandler(quest, EVENT_ENTER);
+					e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 					switch(progress)
 					{
 					case P_MAIN_NONE:
@@ -2084,7 +2361,7 @@ quest main
 							{
 								CityBuilding@ building = Level::GetRandomBuilding(group);
 								Unit@ spawned = Level::SpawnUnitNearLocation(ill, building.unitPos);
-								spawned.RotateTo(building.unitRot);
+								spawned.RotateTo(building.rot);
 							}
 						}
 						break;
@@ -2099,6 +2376,7 @@ quest main
 							LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
 							Vec3 pos = Level::FindSpawnPos(locPart, cleric);
 							cleric.MoveToLocation(locPart, pos);
+							cleric.OrderWait();
 						}
 						break;
 					}
@@ -2106,31 +2384,32 @@ quest main
 			}
 			else if(e.event == EVENT_UPDATE)
 			{
-				if(Level::location is shrine_loc)
+				if(Level::location is shrineLoc)
 				{
-					Unit@ unit = Level::FindUnit(UnitData::Get("cleric_seller"));
-					if(Vec3::Distance(e.unit.pos, unit.pos) < 10)
+					Unit@ me = e.onUpdate.unit;
+					Unit@ target = Level::FindUnit(UnitData::Get("cleric_seller"));
+					if(Vec3::Distance(me.pos, target.pos) < 10)
 					{
 						progress = P_MAIN_CLERIC_RETURNED;
-						Team::RemoveMember(e.unit);
-						e.unit.OrderMove(unit.pos)
+						Team::RemoveMember(me);
+						me.OrderMove(target.pos)
 							.WithRange(2)
 							.ThenAutoTalk();
-						e.unit.RemoveEventHandler(quest);
+						me.RemoveEventHandler(quest);
 					}
 				}
 			}
 			else if(e.event == EVENT_GENERATE)
 			{
-				if(Level::dungeonLevel == 0 && e.stage == 0)
+				if(Level::dungeonLevel == 0 && e.onGenerate.stage == 0)
 				{
-					e.mapSettings.prevEntryLoc = ENTRY_BORDER;
-					e.mapSettings.nextEntryLoc = ENTRY_FAR_FROM_PREV;
+					e.onGenerate.mapSettings.prevEntryLoc = ENTRY_BORDER;
+					e.onGenerate.mapSettings.nextEntryLoc = ENTRY_FAR_FROM_PREV;
 				}
-				else if(Level::dungeonLevel == 1 && e.stage == 1)
+				else if(Level::dungeonLevel == 1 && e.onGenerate.stage == 1)
 				{
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
-					@room.type = RoomType::Get("crypt_library");
+					@room.type = RoomType::Get("cryptLibrary");
 					Level::location.RemoveEventHandler(quest, EVENT_GENERATE);
 				}
 			}
@@ -2168,8 +2447,8 @@ quest main
 				target.ChangeBase(UnitData::Get("q_main_ill_villager_attack"));
 				break;
 			case P_MAIN_TALKED_SOLTYS2:
-				@shrine_loc = World::GetRandomSettlementWithBuilding("shrine");
-				shrine_loc.AddEventHandler(quest, EVENT_ENTER);
+				@shrineLoc = World::GetRandomSettlementWithBuilding("shrine");
+				shrineLoc.AddEventHandler(quest, EVENT_ENTER);
 				quest.AddEntry(TEXT(11));
 				break;
 			case P_MAIN_TALKED_CLERIC:
@@ -2195,7 +2474,7 @@ quest main
 					target.dontAttack = false;
 					target.knownName = true;
 					target.AddEventHandler(quest, EVENT_UPDATE);
-					Team::AddMember(target, 1);
+					Team::AddMember(target, HERO_FREE);
 					quest.AddEntry(TEXT(13));
 				}
 				break;
@@ -2203,7 +2482,7 @@ quest main
 				{
 					Vars vars;
 					vars["cleric"] = cleric;
-					vars["city"] = shrine_loc;
+					vars["city"] = shrineLoc;
 					Quest::Find("side_cleric").Start(vars);
 				}
 				break;
@@ -2222,6 +2501,7 @@ quest main
 					LocationPart@ locPart = Level::location.GetBuildingLocationPart("hall");
 					Vec3 pos = Level::FindSpawnPos(locPart, cleric);
 					cleric.MoveToLocation(locPart, pos);
+					cleric.OrderWait();
 				}
 				else
 				{
@@ -2229,6 +2509,25 @@ quest main
 					village.AddEventHandler(quest, EVENT_ENTER);
 				}
 				quest.AddEntry(TEXT(15));
+				break;
+			case P_MAIN_CLERIC_GO_TO_VILLAGES:
+				{
+					Vars vars;
+					vars["cleric"] = cleric;
+					array<int> quests = { 1, 2, 3, 4 };
+					quests.shuffle();
+					villages.resize(4);
+					
+					for(int i = 0; i < 4; ++i)
+					{
+						vars["index"] = i;
+						Quest::Find("main_village" + quests[i]).Start(vars);
+						@villages[i] = vars["village"];
+					}
+					
+					quest.AddEntry(TEXT(16));
+					counter = 0;
+				}
 				break;
 			}
 		}
@@ -2249,11 +2548,11 @@ quest side_cleric
 	}
 
 	dialog end {
-		if have_item book_q_cleric
+		if haveItem book_q_cleric
 			choice 0
 			{
 				talk 1
-				set_quest_progress P_CLERIC_END
+				setQuestProgress P_CLERIC_END
 				talk 2
 				end2
 			}
@@ -2302,7 +2601,7 @@ quest side_cleric
 
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_PICKUP && e.item.base is book)
+			if(e.event == EVENT_PICKUP && e.onPickup.groundItem.base is book)
 			{
 				progress = P_CLERIC_PICKED;
 				Level::location.RemoveEventHandler(quest);
@@ -2317,8 +2616,6 @@ quest side_cleric
 quest dire_wolf
 {
 	type unique
-	flags not_scripted
-
 	progress {
 		P_WOLF_NONE
 		P_WOLF_STARTED
@@ -2326,37 +2623,680 @@ quest dire_wolf
 		P_WOLF_COMPLETE
 	}
 
-	properties {
-		Location@ forest;
-	}
-
 	dialog hunter {
-		if quest_progress == P_WOLF_NONE
+		if questProgress == P_WOLF_NONE
 		{
 			choice 0
 			{
-				set_quest_progress P_WOLF_STARTED
+				setQuestProgress P_WOLF_STARTED
 				talk 1
 				talk 2
 				talk 3
 				end
 			}
 		}
-		else if quest_progress == P_WOLF_KILLED
+		else if questProgress == P_WOLF_KILLED
 		{
-			set_quest_progress P_WOLF_COMPLETE
-			do_once
+			setQuestProgress P_WOLF_COMPLETE
+			doOnce
 			talk 4
 			end
 		}
 		end
+	}
+	
+	code {
+		Location@ startLoc;
+		Location@ forest;
+		
+		void Startup()
+		{
+			@startLoc = World::GetLocationByType(L_OUTSIDE, HUNTERS_CAMP);
+			startLoc.AddEventHandler(quest, EVENT_ENTER);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_WOLF_STARTED:
+				@forest = World::GetClosestLocation(L_OUTSIDE, startLoc.pos, FOREST);
+				@forest.activeQuest = quest;
+				forest.AddEventHandler(quest, EVENT_ENTER);
+				forest.SetKnown();
+				forest.reset = true;
+				if(forest.st < 5)
+					forest.st = 5;
+
+				quest.SetStarted(TEXT(0));
+				quest.AddEntry(TEXT(1));
+				quest.AddEntry(TEXT(2));
+				break;
+			case P_WOLF_KILLED:
+				@forest.activeQuest = null;
+				quest.AddEntry(TEXT(3));
+				break;
+			case P_WOLF_COMPLETE:
+				target.RemoveDialog(quest);
+				quest.AddEntry(TEXT(4));
+				quest.SetCompleted();
+				Team::AddReward(5000, 15000);
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				if(progress == P_WOLF_NONE)
+				{
+					// add dialog to hunters leader
+					UnitData@ ud = UnitData::Get("hunter_leader");
+					Unit@ unit = Level::FindUnit(ud);
+					unit.AddDialog(quest, "hunter");
+				}
+				else
+				{
+					// spawn dire wolf
+					UnitData@ ud = UnitData::Get("dire_wolf");
+					Unit@ unit = Level::SpawnUnitNearLocation(ud, Vec3(128, 0, 128));
+					unit.AddEventHandler(quest, EVENT_DIE);
+				}
+				e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
+			}
+			else if(e.event == EVENT_DIE)
+			{
+				e.onDie.unit.RemoveEventHandler(quest, EVENT_DIE);
+				progress = P_WOLF_KILLED;
+			}
+		}
+		
+		void OnUpgrade(Vars@ vars)
+		{
+			@startLoc = vars["startLoc"];
+			@forest = vars["forest"];
+			
+			if(progress != P_WOLF_COMPLETE)
+			{
+				Unit@ unit = startLoc.GetUnit(UnitData::Get("hunter_leader"));
+				if(unit is null)
+					startLoc.AddEventHandler(quest, EVENT_ENTER);
+				else
+					unit.AddDialog(quest, "hunter");
+			}
+			
+			if(progress == P_WOLF_STARTED)
+			{
+				Unit@ unit = forest.GetUnit(UnitData::Get("dire_wolf"));
+				if(unit is null)
+					forest.AddEventHandler(quest, EVENT_ENTER);
+				else
+					unit.AddEventHandler(quest, EVENT_DIE);
+				@forest.activeQuest = quest;
+			}
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 1 (empty)
+//=============================================================================
+quest main_village1
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V1_NONE
+		P_MAIN_V1_START
+		P_MAIN_V1_ENTER
+		P_MAIN_V1_READ
+		P_MAIN_V1_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		int locQuadrant;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V1_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V1_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_EMPTY);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V1_ENTER:
+				{
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					quest.AddEntry(TEXT(3));
+					LocationPart@ part = village.GetBuildingLocationPart("hall");
+					Item@ item = Item::Get("book_q_journal");
+					Level::SpawnItem(part, item);
+					Quest::AddItemEventHandler(quest, item);
+				}
+				break;
+			case P_MAIN_V1_READ:
+				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_MAIN_V1_DONE:
+				quest.AddEntry(TEXT(5));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("book_q_journal"));
+				Team::AddReward(1000, 3000);
+				World::AddNews(TEXT(6));
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V1_ENTER;
+			else
+				progress = P_MAIN_V1_READ;
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 2 (enemies)
+//=============================================================================
+quest main_village2
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V2_NONE
+		P_MAIN_V2_START
+		P_MAIN_V2_ENTER
+		P_MAIN_V2_CLEARED
+		P_MAIN_V2_PICKED
+		P_MAIN_V2_CLEARED_PICKED
+		P_MAIN_V2_DONE
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		int locQuadrant;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V2_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V2_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V2_ENTER:
+				{
+					// enemies
+					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					
+					// soltys
+					LocationPart@ locPart = village.GetBuildingLocationPart("hall");
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_plague_soltys"));
+					unit.AddEventHandler(quest, EVENT_PICKUP);
+					
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V2_CLEARED:
+				quest.AddEntry(TEXT(4));
+				break;
+			case P_MAIN_V2_PICKED:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_MAIN_V2_CLEARED_PICKED:
+				quest.AddEntry(TEXT(6));
+				break;
+			case P_MAIN_V2_DONE:
+				quest.AddEntry(TEXT(7));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
+				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(8));
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V2_ENTER;
+			else if(e.event == EVENT_CLEARED)
+			{
+				if(progress == P_MAIN_V2_ENTER)
+					progress = P_MAIN_V2_CLEARED;
+				else if(progress == P_MAIN_V2_PICKED)
+					progress = P_MAIN_V2_CLEARED_PICKED;
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
+			}
+			else if(e.event == EVENT_PICKUP)
+			{
+				if(e.onPickup.item.id == "q_yellow_crystal")
+				{
+					if(progress == P_MAIN_V2_ENTER)
+						progress = P_MAIN_V2_PICKED;
+					else if(progress == P_MAIN_V2_CLEARED)
+					{
+						quest.AddEntry(TEXT(5));
+						progress = P_MAIN_V2_CLEARED_PICKED;
+					}
+					e.onPickup.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+				}
+			}
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 3 (enemies + citizens)
+//=============================================================================
+quest main_village3
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V3_NONE
+		P_MAIN_V3_START
+		P_MAIN_V3_ENTER
+		P_MAIN_V3_CLEARED
+		P_MAIN_V3_PICKED
+		P_MAIN_V3_CLEARED_PICKED
+		P_MAIN_V3_DONE
+	}
+	
+	dialog villager {
+		script "OrderLeave()"
+		talk 0
+		end2
+	}
+	
+	dialog inn_villager {
+		talk 0
+		script "InnVillagerTalk()"
+		talk 1
+		talk 2
+		end2
+	}
+	
+	code {
+		Unit@ cleric;
+		Location@ village;
+		int locQuadrant;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V3_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V3_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED2);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V3_ENTER:
+				{
+					// enemies
+					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
+					
+					// villages
+					Level::SpawnUnits(UnitGroup::Get("plague_villagers"), 3);
+					UnitData@ data = UnitData::Get("q_main_villager_def");
+					array<Unit@> units = Level::GetUnits();
+					for(uint i = 0; i < units.length(); ++i)
+					{
+						Unit@ unit = units[i];
+						if(unit.data is data)
+							unit.OrderAutoTalk();
+					}
+					
+					// inn villager
+					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					unit.AddDialog(quest, "inn_villager");
+					unit.OrderAutoTalk();
+					
+					// alchemist
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("alchemist"));
+					@unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
+					unit.RotateTo(building.rot);
+					unit.AddEventHandler(quest, EVENT_PICKUP);
+					
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V3_CLEARED:
+				quest.AddEntry(TEXT(5));
+				break;
+			case P_MAIN_V3_PICKED:
+				quest.AddEntry(TEXT(6));
+				break;
+			case P_MAIN_V3_CLEARED_PICKED:
+				quest.AddEntry(TEXT(7));
+				break;
+			case P_MAIN_V3_DONE:
+				quest.AddEntry(TEXT(8));
+				quest.SetCompleted();
+				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
+				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(9));
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+				progress = P_MAIN_V3_ENTER;
+			else if(e.event == EVENT_CLEARED)
+			{
+				if(progress == P_MAIN_V3_ENTER)
+					progress = P_MAIN_V3_CLEARED;
+				else if(progress == P_MAIN_V3_PICKED)
+					progress = P_MAIN_V3_CLEARED_PICKED;
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
+			}
+			else if(e.event == EVENT_PICKUP)
+			{
+				if(e.onPickup.item.id == "q_yellow_herbs")
+				{
+					if(progress == P_MAIN_V3_ENTER)
+						progress = P_MAIN_V3_PICKED;
+					else if(progress == P_MAIN_V3_CLEARED)
+					{
+						quest.AddEntry(TEXT(6));
+						progress = P_MAIN_V3_CLEARED_PICKED;
+					}
+					e.onPickup.unit.RemoveEventHandler(quest, EVENT_PICKUP);
+				}
+			}
+		}
+		
+		void OrderLeave()
+		{
+			int exp = 0;
+			Var@ var = target.vars["leaving"];
+			if(var == true)
+				return;
+			
+			var = true;
+			exp += 1000;
+			target.OrderLeave();
+			
+			UnitData@ data = UnitData::Get("q_main_villager_def");
+			array<Unit@> units = Level::GetNearbyUnits(target.pos, 20);
+			for(uint i = 0; i < units.length(); ++i)
+			{
+				Unit@ unit = units[i];
+				if(!(unit is target) && unit.data is data && unit.IsAlive())
+				{
+					@var = unit.vars["leaving"];
+					if(var == true)
+						continue;
+					var = true;
+					exp += 1000;
+					unit.OrderLeave();
+				}
+			}
+			
+			if(exp > 0)
+				Team::AddExp(exp);
+		}
+		
+		void InnVillagerTalk()
+		{
+			target.vars["leaving"] = true;
+			target.RemoveDialog(quest);
+			target.OrderLeave();
+			Team::AddExp(1000);
+			quest.AddEntry(TEXT(4));
+		}
+	}
+}
+
+//=============================================================================
+// MAIN QUEST - VILLAGE 4 (old man)
+//=============================================================================
+quest main_village4
+{
+	type unique
+	flags recreate
+	progress {
+		P_MAIN_V4_NONE
+		P_MAIN_V4_START
+		P_MAIN_V4_ENTER
+		P_MAIN_V4_CLEARED
+		P_MAIN_V4_FOLLOW
+		P_MAIN_V4_LEAVE
+		P_MAIN_V4_DONE
+	}
+	
+	dialog oldman {
+		if questProgress >= P_MAIN_V4_LEAVE
+		{
+			talk 10
+			end
+		}
+		if questProgress == P_MAIN_V4_FOLLOW
+		{
+			if script "Level::IsSafeSettlement()"
+			{
+				setQuestProgress P_MAIN_V4_LEAVE
+				talk 8
+				talk 9
+			}
+			else
+				talk 7
+			end
+		}
+		if script "!talked"
+		{
+			talk 0
+			talk 1
+			if questProgress == P_MAIN_V4_CLEARED
+			{
+				talk 3
+				setQuestProgress P_MAIN_V4_FOLLOW
+				talk 4
+			}
+			else
+			{
+				talk 2
+				script "talked = true; quest.AddEntry(TEXT(4));"
+			}
+		}
+		else
+		{
+			if questProgress == P_MAIN_V4_CLEARED
+			{
+				talk 6
+				talk 3
+				setQuestProgress P_MAIN_V4_FOLLOW
+				talk 4
+			}
+			else
+				talk 5
+		}
+		end
+	}
+	
+	code {
+		Unit@ cleric;
+		Unit@ oldman;
+		Location@ village;
+		int locQuadrant;
+		bool talked;
+		
+		void Startup(Vars@ vars)
+		{
+			@cleric = vars["cleric"];
+			locQuadrant = vars["index"];
+			progress = P_MAIN_V4_START;
+			vars["village"] = village;
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_MAIN_V4_START:
+				{
+					@village = World::CreateLocation(L_CITY, GetVillagePos(locQuadrant), VILLAGE_DESTROYED);
+					@village.activeQuest = quest;
+					village.SetKnown();
+					village.AddEventHandler(quest, EVENT_ENTER);
+					
+					quest.SetStarted(TEXT(0));
+					quest.AddEntry(TEXT(1));
+					quest.AddEntry(TEXT(2));
+				}
+				break;
+			case P_MAIN_V4_ENTER:
+				{
+					// enemies
+					UnitGroup@ group = UnitGroup::Get("plague");
+					Level::SpawnUnits(group, 10);
+					
+					// inn people
+					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
+					@oldman = Level::SpawnUnit(locPart, UnitData::Get("q_main_oldman"));
+					oldman.OrderAutoTalk();
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					unit.OrderAutoTalk();
+					
+					// barricade
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("inn"));
+					building.canEnter = false;
+					Usable@ usable = Level::SpawnUsable(BaseObject::Get("barricade"), building.entryArea.Midpoint(), building.rot);
+					usable.AddEventHandler(quest, EVENT_DESTROY);
+					
+					// units attacking barricade
+					for(int i = 0; i < 2; ++i)
+					{
+						@unit = Level::SpawnUnitNearLocation(group.GetRandom(), usable.pos, 3);
+						unit.OrderAttackObject(usable);
+					}
+					
+					village.image = LI_VILLAGE_DESTROYED;
+					village.RemoveEventHandler(quest, EVENT_ENTER);
+					village.AddEventHandler(quest, EVENT_CLEARED);
+					quest.AddEntry(TEXT(3));
+				}
+				break;
+			case P_MAIN_V4_CLEARED:
+				quest.AddEntry(TEXT(talked ? 6 : 5));
+				village.RemoveEventHandler(quest, EVENT_CLEARED);
+				break;
+			case P_MAIN_V4_FOLLOW:
+				quest.AddEntry(TEXT(7));
+				Team::AddMember(oldman, HERO_VISITOR);
+				oldman.AddEventHandler(quest, EVENT_ENTER);
+				break;
+			case P_MAIN_V4_LEAVE:
+				quest.AddEntry(TEXT(8));
+				quest.AddTimer(1);
+				Team::RemoveMember(oldman);
+				oldman.OrderGoToInn();
+				oldman.RemoveEventHandler(quest, EVENT_ENTER);
+				break;
+			case P_MAIN_V4_DONE:
+				quest.AddEntry(TEXT(9));
+				quest.SetCompleted();
+				Team::AddReward(5000, 15000);
+				World::AddNews(TEXT(10));
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			switch(e.event)
+			{
+			case EVENT_ENTER:
+				if(progress == P_MAIN_V4_START)
+					progress = P_MAIN_V4_ENTER;
+				else if(Level::IsSafeSettlement())
+					oldman.OrderAutoTalk();
+				break;
+			case EVENT_DESTROY:
+				{
+					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("inn"));
+					building.canEnter = true;
+				}
+				break;
+			case EVENT_CLEARED:
+				progress = P_MAIN_V4_CLEARED;
+				break;
+			case EVENT_TIMER:
+				oldman.MoveOffscreen();
+				break;
+			}
+		}
 	}
 }
 
 //=============================================================================
 // QUEST LISTS
 //=============================================================================
-quest_list mayor {
+questList mayor {
 	deliver_letter 3
 	deliver_parcel 3
 	deliver_resources 3
@@ -2365,7 +3305,7 @@ quest_list mayor {
 	none 2
 }
 
-quest_list captain {
+questList captain {
 	rescue_captive 2
 	bandits_collect_toll 2
 	camp_near_city 2
@@ -2374,7 +3314,7 @@ quest_list captain {
 	none 1
 }
 
-quest_list random {
+questList random {
 	find_artifact 1
 	lost_artifact 1
 	stolen_artifact 1

@@ -672,6 +672,21 @@
     <ClCompile Include="helpers\LocationContext.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="script\ScriptContext.cpp">
+      <Filter>script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ScriptExtensions.cpp">
+      <Filter>script</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\CityBuilding.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\DestroyedObject.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\UnitOrder.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1325,6 +1340,21 @@
     </ClInclude>
     <ClInclude Include="helpers\LocationContext.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ScriptContext.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ScriptExtensions.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\CityBuilding.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\DestroyedObject.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\UnitOrder.h">
+      <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

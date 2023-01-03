@@ -44,6 +44,7 @@ enum LOCATION_IMAGE
 	LI_CAPITAL,
 	LI_HUNTERS_CAMP,
 	LI_HILLS,
+	LI_VILLAGE_DESTROYED,
 	LI_MAX
 };
 
@@ -76,6 +77,16 @@ namespace old
 		LT_MULTI_DUNGEON,
 		LT_CAMP
 	};
+
+	enum LOCATION_STATE
+	{
+		LS_HIDDEN,
+		LS_UNKNOWN,
+		LS_KNOWN,
+		LS_VISITED,
+		LS_ENTERED,
+		LS_CLEARED
+	};
 };
 
 //-----------------------------------------------------------------------------
@@ -85,7 +96,6 @@ enum LOCATION_STATE
 	LS_UNKNOWN,
 	LS_KNOWN,
 	LS_VISITED,
-	LS_ENTERED,
 	LS_CLEARED
 };
 
@@ -140,11 +150,6 @@ struct Location
 	bool ReadPortals(BitStreamReader& f, int atLevel);
 	LOCATION_IMAGE GetImage() const { return image; }
 	const string& GetName() const { return name; }
-	void SetVisited()
-	{
-		if(state == LS_KNOWN)
-			state = LS_VISITED;
-	}
 	void SetKnown();
 	void SetImage(LOCATION_IMAGE image);
 	void SetName(cstring name);
@@ -152,7 +157,7 @@ struct Location
 	void SetNamePrefix(cstring prefix);
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
-	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
+	void FireEvent(ScriptEvent& e);
 	bool IsVisited() const { return lastVisit != -1; }
 };
 

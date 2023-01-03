@@ -3,6 +3,8 @@
 
 #include "GameDialog.h"
 
+#include <angelscript.h>
+
 vector<QuestScheme*> QuestScheme::schemes;
 
 //=================================================================================================
@@ -23,11 +25,11 @@ QuestScheme* QuestScheme::TryGet(const string& id)
 }
 
 //=================================================================================================
-GameDialog* QuestScheme::GetDialog(const string& dialog_id)
+GameDialog* QuestScheme::GetDialog(const string& id)
 {
 	for(GameDialog* dialog : dialogs)
 	{
-		if(dialog->id == dialog_id)
+		if(dialog->id == id)
 			return dialog;
 	}
 	return nullptr;
@@ -41,5 +43,32 @@ int QuestScheme::GetProgress(const string& progressId)
 		if(progress[i] == progressId)
 			return i;
 	}
+	return -1;
+}
+
+//=================================================================================================
+int QuestScheme::GetPropertyId(uint nameHash)
+{
+	if(!varAlias.empty())
+	{
+		for(pair<uint, uint>& alias : varAlias)
+		{
+			if(alias.second == nameHash)
+			{
+				nameHash = alias.first;
+				break;
+			}
+		}
+	}
+
+	const uint props = scriptType->GetPropertyCount();
+	for(uint i = 0; i < props; ++i)
+	{
+		cstring name;
+		scriptType->GetProperty(i, &name);
+		if(nameHash == Hash(name))
+			return i;
+	}
+
 	return -1;
 }

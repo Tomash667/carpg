@@ -95,7 +95,7 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 {
 	assert(path);
 
-	LocalString current_section;
+	LocalString currentSection;
 	Map* lm = lmap ? lmap : sections[""];
 
 	try
@@ -112,21 +112,21 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 				// open section
 				t.Next();
 				if(t.IsSymbol(']'))
-					current_section->clear();
+					currentSection->clear();
 				else
 				{
-					current_section = t.MustGetItem();
+					currentSection = t.MustGetItem();
 					t.Next();
 					t.AssertSymbol(']');
 				}
 
 				if(!lmap)
 				{
-					Sections::iterator it = sections.find(current_section.get_ref());
+					Sections::iterator it = sections.find(currentSection.get_ref());
 					if(it == sections.end())
 					{
 						lm = new Map;
-						sections.insert(it, Sections::value_type(current_section, lm));
+						sections.insert(it, Sections::value_type(currentSection, lm));
 					}
 					else
 						lm = it->second;
@@ -143,11 +143,11 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 				pair<Map::iterator, bool> const& r = lm->insert(Map::value_type(tstr, text));
 				if(!r.second)
 				{
-					if(current_section->empty())
+					if(currentSection->empty())
 						Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
 					else
 					{
-						Warn("LANG: String '%s.%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(),
+						Warn("LANG: String '%s.%s' already exists: \"%s\"; new text: \"%s\".", currentSection->c_str(), tstr.c_str(),
 							r.first->second.c_str(), text.c_str());
 					}
 				}
@@ -172,7 +172,7 @@ void Language::LoadLanguages()
 
 	io::FindFiles(Format("%s/*", dir.c_str()), [&](const io::FileInfo& info)
 	{
-		if(!info.is_dir)
+		if(!info.isDir)
 			return true;
 		LocalString path = Format("%s/%s/info.txt", dir.c_str(), info.filename);
 		if(lmap)
@@ -202,7 +202,7 @@ void Language::PrepareTokenizer(Tokenizer& t)
 {
 	t.AddKeywords(G_KEYWORD, {
 		{ "attribute", K_ATTRIBUTE },
-		{ "skill_group", K_SKILL_GROUP },
+		{ "skillGroup", K_SKILL_GROUP },
 		{ "skill", K_SKILL },
 		{ "class", K_CLASS },
 		{ "name", K_NAME },
@@ -212,9 +212,9 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "item", K_ITEM },
 		{ "perk", K_PERK },
 		{ "unit", K_UNIT },
-		{ "unit_group", K_UNIT_GROUP },
-		{ "location_start", K_LOCATION_START },
-		{ "location_end", K_LOCATION_END },
+		{ "unitGroup", K_UNIT_GROUP },
+		{ "locationStart", K_LOCATION_START },
+		{ "locationEnd", K_LOCATION_END },
 		{ "building", K_BUILDING },
 		{ "ability", K_ABILITY },
 		{ "usable", K_USABLE }
@@ -224,11 +224,11 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "name", P_NAME },
 		{ "name2", P_NAME2 },
 		{ "name3", P_NAME3 },
-		{ "real_name", P_REAL_NAME },
+		{ "realName", P_REAL_NAME },
 		{ "desc", P_DESC },
 		{ "about", P_ABOUT },
 		{ "text", P_TEXT },
-		{ "encounter_text", P_ENCOUNTER_TEXT },
+		{ "encounterText", P_ENCOUNTER_TEXT },
 		{ "details", P_DETAILS }
 		});
 }
@@ -292,7 +292,7 @@ void Language::ParseObject(Tokenizer& t)
 		}
 		break;
 	case K_SKILL_GROUP:
-		// skill_group id = "text"
+		// skillGroup id = "text"
 		{
 			const string& id = t.MustGetText();
 			SkillGroup* sgi = SkillGroup::Find(id);
@@ -523,7 +523,7 @@ void Language::ParseObject(Tokenizer& t)
 		}
 		break;
 	case K_UNIT_GROUP:
-		// unit_group id {
+		// unitGroup id {
 		//		name "text"
 		//		[name2 "text"]
 		//		[name3 "text"]
@@ -647,7 +647,7 @@ void Language::LoadLanguageFiles()
 	{
 		if(usable->name.empty())
 		{
-			Warn("Usables '%s': empty name.", usable->name.c_str());
+			Warn("Usables '%s': empty name.", usable->id.c_str());
 			++errors;
 		}
 	}

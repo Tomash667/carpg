@@ -51,7 +51,7 @@ void InsideLocationGenerator::OnEnter()
 	inside->SetActiveLevel(dungeonLevel);
 	gameLevel->lvl = &inside->GetLevelData();
 	int days;
-	bool need_reset = inside->CheckUpdate(days, world->GetWorldtime());
+	bool needReset = inside->CheckUpdate(days, world->GetWorldtime());
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = gBaseLocations[inside->target];
 
@@ -75,14 +75,14 @@ void InsideLocationGenerator::OnEnter()
 
 		gameLevel->RecreateTmpObjectPhysics();
 
-		int update_flags = HandleUpdate(days);
-		if(IsSet(update_flags, PREVENT_RESET))
-			need_reset = false;
+		int updateFlags = HandleUpdate(days);
+		if(IsSet(updateFlags, PREVENT_RESET))
+			needReset = false;
 
 		if(days > 0)
-			gameLevel->UpdateLocation(days, base.doorOpen, need_reset);
+			gameLevel->UpdateLocation(days, base.doorOpen, needReset);
 
-		if(need_reset)
+		if(needReset)
 		{
 			// usuñ zawartoœæ skrzyni
 			for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
@@ -96,15 +96,15 @@ void InsideLocationGenerator::OnEnter()
 				if(!chest.items.empty())
 					continue;
 				Room* r = lvl.GetNearestRoom(chest.pos);
-				static vector<Chest*> room_chests;
-				room_chests.push_back(&chest);
+				static vector<Chest*> roomChests;
+				roomChests.push_back(&chest);
 				for(vector<Chest*>::iterator it2 = it + 1; it2 != end; ++it2)
 				{
 					if(r->IsInside((*it2)->pos))
-						room_chests.push_back(*it2);
+						roomChests.push_back(*it2);
 				}
-				GenerateDungeonTreasure(room_chests, dlevel);
-				room_chests.clear();
+				GenerateDungeonTreasure(roomChests, dlevel);
+				roomChests.clear();
 			}
 
 			// nowe jednorazowe pu³apki
@@ -114,15 +114,15 @@ void InsideLocationGenerator::OnEnter()
 		gameLevel->OnRevisitLevel();
 
 		// odtwórz jednostki
-		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
+		if(!IsSet(updateFlags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		RespawnTraps();
 
 		// odtwórz fizykê
-		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
+		if(!IsSet(updateFlags, PREVENT_RECREATE_OBJECTS))
 			gameLevel->RecreateObjects();
 
-		if(need_reset)
+		if(needReset)
 			GenerateUnits();
 	}
 
@@ -154,8 +154,8 @@ void InsideLocationGenerator::OnEnter()
 							}
 						}
 
-						UnitData* orc_smith = UnitData::Get("q_orkowie_kowal");
-						Unit* u = gameLevel->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
+						UnitData* orcSmith = UnitData::Get("q_orkowie_kowal");
+						Unit* u = gameLevel->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orcSmith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dontAttack = true;
 					}
@@ -168,7 +168,7 @@ void InsideLocationGenerator::OnEnter()
 		}
 	}
 
-	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && gameLevel->location->type != L_CAVE && inside->target != LABYRINTH
+	if((first || needReset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && gameLevel->location->type != L_CAVE && inside->target != LABYRINTH
 		&& !gameLevel->location->activeQuest && dungeonLevel == 0 && !gameLevel->location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 
@@ -199,7 +199,7 @@ void InsideLocationGenerator::OnEnter()
 			loc->type = L_OUTSIDE;
 			loc->image = LI_FOREST;
 			loc->state = LS_HIDDEN;
-			int loc_id = world->AddLocation(loc);
+			int locId = world->AddLocation(loc);
 
 			Portal* portal = new Portal;
 			portal->atLevel = 2;
@@ -207,10 +207,10 @@ void InsideLocationGenerator::OnEnter()
 			portal->pos = o->pos;
 			portal->rot = o->rot.y;
 			portal->index = 0;
-			portal->targetLoc = loc_id;
+			portal->targetLoc = locId;
 
 			inside->portal = portal;
-			secret->where2 = loc_id;
+			secret->where2 = locId;
 		}
 		else
 		{
@@ -235,34 +235,34 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// dodaj gracza i jego dru¿ynê
-	Int2 spawn_pt;
-	Vec3 spawn_pos;
-	float spawn_rot;
+	Int2 spawnPt;
+	Vec3 spawnPos;
+	float spawnRot;
 
 	if(gameLevel->enterFrom < ENTER_FROM_PORTAL)
 	{
 		if(gameLevel->enterFrom == ENTER_FROM_NEXT_LEVEL)
 		{
-			spawn_pt = lvl.GetNextEntryFrontTile();
-			spawn_rot = DirToRot(lvl.nextEntryDir);
+			spawnPt = lvl.GetNextEntryFrontTile();
+			spawnRot = DirToRot(lvl.nextEntryDir);
 		}
 		else
 		{
-			spawn_pt = lvl.GetPrevEntryFrontTile();
-			spawn_rot = DirToRot(lvl.prevEntryDir);
+			spawnPt = lvl.GetPrevEntryFrontTile();
+			spawnRot = DirToRot(lvl.prevEntryDir);
 		}
-		spawn_pos = PtToPos(spawn_pt);
+		spawnPos = PtToPos(spawnPt);
 	}
 	else
 	{
 		Portal* portal = inside->GetPortal(gameLevel->enterFrom);
-		spawn_pos = portal->GetSpawnPos();
-		spawn_rot = Clip(portal->rot + PI);
-		spawn_pt = PosToPt(spawn_pos);
+		spawnPos = portal->GetSpawnPos();
+		spawnRot = Clip(portal->rot + PI);
+		spawnPt = PosToPt(spawnPos);
 	}
 
-	gameLevel->AddPlayerTeam(spawn_pos, spawn_rot);
-	OpenDoorsByTeam(spawn_pt);
+	gameLevel->AddPlayerTeam(spawnPos, spawnRot);
+	OpenDoorsByTeam(spawnPt);
 
 	gameLevel->RemoveTmpObjectPhysics();
 }
@@ -328,10 +328,10 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	BaseLocation& base = gBaseLocations[inside->target];
-	static vector<Chest*> room_chests;
+	static vector<Chest*> roomChests;
 	static vector<Vec3> onWall;
 	static vector<Int2> blocks;
-	int chest_lvl = gameLevel->GetChestDifficultyLevel();
+	int chestLvl = gameLevel->GetChestDifficultyLevel();
 
 	// prev entry
 	if(inside->HavePrevEntry())
@@ -461,7 +461,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			if(room->type)
 				rt = room->type;
 			else if(room->target == RoomTarget::Treasury)
-				rt = RoomType::Get("crypt_treasure");
+				rt = RoomType::Get("cryptTreasure");
 			else if(room->target == RoomTarget::Throne)
 				rt = RoomType::Get("throne");
 			else if(room->target == RoomTarget::PortalCreate)
@@ -508,7 +508,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		}
 
 		int fail = 10;
-		bool required_object = false;
+		bool requiredObject = false;
 
 		// try to spawn all objects
 		for(uint i = 0, size = rt->objs.size(); i < size && fail > 0; ++i)
@@ -529,21 +529,21 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				}
 
 				if(e.type == ObjectEntity::CHEST)
-					room_chests.push_back(e);
+					roomChests.push_back(e);
 
 				if(IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
-					required_object = true;
+					requiredObject = true;
 			}
 		}
 
-		if(required && required_object && room->target == RoomTarget::None)
+		if(required && requiredObject && room->target == RoomTarget::None)
 			required = false;
 
-		if(!room_chests.empty())
+		if(!roomChests.empty())
 		{
 			bool extra = IsSet(rt->flags, RoomType::TREASURE);
-			GenerateDungeonTreasure(room_chests, chest_lvl, extra);
-			room_chests.clear();
+			GenerateDungeonTreasure(roomChests, chestLvl, extra);
+			roomChests.clear();
 		}
 
 		onWall.clear();
@@ -569,7 +569,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, onWall, blocks, flags);
 				if(e)
 				{
-					GenerateDungeonTreasure(lvl.chests, chest_lvl);
+					GenerateDungeonTreasure(lvl.chests, chestLvl);
 					break;
 				}
 			}
@@ -721,20 +721,20 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 				r1.size = shift;
 				r2.rot = 0;
 				r2.size = Vec2(1, 1);
-				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				for(vector<Int2>::iterator bIt = blocks.begin(), bEnd = blocks.end(); bIt != bEnd; ++bIt)
 				{
-					r2.center.x = 2.f * b_it->x + 1.f;
-					r2.center.y = 2.f * b_it->y + 1.f;
+					r2.center.x = 2.f * bIt->x + 1.f;
+					r2.center.y = 2.f * bIt->y + 1.f;
 					if(RotatedRectanglesCollision(r1, r2))
 						return nullptr;
 				}
 			}
 			else
 			{
-				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				for(vector<Int2>::iterator bIt = blocks.begin(), bEnd = blocks.end(); bIt != bEnd; ++bIt)
 				{
 					if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y,
-						2.f * b_it->x, 2.f * b_it->y, 2.f * (b_it->x + 1), 2.f * (b_it->y + 1)))
+						2.f * bIt->x, 2.f * bIt->y, 2.f * (bIt->x + 1), 2.f * (bIt->y + 1)))
 						return nullptr;
 				}
 			}
@@ -753,9 +753,9 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		// sprawdŸ kolizje z blokami
 		if(!IsSet(base->flags, OBJ_NO_PHYSICS))
 		{
-			for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+			for(vector<Int2>::iterator bIt = blocks.begin(), bEnd = blocks.end(); bIt != bEnd; ++bIt)
 			{
-				if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f * b_it->x + 1.f, 2.f * b_it->y + 1.f, 1.f, 1.f))
+				if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f * bIt->x + 1.f, 2.f * bIt->y + 1.f, 1.f, 1.f))
 					return nullptr;
 			}
 		}
@@ -781,23 +781,23 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	assert(base);
 	assert(base->type == OBJ_CYLINDER); // not implemented
 
-	Box2d allowed_region(2.f * tile.x, 2.f * tile.y, 2.f * (tile.x + 1), 2.f * (tile.y + 1));
-	int dir_flags = lvl.GetTileDirFlags(tile);
-	if(IsSet(dir_flags, GDIRF_LEFT_ROW))
-		allowed_region.v1.x += base->r;
-	if(IsSet(dir_flags, GDIRF_RIGHT_ROW))
-		allowed_region.v2.x -= base->r;
-	if(IsSet(dir_flags, GDIRF_DOWN_ROW))
-		allowed_region.v1.y += base->r;
-	if(IsSet(dir_flags, GDIRF_UP_ROW))
-		allowed_region.v2.y -= base->r;
+	Box2d allowedRegion(2.f * tile.x, 2.f * tile.y, 2.f * (tile.x + 1), 2.f * (tile.y + 1));
+	int dirFlags = lvl.GetTileDirFlags(tile);
+	if(IsSet(dirFlags, GDIRF_LEFT_ROW))
+		allowedRegion.v1.x += base->r;
+	if(IsSet(dirFlags, GDIRF_RIGHT_ROW))
+		allowedRegion.v2.x -= base->r;
+	if(IsSet(dirFlags, GDIRF_DOWN_ROW))
+		allowedRegion.v1.y += base->r;
+	if(IsSet(dirFlags, GDIRF_UP_ROW))
+		allowedRegion.v2.y -= base->r;
 
-	if(allowed_region.SizeX() < base->r + EXTRA_RADIUS
-		|| allowed_region.SizeY() < base->r + EXTRA_RADIUS)
+	if(allowedRegion.SizeX() < base->r + EXTRA_RADIUS
+		|| allowedRegion.SizeY() < base->r + EXTRA_RADIUS)
 		return nullptr;
 
 	float rot = Random(MAX_ANGLE);
-	Vec3 pos = allowed_region.GetRandomPos3();
+	Vec3 pos = allowedRegion.GetRandomPos3();
 	Level::IgnoreObjects ignore{};
 	ignore.ignoreBlocks = true;
 	gameLevel->globalCol.clear();
@@ -1287,10 +1287,10 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	team->SelectLeader();
 
 	// split gold
-	int gold_per_hero = gold / heroes->size();
+	int goldPerHero = gold / heroes->size();
 	for(vector<Unit*>::iterator it = heroes->begin(), end = heroes->end(); it != end; ++it)
-		(*it)->gold += gold_per_hero;
-	gold -= gold_per_hero * heroes->size();
+		(*it)->gold += goldPerHero;
+	gold -= goldPerHero * heroes->size();
 	if(gold)
 		heroes->back()->gold += gold;
 
@@ -1299,29 +1299,29 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	{
 		return a.item->GetWeightValue() < b.item->GetWeightValue();
 	});
-	vector<Unit*>::iterator heroes_it = heroes->begin(), heroes_end = heroes->end();
+	vector<Unit*>::iterator heroesIt = heroes->begin(), heroesEnd = heroes->end();
 	while(!items.empty())
 	{
 		ItemSlot& item = items.back();
 		for(int i = 0, count = item.count; i < count; ++i)
 		{
-			if((*heroes_it)->CanTake(item.item))
+			if((*heroesIt)->CanTake(item.item))
 			{
-				(*heroes_it)->AddItemAndEquipIfNone(item.item);
+				(*heroesIt)->AddItemAndEquipIfNone(item.item);
 				--item.count;
-				++heroes_it;
-				if(heroes_it == heroes_end)
-					heroes_it = heroes->begin();
+				++heroesIt;
+				if(heroesIt == heroesEnd)
+					heroesIt = heroes->begin();
 			}
 			else
 			{
 				// this hero can't carry more items
-				heroes_it = heroes->erase(heroes_it);
+				heroesIt = heroes->erase(heroesIt);
 				if(heroes->empty())
 					break;
-				heroes_end = heroes->end();
-				if(heroes_it == heroes_end)
-					heroes_it = heroes->begin();
+				heroesEnd = heroes->end();
+				if(heroesIt == heroesEnd)
+					heroesIt = heroes->begin();
 			}
 		}
 		if(heroes->empty())
@@ -1333,13 +1333,13 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	if(!chests->empty() && !items.empty())
 	{
 		chests.Shuffle();
-		vector<Chest*>::iterator chest_begin = chests->begin(), chest_end = chests->end(), chest_it = chest_begin;
+		vector<Chest*>::iterator chestBegin = chests->begin(), chestEnd = chests->end(), chestIt = chestBegin;
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		{
-			(*chest_it)->AddItem(it->item, it->count);
-			++chest_it;
-			if(chest_it == chest_end)
-				chest_it = chest_begin;
+			(*chestIt)->AddItem(it->item, it->count);
+			++chestIt;
+			if(chestIt == chestEnd)
+				chestIt = chestBegin;
 		}
 	}
 
@@ -1356,20 +1356,20 @@ void InsideLocationGenerator::FindPathFromStairsToStairs(vector<RoomGroup*>& gro
 	pathfinding->FindPath(lvl, lvl.prevEntryPt, lvl.nextEntryPt, path);
 	std::reverse(path.begin(), path.end());
 
-	RoomGroup* prev_group = nullptr;
-	word prev_room_index = 0xFFFF;
+	RoomGroup* prevGroup = nullptr;
+	word prevRoomIndex = 0xFFFF;
 	for(const Int2& pt : path)
 	{
-		word room_index = lvl.map[pt.x + pt.y * lvl.w].room;
-		if(room_index != prev_room_index)
+		word roomIndex = lvl.map[pt.x + pt.y * lvl.w].room;
+		if(roomIndex != prevRoomIndex)
 		{
-			RoomGroup* group = &lvl.groups[lvl.rooms[room_index]->group];
-			if(group != prev_group)
+			RoomGroup* group = &lvl.groups[lvl.rooms[roomIndex]->group];
+			if(group != prevGroup)
 			{
 				groups.push_back(group);
-				prev_group = group;
+				prevGroup = group;
 			}
-			prev_room_index = room_index;
+			prevRoomIndex = roomIndex;
 		}
 	}
 }
@@ -1377,14 +1377,14 @@ void InsideLocationGenerator::FindPathFromStairsToStairs(vector<RoomGroup*>& gro
 //=================================================================================================
 void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 {
-	static vector<Int2> tmp_path;
+	static vector<Int2> tmpPath;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	for(Unit& unit : team->members)
 	{
-		Int2 unit_pt = PosToPt(unit.pos);
-		if(pathfinding->FindPath(lvl, unit_pt, pt, tmp_path))
+		Int2 unitPt = PosToPt(unit.pos);
+		if(pathfinding->FindPath(lvl, unitPt, pt, tmpPath))
 		{
-			for(vector<Int2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
+			for(vector<Int2>::iterator it2 = tmpPath.begin(), end2 = tmpPath.end(); it2 != end2; ++it2)
 			{
 				Tile& p = lvl.map[(*it2)(lvl.w)];
 				if(p.type == DOORS)
@@ -1396,7 +1396,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 			}
 		}
 		else
-			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit.data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
+			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit.data->id.c_str(), unitPt.x, unitPt.y, pt.x, pt.y);
 	}
 }
 

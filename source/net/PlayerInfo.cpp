@@ -29,9 +29,9 @@ void PlayerInfo::Load(GameReader& f)
 	f >> id;
 	f >> devmode;
 	hd.Load(f);
-	int unit_id;
-	f >> unit_id;
-	u = Unit::GetById(unit_id);
+	int unitId;
+	f >> unitId;
+	u = Unit::GetById(unitId);
 	clas = u->GetClass();
 	f.ReadStringArray<int, word>(notes);
 }

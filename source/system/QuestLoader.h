@@ -14,6 +14,7 @@ private:
 	void LoadEntity(int top, const string& id) override;
 	void ParseQuest(const string& id);
 	void ParseQuestList(const string& id);
+	void ParseCode();
 	void LoadTexts() override;
 	int LoadQuestTexts(Tokenizer& t);
 	void Finalize() override;

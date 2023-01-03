@@ -5,6 +5,7 @@
 #include "AITeam.h"
 #include "BitStreamFunc.h"
 #include "Chest.h"
+#include "DestroyedObject.h"
 #include "Door.h"
 #include "Electro.h"
 #include "Explo.h"
@@ -88,6 +89,7 @@ void LocationPart::Update(float dt)
 	LoopAndRemove(lvlPart->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
 	LoopAndRemove(lvlPart->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
 	LoopAndRemove(lvlPart->drains, [dt](Drain& drain) { return drain.Update(dt); });
+	LoopAndRemove(lvlPart->destroyedObjects, [dt](DestroyedObject* obj) { return obj->Update(dt); });
 
 	// update blood spatters
 	for(Blood& blood : bloods)
@@ -667,13 +669,13 @@ bool LocationPart::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 	{
 		if(!(*it)->IsAlive())
 		{
-			int item_slot = (*it)->FindItem(item);
-			if(item_slot != Unit::INVALID_IINDEX)
+			int itemSlot = (*it)->FindItem(item);
+			if(itemSlot != Unit::INVALID_IINDEX)
 			{
 				if(unit)
 					*unit = *it;
 				if(slot)
-					*slot = item_slot;
+					*slot = itemSlot;
 				return true;
 			}
 		}
@@ -695,8 +697,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_ITEM;
+			NetChange& c = Net::PushChange(NetChange::SPAWN_ITEM);
 			c.item = groundItem;
 		}
 	}
@@ -753,8 +754,7 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_ITEM);
 			c.id = groundItem->id;
 		}
 	}
@@ -780,22 +780,22 @@ Object* LocationPart::FindObject(BaseObject* baseObj)
 //=================================================================================================
 Object* LocationPart::FindNearestObject(BaseObject* baseObj, const Vec3& pos)
 {
-	Object* found_obj = nullptr;
-	float best_dist = 9999.f;
+	Object* foundObj = nullptr;
+	float bestDist = 9999.f;
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == baseObj)
 		{
 			float dist = Vec3::Distance(pos, obj.pos);
-			if(dist < best_dist)
+			if(dist < bestDist)
 			{
-				best_dist = dist;
-				found_obj = &obj;
+				bestDist = dist;
+				foundObj = &obj;
 			}
 		}
 	}
-	return found_obj;
+	return foundObj;
 }
 
 //=================================================================================================
@@ -813,39 +813,39 @@ Chest* LocationPart::FindChestInRoom(const Room& p)
 //=================================================================================================
 Chest* LocationPart::GetRandomFarChest(const Int2& pt)
 {
-	vector<pair<Chest*, float>> far_chests;
-	float close_dist = -1.f;
+	vector<pair<Chest*, float>> farChests;
+	float closeDist = -1.f;
 	Vec3 pos = PtToPos(pt);
 
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 	{
 		float dist = Vec3::Distance2d(pos, (*it)->pos);
-		if(dist > close_dist)
+		if(dist > closeDist)
 		{
-			if(far_chests.empty())
-				far_chests.push_back(pair<Chest*, float>(*it, dist));
+			if(farChests.empty())
+				farChests.push_back(pair<Chest*, float>(*it, dist));
 			else
 			{
-				for(vector<pair<Chest*, float>>::iterator it2 = far_chests.begin(), end2 = far_chests.end(); it2 != end2; ++it2)
+				for(vector<pair<Chest*, float>>::iterator it2 = farChests.begin(), end2 = farChests.end(); it2 != end2; ++it2)
 				{
 					if(dist > it2->second)
 					{
-						far_chests.insert(it2, pair<Chest*, float>(*it, dist));
+						farChests.insert(it2, pair<Chest*, float>(*it, dist));
 						break;
 					}
 				}
 			}
-			if(far_chests.size() > 5u)
+			if(farChests.size() > 5u)
 			{
-				far_chests.pop_back();
-				close_dist = far_chests.back().second;
+				farChests.pop_back();
+				closeDist = farChests.back().second;
 			}
 		}
 	}
 
 	int index;
-	if(far_chests.size() != 5u)
+	if(farChests.size() != 5u)
 	{
 		// jeøeli skrzyni jest ma≥o wybierz najdalszπ
 		index = 0;
@@ -858,7 +858,7 @@ Chest* LocationPart::GetRandomFarChest(const Int2& pt)
 	else
 		index = Rand() % 5;
 
-	return far_chests[index].first;
+	return farChests[index].first;
 }
 
 //=================================================================================================
@@ -966,8 +966,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		soundMgr->PlaySound3d(ability.soundHit, pos, ability.soundHitDist);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
+			NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 			c.extraId = 1;
 			c.ability = &ability;
 			c.pos = pos;
@@ -995,22 +994,19 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = ability.texParticle;
-			pe->emissionInterval = 0.01f;
+			pe->emissionInterval = 0.f;
 			pe->life = 0.f;
 			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawnMin = 8;
-			pe->spawnMax = 12;
+			pe->spawn = Int2(8, 12);
 			pe->maxParticles = 12;
 			pe->pos = pos;
 			pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 			pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 			pe->posMax = Vec3(ability.size, ability.size, ability.size);
-			pe->size = ability.size / 2;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 1.f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->size = Vec2(ability.size / 2, 0.f);
+			pe->alpha = Vec2(1.f, 0.f);
 			pe->mode = 1;
 			pe->Init();
 			lvlPart->pes.push_back(pe);
@@ -1025,7 +1021,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.meshInst->mesh->head.n_groups > 1)
+	if(unit.meshInst->mesh->head.nGroups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
@@ -1082,21 +1078,24 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 	b.u[2] = Vec3(0, 0, 1);
 
 	// search for collision
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	if(unit.action != A_ATTACK || unit.act.attack.hitted != 1)
 	{
-		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
-			continue;
-
-		Box box2;
-		(*it)->GetBox(box2);
-		b.c = box2.Midpoint();
-		b.e = box2.Size() / 2;
-
-		if(OOBToOOB(b, a))
+		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		{
-			hitpoint = a.c;
-			hitted = *it;
-			return true;
+			if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it, true))
+				continue;
+
+			Box box2;
+			(*it)->GetBox(box2);
+			b.c = box2.Midpoint();
+			b.e = box2.Size() / 2;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				hitted = *it;
+				return true;
+			}
 		}
 	}
 
@@ -1116,35 +1115,104 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = gameRes->tSpark;
-				pe->emissionInterval = 0.01f;
+				pe->emissionInterval = 0.f;
 				pe->life = 5.f;
 				pe->particleLife = 0.5f;
 				pe->emissions = 1;
-				pe->spawnMin = 10;
-				pe->spawnMax = 15;
+				pe->spawn = Int2(10, 15);
 				pe->maxParticles = 15;
 				pe->pos = hitpoint;
 				pe->speedMin = Vec3(-1, 0, -1);
 				pe->speedMax = Vec3(1, 1, 1);
 				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 0.3f;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->size = Vec2(0.3f, 0.f);
+				pe->alpha = Vec2(0.9f, 0.f);
 				pe->mode = 0;
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 
 				soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
-				if(Net::IsLocal() && unit.IsPlayer())
+				if(unit.IsPlayer())
 				{
 					if(questMgr->questTutorial->inTutorial)
 						questMgr->questTutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 
+				if(Net::IsServer())
+				{
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
+					c.id = -1;
+					c.pos = hitpoint;
+				}
+
+				return true;
+			}
+		}
+	}
+
+	// destroyable objects
+	for(Usable* usable : usables)
+	{
+		BaseUsable& base = *usable->base;
+		if(IsSet(base.useFlags, BaseUsable::DESTROYABLE))
+		{
+			b.e = Vec3(base.size.x, base.h, base.size.y);
+			b.c = usable->pos;
+			b.c.y += base.h / 2;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				hitted = nullptr;
+
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tSpark;
+				pe->emissionInterval = 0.f;
+				pe->life = 5.f;
+				pe->particleLife = 0.5f;
+				pe->emissions = 1;
+				pe->spawn = Int2(10, 15);
+				pe->maxParticles = 15;
+				pe->pos = hitpoint;
+				pe->speedMin = Vec3(-1, 0, -1);
+				pe->speedMax = Vec3(1, 1, 1);
+				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
+				pe->size = Vec2(0.3f, 0.f);
+				pe->alpha = Vec2(0.9f, 0.f);
+				pe->mode = 0;
+				pe->Init();
+				lvlPart->pes.push_back(pe);
+
+				soundMgr->PlaySound3d(usable->base->sound, hitpoint, HIT_SOUND_DIST);
+
+				if(Net::IsServer())
+				{
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
+					c.id = usable->id;
+					c.pos = hitpoint;
+				}
+
+				if(unit.IsPlayer())
+				{
+					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
+
+					if(Net::IsServer())
+					{
+						NetChange& c = Net::PushChange(NetChange::DESTROY_USABLE);
+						c.id = usable->id;
+					}
+
+					// event
+					ScriptEvent event(EVENT_DESTROY);
+					event.onDestroy.usable = usable;
+					usable->FireEvent(event);
+
+					DestroyUsable(usable);
+				}
 				return true;
 			}
 		}
@@ -1167,11 +1235,51 @@ Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CREATE_EXPLOSION;
+		NetChange& c = Net::PushChange(NetChange::CREATE_EXPLOSION);
 		c.ability = ability;
 		c.pos = explo->pos;
 	}
 
 	return explo;
+}
+
+//=================================================================================================
+void LocationPart::DestroyUsable(Usable* usable)
+{
+	assert(usable);
+
+	// fade out object
+	DestroyedObject* obj = new DestroyedObject;
+	obj->base = usable->base;
+	obj->pos = usable->pos;
+	obj->rot = usable->rot;
+	obj->timer = 1.f;
+	lvlPart->destroyedObjects.push_back(obj);
+
+	// remove collider
+	for(auto it = lvlPart->colliders.begin(), end = lvlPart->colliders.end(); it != end; ++it)
+	{
+		if(it->owner == usable)
+		{
+			lvlPart->colliders.erase(it);
+			break;
+		}
+	}
+
+	// remove physics
+	btCollisionObjectArray& colObjs = phyWorld->getCollisionObjectArray();
+	for(uint i = 0, count = colObjs.size(); i < count; ++i)
+	{
+		btCollisionObject* cobj = colObjs[i];
+		if(cobj->getUserPointer() == usable)
+		{
+			phyWorld->removeCollisionObject(cobj);
+			delete cobj;
+			break;
+		}
+	}
+
+	RemoveElement(usables, usable);
+	usable->RemoveAllEventHandlers();
+	delete usable;
 }

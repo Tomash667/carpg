@@ -99,12 +99,12 @@ void Level::LoadLanguage()
 void Level::Init()
 {
 	terrain = new Terrain;
-	Terrain::Options terrain_options;
-	terrain_options.nParts = 8;
-	terrain_options.texSize = 256;
-	terrain_options.tileSize = 2.f;
-	terrain_options.tilesPerPart = 16;
-	terrain->Init(terrain_options);
+	Terrain::Options terrainOptions;
+	terrainOptions.nParts = 8;
+	terrainOptions.texSize = 256;
+	terrainOptions.tileSize = 2.f;
+	terrainOptions.tilesPerPart = 16;
+	terrain->Init(terrainOptions);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -152,7 +152,7 @@ void Level::Reset()
 //=================================================================================================
 void Level::ProcessUnitWarps()
 {
-	bool warped_to_arena = false;
+	bool warpedToArena = false;
 
 	for(UnitWarpData& warp : unitWarpData)
 	{
@@ -203,7 +203,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->rot = (warp.unit->inArena == 0 ? PI : 0);
 				WarpUnit(*warp.unit, pos);
 				building.units.push_back(warp.unit);
-				warped_to_arena = true;
+				warpedToArena = true;
 			}
 		}
 		else
@@ -237,7 +237,7 @@ void Level::ProcessUnitWarps()
 
 	unitWarpData.clear();
 
-	if(warped_to_arena)
+	if(warpedToArena)
 	{
 		Vec3 pt1(0, 0, 0), pt2(0, 0, 0);
 		int count1 = 0, count2 = 0;
@@ -393,14 +393,18 @@ Unit* Level::FindUnit(UnitData* ud)
 }
 
 //=================================================================================================
-Usable* Level::FindUsable(int id)
+Usable* Level::FindUsable(int id, LocationPart** outLocPart)
 {
 	for(LocationPart& locPart : locParts)
 	{
 		for(Usable* usable : locPart.usables)
 		{
 			if(usable->id == id)
+			{
+				if(outLocPart)
+					*outLocPart = &locPart;
 				return usable;
+			}
 		}
 	}
 	return nullptr;
@@ -579,8 +583,7 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 	{
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_TRAP;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_TRAP);
 			c.id = bestTrap->id;
 		}
 
@@ -600,8 +603,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 	toRemove.push_back(unit);
 	if(notify && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT);
 		c.id = unit->id;
 	}
 }
@@ -704,15 +706,18 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 	else if(IsSet(base->flags, OBJ_USABLE))
 	{
 		// usable object
-		BaseUsable* base_use = (BaseUsable*)base;
+		BaseUsable* baseUsable = (BaseUsable*)base;
+
+		if(ready)
+			baseUsable->EnsureIsLoaded();
 
 		Usable* u = new Usable;
 		u->Register();
-		u->base = base_use;
+		u->base = baseUsable;
 		u->pos = pos;
 		u->rot = rot;
 
-		if(IsSet(base_use->useFlags, BaseUsable::CONTAINER))
+		if(IsSet(baseUsable->useFlags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
 			const Item* item = Book::GetRandom();
@@ -735,7 +740,7 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 			if(base->variants)
 			{
 				// extra code for bench
-				if(IsSet(base_use->useFlags, BaseUsable::IS_BENCH))
+				if(IsSet(baseUsable->useFlags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -798,26 +803,23 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 {
 	assert(obj);
 
-	// ogieñ pochodni
 	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
 		if(IsSet(obj->flags, OBJ_LIGHT))
 		{
+			// flame
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
+			pe->spawn = Int2(1, 3);
 			pe->speedMin = Vec3(-1, 3, -1);
 			pe->speedMax = Vec3(1, 4, 1);
 			pe->mode = 1;
@@ -826,15 +828,15 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 
 			pe->tex = gameRes->tFlare;
 			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				pe->size = 0.7f;
+				pe->size = Vec2(0.7f, 0.f);
 			else
 			{
-				pe->size = 0.5f;
+				pe->size = Vec2(0.5f, 0.f);
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					pe->tex = gameRes->tFlare2;
 			}
 
-			// œwiat³o
+			// light
 			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
 				GameLight& light = Add1(locPart.lights);
@@ -848,53 +850,47 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
 		{
-			// krew
+			// blood
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 50;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 1;
-			pe->spawnMax = 3;
+			pe->spawn = Int2(1, 3);
 			pe->speedMin = Vec3(-1, 4, -1);
 			pe->speedMax = Vec3(1, 6, 1);
 			pe->mode = 0;
 			pe->tex = gameRes->tBlood[BLOOD_RED];
-			pe->size = 0.5f;
+			pe->size = Vec2(0.5f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
 		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
 		{
-			// krew
+			// water
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->alpha = 0.8f;
+			pe->alpha = Vec2(0.8f, 0.f);
 			pe->emissionInterval = 0.1f;
 			pe->emissions = -1;
 			pe->life = -1;
 			pe->maxParticles = 500;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
 			pe->particleLife = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->posMin = Vec3(0, 0, 0);
 			pe->posMax = Vec3(0, 0, 0);
-			pe->spawnMin = 4;
-			pe->spawnMax = 8;
+			pe->spawn = Int2(4, 8);
 			pe->speedMin = Vec3(-0.6f, 4, -0.6f);
 			pe->speedMax = Vec3(0.6f, 7, 0.6f);
 			pe->mode = 0;
 			pe->tex = gameRes->tWater;
-			pe->size = 0.05f;
+			pe->size = Vec2(0.05f, 0.f);
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
@@ -945,17 +941,17 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		}
 		else
 		{
-			const Matrix m_rot = Matrix::RotationY(rot);
-			const Matrix m_pos = Matrix::Translation(pos);
+			const Matrix mRot = Matrix::RotationY(rot);
+			const Matrix mPos = Matrix::Translation(pos);
 			// skalowanie jakimœ sposobem przechodzi do btWorldTransform i przy rysowaniu jest z³a skala (dwukrotnie u¿yta)
-			const Matrix m_scale = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
-			const Matrix m = m_scale * *obj->matrix * m_rot * m_pos;
+			const Matrix mScale = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
+			const Matrix m = mScale * *obj->matrix * mRot * mPos;
 			cobj->getWorldTransform().setFromOpenGLMatrix(&m._11);
-			Vec3 out_pos = Vec3::TransformZero(m);
+			Vec3 outPos = Vec3::TransformZero(m);
 			Quat q = Quat::CreateFromRotationMatrix(m);
 
 			float yaw = asin(-2 * (q.x * q.z - q.w * q.y));
-			c.pos = out_pos;
+			c.pos = outPos;
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(yaw))
@@ -1088,9 +1084,9 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
 	// N - wariant (tylko obiekty)
 	string token;
-	bool have_exit = false, have_spawn = false;
-	bool is_inside = (inside != nullptr);
-	Vec3 spawn_point;
+	bool haveExit = false, haveSpawn = false;
+	bool isInside = (inside != nullptr);
+	Vec3 spawnPoint;
 	static vector<const Mesh::Point*> details;
 
 	for(vector<Mesh::Point>::const_iterator it2 = mesh->attachPoints.begin(), end2 = mesh->attachPoints.end(); it2 != end2; ++it2)
@@ -1121,7 +1117,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		{
 			if(!recreate)
 			{
-				assert(!is_inside);
+				assert(!isInside);
 				details.push_back(&pt);
 			}
 			continue;
@@ -1189,14 +1185,14 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		case 'p': // physics
 			if(token == "circle" || token == "circlev")
 			{
-				bool is_wall = (token == "circle");
+				bool isWall = (token == "circle");
 
 				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::SPHERE;
 				cobj.radius = pt.size.x;
 				cobj.pos = pos;
 				cobj.owner = nullptr;
-				cobj.camCollider = is_wall;
+				cobj.camCollider = isWall;
 
 				if(locPart.partType == LocationPart::Type::Outside)
 				{
@@ -1208,15 +1204,15 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
 				phyWorld->addCollisionObject(co, group);
 			}
 			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
 			{
-				bool is_wall = (token == "square" || token == "squarevn");
-				bool block_camera = (token == "square");
+				bool isWall = (token == "square" || token == "squarevn");
+				bool blockCamera = (token == "square");
 
 				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
 				cobj.type = CollisionObject::RECTANGLE;
@@ -1224,7 +1220,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
 				cobj.owner = nullptr;
-				cobj.camCollider = block_camera;
+				cobj.camCollider = blockCamera;
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -1247,7 +1243,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
 				phyWorld->addCollisionObject(co, group);
@@ -1360,12 +1356,12 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 					if(insideMesh)
 					{
-						Vec3 o_pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
+						Vec3 oPos = Vec3(inside->offset.x, 0.f, inside->offset.y);
 
 						Object* o = new Object;
 						o->base = nullptr;
 						o->mesh = insideMesh;
-						o->pos = o_pos;
+						o->pos = oPos;
 						o->rot = Vec3(0, 0, 0);
 						o->scale = 1.f;
 						o->requireSplit = true;
@@ -1374,7 +1370,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 						ProcessBuildingObjects(*inside, city, inside, insideMesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr);
 					}
 
-					have_exit = true;
+					haveExit = true;
 				}
 				else if(token == "exit")
 				{
@@ -1385,23 +1381,23 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					inside->exitRegion.v2.x = pos.x + pt.size.x;
 					inside->exitRegion.v2.y = pos.z + pt.size.z;
 
-					have_exit = true;
+					haveExit = true;
 				}
 				else if(token == "spawn")
 				{
-					if(is_inside)
+					if(isInside)
 						inside->insideSpawn = pos;
 					else
 					{
-						spawn_point = pos;
-						terrain->SetY(spawn_point);
+						spawnPoint = pos;
+						terrain->SetY(spawnPoint);
 					}
 
-					have_spawn = true;
+					haveSpawn = true;
 				}
 				else if(token == "top")
 				{
-					assert(is_inside);
+					assert(isInside);
 					inside->top = pos.y;
 				}
 				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
@@ -1459,7 +1455,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'c': // unit
-			if(!recreate)
+			if(!recreate && city->citizens > 0)
 			{
 				UnitData* ud = UnitData::TryGet(token.c_str());
 				assert(ud);
@@ -1482,34 +1478,54 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'e': // effect
+			if(game->inLoad)
+				break;
 			if(token == "magicfire")
 			{
-				if(!game->inLoad)
-				{
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = gameRes->tFlare2;
-					pe->alpha = 1.0f;
-					pe->size = 1.0f;
-					pe->emissionInterval = 0.1f;
-					pe->emissions = -1;
-					pe->life = -1;
-					pe->maxParticles = 50;
-					pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-					pe->particleLife = 0.5f;
-					pe->pos = pos;
-					if(locPart.partType == LocationPart::Type::Outside)
-						pe->pos.y += terrain->GetH(pos);
-					pe->posMin = Vec3(0, 0, 0);
-					pe->posMax = Vec3(0, 0, 0);
-					pe->spawnMin = 2;
-					pe->spawnMax = 4;
-					pe->speedMin = Vec3(-1, 3, -1);
-					pe->speedMax = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
-					locPart.lvlPart->pes.push_back(pe);
-				}
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tFlare2;
+				pe->alpha = Vec2(1.0f, 0.f);
+				pe->size = Vec2(1.0f, 0.f);
+				pe->emissionInterval = 0.1f;
+				pe->emissions = -1;
+				pe->life = -1;
+				pe->maxParticles = 50;
+				pe->particleLife = 0.5f;
+				pe->pos = pos;
+				if(locPart.partType == LocationPart::Type::Outside)
+					pe->pos.y += terrain->GetH(pos);
+				pe->posMin = Vec3(0, 0, 0);
+				pe->posMax = Vec3(0, 0, 0);
+				pe->spawn = Int2(2, 4);
+				pe->speedMin = Vec3(-1, 3, -1);
+				pe->speedMax = Vec3(1, 4, 1);
+				pe->mode = 1;
+				pe->Init();
+				locPart.lvlPart->pes.push_back(pe);
+			}
+			else if(token == "smoke")
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = gameRes->tSmoke;
+				pe->alpha = Vec2(0.25f, 0.f);
+				pe->size = Vec2(1.0f, 5.f);
+				pe->emissionInterval = 0.1f;
+				pe->emissions = -1;
+				pe->life = -1;
+				pe->maxParticles = 100;
+				pe->particleLife = 2.5f;
+				pe->pos = pos;
+				if(locPart.partType == LocationPart::Type::Outside)
+					pe->pos.y += terrain->GetH(pos);
+				pe->posMin = Vec3(-0.5f, 0, -0.5f);
+				pe->posMax = Vec3(0.5f, 0, 0.5f);
+				pe->spawn = Int2(2, 4);
+				pe->speedMin = Vec3(-0.5f, 3, -0.5f);
+				pe->speedMax = Vec3(0.5f, 4, 0.5f);
+				pe->mode = 0;
+				pe->gravity = false;
+				pe->Init();
+				locPart.lvlPart->pes.push_back(pe);
 			}
 			else
 				assert(0);
@@ -1517,7 +1533,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		}
 	}
 
-	if(is_inside)
+	if(isInside)
 	{
 		// floor
 		btCollisionObject* co = new btCollisionObject;
@@ -1534,7 +1550,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		phyWorld->addCollisionObject(co, CG_COLLIDER);
 	}
 
-	if(!details.empty() && !is_inside)
+	if(!details.empty() && !isInside)
 	{
 		int c = Rand() % 80 + details.size() * 2, count;
 		if(c < 10)
@@ -1608,11 +1624,11 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 	if(!recreate)
 	{
-		if(is_inside || inside)
-			assert(have_exit && have_spawn);
+		if(isInside || inside)
+			assert(haveExit && haveSpawn);
 
-		if(!is_inside && inside)
-			inside->outsideSpawn = spawn_point;
+		if(!isInside && inside)
+			inside->outsideSpawn = spawnPoint;
 	}
 }
 
@@ -1639,19 +1655,19 @@ void Level::RecreateObjects(bool spawnParticles)
 		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;
-			BaseObject* base_obj = obj.base;
+			BaseObject* baseObj = obj.base;
 
-			if(!base_obj)
+			if(!baseObj)
 				continue;
 
-			if(IsSet(base_obj->flags, OBJ_BUILDING))
+			if(IsSet(baseObj->flags, OBJ_BUILDING))
 			{
 				const float rot = obj.rot.y;
 				const GameDirection dir = RotToDir(rot);
-				ProcessBuildingObjects(locPart, nullptr, nullptr, base_obj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
+				ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
 			}
 			else
-				SpawnObjectExtras(locPart, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+				SpawnObjectExtras(locPart, baseObj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
 		}
 
 		for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
@@ -2014,8 +2030,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool createPhysics)
 
 	if(Net::IsServer() && ready)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_UNIT;
+		NetChange& c = Net::PushChange(NetChange::SPAWN_UNIT);
 		c.unit = unit;
 	}
 
@@ -2147,21 +2162,21 @@ Unit* Level::SpawnUnitNearLocation(LocationPart& locPart, const Vec3& pos, UnitD
 	globalCol.clear();
 	GatherCollisionObjects(locPart, globalCol, pos, extraRadius + radius, nullptr);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 
 	for(int i = 0; i < 10; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, radius))
+		if(!Collide(globalCol, tmpPos, radius))
 		{
 			float rot;
 			if(lookAt)
-				rot = Vec3::LookAtAngle(tmp_pos, *lookAt);
+				rot = Vec3::LookAtAngle(tmpPos, *lookAt);
 			else
 				rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(locPart, unit, level, &tmp_pos, &rot);
+			return CreateUnitWithAI(locPart, unit, level, &tmpPos, &rot);
 		}
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 	}
 
 	return nullptr;
@@ -2227,15 +2242,28 @@ void Level::SpawnUnitsGroup(LocationPart& locPart, const Vec3& pos, const Vec3* 
 //=================================================================================================
 Unit* Level::SpawnUnit(LocationPart& locPart, TmpSpawn spawn)
 {
+	return SpawnUnit(locPart, *spawn.first, spawn.second);
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnit(LocationPart& locPart, UnitData& data, int level)
+{
 	assert(locPart.partType == LocationPart::Type::Building); // not implemented
 
 	InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
 	Vec3 pos;
-	if(!WarpToRegion(locPart, building.region1, spawn.first->GetRadius(), pos))
+	if(!WarpToRegion(locPart, building.region1, data.GetRadius(), pos))
 		return nullptr;
 
 	float rot = Random(MAX_ANGLE);
-	return CreateUnitWithAI(locPart, *spawn.first, spawn.second, &pos, &rot);
+	return CreateUnitWithAI(locPart, data, level, &pos, &rot);
+}
+
+//=================================================================================================
+void Level::SpawnUnits(UnitGroup* group, int level)
+{
+	LocationGenerator* locGen = game->locGenFactory->Get(location);
+	locGen->SpawnUnits(group, level);
 }
 
 //=================================================================================================
@@ -2327,7 +2355,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					if(!*u)
 						break;
 					if(*u == *it)
-						goto ignore_unit;
+						goto ignoreUnit;
 					++u;
 				}
 				while(1);
@@ -2342,7 +2370,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					co.type = CollisionObject::SPHERE;
 				}
 
-			ignore_unit:
+			ignoreUnit:
 				;
 			}
 		}
@@ -2528,7 +2556,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					if(!*u)
 						break;
 					if(*u == *it)
-						goto ignore_unit;
+						goto ignoreUnit;
 					++u;
 				}
 				while(1);
@@ -2542,7 +2570,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 					co.type = CollisionObject::SPHERE;
 				}
 
-			ignore_unit:
+			ignoreUnit:
 				;
 			}
 		}
@@ -2877,7 +2905,7 @@ void Level::SpawnBlood()
 //=================================================================================================
 void Level::WarpUnit(Unit& unit, const Vec3& pos)
 {
-	const float unit_radius = unit.GetUnitRadius();
+	const float unitRadius = unit.GetUnitRadius();
 
 	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
@@ -2886,22 +2914,22 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignoreUnits[2] = { &unit, nullptr };
 	ignore.ignoredUnits = ignoreUnits;
-	GatherCollisionObjects(locPart, globalCol, pos, 2.f + unit_radius, &ignore);
+	GatherCollisionObjects(locPart, globalCol, pos, 2.f + unitRadius, &ignore);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 	bool ok = false;
-	float radius = unit_radius;
+	float radius = unitRadius;
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, unit_radius))
+		if(!Collide(globalCol, tmpPos, unitRadius))
 		{
-			unit.pos = tmp_pos;
+			unit.pos = tmpPos;
 			ok = true;
 			break;
 		}
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.25f;
@@ -2921,8 +2949,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	{
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
+		NetChange& c = Net::PushChange(NetChange::WARP);
 		c.unit = &unit;
 		if(unit.IsPlayer())
 			unit.player->playerInfo->warping = true;
@@ -2957,19 +2984,19 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 	ignore.ignoredUnits = ignoreUnits;
 	GatherCollisionObjects(locPart, globalCol, pos, extraRadius + radius, &ignore);
 
-	Vec3 tmp_pos = pos;
+	Vec3 tmpPos = pos;
 	if(!allowExact)
-		tmp_pos += Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos += Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 
 	for(int i = 0; i < tries; ++i)
 	{
-		if(!Collide(globalCol, tmp_pos, radius))
+		if(!Collide(globalCol, tmpPos, radius))
 			break;
 
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
+		tmpPos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extraRadius;
 	}
 
-	unit.pos = tmp_pos;
+	unit.pos = tmpPos;
 	unit.Moved(true);
 	unit.visualPos = unit.pos;
 
@@ -2977,8 +3004,7 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 	{
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
+		NetChange& c = Net::PushChange(NetChange::WARP);
 		c.unit = &unit;
 		if(unit.IsPlayer())
 			unit.player->playerInfo->warping = true;
@@ -3143,8 +3169,7 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CREATE_TRAP;
+		NetChange& c = Net::PushChange(NetChange::CREATE_TRAP);
 		c.extraId = trap->id;
 		c.id = type;
 		c.pos = pos;
@@ -3270,10 +3295,10 @@ int Level::GetDifficultyLevel() const
 		InsideLocation* inside = static_cast<InsideLocation*>(location);
 		if(inside->IsMultilevel())
 		{
-			float max_st = (float)inside->st;
-			float min_st = max(3.f, max_st * 2 / 3);
+			float maxSt = (float)inside->st;
+			float minSt = max(3.f, maxSt * 2 / 3);
 			uint levels = static_cast<MultiInsideLocation*>(inside)->levels.size() - 1;
-			return (int)Lerp(min_st, max_st, float(dungeonLevel) / levels);
+			return (int)Lerp(minSt, maxSt, float(dungeonLevel) / levels);
 		}
 		else
 			return inside->st;
@@ -3354,48 +3379,60 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(cityCtx || location->state == LS_CLEARED)
+	if(location->state == LS_CLEARED)
 		return;
 
+	Unit& playerUnit = *game->pc->unit;
+
 	// is current level cleared?
-	bool is_clear = true;
-	for(vector<Unit*>::iterator it = localPart->units.begin(), end = localPart->units.end(); it != end; ++it)
+	bool isClear = true;
+	for(Unit* unit : localPart->units)
 	{
-		if((*it)->IsAlive() && game->pc->unit->IsEnemy(**it, true))
+		if(unit->IsAlive() && playerUnit.IsEnemy(*unit, true))
 		{
-			is_clear = false;
+			isClear = false;
 			break;
 		}
 	}
 
-	// is all level cleared?
-	if(is_clear && !location->outside)
+	// is all levels cleared?
+	if(isClear)
 	{
-		InsideLocation* inside = static_cast<InsideLocation*>(location);
-		if(inside->IsMultilevel())
-			is_clear = static_cast<MultiInsideLocation*>(inside)->LevelCleared();
+		if(cityCtx)
+		{
+			for(InsideBuilding* insideBuilding : cityCtx->insideBuildings)
+			{
+				for(Unit* unit : insideBuilding->units)
+				{
+					if(unit->IsAlive() && playerUnit.IsEnemy(*unit, true))
+					{
+						isClear = false;
+						goto superbreak;
+					}
+				}
+			}
+		superbreak:;
+		}
+		else if(!location->outside)
+		{
+			InsideLocation* inside = static_cast<InsideLocation*>(location);
+			if(inside->IsMultilevel())
+				isClear = static_cast<MultiInsideLocation*>(inside)->LevelCleared();
+		}
 	}
 
-	if(is_clear)
+	if(isClear)
 	{
 		if(location->state != LS_HIDDEN)
 			location->state = LS_CLEARED;
 
-		// events v1
+		// events
 		bool prevent = false;
 		if(eventHandler)
 			prevent = eventHandler->HandleLocationEvent(LocationEventHandler::CLEARED);
-
-		// events v2
-		for(Event& e : location->events)
-		{
-			if(e.type == EVENT_CLEARED)
-			{
-				ScriptEvent event(EVENT_CLEARED);
-				event.onCleared.location = location;
-				e.quest->FireEvent(event);
-			}
-		}
+		ScriptEvent event(EVENT_CLEARED);
+		event.onCleared.location = location;
+		location->FireEvent(event);
 
 		// remove camp in 4-8 days
 		if(location->type == L_CAMP)
@@ -3605,8 +3642,7 @@ void Level::SpawnDungeonCollider(const Vec3& pos)
 //=================================================================================================
 void Level::RemoveColliders()
 {
-	if(phyWorld)
-		phyWorld->Reset();
+	physics->Reset();
 
 	DeleteElements(shapes);
 	camColliders.clear();
@@ -3636,57 +3672,57 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 			return static_cast<InsideBuilding*>(u.locPart)->exitRegion.Midpoint().XZ();
 		else if(cityCtx && !forceBorder)
 		{
-			float best_dist, dist;
-			int best_index = -1, index = 0;
+			float bestDist, dist;
+			int bestIndex = -1, index = 0;
 
 			for(vector<EntryPoint>::const_iterator it = cityCtx->entryPoints.begin(), end = cityCtx->entryPoints.end(); it != end; ++it, ++index)
 			{
 				if(it->exitRegion.IsInside(u.pos))
 				{
 					// unit is already inside exitable location part, go to outside exit
-					best_index = -1;
+					bestIndex = -1;
 					break;
 				}
 				else
 				{
 					dist = Vec2::Distance(Vec2(u.pos.x, u.pos.z), it->exitRegion.Midpoint());
-					if(best_index == -1 || dist < best_dist)
+					if(bestIndex == -1 || dist < bestDist)
 					{
-						best_dist = dist;
-						best_index = index;
+						bestDist = dist;
+						bestIndex = index;
 					}
 				}
 			}
 
-			if(best_index != -1)
-				return cityCtx->entryPoints[best_index].exitRegion.Midpoint().XZ();
+			if(bestIndex != -1)
+				return cityCtx->entryPoints[bestIndex].exitRegion.Midpoint().XZ();
 		}
 
 		int best = 0;
-		float dist, best_dist;
+		float dist, bestDist;
 
 		// lewa krawêdŸ
-		best_dist = abs(pos.x - 32.f);
+		bestDist = abs(pos.x - 32.f);
 
 		// prawa krawêdŸ
 		dist = abs(pos.x - (256.f - 32.f));
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			best = 1;
 		}
 
 		// górna krawêdŸ
 		dist = abs(pos.z - 32.f);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
+			bestDist = dist;
 			best = 2;
 		}
 
 		// dolna krawêdŸ
 		dist = abs(pos.z - (256.f - 32.f));
-		if(dist < best_dist)
+		if(dist < bestDist)
 			best = 3;
 
 		switch(best)
@@ -3716,6 +3752,9 @@ Vec3 Level::GetExitPos(Unit& u, bool forceBorder)
 //=================================================================================================
 bool Level::CanSee(Unit& u1, Unit& u2)
 {
+	if(&u1 == &u2)
+		return true;
+
 	if(u1.locPart != u2.locPart)
 		return false;
 
@@ -3970,7 +4009,7 @@ void Level::KillAll(bool friendly, Unit& unit, Unit* ignore)
 //=================================================================================================
 void Level::AddPlayerTeam(const Vec3& pos, float rot)
 {
-	const bool hide_weapon = enterFrom == ENTER_FROM_OUTSIDE;
+	const bool hideWeapon = enterFrom == ENTER_FROM_OUTSIDE;
 
 	for(Unit& unit : team->members)
 	{
@@ -3979,7 +4018,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 		if(unit.IsHero())
 			game->ais.push_back(unit.ai);
 
-		unit.SetTakeHideWeaponAnimationToEnd(hide_weapon, false);
+		unit.SetTakeHideWeaponAnimationToEnd(hideWeapon, false);
 		unit.rot = rot;
 		unit.animation = unit.currentAnimation = ANI_STAND;
 		unit.meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
@@ -3996,7 +4035,8 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot)
 			unit.ai->timer = Random(2.f, 5.f);
 		}
 
-		WarpNearLocation(*localPart, unit, pos, cityCtx ? 4.f : 2.f, true, 20);
+		const bool isSafe = (cityCtx && cityCtx->citizens != 0);
+		WarpNearLocation(*localPart, unit, pos, isSafe ? 4.f : 2.f, true, 20);
 		unit.visualPos = unit.pos;
 
 		if(!location->outside)
@@ -4071,15 +4111,21 @@ void Level::RevealMinimap()
 }
 
 //=================================================================================================
+bool Level::IsSafeSettlement()
+{
+	return cityCtx && cityCtx->citizens != 0;
+}
+
+//=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && location->target != VILLAGE;
+	return location->type == L_CITY && static_cast<City*>(location)->IsCity();
 }
 
 //=================================================================================================
 bool Level::IsVillage()
 {
-	return location->type == L_CITY && location->target == VILLAGE;
+	return location->type == L_CITY && static_cast<City*>(location)->IsVillage();
 }
 
 //=================================================================================================
@@ -4174,7 +4220,10 @@ MusicType Level::GetLocationMusic()
 	switch(location->type)
 	{
 	case L_CITY:
-		return MusicType::City;
+		if(Any(location->target, VILLAGE_EMPTY, VILLAGE_DESTROYED, VILLAGE_DESTROYED2))
+			return MusicType::EmptyCity;
+		else
+			return MusicType::City;
 	case L_DUNGEON:
 	case L_CAVE:
 		if(Any(location->target, HERO_CRYPT, MONSTER_CRYPT))
@@ -4217,8 +4266,7 @@ void Level::CleanLevel(int buildingId)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CLEAN_LEVEL;
+		NetChange& c = Net::PushChange(NetChange::CLEAN_LEVEL);
 		c.id = buildingId;
 	}
 }
@@ -4234,6 +4282,27 @@ GroundItem* Level::SpawnItem(const Item* item, const Vec3& pos)
 	groundItem->pos = pos;
 	groundItem->item = item;
 	localPart->AddGroundItem(groundItem);
+	return groundItem;
+}
+
+//=================================================================================================
+GroundItem* Level::SpawnItemNearLocation(LocationPart& locPart, const Item* item)
+{
+	assert(locPart.partType == LocationPart::Type::Building); // not implemented
+
+	InsideBuilding& building = static_cast<InsideBuilding&>(locPart);
+	Vec3 pos;
+	if(!WarpToRegion(locPart, building.region1, 0.3f, pos))
+		return nullptr;
+
+	GroundItem* groundItem = new GroundItem;
+	groundItem->Register();
+	groundItem->count = 1;
+	groundItem->teamCount = 1;
+	groundItem->rot = Quat::RotY(Random(MAX_ANGLE));
+	groundItem->pos = pos;
+	groundItem->item = item;
+	locPart.AddGroundItem(groundItem);
 	return groundItem;
 }
 
@@ -4273,16 +4342,16 @@ void Level::SpawnItemRandomly(const Item* item, uint count)
 Unit* Level::GetNearestEnemy(Unit* unit)
 {
 	Unit* best = nullptr;
-	float best_dist;
+	float bestDist;
 	for(Unit* u : unit->locPart->units)
 	{
 		if(u->IsAlive() && unit->IsEnemy(*u))
 		{
 			float dist = Vec3::DistanceSquared(unit->pos, u->pos);
-			if(!best || dist < best_dist)
+			if(!best || dist < bestDist)
 			{
 				best = u;
-				best_dist = dist;
+				bestDist = dist;
 			}
 		}
 	}
@@ -4301,21 +4370,21 @@ GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
 	assert(item);
 
 	LocationPart& locPart = GetLocationPart(pos);
-	float best_dist = 999.f;
-	GroundItem* best_item = nullptr;
+	float bestDist = 999.f;
+	GroundItem* bestItem = nullptr;
 	for(GroundItem* groundItem : locPart.GetGroundItems())
 	{
 		if(groundItem->item == item)
 		{
 			float dist = Vec3::Distance(pos, groundItem->pos);
-			if(dist < best_dist || !best_item)
+			if(dist < bestDist || !bestItem)
 			{
-				best_dist = dist;
-				best_item = groundItem;
+				bestDist = dist;
+				bestItem = groundItem;
 			}
 		}
 	}
-	return best_item;
+	return bestItem;
 }
 
 //=================================================================================================
@@ -4338,8 +4407,9 @@ GroundItem* Level::FindItem(const Item* item)
 //=================================================================================================
 Unit* Level::GetMayor()
 {
-	if(!cityCtx)
+	if(!IsSafeSettlement())
 		return nullptr;
+
 	cstring id;
 	if(cityCtx->target == VILLAGE)
 		id = "soltys";
@@ -4351,7 +4421,7 @@ Unit* Level::GetMayor()
 //=================================================================================================
 bool Level::IsSafe()
 {
-	if(cityCtx)
+	if(IsSafeSettlement())
 		return true;
 	else if(location->outside)
 		return location->state == LS_CLEARED || location->type == L_ENCOUNTER;
@@ -4404,7 +4474,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 	if(questMgr->questSecret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
 
-	if(cityCtx)
+	if(IsSafeSettlement())
 	{
 		for(Unit& u : team->members)
 		{
@@ -4495,17 +4565,17 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 {
 	assert(shape->isConvex());
 
-	btTransform t_from, t_to;
-	t_from.setIdentity();
-	t_from.setOrigin(ToVector3(from));
-	t_to.setIdentity();
-	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
+	btTransform tFrom, tTo;
+	tFrom.setIdentity();
+	tFrom.setOrigin(ToVector3(from));
+	tTo.setIdentity();
+	tTo.setOrigin(ToVector3(dir) + tFrom.getOrigin());
 
 	ConvexCallback callback(clbk, tList, useClbk2);
 
-	phyWorld->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, tFrom, tTo, callback);
 
-	bool has_hit = (callback.closest <= 1.f);
+	bool hasHit = (callback.closest <= 1.f);
 	t = min(callback.closest, 1.f);
 	if(endT)
 	{
@@ -4514,7 +4584,7 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 		else
 			*endT = 1.f;
 	}
-	return has_hit;
+	return hasHit;
 }
 
 //=================================================================================================
@@ -4531,52 +4601,52 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 	assert(radius > 0.f && me);
 
 	constexpr float SMALL_DISTANCE = 0.001f;
-	Vec3 new_pos = pos + dir;
-	Vec3 gather_pos = pos + dir / 2;
-	float gather_radius = dir.Length() + radius;
+	Vec3 newPos = pos + dir;
+	Vec3 gatherPos = pos + dir / 2;
+	float gatherRadius = dir.Length() + radius;
 	globalCol.clear();
 
-	Level::IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore{};
 	Unit* ignored[] = { me, nullptr };
 	ignore.ignoredUnits = (const Unit**)ignored;
-	GatherCollisionObjects(*me->locPart, globalCol, gather_pos, gather_radius, &ignore);
+	GatherCollisionObjects(*me->locPart, globalCol, gatherPos, gatherRadius, &ignore);
 
 	if(globalCol.empty())
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
-		pos = new_pos;
+			*isSmall = (Vec3::Distance(pos, newPos) < SMALL_DISTANCE);
+		pos = newPos;
 		return 3;
 	}
 
 	// idŸ prosto po x i z
-	if(!Collide(globalCol, new_pos, radius))
+	if(!Collide(globalCol, newPos, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
-		pos = new_pos;
+			*isSmall = (Vec3::Distance(pos, newPos) < SMALL_DISTANCE);
+		pos = newPos;
 		return 3;
 	}
 
 	// idŸ po x
-	Vec3 new_pos2 = me->pos;
-	new_pos2.x = new_pos.x;
-	if(!Collide(globalCol, new_pos2, radius))
+	Vec3 newPos2 = me->pos;
+	newPos2.x = newPos.x;
+	if(!Collide(globalCol, newPos2, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
-		pos = new_pos2;
+			*isSmall = (Vec3::Distance(pos, newPos2) < SMALL_DISTANCE);
+		pos = newPos2;
 		return 1;
 	}
 
 	// idŸ po z
-	new_pos2.x = me->pos.x;
-	new_pos2.z = new_pos.z;
-	if(!Collide(globalCol, new_pos2, radius))
+	newPos2.x = me->pos.x;
+	newPos2.z = newPos.z;
+	if(!Collide(globalCol, newPos2, radius))
 	{
 		if(isSmall)
-			*isSmall = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
-		pos = new_pos2;
+			*isSmall = (Vec3::Distance(pos, newPos2) < SMALL_DISTANCE);
+		pos = newPos2;
 		return 2;
 	}
 
@@ -4587,9 +4657,9 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 //=================================================================================================
 void Level::SpawnUnitEffect(Unit& unit)
 {
-	Vec3 real_pos = unit.pos;
-	real_pos.y += 1.f;
-	soundMgr->PlaySound3d(gameRes->sSummon, real_pos, SPAWN_SOUND_DIST);
+	Vec3 realPos = unit.pos;
+	realPos.y += 1.f;
+	soundMgr->PlaySound3d(gameRes->sSummon, realPos, SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = gameRes->tSpawn;
@@ -4597,18 +4667,15 @@ void Level::SpawnUnitEffect(Unit& unit)
 	pe->life = 5.f;
 	pe->particleLife = 0.5f;
 	pe->emissions = 5;
-	pe->spawnMin = 10;
-	pe->spawnMax = 15;
+	pe->spawn = Int2(10, 15);
 	pe->maxParticles = 15 * 5;
 	pe->pos = unit.pos;
 	pe->speedMin = Vec3(-1, 0, -1);
 	pe->speedMax = Vec3(1, 1, 1);
 	pe->posMin = Vec3(-0.75f, 0, -0.75f);
 	pe->posMax = Vec3(0.75f, 1.f, 0.75f);
-	pe->size = 0.3f;
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->alpha = 0.5f;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+	pe->size = Vec2(0.3f, 0.f);
+	pe->alpha = Vec2(0.5f, 0.f);
 	pe->mode = 0;
 	pe->Init();
 	unit.locPart->lvlPart->pes.push_back(pe);
@@ -4630,6 +4697,20 @@ MeshInstance* Level::GetBowInstance(Mesh* mesh)
 		instance->mesh = mesh;
 		return instance;
 	}
+}
+
+//=================================================================================================
+CityBuilding* Level::GetBuilding(BuildingGroup* group)
+{
+	assert(group);
+	if(!cityCtx)
+		return nullptr;
+	for(CityBuilding& building : cityCtx->buildings)
+	{
+		if(building.building->group == group)
+			return &building;
+	}
+	return nullptr;
 }
 
 //=================================================================================================
@@ -4690,24 +4771,37 @@ CScriptArray* Level::FindPath(Room& from, Room& to)
 	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Room@>");
 	CScriptArray* array = CScriptArray::Create(type);
 
-	Int2 from_pt = from.CenterTile();
-	Int2 to_pt = to.CenterTile();
+	Int2 fromPt = from.CenterTile();
+	Int2 toPt = to.CenterTile();
 
 	vector<Int2> path;
-	pathfinding->FindPath(*localPart, from_pt, to_pt, path);
+	pathfinding->FindPath(*localPart, fromPt, toPt, path);
 	std::reverse(path.begin(), path.end());
 
-	word prev_room_index = 0xFFFF;
+	word prevRoomIndex = 0xFFFF;
 	for(const Int2& pt : path)
 	{
-		word room_index = lvl->map[pt.x + pt.y * lvl->w].room;
-		if(room_index != prev_room_index)
+		word roomIndex = lvl->map[pt.x + pt.y * lvl->w].room;
+		if(roomIndex != prevRoomIndex)
 		{
-			Room* room = lvl->rooms[room_index];
+			Room* room = lvl->rooms[roomIndex];
 			array->InsertLast(&room);
-			prev_room_index = room_index;
+			prevRoomIndex = roomIndex;
 		}
 	}
+
+	return array;
+}
+
+//=================================================================================================
+CScriptArray* Level::GetUnits()
+{
+	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Unit@>");
+	CScriptArray* array = CScriptArray::Create(type);
+	array->Reserve(localPart->units.size());
+
+	for(Unit* unit : localPart->units)
+		array->InsertLast(&unit);
 
 	return array;
 }
@@ -4730,6 +4824,22 @@ CScriptArray* Level::GetUnits(Room& room)
 }
 
 //=================================================================================================
+CScriptArray* Level::GetNearbyUnits(const Vec3& pos, float dist)
+{
+	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Unit@>");
+	CScriptArray* array = CScriptArray::Create(type);
+	const float dist2 = Pow2(dist);
+
+	for(Unit* unit : localPart->units)
+	{
+		if(Vec3::DistanceSquared(pos, unit->pos) < dist2)
+			array->InsertLast(&unit);
+	}
+
+	return array;
+}
+
+//=================================================================================================
 bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 {
 	assert(lvl);
@@ -4739,11 +4849,11 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 	const Vec2 size = pt->size.XZ() * 2;
 
 	const int width = 2 + (int)ceil(size.x / 2);
-	const int width_a = (width - 1) / 2;
-	const int width_b = width - width_a - 1;
-	const int start_x = Random(width_a, lvl->h - width_b);
-	const int start_y = Random(width_a, lvl->h - width_b);
-	int x = start_x, y = start_y;
+	const int widthA = (width - 1) / 2;
+	const int widthB = width - widthA - 1;
+	const int startX = Random(widthA, lvl->h - widthB);
+	const int startY = Random(widthA, lvl->h - widthB);
+	int x = startX, y = startY;
 
 	while(true)
 	{
@@ -4751,7 +4861,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?#
 		// __#
 		bool ok = true;
-		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		for(int y1 = -widthA; y1 <= widthB; ++y1)
 		{
 			if(IsBlocking2(lvl->map[x - 1 + (y + y1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
@@ -4763,7 +4873,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x + 1), 0, 2.f * (y - width_a) + (float)width);
+			point.pos = Vec3(2.f * (x + 1), 0, 2.f * (y - widthA) + (float)width);
 			point.rot = DirToRot(GDIR_LEFT);
 			return true;
 		}
@@ -4772,7 +4882,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// #?_
 		// #__
 		ok = true;
-		for(int y1 = -width_a; y1 <= width_b; ++y1)
+		for(int y1 = -widthA; y1 <= widthB; ++y1)
 		{
 			if(IsBlocking2(lvl->map[x + 1 + (y + y1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + (y + y1) * lvl->w])
@@ -4784,7 +4894,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * x, 0, 2.f * (y - width_a) + (float)width);
+			point.pos = Vec3(2.f * x, 0, 2.f * (y - widthA) + (float)width);
 			point.rot = DirToRot(GDIR_RIGHT);
 			return true;
 		}
@@ -4793,7 +4903,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?_
 		// ___
 		ok = true;
-		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		for(int x1 = -widthA; x1 <= widthB; ++x1)
 		{
 			if(IsBlocking2(lvl->map[x + x1 + (y - 1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
@@ -4805,7 +4915,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * (y + 1));
+			point.pos = Vec3(2.f * (x - widthA) + (float)width, 0, 2.f * (y + 1));
 			point.rot = DirToRot(GDIR_DOWN);
 			return true;
 		}
@@ -4814,7 +4924,7 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		// _?_
 		// ###
 		ok = true;
-		for(int x1 = -width_a; x1 <= width_b; ++x1)
+		for(int x1 = -widthA; x1 <= widthB; ++x1)
 		{
 			if(IsBlocking2(lvl->map[x + x1 + (y + 1) * lvl->w])
 				|| IsBlocking2(lvl->map[x + x1 + y * lvl->w])
@@ -4826,20 +4936,20 @@ bool Level::FindPlaceNearWall(BaseObject& obj, SpawnPoint& point)
 		}
 		if(ok)
 		{
-			point.pos = Vec3(2.f * (x - width_a) + (float)width, 0, 2.f * y);
+			point.pos = Vec3(2.f * (x - widthA) + (float)width, 0, 2.f * y);
 			point.rot = DirToRot(GDIR_UP);
 			return true;
 		}
 
 		++x;
-		if(x == lvl->w - width_b)
+		if(x == lvl->w - widthB)
 		{
-			x = width_a;
+			x = widthA;
 			++y;
-			if(y == lvl->h - width_b)
-				y = width_a;
+			if(y == lvl->h - widthB)
+				y = widthA;
 		}
-		if(x == start_x && y == start_y)
+		if(x == startX && y == startY)
 			return false;
 	}
 }
@@ -4954,8 +5064,7 @@ void Level::StartBossFight(Unit& unit)
 	game->SetMusic(MusicType::Boss);
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::BOSS_START;
+		NetChange& c = Net::PushChange(NetChange::BOSS_START);
 		c.unit = &unit;
 	}
 }
@@ -4980,57 +5089,55 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = ability->texParticle;
-	pe->emissionInterval = 0.01f;
+	pe->emissionInterval = 0.f;
 	pe->life = 0.f;
-	pe->particleLife = 0.5f;
 	pe->emissions = 1;
 	pe->pos = pos;
 	switch(ability->effect)
 	{
 	case Ability::Raise:
-		pe->spawnMin = 16;
-		pe->spawnMax = 25;
+		pe->particleLife = 1.f;
+		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
-		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-		pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-		pe->posMax = Vec3(ability->size, ability->size, ability->size);
-		pe->size = ability->sizeParticle;
-		pe->alpha = 1.f;
+		pe->speedMin = Vec3(0, 4, 0);
+		pe->speedMax = Vec3(0, 5, 0);
+		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+		pe->size = Vec2(ability->sizeParticle, 0.f);
+		pe->alpha = Vec2(1.f, 0.f);
+		pe->mode = 0;
 		break;
 	case Ability::Heal:
-		pe->spawnMin = 16;
-		pe->spawnMax = 25;
+		pe->particleLife = 0.5f;
+		pe->spawn = Int2(16, 25);
 		pe->maxParticles = 25;
 		pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 		pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = ability->sizeParticle;
-		pe->alpha = 0.9f;
+		pe->size = Vec2(ability->sizeParticle, 0.f);
+		pe->alpha = Vec2(0.9f, 0.f);
+		pe->mode = 1;
 		break;
 	default:
-		pe->spawnMin = 12;
-		pe->spawnMax = 12;
+		pe->particleLife = 0.5f;
+		pe->spawn = Int2(12);
 		pe->maxParticles = 12;
 		pe->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
 		pe->speedMax = Vec3(0.5f, 3.0f, 0.5f);
 		pe->posMin = Vec3(-0.5f, 0, -0.5f);
 		pe->posMax = Vec3(0.5f, 0, 0.5f);
-		pe->size = ability->sizeParticle / 2;
-		pe->alpha = 1.f;
+		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
+		pe->alpha = Vec2(1.f, 0.f);
+		pe->mode = 1;
 		break;
 	}
-	pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
-	pe->mode = 1;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PARTICLE_EFFECT;
+		NetChange& c = Net::PushChange(NetChange::PARTICLE_EFFECT);
 		c.ability = ability;
 		c.pos = pos;
 		c.extraFloats[0] = bounds.x;

@@ -12,6 +12,8 @@
 #include "Effect.h"
 #include "Buff.h"
 #include "Event.h"
+#include "GameDialog.h"
+#include "UnitOrder.h"
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -117,15 +119,6 @@ enum class WeaponState
 };
 
 //-----------------------------------------------------------------------------
-enum class AutoTalkMode
-{
-	No,
-	Yes,
-	Wait,
-	Leader
-};
-
-//-----------------------------------------------------------------------------
 // Frozen state - used to disable unit movement
 // used for warping between locations, entering buildings
 enum class FROZEN
@@ -137,87 +130,10 @@ enum class FROZEN
 };
 
 //-----------------------------------------------------------------------------
-enum UnitOrder
-{
-	ORDER_NONE,
-	ORDER_WANDER,
-	ORDER_WAIT,
-	ORDER_FOLLOW,
-	ORDER_LEAVE,
-	ORDER_MOVE,
-	ORDER_LOOK_AT,
-	ORDER_ESCAPE_TO, // escape from enemies moving toward point
-	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
-	ORDER_GOTO_INN,
-	ORDER_GUARD, // stays near target, remove dontAttack when target dontAttack is removed
-	ORDER_AUTO_TALK,
-	ORDER_MAX
-};
-
-//-----------------------------------------------------------------------------
 struct TraderStock
 {
 	vector<ItemSlot> items;
 	int date;
-};
-
-//-----------------------------------------------------------------------------
-enum MoveType
-{
-	MOVE_RUN,
-	MOVE_WALK,
-	MOVE_RUN_WHEN_NEAR_TEAM
-};
-
-//-----------------------------------------------------------------------------
-struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
-{
-	UnitOrder order;
-	Entity<Unit> unit;
-	float timer;
-	union
-	{
-		struct
-		{
-			Vec3 pos;
-			MoveType moveType;
-			float range;
-		};
-		struct
-		{
-			AutoTalkMode autoTalk;
-			GameDialog* autoTalkDialog;
-			Quest* autoTalkQuest;
-		};
-	};
-	UnitOrderEntry* next;
-
-	UnitOrderEntry() : next(nullptr) {}
-	void OnFree()
-	{
-		if(next)
-		{
-			next->Free();
-			next = nullptr;
-		}
-	}
-	UnitOrderEntry* WithTimer(float timer);
-	UnitOrderEntry* WithMoveType(MoveType moveType);
-	UnitOrderEntry* WithRange(float range);
-	UnitOrderEntry* ThenWander();
-	UnitOrderEntry* ThenWait();
-	UnitOrderEntry* ThenFollow(Unit* target);
-	UnitOrderEntry* ThenLeave();
-	UnitOrderEntry* ThenMove(const Vec3& pos);
-	UnitOrderEntry* ThenLookAt(const Vec3& pos);
-	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
-	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
-	UnitOrderEntry* ThenGoToInn();
-	UnitOrderEntry* ThenGuard(Unit* target);
-	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog, Quest* quest);
-
-private:
-	UnitOrderEntry* NextOrder();
 };
 
 //-----------------------------------------------------------------------------
@@ -306,7 +222,8 @@ struct Unit : public EntityType<Unit>
 		{
 			int index;
 			float power;
-			bool run, hitted;
+			byte hitted; // 0-no, 1-attack object, 2-yes
+			bool run;
 		} attack;
 		struct CastAction
 		{
@@ -646,7 +563,7 @@ public:
 	void RemoveItem(int iindex, bool activeLocation = true);
 	uint RemoveItem(int iIndex, uint count);
 	uint RemoveItem(const Item* item, uint count);
-	uint RemoveItemS(const string& item_id, uint count);
+	uint RemoveItemS(const string& itemId, uint count);
 	void RemoveEquippedItem(ITEM_SLOT slot);
 	void RemoveAllEquippedItems();
 	int CountItem(const Item* item);
@@ -711,7 +628,9 @@ public:
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	void RemoveEffect(EffectId effect);
+private:
 	void RemoveEffects(bool send = true);
+public:
 	uint RemoveEffects(EffectId effect, EffectSource source, int sourceId, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;
@@ -832,7 +751,7 @@ public:
 	bool CanAct() const;
 
 	int Get(AttributeId a, StatState* state = nullptr) const;
-	int Get(SkillId s, StatState* state = nullptr, bool skill_bonus = true) const;
+	int Get(SkillId s, StatState* state = nullptr, bool skillBonus = true) const;
 	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
 	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
 	void Set(AttributeId a, int value);
@@ -904,8 +823,8 @@ public:
 	void PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, bool dmg);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3* pos = nullptr);
-	Sound* GetSound(SOUND_ID sound_id) const;
-	bool SetWeaponState(bool takes_out, WeaponType type, bool send);
+	Sound* GetSound(SOUND_ID soundId) const;
+	bool SetWeaponState(bool takesOut, WeaponType type, bool send);
 	void SetWeaponStateInstant(WeaponState weaponState, WeaponType type);
 	void SetTakeHideWeaponAnimationToEnd(bool hide, bool breakAction);
 	void UpdateInventory(bool notify = true);
@@ -921,7 +840,6 @@ public:
 	void RemoveDialogS(Quest2* quest) { RemoveDialog(quest, false); }
 	void AddEventHandler(Quest2* quest, EventType type);
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup);
-	void RemoveEventHandlerS(Quest2* quest, EventType type) { RemoveEventHandler(quest, type, false); }
 	void RemoveAllEventHandlers();
 	UnitOrder GetOrder() const
 	{
@@ -946,6 +864,7 @@ public:
 	UnitOrderEntry* OrderGoToInn();
 	UnitOrderEntry* OrderGuard(Unit* target);
 	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr, Quest* quest = nullptr);
+	UnitOrderEntry* OrderAttackObject(Usable* usable);
 	void Talk(cstring text, int playAnim = -1);
 	void TalkS(const string& text, int playAnim = -1) { Talk(text.c_str(), playAnim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animationState == AS_BASH_ANIMATION); }
@@ -978,6 +897,8 @@ public:
 	void DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int dmgType, bool bash);
 	void DoRangedAttack(bool prepare, bool notify = true, float speed = -1);
 	void AlertAllies(Unit* target);
+	void FireEvent(ScriptEvent& e);
+	bool HaveEventHandler(EventType eventType) const;
 };
 
 //-----------------------------------------------------------------------------

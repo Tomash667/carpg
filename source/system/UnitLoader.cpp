@@ -232,25 +232,25 @@ void UnitLoader::InitTokenizer()
 		{ "abilities", P_ABILITIES },
 		{ "gold", P_GOLD },
 		{ "dialog", P_DIALOG },
-		{ "idle_dialog", P_IDLE_DIALOG },
+		{ "idleDialog", P_IDLE_DIALOG },
 		{ "group", P_GROUP },
-		{ "dmg_type", P_DMG_TYPE },
-		{ "walk_speed", P_WALK_SPEED },
-		{ "run_speed", P_RUN_SPEED },
-		{ "rot_speed", P_ROT_SPEED },
+		{ "dmgType", P_DMG_TYPE },
+		{ "walkSpeed", P_WALK_SPEED },
+		{ "runSpeed", P_RUN_SPEED },
+		{ "rotSpeed", P_ROT_SPEED },
 		{ "blood", P_BLOOD },
-		{ "blood_size", P_BLOOD_SIZE },
+		{ "bloodSize", P_BLOOD_SIZE },
 		{ "sounds", P_SOUNDS },
 		{ "frames", P_FRAMES },
 		{ "tex", P_TEX },
 		{ "idles", P_IDLES },
 		{ "width", P_WIDTH },
-		{ "attack_range", P_ATTACK_RANGE },
-		{ "armor_type", P_ARMOR_TYPE },
+		{ "attackRange", P_ATTACK_RANGE },
+		{ "armorType", P_ARMOR_TYPE },
 		{ "class", P_CLASS },
 		{ "trader", P_TRADER },
 		{ "upgrade", P_UPGRADE },
-		{ "spell_power", P_SPELL_POWER },
+		{ "spellPower", P_SPELL_POWER },
 		{ "mp", P_MP },
 		{ "tint", P_TINT },
 		{ "appearance", P_APPEARANCE },
@@ -273,76 +273,76 @@ void UnitLoader::InitTokenizer()
 		{ "human", F_HUMAN },
 		{ "humanoid", F_HUMANOID },
 		{ "coward", F_COWARD },
-		{ "dont_escape", F_DONT_ESCAPE },
+		{ "dontEscape", F_DONT_ESCAPE },
 		{ "archer", F_ARCHER },
 		{ "peaceful", F_PEACEFUL },
-		{ "pierce_res25", F_PIERCE_RES25 },
-		{ "slash_res25", F_SLASH_RES25 },
-		{ "blunt_res25", F_BLUNT_RES25 },
-		{ "pierce_weak25", F_PIERCE_WEAK25 },
-		{ "slash_weak25", F_SLASH_WEAK25 },
-		{ "blunt_weak25", F_BLUNT_WEAK25 },
+		{ "pierceRes25", F_PIERCE_RES25 },
+		{ "slashRes25", F_SLASH_RES25 },
+		{ "bluntRes25", F_BLUNT_RES25 },
+		{ "pierceWeak25", F_PIERCE_WEAK25 },
+		{ "slashWeak25", F_SLASH_WEAK25 },
+		{ "bluntWeak25", F_BLUNT_WEAK25 },
 		{ "undead", F_UNDEAD },
 		{ "slow", F_SLOW },
-		{ "poison_attack", F_POISON_ATTACK },
+		{ "poisonAttack", F_POISON_ATTACK },
 		{ "immortal", F_IMMORTAL },
 		{ "aggro", F_AGGRO },
 		{ "crazy", F_CRAZY },
-		{ "dont_open", F_DONT_OPEN },
+		{ "dontOpen", F_DONT_OPEN },
 		{ "slight", F_SLIGHT },
 		{ "secret", F_SECRET },
-		{ "dont_suffer", F_DONT_SUFFER },
+		{ "dontSuffer", F_DONT_SUFFER },
 		{ "mage", F_MAGE },
-		{ "poison_res", F_POISON_RES },
+		{ "poisonRes", F_POISON_RES },
 		{ "loner", F_LONER },
-		{ "no_power_attack", F_NO_POWER_ATTACK },
-		{ "ai_clerk", F_AI_CLERK },
-		{ "ai_guard", F_AI_GUARD },
-		{ "ai_stay", F_AI_STAY },
-		{ "ai_wanders", F_AI_WANDERS },
-		{ "ai_drunkman", F_AI_DRUNKMAN },
+		{ "noPowerAttack", F_NO_POWER_ATTACK },
+		{ "aiClerk", F_AI_CLERK },
+		{ "aiGuard", F_AI_GUARD },
+		{ "aiStay", F_AI_STAY },
+		{ "aiWanders", F_AI_WANDERS },
+		{ "aiDrunkman", F_AI_DRUNKMAN },
 		{ "hero", F_HERO }
 		});
 
 	t.AddKeywords(G_FLAGS2, {
-		{ "ai_train", F2_AI_TRAIN },
-		{ "specific_name", F2_SPECIFIC_NAME },
-		{ "fixed_stats", F2_FIXED_STATS },
+		{ "aiTrain", F2_AI_TRAIN },
+		{ "specificName", F2_SPECIFIC_NAME },
+		{ "fixedStats", F2_FIXED_STATS },
 		{ "contest", F2_CONTEST },
-		{ "contest_50", F2_CONTEST_50 },
-		{ "dont_talk", F2_DONT_TALK },
+		{ "contest50", F2_CONTEST_50 },
+		{ "dontTalk", F2_DONT_TALK },
 		{ "construct", F2_CONSTRUCT },
-		{ "fast_learner", F2_FAST_LEARNER },
-		{ "mp_bar", F2_MP_BAR },
+		{ "fastLearner", F2_FAST_LEARNER },
+		{ "mpBar", F2_MP_BAR },
 		{ "melee", F2_MELEE },
-		{ "melee_50", F2_MELEE_50 },
+		{ "melee50", F2_MELEE_50 },
 		{ "boss", F2_BOSS },
 		{ "bloodless", F2_BLOODLESS },
-		{ "limited_rot", F2_LIMITED_ROT },
-		{ "alpha_blend", F2_ALPHA_BLEND },
-		{ "stun_res", F2_STUN_RESISTANCE },
-		{ "sit_on_throne", F2_SIT_ON_THRONE },
+		{ "limitedRot", F2_LIMITED_ROT },
+		{ "alphaBlend", F2_ALPHA_BLEND },
+		{ "stunRes", F2_STUN_RESISTANCE },
+		{ "sitOnThrone", F2_SIT_ON_THRONE },
 		{ "guard", F2_GUARD },
-		{ "rooted_res", F2_ROOTED_RESISTANCE },
+		{ "rootedRes", F2_ROOTED_RESISTANCE },
 		{ "xar", F2_XAR },
 		{ "tournament", F2_TOURNAMENT },
 		{ "yell", F2_YELL },
 		{ "backstab", F2_BACKSTAB },
-		{ "ignore_block", F2_IGNORE_BLOCK },
-		{ "backstab_res", F2_BACKSTAB_RES },
-		{ "magic_res50", F2_MAGIC_RES50 },
-		{ "magic_res25", F2_MAGIC_RES25 },
+		{ "ignoreBlock", F2_IGNORE_BLOCK },
+		{ "backstabRes", F2_BACKSTAB_RES },
+		{ "magicRes50", F2_MAGIC_RES50 },
+		{ "magicRes25", F2_MAGIC_RES25 },
 		{ "guarded", F2_GUARDED }
 		});
 
 	t.AddKeywords(G_FLAGS3, {
-		{ "contest_25", F3_CONTEST_25 },
-		{ "drunk_mage", F3_DRUNK_MAGE },
-		{ "drunkman_after_contest", F3_DRUNKMAN_AFTER_CONTEST },
-		{ "dont_eat", F3_DONT_EAT },
-		{ "orc_food", F3_ORC_FOOD },
+		{ "contest25", F3_CONTEST_25 },
+		{ "drunkMage", F3_DRUNK_MAGE },
+		{ "drunkmanAfterContest", F3_DRUNKMAN_AFTER_CONTEST },
+		{ "dontEat", F3_DONT_EAT },
+		{ "orcFood", F3_ORC_FOOD },
 		{ "miner", F3_MINER },
-		{ "talk_at_competition", F3_TALK_AT_COMPETITION }
+		{ "talkAtCompetition", F3_TALK_AT_COMPETITION }
 		});
 
 	t.AddKeywords(G_GROUP, {
@@ -371,7 +371,8 @@ void UnitLoader::InitTokenizer()
 		{ "bone", BLOOD_BONE },
 		{ "rock", BLOOD_ROCK },
 		{ "iron", BLOOD_IRON },
-		{ "slime", BLOOD_SLIME }
+		{ "slime", BLOOD_SLIME },
+		{ "yellow", BLOOD_YELLOW }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {
@@ -394,7 +395,7 @@ void UnitLoader::InitTokenizer()
 		t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
 
 	t.AddKeywords(G_SOUND_TYPE, {
-		{ "see_enemy", SOUND_SEE_ENEMY },
+		{ "seeEnemy", SOUND_SEE_ENEMY },
 		{ "pain", SOUND_PAIN },
 		{ "death", SOUND_DEATH },
 		{ "attack", SOUND_ATTACK },
@@ -404,15 +405,15 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeywords(G_FRAME_KEYWORD, {
 		{ "attacks", FK_ATTACKS },
-		{ "simple_attacks", FK_SIMPLE_ATTACKS },
+		{ "simpleAttacks", FK_SIMPLE_ATTACKS },
 		{ "cast", FK_CAST },
-		{ "take_weapon", FK_TAKE_WEAPON },
+		{ "takeWeapon", FK_TAKE_WEAPON },
 		{ "bash", FK_BASH }
 		});
 
 	t.AddKeywords(G_WEAPON_FLAG, {
-		{ "short_blade", A_SHORT_BLADE },
-		{ "long_blade", A_LONG_BLADE },
+		{ "shortBlade", A_SHORT_BLADE },
+		{ "longBlade", A_LONG_BLADE },
 		{ "blunt", A_BLUNT },
 		{ "axe", A_AXE }
 		});
@@ -420,7 +421,7 @@ void UnitLoader::InitTokenizer()
 	t.AddKeyword("null", 0, G_NULL);
 
 	t.AddKeywords(G_ABILITY_KEYWORD, {
-		{ "non_combat", AK_NON_COMBAT },
+		{ "nonCombat", AK_NON_COMBAT },
 		{ "null", AK_NULL }
 		});
 
@@ -435,10 +436,10 @@ void UnitLoader::InitTokenizer()
 	t.AddKeywords(G_GROUP_KEYWORD, {
 		{ "leader", GK_LEADER },
 		{ "group", GK_GROUP },
-		{ "food_mod", GK_FOOD_MOD },
-		{ "orc_food", GK_ORC_FOOD },
-		{ "have_camps", GK_HAVE_CAMPS },
-		{ "encounter_chance", GK_ENCOUNTER_CHANCE },
+		{ "foodMod", GK_FOOD_MOD },
+		{ "orcFood", GK_ORC_FOOD },
+		{ "haveCamps", GK_HAVE_CAMPS },
+		{ "encounterChance", GK_ENCOUNTER_CHANCE },
 		{ "special", GK_SPECIAL },
 		{ "list", GK_LIST },
 		{ "gender", GK_GENDER }
@@ -470,14 +471,14 @@ void UnitLoader::InitTokenizer()
 		});
 
 	t.AddKeywords<OtherItem::Subtype>(G_OTHER_TYPE, {
-		{ "misc_item", OtherItem::Subtype::MiscItem },
+		{ "miscItem", OtherItem::Subtype::MiscItem },
 		{ "tool", OtherItem::Subtype::Tool },
 		{ "valuable", OtherItem::Subtype::Valuable },
 		{ "ingredient", OtherItem::Subtype::Ingredient }
 		});
 
 	t.AddKeywords<Book::Subtype>(G_BOOK_TYPE, {
-		{ "normal_book", Book::Subtype::NormalBook },
+		{ "normalBook", Book::Subtype::NormalBook },
 		{ "recipe", Book::Subtype::Recipe }
 		});
 
@@ -511,7 +512,7 @@ void UnitLoader::InitTokenizer()
 		{ "hair", AK_HAIR },
 		{ "beard", AK_BEARD },
 		{ "mustache", AK_MUSTACHE },
-		{ "hair_color", AK_HAIR_COLOR },
+		{ "hairColor", AK_HAIR_COLOR },
 		{ "height", AK_HEIGHT }
 		});
 }
@@ -615,9 +616,9 @@ void UnitLoader::Finalize()
 	UnitGroup::empty = UnitGroup::Get("empty");
 	UnitGroup::random = UnitGroup::Get("random");
 
-	uint crc_value = crc.Get();
-	content.crc[(int)Content::Id::Units] = crc_value;
-	Info("Loaded units (%u) - crc %p.", UnitData::units.size(), crc_value);
+	uint crcValue = crc.Get();
+	content.crc[(int)Content::Id::Units] = crcValue;
+	Info("Loaded units (%u) - crc %p.", UnitData::units.size(), crcValue);
 }
 
 //=================================================================================================
@@ -636,13 +637,13 @@ void UnitLoader::ParseUnit(const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		auto& parent_id = t.MustGetItemKeyword();
-		auto parent = UnitData::TryGet(parent_id);
+		auto& parentId = t.MustGetItemKeyword();
+		auto parent = UnitData::TryGet(parentId);
 		if(!parent)
-			t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			t.Throw("Missing parent unit '%s'.", parentId.c_str());
 		parent->flags3 |= F3_PARENT_DATA;
 		unit->CopyFrom(*parent);
-		crc.Update(parent_id);
+		crc.Update(parentId);
 		t.Next();
 	}
 
@@ -660,12 +661,12 @@ void UnitLoader::ParseUnit(const string& id)
 		{
 		case P_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				unit->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				unit->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(unit->mesh)
-					crc.Update(mesh_id);
+					crc.Update(meshId);
 				else
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing mesh '%s'.", meshId.c_str());
 			}
 			break;
 		case P_MAT:
@@ -1012,10 +1013,10 @@ void UnitLoader::ParseUnit(const string& id)
 					{
 						if(unit->trader->stock)
 							t.Throw("Unit trader stock already set.");
-						const string& stock_id = t.MustGetItem();
-						unit->trader->stock = Stock::TryGet(stock_id);
+						const string& stockId = t.MustGetItem();
+						unit->trader->stock = Stock::TryGet(stockId);
 						if(!unit->trader->stock)
-							LoadError("Missing trader stock '%s'.", stock_id.c_str());
+							LoadError("Missing trader stock '%s'.", stockId.c_str());
 					}
 					break;
 				case TK_GROUPS:
@@ -1074,10 +1075,10 @@ void UnitLoader::ParseUnit(const string& id)
 					t.Next();
 					while(!t.IsSymbol('}'))
 					{
-						const string& item_id = t.MustGetItem();
-						const Item* item = Item::TryGet(item_id);
+						const string& itemId = t.MustGetItem();
+						const Item* item = Item::TryGet(itemId);
 						if(!item)
-							LoadError("Missing trader item include '%s'.", item_id.c_str());
+							LoadError("Missing trader item include '%s'.", itemId.c_str());
 						else
 							unit->trader->includes.push_back(item);
 						t.Next();
@@ -1173,6 +1174,21 @@ void UnitLoader::ParseUnit(const string& id)
 						{
 							human->hairType = HumanData::HairColorType::Random;
 							crc.Update(human->hairType);
+						}
+						else if(t.IsSymbol('{'))
+						{
+							t.Next();
+							int r = t.MustGetInt();
+							t.Next();
+							int g = t.MustGetInt();
+							t.Next();
+							int b = t.MustGetInt();
+							t.Next();
+							t.AssertSymbol('}');
+							human->hairColor = Color(r, g, b);
+							human->hairType = HumanData::HairColorType::Fixed;
+							crc.Update(human->hairType);
+							crc.Update(human->hairColor);
 						}
 						else
 						{
@@ -1299,7 +1315,7 @@ void UnitLoader::ParseProfile(Ptr<StatProfile>& profile)
 			cstring a = "subprofile";
 			int b = G_ATTRIBUTE, c = G_SKILL;
 			t.StartUnexpected()
-				.Add(tokenizer::T_ITEM, (int*)&a)
+				.Add(tokenizer::T_ITEM, (int*)a)
 				.Add(tokenizer::T_KEYWORD_GROUP, &b)
 				.Add(tokenizer::T_KEYWORD_GROUP, &c)
 				.Throw();
@@ -1538,8 +1554,8 @@ ARMOR_TYPE UnitLoader::GetArmorType()
 //=================================================================================================
 void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 {
-	vector<IfState> if_state;
-	bool done_if = false;
+	vector<IfState> ifState;
+	bool doneIf = false;
 
 	// {
 	t.AssertSymbol('{');
@@ -1549,15 +1565,15 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 	{
 		if(t.IsSymbol('}'))
 		{
-			while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+			while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 			{
 				script->code.push_back(PS_END_IF);
 				crc.Update(PS_END_IF);
-				if_state.pop_back();
+				ifState.pop_back();
 			}
-			if(if_state.empty())
+			if(ifState.empty())
 				break;
-			if(if_state.back() == IFS_START)
+			if(ifState.back() == IFS_START)
 			{
 				t.Next();
 				if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
@@ -1600,25 +1616,25 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 						}
 						t.Next();
-						if_state.back() = IFS_ELSE_INLINE;
+						ifState.back() = IFS_ELSE_INLINE;
 						if(t.IsSymbol('{'))
 						{
 							t.Next();
-							if_state.push_back(IFS_START);
+							ifState.push_back(IFS_START);
 						}
 						else
-							if_state.push_back(IFS_START_INLINE);
+							ifState.push_back(IFS_START_INLINE);
 					}
 					else if(t.IsSymbol('{'))
 					{
 						// else { ... }
 						t.Next();
-						if_state.back() = IFS_ELSE;
+						ifState.back() = IFS_ELSE;
 					}
 					else
 					{
 						// single expression else
-						if_state.back() = IFS_ELSE_INLINE;
+						ifState.back() = IFS_ELSE_INLINE;
 					}
 				}
 				else
@@ -1626,27 +1642,27 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 					// } end of if
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
-					while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+					ifState.pop_back();
+					while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 					{
 						script->code.push_back(PS_END_IF);
 						crc.Update(PS_END_IF);
-						if_state.pop_back();
+						ifState.pop_back();
 					}
 				}
 			}
-			else if(if_state.back() == IFS_ELSE)
+			else if(ifState.back() == IFS_ELSE)
 			{
 				// } end of else
 				script->code.push_back(PS_END_IF);
 				crc.Update(PS_END_IF);
-				if_state.pop_back();
+				ifState.pop_back();
 				t.Next();
-				while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+				while(!ifState.empty() && ifState.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
+					ifState.pop_back();
 				}
 			}
 			else
@@ -1787,11 +1803,11 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 					if(t.IsSymbol('{'))
 					{
 						t.Next();
-						if_state.push_back(IFS_START);
+						ifState.push_back(IFS_START);
 					}
 					else
-						if_state.push_back(IFS_START_INLINE);
-					done_if = true;
+						ifState.push_back(IFS_START_INLINE);
+					doneIf = true;
 				}
 				break;
 			default:
@@ -1808,16 +1824,16 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 		else
 			t.Unexpected();
 
-		if(done_if)
-			done_if = false;
+		if(doneIf)
+			doneIf = false;
 		else
 		{
 			t.Next();
-			while(!if_state.empty())
+			while(!ifState.empty())
 			{
-				if(if_state.back() == IFS_START_INLINE)
+				if(ifState.back() == IFS_START_INLINE)
 				{
-					if_state.pop_back();
+					ifState.pop_back();
 					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 					{
 						script->code.push_back(PS_ELSE);
@@ -1826,10 +1842,10 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						if(t.IsSymbol('{'))
 						{
 							t.Next();
-							if_state.push_back(IFS_ELSE);
+							ifState.push_back(IFS_ELSE);
 						}
 						else
-							if_state.push_back(IFS_ELSE_INLINE);
+							ifState.push_back(IFS_ELSE_INLINE);
 						break;
 					}
 					else
@@ -1838,11 +1854,11 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						crc.Update(PS_END_IF);
 					}
 				}
-				else if(if_state.back() == IFS_ELSE_INLINE)
+				else if(ifState.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
 					crc.Update(PS_END_IF);
-					if_state.pop_back();
+					ifState.pop_back();
 				}
 				else
 					break;
@@ -1850,13 +1866,13 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 		}
 	}
 
-	while(!if_state.empty())
+	while(!ifState.empty())
 	{
-		if(if_state.back() == IFS_START_INLINE || if_state.back() == IFS_ELSE_INLINE)
+		if(ifState.back() == IFS_START_INLINE || ifState.back() == IFS_ELSE_INLINE)
 		{
 			script->code.push_back(PS_END_IF);
 			crc.Update(PS_END_IF);
-			if_state.pop_back();
+			ifState.pop_back();
 		}
 		else
 			t.Throw("Missing closing '}'.");
@@ -1988,7 +2004,7 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 			AbilityKeyword k = (AbilityKeyword)t.GetKeywordId(G_ABILITY_KEYWORD);
 			if(k == AK_NON_COMBAT)
 			{
-				// non_combat
+				// non combat
 				t.Next();
 				list->haveNonCombat = t.MustGetBool();
 				crc.Update(list->haveNonCombat ? 2 : 1);
@@ -2008,10 +2024,10 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 				t.Throw("Too many abilities (max %d for now).", MAX_ABILITIES);
 			t.AssertSymbol('{');
 			t.Next();
-			const string& ability_id = t.MustGetItemKeyword();
-			Ability* ability = Ability::Get(ability_id.c_str());
+			const string& abilityId = t.MustGetItemKeyword();
+			Ability* ability = Ability::Get(abilityId.c_str());
 			if(!ability)
-				t.Throw("Missing ability '%s'.", ability_id.c_str());
+				t.Throw("Missing ability '%s'.", abilityId.c_str());
 			t.Next();
 			int lvl = t.MustGetInt();
 			if(lvl < 0)
@@ -2090,7 +2106,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 	t.AssertSymbol('{');
 	t.Next();
 
-	bool have_simple = false;
+	bool haveSimple = false;
 
 	while(!t.IsSymbol('}'))
 	{
@@ -2100,7 +2116,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 		switch(k)
 		{
 		case FK_ATTACKS:
-			if(have_simple || frames->extra)
+			if(haveSimple || frames->extra)
 				t.Throw("Frame info already have attacks information.");
 			t.AssertSymbol('{');
 			t.Next();
@@ -2133,7 +2149,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			crc.Update(frames->attacks);
 			break;
 		case FK_SIMPLE_ATTACKS:
-			if(have_simple || frames->extra)
+			if(haveSimple || frames->extra)
 				t.Throw("Frame info already have attacks information.");
 			else
 			{
@@ -2232,15 +2248,15 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 		}
 		else
 		{
-			const string& tex_id = t.MustGetString();
-			Texture* tex = resMgr->TryGet<Texture>(tex_id);
+			const string& texId = t.MustGetString();
+			Texture* tex = resMgr->TryGet<Texture>(texId);
 			if(tex)
 			{
 				pack->textures.push_back(TexOverride(tex));
-				crc.Update(tex_id);
+				crc.Update(texId);
 			}
 			else
-				LoadError("Missing texture override '%s'.", tex_id.c_str());
+				LoadError("Missing texture override '%s'.", texId.c_str());
 			any = true;
 		}
 		t.Next();
@@ -2312,12 +2328,12 @@ void UnitLoader::ParseGroup(const string& id)
 			case GK_GROUP:
 				{
 					const string& id = t.MustGetItemKeyword();
-					UnitGroup* other_group = UnitGroup::TryGet(id);
-					if(!other_group)
+					UnitGroup* otherGroup = UnitGroup::TryGet(id);
+					if(!otherGroup)
 						t.Throw("Missing group '%s'.", id.c_str());
-					for(UnitGroup::Entry& e : other_group->entries)
+					for(UnitGroup::Entry& e : otherGroup->entries)
 						group->entries.push_back(e);
-					group->maxWeight += other_group->maxWeight;
+					group->maxWeight += otherGroup->maxWeight;
 					crc.Update(id);
 				}
 				break;
@@ -2449,14 +2465,14 @@ void UnitLoader::ProcessDialogRequests()
 		if(!unit)
 			continue;
 		uint pos = request.dialog.find_first_of('/');
-		string quest_name = request.dialog.substr(0, pos);
-		string dialog_name = request.dialog.substr(pos + 1);
-		QuestScheme* scheme = QuestScheme::TryGet(quest_name);
-		GameDialog* dialog = (scheme ? scheme->GetDialog(dialog_name) : nullptr);
+		string questName = request.dialog.substr(0, pos);
+		string dialogName = request.dialog.substr(pos + 1);
+		QuestScheme* scheme = QuestScheme::TryGet(questName);
+		GameDialog* dialog = (scheme ? scheme->GetDialog(dialogName) : nullptr);
 		if(!scheme || !dialog)
 		{
 			++content.errors;
-			LoadError("Missing quest dialog '%s/%s' for unit %s.", quest_name.c_str(), dialog_name.c_str(), unit->id.c_str());
+			LoadError("Missing quest dialog '%s/%s' for unit %s.", questName.c_str(), dialogName.c_str(), unit->id.c_str());
 		}
 		else
 			unit->dialog = dialog;

@@ -162,10 +162,10 @@ New multiplayer game
  ID_STARTUP ->				|
 							| LoadingStart(9/4) (second if starting on worldmap)
  ID_WORLD_DATA ->			|
-							| Step, ReadWorldData, Step (net_state = 0)
+							| Step, ReadWorldData, Step (netState = 0)
 							| <- ID_READY
  ID_PLAYER_START_DATA ->	|
-							| Step, ReadPlayerStartData, Step/LoadResources (second if starting on worldmap; net_state = 1)
+							| Step, ReadPlayerStartData, Step/LoadResources (second if starting on worldmap; netState = 1)
 							| <- ID_READY
 *ID_CHANGE_LEVEL ->			|
  or ID_START (worldmap) ----+--------------------------------------> DONE

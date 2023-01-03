@@ -4,7 +4,6 @@
 #include "BitStreamFunc.h"
 #include "BuildingScript.h"
 #include "Content.h"
-#include "GameCommon.h"
 #include "GroundItem.h"
 #include "Level.h"
 #include "Object.h"
@@ -163,10 +162,10 @@ void City::Write(BitStreamWriter& f)
 
 	f.WriteCasted<byte>(flags);
 	f.WriteCasted<byte>(entryPoints.size());
-	for(EntryPoint& entry_point : entryPoints)
+	for(EntryPoint& entryPoint : entryPoints)
 	{
-		f << entry_point.exitRegion;
-		f << entry_point.exitY;
+		f << entryPoint.exitRegion;
+		f << entryPoint.exitY;
 	}
 	f.WriteCasted<byte>(buildings.size());
 	for(CityBuilding& building : buildings)
@@ -176,8 +175,8 @@ void City::Write(BitStreamWriter& f)
 		f.WriteCasted<byte>(building.dir);
 	}
 	f.WriteCasted<byte>(insideBuildings.size());
-	for(InsideBuilding* inside_building : insideBuildings)
-		inside_building->Write(f);
+	for(InsideBuilding* insideBuilding : insideBuildings)
+		insideBuilding->Write(f);
 }
 
 //=================================================================================================
@@ -219,7 +218,7 @@ bool City::Read(BitStreamReader& f)
 	buildings.resize(count);
 	for(CityBuilding& building : buildings)
 	{
-		const string& building_id = f.ReadString1();
+		const string& buildingId = f.ReadString1();
 		f >> building.pt;
 		f.ReadCasted<byte>(building.dir);
 		if(!f)
@@ -227,10 +226,10 @@ bool City::Read(BitStreamReader& f)
 			Error("Read level: Broken packet for buildings.");
 			return false;
 		}
-		building.building = Building::Get(building_id);
+		building.building = Building::Get(buildingId);
 		if(!building.building)
 		{
-			Error("Read level: Invalid building id '%s'.", building_id.c_str());
+			Error("Read level: Invalid building id '%s'.", buildingId.c_str());
 			return false;
 		}
 	}
@@ -270,7 +269,7 @@ bool City::IsInsideCity(const Vec3& pos)
 }
 
 //=================================================================================================
-InsideBuilding* City::FindInsideBuilding(Building* building, int* out_index)
+InsideBuilding* City::FindInsideBuilding(Building* building, int* outIndex)
 {
 	assert(building);
 	int index = 0;
@@ -278,19 +277,19 @@ InsideBuilding* City::FindInsideBuilding(Building* building, int* out_index)
 	{
 		if(i->building == building)
 		{
-			if(out_index)
-				*out_index = index;
+			if(outIndex)
+				*outIndex = index;
 			return i;
 		}
 		++index;
 	}
-	if(out_index)
-		*out_index = -1;
+	if(outIndex)
+		*outIndex = -1;
 	return nullptr;
 }
 
 //=================================================================================================
-InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int* out_index)
+InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int* outIndex)
 {
 	assert(group);
 	int index = 0;
@@ -298,19 +297,19 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int* out_index)
 	{
 		if(i->building->group == group)
 		{
-			if(out_index)
-				*out_index = index;
+			if(outIndex)
+				*outIndex = index;
 			return i;
 		}
 		++index;
 	}
-	if(out_index)
-		*out_index = -1;
+	if(outIndex)
+		*outIndex = -1;
 	return nullptr;
 }
 
 //=================================================================================================
-CityBuilding* City::FindBuilding(BuildingGroup* group, int* out_index)
+CityBuilding* City::FindBuilding(BuildingGroup* group, int* outIndex)
 {
 	assert(group);
 	int index = 0;
@@ -318,19 +317,19 @@ CityBuilding* City::FindBuilding(BuildingGroup* group, int* out_index)
 	{
 		if(b.building->group == group)
 		{
-			if(out_index)
-				*out_index = index;
+			if(outIndex)
+				*outIndex = index;
 			return &b;
 		}
 		++index;
 	}
-	if(out_index)
-		*out_index = -1;
+	if(outIndex)
+		*outIndex = -1;
 	return nullptr;
 }
 
 //=================================================================================================
-CityBuilding* City::FindBuilding(Building* building, int* out_index)
+CityBuilding* City::FindBuilding(Building* building, int* outIndex)
 {
 	assert(building);
 	int index = 0;
@@ -338,36 +337,45 @@ CityBuilding* City::FindBuilding(Building* building, int* out_index)
 	{
 		if(b.building == building)
 		{
-			if(out_index)
-				*out_index = index;
+			if(outIndex)
+				*outIndex = index;
 			return &b;
 		}
 		++index;
 	}
-	if(out_index)
-		*out_index = -1;
+	if(outIndex)
+		*outIndex = -1;
 	return nullptr;
 }
 
 //=================================================================================================
 void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 {
-	cstring script_name;
+	cstring scriptName;
 	switch(target)
 	{
 	default:
 	case CITY:
-		script_name = "city";
+		scriptName = "city";
 		break;
 	case CAPITAL:
-		script_name = "capital";
+		scriptName = "capital";
 		break;
 	case VILLAGE:
-		script_name = "village";
+		scriptName = "village";
+		break;
+	case VILLAGE_EMPTY:
+		scriptName = "villageEmpty";
+		break;
+	case VILLAGE_DESTROYED:
+		scriptName = "villageDestroyed";
+		break;
+	case VILLAGE_DESTROYED2:
+		scriptName = "villageDestroyed2";
 		break;
 	}
 
-	BuildingScript* script = BuildingScript::Get(script_name);
+	BuildingScript* script = BuildingScript::Get(scriptName);
 	if(variant == -1)
 		variant = Rand() % script->variants.size();
 
@@ -383,9 +391,9 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 		code += script->requiredOffset;
 
 	vector<int> stack;
-	int if_level = 0, if_depth = 0;
-	int shuffle_start = -1;
-	int& building_count = script->vars[BuildingScript::V_COUNT];
+	int ifLevel = 0, ifDepth = 0;
+	int shuffleStart = -1;
+	int& buildingCount = script->vars[BuildingScript::V_COUNT];
 
 	while(code != end)
 	{
@@ -393,19 +401,19 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 		switch(c)
 		{
 		case BuildingScript::BS_ADD_BUILDING:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
 				BuildingScript::Code type = (BuildingScript::Code)*code++;
 				if(type == BuildingScript::BS_BUILDING)
 				{
 					Building* b = (Building*)*code++;
-					for(int i = 0; i < building_count; ++i)
+					for(int i = 0; i < buildingCount; ++i)
 						buildings.push_back(b);
 				}
 				else
 				{
 					BuildingGroup* bg = (BuildingGroup*)*code++;
-					for(int i = 0; i < building_count; ++i)
+					for(int i = 0; i < buildingCount; ++i)
 						buildings.push_back(RandomItem(bg->buildings));
 				}
 			}
@@ -415,13 +423,13 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 		case BuildingScript::BS_RANDOM:
 			{
 				uint count = (uint)*code++;
-				if(if_level != if_depth)
+				if(ifLevel != ifDepth)
 				{
 					code += count * 2;
 					break;
 				}
 
-				for(int i = 0; i < building_count; ++i)
+				for(int i = 0; i < buildingCount; ++i)
 				{
 					uint index = Rand() % count;
 					BuildingScript::Code type = (BuildingScript::Code) * (code + index * 2);
@@ -441,16 +449,16 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 			}
 			break;
 		case BuildingScript::BS_SHUFFLE_START:
-			if(if_level == if_depth)
-				shuffle_start = (int)buildings.size();
+			if(ifLevel == ifDepth)
+				shuffleStart = (int)buildings.size();
 			break;
 		case BuildingScript::BS_SHUFFLE_END:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
-				int new_pos = (int)buildings.size();
-				if(new_pos - shuffle_start >= 2)
-					Shuffle(buildings.begin() + shuffle_start, buildings.end());
-				shuffle_start = -1;
+				int newPos = (int)buildings.size();
+				if(newPos - shuffleStart >= 2)
+					Shuffle(buildings.begin() + shuffleStart, buildings.end());
+				shuffleStart = -1;
 			}
 			break;
 		case BuildingScript::BS_REQUIRED_OFF:
@@ -458,19 +466,19 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 				goto cleanup;
 			break;
 		case BuildingScript::BS_PUSH_INT:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 				stack.push_back(*code++);
 			else
 				++code;
 			break;
 		case BuildingScript::BS_PUSH_VAR:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 				stack.push_back(script->vars[*code++]);
 			else
 				++code;
 			break;
 		case BuildingScript::BS_SET_VAR:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
 				script->vars[*code++] = stack.back();
 				stack.pop_back();
@@ -479,19 +487,19 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 				++code;
 			break;
 		case BuildingScript::BS_INC:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 				++script->vars[*code++];
 			else
 				++code;
 			break;
 		case BuildingScript::BS_DEC:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 				--script->vars[*code++];
 			else
 				++code;
 			break;
 		case BuildingScript::BS_IF:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
 				BuildingScript::Code op = (BuildingScript::Code)*code++;
 				int right = stack.back();
@@ -520,41 +528,41 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 					ok = (left <= right);
 					break;
 				}
-				++if_level;
+				++ifLevel;
 				if(ok)
-					++if_depth;
+					++ifDepth;
 			}
 			else
 			{
 				++code;
-				++if_level;
+				++ifLevel;
 			}
 			break;
 		case BuildingScript::BS_IF_RAND:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
 				int a = stack.back();
 				stack.pop_back();
 				if(a > 0 && Rand() % a == 0)
-					++if_depth;
+					++ifDepth;
 			}
-			++if_level;
+			++ifLevel;
 			break;
 		case BuildingScript::BS_ELSE:
-			if(if_level == if_depth)
-				--if_depth;
+			if(ifLevel == ifDepth)
+				--ifDepth;
 			break;
 		case BuildingScript::BS_ENDIF:
-			if(if_level == if_depth)
-				--if_depth;
-			--if_level;
+			if(ifLevel == ifDepth)
+				--ifDepth;
+			--ifLevel;
 			break;
 		case BuildingScript::BS_CALL:
 		case BuildingScript::BS_ADD:
 		case BuildingScript::BS_SUB:
 		case BuildingScript::BS_MUL:
 		case BuildingScript::BS_DIV:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 			{
 				int b = stack.back();
 				stack.pop_back();
@@ -587,7 +595,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 			}
 			break;
 		case BuildingScript::BS_NEG:
-			if(if_level == if_depth)
+			if(ifLevel == ifDepth)
 				stack.back() = -stack.back();
 			break;
 		}
@@ -609,20 +617,20 @@ void City::GetEntry(Vec3& pos, float& rot)
 	else
 	{
 		// check which spawn rot i closest to entry rot
-		float best_dif = 999.f;
-		int best_index = -1, index = 0;
+		float bestDif = 999.f;
+		int bestIndex = -1, index = 0;
 		float dir = ConvertNewAngleToOld(world->GetTravelDir());
 		for(vector<EntryPoint>::iterator it = entryPoints.begin(), end = entryPoints.end(); it != end; ++it, ++index)
 		{
 			float dif = AngleDiff(dir, it->spawnRot);
-			if(dif < best_dif)
+			if(dif < bestDif)
 			{
-				best_dif = dif;
-				best_index = index;
+				bestDif = dif;
+				bestIndex = index;
 			}
 		}
-		pos = entryPoints[best_index].spawnRegion.Midpoint().XZ();
-		rot = entryPoints[best_index].spawnRot;
+		pos = entryPoints[bestIndex].spawnRegion.Midpoint().XZ();
+		rot = entryPoints[bestIndex].spawnRot;
 	}
 }
 
@@ -660,16 +668,4 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 		else if(tb.building->group == BuildingGroup::BG_ARENA)
 			flags |= HaveArena;
 	}
-}
-
-//=================================================================================================
-Vec3 CityBuilding::GetUnitPos()
-{
-	return Vec3(float(unitPt.x) * 2 + 1, 0, float(unitPt.y) * 2 + 1);
-}
-
-//=================================================================================================
-float CityBuilding::GetUnitRot()
-{
-	return DirToRot(dir);
 }

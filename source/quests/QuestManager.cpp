@@ -76,10 +76,8 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
 	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
 	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
-	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
-	infos.push_back(QuestInfo(Q_DIRE_WOLF, QuestCategory::Unique, "dire_wolf"));
 
 	// create pseudo quests
 	questContest = new Quest_Contest;
@@ -334,10 +332,12 @@ void QuestManager::Reset()
 	DeleteElements(questItemRequests);
 	questTimeouts.clear();
 	questTimeouts2.clear();
+	timers.clear();
 	questCounter = 0;
 	uniqueQuestsCompleted = 0;
 	uniqueCompletedShow = false;
 	questRumors.clear();
+	itemEventHandlers.clear();
 }
 
 //=================================================================================================
@@ -350,21 +350,21 @@ void QuestManager::Update(int days)
 			return false;
 
 		Location* loc = quest->targetLoc;
-		bool in_camp = false;
+		bool inCamp = false;
 
 		if(loc->type == L_CAMP && (loc == world->GetTravelLocation() || loc == world->GetCurrentLocation()))
-			in_camp = true;
+			inCamp = true;
 
 		if(!quest->timeout)
 		{
-			bool ok = quest->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
+			bool ok = quest->OnTimeout(inCamp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
 			if(ok)
 				quest->timeout = true;
 			else
 				return false;
 		}
 
-		if(in_camp)
+		if(inCamp)
 			return false;
 
 		loc->activeQuest = nullptr;
@@ -384,6 +384,19 @@ void QuestManager::Update(int days)
 		if(quest->IsTimedout() && quest->OnTimeout(TIMEOUT2))
 		{
 			quest->timeout = true;
+			return true;
+		}
+		return false;
+	});
+
+	// quest timers
+	LoopAndRemove(timers, [=](pair<Quest2*, int>& p)
+	{
+		p.second -= days;
+		if(p.second <= 0)
+		{
+			ScriptEvent event(EVENT_TIMER);
+			p.first->FireEvent(event);
 			return true;
 		}
 		return false;
@@ -410,7 +423,7 @@ void QuestManager::Update(int days)
 		questGoblins->OnProgress(days);
 		questCrazies->OnProgress(days);
 
-		if(gameLevel->cityCtx)
+		if(gameLevel->IsSafeSettlement())
 			GenerateQuestUnits(false);
 	}
 }
@@ -454,14 +467,14 @@ bool QuestManager::Read(BitStreamReader& f)
 {
 	// quests
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
-	word quest_count;
-	f >> quest_count;
-	if(!f.Ensure(QUEST_MIN_SIZE * quest_count))
+	word questCount;
+	f >> questCount;
+	if(!f.Ensure(QUEST_MIN_SIZE * questCount))
 	{
 		Error("Read world: Broken packet for quests.");
 		return false;
 	}
-	quests.resize(quest_count);
+	quests.resize(questCount);
 
 	int index = 0;
 	for(Quest*& quest : quests)
@@ -482,17 +495,17 @@ bool QuestManager::Read(BitStreamReader& f)
 
 	// quest items
 	const int QUEST_ITEM_MIN_SIZE = 7;
-	word quest_items_count;
-	f >> quest_items_count;
-	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
+	word questItemsCount;
+	f >> questItemsCount;
+	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * questItemsCount))
 	{
 		Error("Read world: Broken packet for quest items.");
 		return false;
 	}
-	questItems.reserve(quest_items_count);
-	for(word i = 0; i < quest_items_count; ++i)
+	questItems.reserve(questItemsCount);
+	for(word i = 0; i < questItemsCount; ++i)
 	{
-		const string& item_id = f.ReadString1();
+		const string& itemId = f.ReadString1();
 		if(!f)
 		{
 			Error("Read world: Broken packet for quest item %u.", i);
@@ -500,13 +513,13 @@ bool QuestManager::Read(BitStreamReader& f)
 		}
 
 		const Item* baseItem;
-		if(item_id[0] == '$')
-			baseItem = Item::TryGet(item_id.c_str() + 1);
+		if(itemId[0] == '$')
+			baseItem = Item::TryGet(itemId.c_str() + 1);
 		else
-			baseItem = Item::TryGet(item_id);
+			baseItem = Item::TryGet(itemId);
 		if(!baseItem)
 		{
-			Error("Read world: Missing quest item '%s' (%u).", item_id.c_str(), i);
+			Error("Read world: Missing quest item '%s' (%u).", itemId.c_str(), i);
 			return false;
 		}
 
@@ -547,12 +560,26 @@ void QuestManager::Save(GameWriter& f)
 	for(Quest* q : questTimeouts2)
 		f << q->id;
 
+	f << timers.size();
+	for(pair<Quest2*, int>& timer : timers)
+	{
+		f << timer.first->id;
+		f << timer.second;
+	}
+
 	f << questItems.size();
 	for(Item* item : questItems)
 	{
 		f << item->id;
 		f << item->questId;
 		f << item->name;
+	}
+
+	f << itemEventHandlers.size();
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		f << p.first->id;
+		f << p.second;
 	}
 
 	f << questCounter;
@@ -606,10 +633,23 @@ void QuestManager::Load(GameReader& f)
 	// quest timeouts
 	questTimeouts.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : questTimeouts)
-		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
+		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<int>(), false));
 	questTimeouts2.resize(f.Read<uint>());
 	for(Quest*& q : questTimeouts2)
-		q = FindQuest(f.Read<uint>(), false);
+		q = FindQuest(f.Read<int>(), false);
+
+	// timers
+	if(LOAD_VERSION >= V_0_20)
+	{
+		timers.resize(f.Read<uint>());
+		for(pair<Quest2*, int>& timer : timers)
+		{
+			timer.first = static_cast<Quest2*>(FindQuest(f.Read<int>(), false));
+			f >> timer.second;
+		}
+	}
+	else
+		timers.clear();
 
 	// quest items
 	questItems.resize(f.Read<uint>());
@@ -623,95 +663,54 @@ void QuestManager::Load(GameReader& f)
 		f >> item->name;
 	}
 
+	// item event handlers
+	if(LOAD_VERSION >= V_0_20)
+	{
+		itemEventHandlers.resize(f.Read<uint>());
+		for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+		{
+			p.first = static_cast<Quest2*>(FindQuest(f.Read<int>(), false));
+			f >> p.second;
+		}
+	}
+	else
+		itemEventHandlers.clear();
+
 	f >> questCounter;
 	f >> uniqueQuestsCompleted;
 	f >> uniqueCompletedShow;
-	if(LOAD_VERSION >= V_0_10)
+
+	// quest rumors
+	uint count;
+	f >> count;
+	questRumors.resize(count);
+	for(pair<int, string>& rumor : questRumors)
 	{
-		// quest rumors
-		uint count;
-		f >> count;
-		questRumors.resize(count);
-		for(pair<int, string>& rumor : questRumors)
-		{
-			f >> rumor.first;
-			f >> rumor.second;
-		}
-	}
-	else
-	{
-		f.Skip<int>(); // quest_rumor_counter
-		bool rumors[old::R_MAX];
-		f >> rumors;
-		for(int i = 0; i < old::R_MAX; ++i)
-		{
-			if(rumors[i])
-				continue;
-			cstring text;
-			QUEST_TYPE type;
-			switch((old::QUEST_RUMOR)i)
-			{
-			case old::R_SAWMILL:
-				type = Q_SAWMILL;
-				text = Format(txRumorQ[0], questSawmill->startLoc->name.c_str());
-				break;
-			case old::R_MINE:
-				type = Q_MINE;
-				text = Format(txRumorQ[1], questMine->startLoc->name.c_str());
-				break;
-			case old::R_CONTEST:
-				type = Q_FORCE_NONE;
-				text = txRumorQ[2];
-				break;
-			case old::R_BANDITS:
-				type = Q_BANDITS;
-				text = Format(txRumorQ[3], questBandits->startLoc->name.c_str());
-				break;
-			case old::R_MAGES:
-				type = Q_MAGES;
-				text = Format(txRumorQ[4], questMages->startLoc->name.c_str());
-				break;
-			case old::R_MAGES2:
-				type = Q_MAGES2;
-				text = txRumorQ[5];
-				break;
-			case old::R_ORCS:
-				type = Q_ORCS;
-				text = Format(txRumorQ[6], questOrcs->startLoc->name.c_str());
-				break;
-			case old::R_GOBLINS:
-				type = Q_GOBLINS;
-				text = Format(txRumorQ[7], questGoblins->startLoc->name.c_str());
-				break;
-			case old::R_EVIL:
-				type = Q_EVIL;
-				text = Format(txRumorQ[8], questEvil->startLoc->name.c_str());
-				break;
-			}
-			if(type == Q_FORCE_NONE)
-			{
-				questContest->rumor = questCounter++;
-				questRumors.push_back(pair<int, string>(questContest->rumor, text));
-			}
-			else
-			{
-				Quest* quest = FindQuest(type);
-				questRumors.push_back(pair<int, string>(quest->id, text));
-			}
-		}
+		f >> rumor.first;
+		f >> rumor.second;
 	}
 
 	// force quest
-	const string& force_id = f.ReadString1();
-	if(force_id.empty())
+	const string& forceId = f.ReadString1();
+	if(forceId.empty())
 		force = Q_FORCE_DISABLED;
 	else
-		SetForcedQuest(force_id);
+		SetForcedQuest(forceId);
 
 	// load pseudo-quests
 	questSecret->Load(f);
 	questContest->Load(f);
 	questTournament->Load(f);
+
+	// create new quests on upgrade
+	if(content.requireUpdate)
+	{
+		for(QuestInfo& info : infos)
+		{
+			if(info.scheme && IsSet(info.scheme->flags, QuestScheme::RECREATE) && !FindAnyQuest(info.scheme))
+				CreateQuest(&info);
+		}
+	}
 }
 
 //=================================================================================================
@@ -860,11 +859,11 @@ Quest* QuestManager::FindQuestS(const string& questId)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItem(cstring item_id, int questId)
+const Item* QuestManager::FindQuestItem(cstring itemId, int questId)
 {
 	for(Item* item : questItems)
 	{
-		if(item->questId == questId && item->id == item_id)
+		if(item->questId == questId && item->id == itemId)
 			return item;
 	}
 
@@ -954,13 +953,13 @@ bool QuestManager::HandleFormatString(const string& str, cstring& result)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItemClient(cstring item_id, int questId) const
+const Item* QuestManager::FindQuestItemClient(cstring itemId, int questId) const
 {
-	assert(item_id);
+	assert(itemId);
 
 	for(Item* item : questItems)
 	{
-		if(item->id == item_id && (questId == -1 || item->IsQuest(questId)))
+		if(item->id == itemId && (questId == -1 || item->IsQuest(questId)))
 			return item;
 	}
 
@@ -971,13 +970,7 @@ const Item* QuestManager::FindQuestItemClient(cstring item_id, int questId) cons
 void QuestManager::AddScriptedQuest(QuestScheme* scheme)
 {
 	assert(scheme);
-	if(IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
-	{
-		QuestInfo* info = FindQuestInfo(scheme->id);
-		info->scheme = scheme;
-	}
-	else
-		infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
+	infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
 }
 
 //=================================================================================================
@@ -1244,7 +1237,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 //=================================================================================================
 void QuestManager::RemoveQuestUnits(bool onLeave)
 {
-	if(gameLevel->cityCtx)
+	if(gameLevel->IsSafeSettlement())
 	{
 		if(questSawmill->messenger)
 		{
@@ -1583,4 +1576,47 @@ void QuestManager::UpgradeQuests()
 		RemoveElementTry(questTimeouts2, quest);
 		delete quest;
 	}
+}
+
+//=================================================================================================
+void QuestManager::RemoveItemEventHandler(Quest2* quest, const Item* item)
+{
+	assert(quest && item);
+
+	int index = 0;
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		if(p.first == quest && p.second == item)
+		{
+			RemoveElementIndex(itemEventHandlers, index);
+			return;
+		}
+		++index;
+	}
+}
+
+//=================================================================================================
+void QuestManager::CheckItemEventHandler(Unit* unit, const Item* item)
+{
+	if(itemEventHandlers.empty())
+		return;
+
+	for(pair<Quest2*, const Item*>& p : itemEventHandlers)
+	{
+		if(p.second == item)
+		{
+			ScriptEvent event(EVENT_USE);
+			event.onUse.unit = unit;
+			event.onUse.item = item;
+			p.first->FireEvent(event);
+			break; // event will propably remove handler, need extra code to handle multiple handlers for single item
+		}
+	}
+}
+
+//=================================================================================================
+void QuestManager::AddTimer(Quest2* quest, int days)
+{
+	assert(quest && days > 0);
+	timers.push_back(std::make_pair(quest, days));
 }

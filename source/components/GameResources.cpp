@@ -52,6 +52,9 @@ void GameResources::Init()
 	scene->Add(node);
 
 	camera = new Camera;
+	camera->aspect = 1.f;
+	camera->znear = 0.1f;
+	camera->zfar = 25.f;
 
 	aHuman = resMgr->Load<Mesh>("human.qmsh");
 	rtItem = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);
@@ -117,6 +120,7 @@ void GameResources::LoadData()
 	tBlood[BLOOD_ROCK] = resMgr->Load<Texture>("kamien.png");
 	tBlood[BLOOD_IRON] = resMgr->Load<Texture>("iskra.png");
 	tBlood[BLOOD_SLIME] = resMgr->Load<Texture>("slime_part.png");
+	tBlood[BLOOD_YELLOW] = resMgr->Load<Texture>("krew4.png");
 	tBloodSplat[BLOOD_RED] = resMgr->Load<Texture>("krew_slad.png");
 	tBloodSplat[BLOOD_GREEN] = resMgr->Load<Texture>("krew_slad2.png");
 	tBloodSplat[BLOOD_BLACK] = resMgr->Load<Texture>("krew_slad3.png");
@@ -124,6 +128,7 @@ void GameResources::LoadData()
 	tBloodSplat[BLOOD_ROCK] = nullptr;
 	tBloodSplat[BLOOD_IRON] = nullptr;
 	tBloodSplat[BLOOD_SLIME] = nullptr;
+	tBloodSplat[BLOOD_YELLOW] = resMgr->Load<Texture>("krew_slad4.png");
 	tSpark = resMgr->Load<Texture>("iskra.png");
 	tSpawn = resMgr->Load<Texture>("spawn_fog.png");
 	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
@@ -131,6 +136,7 @@ void GameResources::LoadData()
 	tFlare2 = resMgr->Load<Texture>("flare2.png");
 	tWater = resMgr->Load<Texture>("water.png");
 	tVignette = resMgr->Load<Texture>("vignette.jpg");
+	tSmoke = resMgr->Load<Texture>("smoke.png");
 
 	// preload terrain textures
 	resMgr->AddTaskCategory(txLoadTerrainTextures);
@@ -220,6 +226,7 @@ void GameResources::LoadData()
 	sItem[7] = resMgr->Load<Sound>("interface3.wav"); // other
 	sItem[8] = resMgr->Load<Sound>("amulet.mp3"); // amulet
 	sItem[9] = resMgr->Load<Sound>("ring.mp3"); // ring
+	sItem[10] = resMgr->Load<Sound>("splat.mp3"); // meat
 	sChestOpen = resMgr->Load<Sound>("chest_open.mp3");
 	sChestClose = resMgr->Load<Sound>("chest_close.mp3");
 	sDoorBudge = resMgr->Load<Sound>("door_budge.mp3");
@@ -299,9 +306,9 @@ void GameResources::PreloadTraps()
 //=================================================================================================
 void GameResources::PreloadAbilities()
 {
-	for(Ability* ptr_ability : Ability::abilities)
+	for(Ability* ptrAbility : Ability::abilities)
 	{
-		Ability& ability = *ptr_ability;
+		Ability& ability = *ptrAbility;
 
 		if(ability.soundCast)
 			resMgr->Load(ability.soundCast);
@@ -370,6 +377,7 @@ void GameResources::PreloadObjects()
 				assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
 				obj.matrix = &point->mat;
 				obj.size = point->size.XZ();
+				obj.h = point->size.y;
 
 				if(!IsSet(obj.flags, OBJ_NO_PHYSICS | OBJ_TMP_PHYSICS))
 					obj.shape = new btBoxShape(ToVector3(point->size));
@@ -380,16 +388,16 @@ void GameResources::PreloadObjects()
 				if(IsSet(obj.flags, OBJ_MULTI_PHYSICS))
 				{
 					LocalVector<Mesh::Point*> points;
-					Mesh::Point* prev_point = point;
+					Mesh::Point* prevPoint = point;
 
 					while(true)
 					{
-						Mesh::Point* new_point = obj.mesh->FindNextPoint("hit", prev_point);
-						if(new_point)
+						Mesh::Point* newPoint = obj.mesh->FindNextPoint("hit", prevPoint);
+						if(newPoint)
 						{
-							assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
-							points.push_back(new_point);
-							prev_point = new_point;
+							assert(newPoint->IsBox() && newPoint->size.x >= 0 && newPoint->size.y >= 0 && newPoint->size.z >= 0);
+							points.push_back(newPoint);
+							prevPoint = newPoint;
 						}
 						else
 							break;
@@ -436,9 +444,9 @@ void GameResources::PreloadObjects()
 }
 
 //=================================================================================================
-void GameResources::PreloadItem(const Item* p_item)
+void GameResources::PreloadItem(const Item* ptrItem)
 {
-	Item& item = *(Item*)p_item;
+	Item& item = *(Item*)ptrItem;
 	if(item.state == ResourceState::Loaded)
 		return;
 
@@ -451,10 +459,10 @@ void GameResources::PreloadItem(const Item* p_item)
 				Armor& armor = item.ToArmor();
 				if(!armor.texOverride.empty())
 				{
-					for(TexOverride& tex_o : armor.texOverride)
+					for(TexOverride& texOverride : armor.texOverride)
 					{
-						if(tex_o.diffuse)
-							resMgr->Load(tex_o.diffuse);
+						if(texOverride.diffuse)
+							resMgr->Load(texOverride.diffuse);
 					}
 				}
 			}
@@ -481,10 +489,10 @@ void GameResources::PreloadItem(const Item* p_item)
 			Armor& armor = item.ToArmor();
 			if(!armor.texOverride.empty())
 			{
-				for(TexOverride& tex_o : armor.texOverride)
+				for(TexOverride& texOverride : armor.texOverride)
 				{
-					if(tex_o.diffuse)
-						resMgr->Load(tex_o.diffuse);
+					if(texOverride.diffuse)
+						resMgr->Load(texOverride.diffuse);
 				}
 			}
 		}
@@ -532,11 +540,11 @@ void GameResources::GenerateItemIcon(Item& item)
 	}
 
 	// try to find icon using same mesh
-	bool use_tex_override = false;
+	bool useTexOverride = false;
 	if(item.type == IT_ARMOR)
-		use_tex_override = !item.ToArmor().texOverride.empty();
+		useTexOverride = !item.ToArmor().texOverride.empty();
 	ItemTextureMap::iterator it;
-	if(!use_tex_override)
+	if(!useTexOverride)
 	{
 		it = itemTextureMap.lower_bound(item.mesh);
 		if(it != itemTextureMap.end() && !(itemTextureMap.key_comp()(item.mesh, it->first)))
@@ -577,24 +585,23 @@ void GameResources::DrawItemIcon(const Item& item, RenderTarget* target, float r
 		if(const Armor& armor = item.ToArmor(); !armor.texOverride.empty())
 		{
 			node->texOverride = armor.GetTextureOverride();
-			assert(armor.texOverride.size() == mesh.head.n_subs);
+			assert(armor.texOverride.size() == mesh.head.nSubs);
 		}
 	}
 
 	// light
-	Vec3& light_pos = scene->lights.back().pos;
+	Vec3& lightPos = scene->lights.back().pos;
 	point = mesh.FindPoint("light");
 	if(point)
-		light_pos = Vec3::TransformZero(point->mat);
+		lightPos = Vec3::TransformZero(point->mat);
 	else
-		light_pos = mesh.head.cam_pos;
+		lightPos = mesh.head.camPos;
 
 	// setup camera
-	Matrix mat_view = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
-		mat_proj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
-	camera->matViewProj = mat_view * mat_proj;
-	camera->from = mesh.head.cam_pos;
-	camera->to = mesh.head.cam_target;
+	camera->from = mesh.head.camPos;
+	camera->to = mesh.head.camTarget;
+	camera->up = mesh.head.camUp;
+	camera->UpdateMatrix();
 
 	// draw
 	sceneMgr->SetScene(scene, camera);
@@ -659,6 +666,8 @@ Sound* GameResources::GetItemSound(const Item* item)
 	case IT_OTHER:
 		if(IsSet(item->flags, ITEM_CRYSTAL_SOUND))
 			return sItem[3];
+		else if(IsSet(item->flags, ITEM_MEAT_SOUND))
+			return sItem[10];
 		else
 			return sItem[7];
 	case IT_GOLD:

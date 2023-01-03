@@ -87,15 +87,15 @@ void AbilityLoader::InitTokenizer()
 		{ "cooldown", K_COOLDOWN },
 		{ "range", K_RANGE },
 		{ "speed", K_SPEED },
-		{ "explode_range", K_EXPLODE_RANGE },
+		{ "explodeRange", K_EXPLODE_RANGE },
 		{ "mesh", K_MESH },
 		{ "tex", K_TEX },
-		{ "tex_particle", K_TEX_PARTICLE },
-		{ "tex_explode", K_TEX_EXPLODE },
-		{ "sound_cast", K_SOUND_CAST },
-		{ "sound_hit", K_SOUND_HIT },
+		{ "texParticle", K_TEX_PARTICLE },
+		{ "texExplode", K_TEX_EXPLODE },
+		{ "soundCast", K_SOUND_CAST },
+		{ "soundHit", K_SOUND_HIT },
 		{ "mana", K_MANA },
-		{ "move_range", K_MOVE_RANGE },
+		{ "moveRange", K_MOVE_RANGE },
 		{ "icon", K_ICON },
 		{ "charges", K_CHARGES },
 		{ "recharge", K_RECHARGE },
@@ -103,15 +103,15 @@ void AbilityLoader::InitTokenizer()
 		{ "stamina", K_STAMINA },
 		{ "unit", K_UNIT },
 		{ "effect", K_EFFECT },
-		{ "learning_points", K_LEARNING_POINTS },
+		{ "learningPoints", K_LEARNING_POINTS },
 		{ "skill", K_SKILL },
 		{ "level", K_LEVEL },
 		{ "animation", K_ANIMATION },
 		{ "count", K_COUNT },
 		{ "time", K_TIME },
 		{ "color", K_COLOR },
-		{ "trap_id", K_TRAP_ID },
-		{ "cast_time", K_CAST_TIME }
+		{ "trapId", K_TRAP_ID },
+		{ "castTime", K_CAST_TIME }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -122,8 +122,8 @@ void AbilityLoader::InitTokenizer()
 		{ "charge", Ability::Charge },
 		{ "summon", Ability::Summon },
 		{ "aggro", Ability::Aggro },
-		{ "summon_away", Ability::SummonAway },
-		{ "ranged_attack", Ability::RangedAttack },
+		{ "summonAway", Ability::SummonAway },
+		{ "rangedAttack", Ability::RangedAttack },
 		{ "trap", Ability::Trap }
 		});
 
@@ -140,16 +140,16 @@ void AbilityLoader::InitTokenizer()
 		{ "explode", Ability::Explode },
 		{ "poison", Ability::Poison },
 		{ "triple", Ability::Triple },
-		{ "non_combat", Ability::NonCombat },
+		{ "nonCombat", Ability::NonCombat },
 		{ "cleric", Ability::Cleric },
-		{ "ignore_units", Ability::IgnoreUnits },
-		{ "pick_dir", Ability::PickDir },
-		{ "use_cast", Ability::UseCast },
+		{ "ignoreUnits", Ability::IgnoreUnits },
+		{ "pickDir", Ability::PickDir },
+		{ "useCast", Ability::UseCast },
 		{ "mage", Ability::Mage },
 		{ "strength", Ability::Strength },
 		{ "boss50hp", Ability::Boss50Hp },
-		{ "default_attack", Ability::DefaultAttack },
-		{ "use_kneel", Ability::UseKneel }
+		{ "defaultAttack", Ability::DefaultAttack },
+		{ "useKneel", Ability::UseKneel }
 		});
 }
 
@@ -171,10 +171,10 @@ void AbilityLoader::LoadEntity(int top, const string& id)
 void AbilityLoader::ParseAbility(const string& id)
 {
 	int hash = Hash(id);
-	Ability* existing_ability = Ability::Get(hash);
-	if(existing_ability)
+	Ability* existingAbility = Ability::Get(hash);
+	if(existingAbility)
 	{
-		if(existing_ability->id == id)
+		if(existingAbility->id == id)
 			t.Throw("Id must be unique.");
 		else
 			t.Throw("Id hash collision.");
@@ -251,11 +251,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				ability->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				ability->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(!ability->mesh)
-					t.Throw("Missing mesh '%s'.", mesh_id.c_str());
-				crc.Update(mesh_id);
+					t.Throw("Missing mesh '%s'.", meshId.c_str());
+				crc.Update(meshId);
 				t.Next();
 				ability->size = t.MustGetFloat();
 				if(ability->size <= 0.f)
@@ -266,11 +266,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->tex = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->tex = resMgr->TryGet<Texture>(texId);
 				if(!ability->tex)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 				ability->size = t.MustGetFloat();
 				if(ability->size <= 0.f)
@@ -281,11 +281,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX_PARTICLE:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->texParticle = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->texParticle = resMgr->TryGet<Texture>(texId);
 				if(!ability->texParticle)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 				ability->sizeParticle = t.MustGetFloat();
 				if(ability->sizeParticle <= 0.f)
@@ -296,21 +296,21 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_TEX_EXPLODE:
 			{
-				const string& tex_id = t.MustGetString();
-				ability->texExplode.diffuse = resMgr->TryGet<Texture>(tex_id);
+				const string& texId = t.MustGetString();
+				ability->texExplode.diffuse = resMgr->TryGet<Texture>(texId);
 				if(!ability->texExplode.diffuse)
-					t.Throw("Missing texture '%s'.", tex_id.c_str());
-				crc.Update(tex_id);
+					t.Throw("Missing texture '%s'.", texId.c_str());
+				crc.Update(texId);
 				t.Next();
 			}
 			break;
 		case K_SOUND_CAST:
 			{
-				const string& sound_id = t.MustGetString();
-				ability->soundCast = resMgr->TryGet<Sound>(sound_id);
+				const string& soundId = t.MustGetString();
+				ability->soundCast = resMgr->TryGet<Sound>(soundId);
 				if(!ability->soundCast)
-					t.Throw("Missing sound '%s'.", sound_id.c_str());
-				crc.Update(sound_id);
+					t.Throw("Missing sound '%s'.", soundId.c_str());
+				crc.Update(soundId);
 				t.Next();
 				ability->soundCastDist = t.MustGetFloat();
 				if(ability->soundCastDist <= 0.f)
@@ -321,11 +321,11 @@ void AbilityLoader::ParseAbility(const string& id)
 			break;
 		case K_SOUND_HIT:
 			{
-				const string& sound_id = t.MustGetString();
-				ability->soundHit = resMgr->TryGet<Sound>(sound_id);
+				const string& soundId = t.MustGetString();
+				ability->soundHit = resMgr->TryGet<Sound>(soundId);
 				if(!ability->soundHit)
-					t.Throw("Missing sound '%s'.", sound_id.c_str());
-				crc.Update(sound_id);
+					t.Throw("Missing sound '%s'.", soundId.c_str());
+				crc.Update(soundId);
 				t.Next();
 				ability->soundHitDist = t.MustGetFloat();
 				if(ability->soundHitDist <= 0.f)
@@ -465,8 +465,8 @@ void AbilityLoader::ParseAlias(const string& id)
 		t.Throw("Missing ability '%s'.", id.c_str());
 	t.Next();
 
-	const string& alias_id = t.MustGetItemKeyword();
-	int hash = Hash(alias_id);
+	const string& aliasId = t.MustGetItemKeyword();
+	int hash = Hash(aliasId);
 	if(Ability::Get(hash))
 		t.Throw("Alias or ability already exists.");
 

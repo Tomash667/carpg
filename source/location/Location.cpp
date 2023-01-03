@@ -25,7 +25,7 @@ Location::~Location()
 //=================================================================================================
 bool Location::CheckUpdate(int& daysPassed, int worldtime)
 {
-	bool need_reset = reset;
+	bool needReset = reset;
 	reset = false;
 	if(lastVisit == -1)
 		daysPassed = -1;
@@ -34,7 +34,7 @@ bool Location::CheckUpdate(int& daysPassed, int worldtime)
 	lastVisit = worldtime;
 	if(dontClean)
 		daysPassed = 0;
-	return need_reset;
+	return needReset;
 }
 
 //=================================================================================================
@@ -44,17 +44,17 @@ void Location::Save(GameWriter& f)
 	f << name;
 	f << state;
 	f << target;
-	int quest_id;
+	int questId;
 	if(activeQuest)
 	{
 		if(activeQuest == ACTIVE_QUEST_HOLDER)
-			quest_id = (int)ACTIVE_QUEST_HOLDER;
+			questId = (int)ACTIVE_QUEST_HOLDER;
 		else
-			quest_id = activeQuest->id;
+			questId = activeQuest->id;
 	}
 	else
-		quest_id = -1;
-	f << quest_id;
+		questId = -1;
+	f << questId;
 	f << lastVisit;
 	f << st;
 	f << outside;
@@ -88,9 +88,9 @@ void Location::Load(GameReader& f)
 {
 	if(LOAD_VERSION < V_0_12)
 	{
-		old::LOCATION old_type;
-		f >> old_type;
-		switch(old_type)
+		old::LOCATION oldType;
+		f >> oldType;
+		switch(oldType)
 		{
 		case old::L_CITY:
 			type = L_CITY;
@@ -125,18 +125,39 @@ void Location::Load(GameReader& f)
 	}
 	f >> pos;
 	f >> name;
-	f >> state;
+	if(LOAD_VERSION >= V_0_20)
+		f >> state;
+	else
+	{
+		old::LOCATION_STATE oldState;
+		f >> oldState;
+		switch(oldState)
+		{
+		case old::LS_VISITED:
+			state = LS_KNOWN;
+			break;
+		case old::LS_ENTERED:
+			state = LS_VISITED;
+			break;
+		case old::LS_CLEARED:
+			state = LS_CLEARED;
+			break;
+		default:
+			state = (LOCATION_STATE)oldState;
+			break;
+		}
+	}
 	if(LOAD_VERSION >= V_0_12)
 		f >> target;
-	int quest_id = f.Read<int>();
-	if(quest_id == -1)
+	int questId = f.Read<int>();
+	if(questId == -1)
 		activeQuest = nullptr;
-	else if(quest_id == (int)ACTIVE_QUEST_HOLDER)
+	else if(questId == (int)ACTIVE_QUEST_HOLDER)
 		activeQuest = ACTIVE_QUEST_HOLDER;
 	else
 	{
 		game->loadLocationQuest.push_back(this);
-		activeQuest = (Quest_Dungeon*)quest_id;
+		activeQuest = (Quest_Dungeon*)questId;
 	}
 	f >> lastVisit;
 	f >> st;
@@ -175,10 +196,10 @@ void Location::Load(GameReader& f)
 	events.resize(f.Read<uint>());
 	for(Event& e : events)
 	{
-		int quest_id;
+		int questId;
 		f >> e.type;
-		f >> quest_id;
-		questMgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
+		f >> questId;
+		questMgr->AddQuestRequest(questId, (Quest**)&e.quest, [&]()
 		{
 			EventPtr event;
 			event.source = EventPtr::LOCATION;
@@ -311,8 +332,7 @@ void Location::SetKnown()
 		state = LS_KNOWN;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_STATE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_STATE);
 			c.id = index;
 		}
 	}
@@ -354,6 +374,19 @@ void Location::RemoveEventHandler(Quest2* quest, EventType type, bool cleanup)
 }
 
 //=================================================================================================
+void Location::FireEvent(ScriptEvent& e)
+{
+	if(events.empty())
+		return;
+
+	for(Event& event : events)
+	{
+		if(event.type == e.type)
+			event.quest->FireEvent(e);
+	}
+}
+
+//=================================================================================================
 // set if passed, returns prev value
 bool Location::RequireLoadingResources(bool* toSet)
 {
@@ -375,8 +408,7 @@ void Location::SetImage(LOCATION_IMAGE image)
 		this->image = image;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_IMAGE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_IMAGE);
 			c.id = index;
 		}
 	}
@@ -390,8 +422,7 @@ void Location::SetName(cstring name)
 		this->name = name;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_NAME;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 			c.id = index;
 		}
 	}
@@ -406,8 +437,7 @@ void Location::SetNamePrefix(cstring prefix)
 	name = Format("%s %s", prefix, strs[1].c_str());
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LOCATION_NAME;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 		c.id = index;
 	}
 }

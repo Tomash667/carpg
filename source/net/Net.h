@@ -161,7 +161,7 @@ public:
 	void WriteNetVars(BitStreamWriter& f);
 	void WriteWorldData(BitStreamWriter& f);
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
-	void WriteLevelData(BitStreamWriter& f, bool loaded_resources);
+	void WriteLevelData(BitStreamWriter& f, bool loadedResources);
 	void WritePlayerData(BitStreamWriter& f, PlayerInfo& info);
 	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
@@ -175,8 +175,7 @@ public:
 	void OnChangeLevel(int level);
 	void OnLeaveLocation(int where)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::LEAVE_LOCATION;
+		NetChange& c = PushChange(NetChange::LEAVE_LOCATION);
 		c.id = where;
 	}
 
@@ -220,7 +219,7 @@ public:
 
 	SystemAddress server, pingAdr;
 	float interpolateTimer;
-	bool wasClient, joinLan;
+	bool wasClient, joinLan, journalChanges;
 
 private:
 	static Mode mode;

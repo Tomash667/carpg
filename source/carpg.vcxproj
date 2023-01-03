@@ -58,7 +58,7 @@
       <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;gui;helpers;location;net;quests;resource;script;stats;system;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\curl\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -98,7 +98,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus </AdditionalOptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
@@ -140,7 +140,9 @@
     <ClInclude Include="components\Team.h" />
     <ClInclude Include="components\World.h" />
     <ClInclude Include="entity\AITeam.h" />
+    <ClInclude Include="entity\CityBuilding.h" />
     <ClInclude Include="entity\Date.h" />
+    <ClInclude Include="entity\DestroyedObject.h" />
     <ClInclude Include="entity\DialogContext.h" />
     <ClInclude Include="entity\Electro.h" />
     <ClInclude Include="entity\Explo.h" />
@@ -160,6 +162,7 @@
     <ClInclude Include="entity\TerrainTile.h" />
     <ClInclude Include="entity\Tile.h" />
     <ClInclude Include="entity\UnitEventHandler.h" />
+    <ClInclude Include="entity\UnitOrder.h" />
     <ClInclude Include="events\Arena.h" />
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="generator\AcademyGenerator.h" />
@@ -207,7 +210,9 @@
     <ClInclude Include="quests\Quest_Secret.h" />
     <ClInclude Include="quests\Quest_Tournament.h" />
     <ClInclude Include="quests\Quest_Tutorial.h" />
+    <ClInclude Include="script\ScriptContext.h" />
     <ClInclude Include="script\ScriptException.h" />
+    <ClInclude Include="script\ScriptExtensions.h" />
     <ClInclude Include="script\TypeBuilder.h" />
     <ClInclude Include="script\ScriptManager.h" />
     <ClInclude Include="script\Var.h" />
@@ -344,6 +349,8 @@
     <ClCompile Include="components\Team.cpp" />
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\AITeam.cpp" />
+    <ClCompile Include="entity\CityBuilding.cpp" />
+    <ClCompile Include="entity\DestroyedObject.cpp" />
     <ClCompile Include="entity\DialogContext.cpp" />
     <ClCompile Include="entity\Electro.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
@@ -351,6 +358,7 @@
     <ClCompile Include="entity\Explo.cpp" />
     <ClCompile Include="entity\LevelPart.cpp" />
     <ClCompile Include="entity\UnitList.cpp" />
+    <ClCompile Include="entity\UnitOrder.cpp" />
     <ClCompile Include="generator\HillsGenerator.cpp" />
     <ClCompile Include="gui\CraftPanel.cpp" />
     <ClCompile Include="helpers\DungeonMeshBuilder.cpp" />
@@ -363,6 +371,8 @@
     <ClCompile Include="net\PacketLogger.cpp" />
     <ClCompile Include="quests\Quest2.cpp" />
     <ClCompile Include="quests\Quest_DireWolf.cpp" />
+    <ClCompile Include="script\ScriptContext.cpp" />
+    <ClCompile Include="script\ScriptExtensions.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />

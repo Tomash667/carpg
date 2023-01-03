@@ -11,15 +11,17 @@
 #include "Net.h"
 #include "QuestManager.h"
 #include "QuestScheme.h"
+#include "ScriptExtensions.h"
 #include "ScriptManager.h"
 #include "World.h"
 
 #include <angelscript.h>
+#include <scriptarray\scriptarray.h>
 #include <scriptdictionary\scriptdictionary.h>
 #pragma warning(error: 4062)
 
 //=================================================================================================
-Quest_Scripted::Quest_Scripted() : instance(nullptr), cellDepth(0), inUpgrade(false)
+Quest_Scripted::Quest_Scripted() : instance(nullptr), journalState(JournalState::None), journalChanges(0), inUpgrade(false)
 {
 	type = Q_SCRIPTED;
 	prog = -1;
@@ -48,17 +50,16 @@ void Quest_Scripted::Start(Vars* vars)
 {
 	prog = 0;
 	startLoc = world->GetCurrentLocation();
-
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// call Startup
 	if(!scheme->fStartup)
 		return;
-	BeforeCall();
+
 	if(scheme->startupUseVars)
 	{
 		assert(vars);
-		scriptMgr->RunScript(scheme->fStartup, instance, [vars](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fStartup, instance, this, [vars](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgAddress(0, vars));
@@ -67,9 +68,23 @@ void Quest_Scripted::Start(Vars* vars)
 	else
 	{
 		assert(!vars);
-		scriptMgr->RunScript(scheme->fStartup, instance);
+		scriptMgr->RunScript(scheme->fStartup, instance, this);
 	}
-	AfterCall();
+}
+
+//=================================================================================================
+void Quest_Scripted::CreateInstance()
+{
+	asIScriptFunction* factory = scheme->scriptType->GetFactoryByIndex(0);
+	scriptMgr->RunScript(factory, nullptr, this, [&](asIScriptContext* ctx, int stage)
+	{
+		if(stage == 1)
+		{
+			void* ptr = ctx->GetAddressOfReturnValue();
+			instance = *(asIScriptObject**)ptr;
+			instance->AddRef();
+		}
+	});
 }
 
 //=================================================================================================
@@ -87,101 +102,119 @@ void Quest_Scripted::Save(GameWriter& f)
 	f << props;
 	for(uint i = 0; i < props; ++i)
 	{
-		int type_id;
+		int typeId;
 		cstring name;
-		scheme->scriptType->GetProperty(i, &name, &type_id);
-		Var::Type varType = scriptMgr->GetVarType(type_id);
+		scheme->scriptType->GetProperty(i, &name, &typeId);
+		Var::Type varType = scriptMgr->GetVarType(typeId);
 		f << Hash(name);
-		void* ptr = instance->GetAddressOfProperty(i);
-		switch(varType)
+		SaveVar(f, varType, instance->GetAddressOfProperty(i));
+	}
+}
+
+//=================================================================================================
+void Quest_Scripted::SaveVar(GameWriter& f, Var::Type varType, void* ptr)
+{
+	switch(varType)
+	{
+	case Var::Type::None:
+		break;
+	case Var::Type::Bool:
+		f << *(bool*)ptr;
+		break;
+	case Var::Type::Int:
+		f << *(int*)ptr;
+		break;
+	case Var::Type::Float:
+		f << *(float*)ptr;
+		break;
+	case Var::Type::Int2:
+		f << *(Int2*)ptr;
+		break;
+	case Var::Type::Vec2:
+		f << *(Vec2*)ptr;
+		break;
+	case Var::Type::Vec3:
+		f << *(Vec3*)ptr;
+		break;
+	case Var::Type::Vec4:
+		f << *(Vec4*)ptr;
+		break;
+	case Var::Type::Item:
 		{
-		case Var::Type::None:
-			break;
-		case Var::Type::Bool:
-			f << *(bool*)ptr;
-			break;
-		case Var::Type::Int:
-			f << *(int*)ptr;
-			break;
-		case Var::Type::Float:
-			f << *(float*)ptr;
-			break;
-		case Var::Type::Int2:
-			f << *(Int2*)ptr;
-			break;
-		case Var::Type::Vec2:
-			f << *(Vec2*)ptr;
-			break;
-		case Var::Type::Vec3:
-			f << *(Vec3*)ptr;
-			break;
-		case Var::Type::Vec4:
-			f << *(Vec4*)ptr;
-			break;
-		case Var::Type::Item:
+			Item* item = *(Item**)ptr;
+			if(item)
 			{
-				Item* item = *(Item**)ptr;
-				if(item)
-				{
-					f << item->id;
-					if(item->id[0] == '$')
-						f << item->questId;
-				}
-				else
-					f.Write0();
+				f << item->id;
+				if(item->id[0] == '$')
+					f << item->questId;
 			}
-			break;
-		case Var::Type::Location:
-			{
-				Location* loc = *(Location**)ptr;
-				if(loc)
-					f << loc->index;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::Encounter:
-			{
-				Encounter* enc = *(Encounter**)ptr;
-				if(enc)
-					f << enc->index;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::GroundItem:
-			{
-				GroundItem* item = *(GroundItem**)ptr;
-				if(item)
-					f << item->id;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::String:
-			f.WriteString4(*(string*)ptr);
-			break;
-		case Var::Type::Unit:
-			{
-				Unit* unit = *(Unit**)ptr;
-				if(unit)
-					f << unit->id;
-				else
-					f << -1;
-			}
-			break;
-		case Var::Type::UnitGroup:
-			{
-				UnitGroup* group = *(UnitGroup**)ptr;
-				if(group)
-					f << group->id;
-				else
-					f.Write0();
-			}
-			break;
-		case Var::Type::Magic:
-			break;
+			else
+				f.Write0();
 		}
+		break;
+	case Var::Type::Location:
+		{
+			Location* loc = *(Location**)ptr;
+			if(loc)
+				f << loc->index;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::Encounter:
+		{
+			Encounter* enc = *(Encounter**)ptr;
+			if(enc)
+				f << enc->index;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::GroundItem:
+		{
+			GroundItem* item = *(GroundItem**)ptr;
+			if(item)
+				f << item->id;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::String:
+		f.WriteString4(*(string*)ptr);
+		break;
+	case Var::Type::Unit:
+		{
+			Unit* unit = *(Unit**)ptr;
+			if(unit)
+				f << unit->id;
+			else
+				f << -1;
+		}
+		break;
+	case Var::Type::UnitGroup:
+		{
+			UnitGroup* group = *(UnitGroup**)ptr;
+			if(group)
+				f << group->id;
+			else
+				f.Write0();
+		}
+		break;
+	case Var::Type::Array:
+		{
+			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
+			const uint size = arr->GetSize();
+			const int elementSize = CScriptArray_GetElementSize(*arr);
+			const Var::Type varType = scriptMgr->GetVarType(arr->GetElementTypeId());
+			byte* buf = static_cast<byte*>(arr->GetBuffer());
+			f << size;
+			for(uint i = 0; i < size; ++i)
+			{
+				SaveVar(f, varType, buf);
+				buf += elementSize;
+			}
+		}
+		break;
 	}
 }
 
@@ -190,10 +223,10 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 {
 	Quest::Load(f);
 
-	const string& scheme_id = f.ReadString1();
-	scheme = QuestScheme::TryGet(scheme_id);
+	const string& schemeId = f.ReadString1();
+	scheme = QuestScheme::TryGet(schemeId);
 	if(!scheme)
-		throw Format("Missing quest scheme '%s'.", scheme_id.c_str());
+		throw Format("Missing quest scheme '%s'.", schemeId.c_str());
 	f >> timeoutDays;
 	isNew = true;
 
@@ -204,31 +237,28 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	if(prog == -1)
 		return LoadResult::Ok;
 
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// properties
 	if(LOAD_VERSION >= V_0_14)
 	{
 		uint props;
 		f >> props;
-		const uint scheme_props = scheme->scriptType->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
-			uint name_hash;
-			f >> name_hash;
-			for(uint j = 0; j < scheme_props; ++j)
+			uint nameHash;
+			f >> nameHash;
+			int propId = scheme->GetPropertyId(nameHash);
+			if(propId != -1)
 			{
-				int type_id;
-				cstring name;
-				scheme->scriptType->GetProperty(j, &name, &type_id);
-				if(name_hash == Hash(name))
-				{
-					Var::Type varType = scriptMgr->GetVarType(type_id);
-					void* ptr = instance->GetAddressOfProperty(j);
-					LoadVar(f, varType, ptr);
-					break;
-				}
+				int typeId;
+				scheme->scriptType->GetProperty(propId, nullptr, &typeId);
+				Var::Type varType = scriptMgr->GetVarType(typeId);
+				void* ptr = instance->GetAddressOfProperty(propId);
+				LoadVar(f, varType, ptr);
 			}
+			else
+				Error("Missing quest %s property %u.", scheme->id.c_str(), nameHash);
 		}
 	}
 	else
@@ -238,12 +268,12 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		{
 			for(uint i = 0; i < props; ++i)
 			{
-				int type_id;
+				int typeId;
 				cstring name;
-				scheme->scriptType->GetProperty(i, &name, &type_id);
+				scheme->scriptType->GetProperty(i, &name, &typeId);
 				if(strcmp(name, "village") == 0 || strcmp(name, "counter") == 0)
 				{
-					Var::Type varType = scriptMgr->GetVarType(type_id);
+					Var::Type varType = scriptMgr->GetVarType(typeId);
 					void* ptr = instance->GetAddressOfProperty(i);
 					LoadVar(f, varType, ptr);
 				}
@@ -253,9 +283,9 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 		{
 			for(uint i = 0; i < props; ++i)
 			{
-				int type_id;
-				scheme->scriptType->GetProperty(i, nullptr, &type_id);
-				Var::Type varType = scriptMgr->GetVarType(type_id);
+				int typeId;
+				scheme->scriptType->GetProperty(i, nullptr, &typeId);
+				Var::Type varType = scriptMgr->GetVarType(typeId);
 				void* ptr = instance->GetAddressOfProperty(i);
 				LoadVar(f, varType, ptr);
 			}
@@ -295,15 +325,15 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 		break;
 	case Var::Type::Item:
 		{
-			const string& item_id = f.ReadString1();
-			if(item_id.empty())
+			const string& itemId = f.ReadString1();
+			if(itemId.empty())
 				*(Item**)ptr = nullptr;
-			else if(item_id[0] != '$')
-				*(Item**)ptr = Item::Get(item_id);
+			else if(itemId[0] != '$')
+				*(Item**)ptr = Item::Get(itemId);
 			else
 			{
 				int questId = f.Read<int>();
-				questMgr->AddQuestItemRequest((const Item**)ptr, item_id.c_str(), questId, nullptr);
+				questMgr->AddQuestItemRequest((const Item**)ptr, itemId.c_str(), questId, nullptr);
 			}
 		}
 		break;
@@ -349,51 +379,31 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 				*(UnitGroup**)ptr = nullptr;
 		}
 		break;
-	case Var::Type::Magic:
+	case Var::Type::Array:
+		{
+			CScriptArray* arr = static_cast<CScriptArray*>(ptr);
+			const uint size = f.Read<uint>();
+			const int elementSize = CScriptArray_GetElementSize(*arr);
+			const Var::Type varType = scriptMgr->GetVarType(arr->GetElementTypeId());
+			arr->Resize(size);
+			byte* buf = static_cast<byte*>(arr->GetBuffer());
+			for(uint i = 0; i < size; ++i)
+			{
+				LoadVar(f, varType, buf);
+				buf += elementSize;
+			}
+		}
 		break;
 	}
 }
 
 //=================================================================================================
-GameDialog* Quest_Scripted::GetDialog(const string& dialog_id)
+GameDialog* Quest_Scripted::GetDialog(const string& dialogId)
 {
-	GameDialog* dialog = scheme->GetDialog(dialog_id);
+	GameDialog* dialog = scheme->GetDialog(dialogId);
 	if(!dialog)
-		throw new ScriptException("Missing quest dialog '%s'.", dialog_id.c_str());
+		throw new ScriptException("Missing quest dialog '%s'.", dialogId.c_str());
 	return dialog;
-}
-
-//=================================================================================================
-void Quest_Scripted::BeforeCall()
-{
-	if(cellDepth == 0)
-	{
-		journalState = JournalState::None;
-		journalChanges = 0;
-		scriptMgr->GetContext().quest = this;
-	}
-	++cellDepth;
-}
-
-//=================================================================================================
-void Quest_Scripted::AfterCall()
-{
-	--cellDepth;
-	if(cellDepth != 0)
-		return;
-	if(journalChanges || journalState == JournalState::Changed)
-	{
-		gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
-		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.id = id;
-			c.type = NetChange::UPDATE_QUEST;
-			c.count = journalChanges;
-		}
-	}
-	scriptMgr->GetContext().quest = nullptr;
 }
 
 //=================================================================================================
@@ -401,25 +411,25 @@ void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
+
 	if(inUpgrade)
 	{
 		prog = prog2;
 		return;
 	}
+
 	int prev = prog;
 	prog = prog2;
-	BeforeCall();
 	if(scheme->setProgressUsePrev)
 	{
-		scriptMgr->RunScript(scheme->fProgress, instance, [prev](asIScriptContext* ctx, int stage)
+		scriptMgr->RunScript(scheme->fProgress, instance, this, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		scriptMgr->RunScript(scheme->fProgress, instance);
-	AfterCall();
+		scriptMgr->RunScript(scheme->fProgress, instance, this);
 }
 
 //=================================================================================================
@@ -472,19 +482,17 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 {
 	if(!scheme->fEvent)
 		return;
-	BeforeCall();
-	scriptMgr->RunScript(scheme->fEvent, instance, [&event](asIScriptContext* ctx, int stage)
+
+	scriptMgr->RunScript(scheme->fEvent, instance, this, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
 	});
-	AfterCall();
 }
 
 //=================================================================================================
 string Quest_Scripted::GetString(int index)
 {
-	assert(scriptMgr->GetContext().quest == this);
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
@@ -494,21 +502,18 @@ string Quest_Scripted::GetString(int index)
 	if(!text.formatted)
 		return str;
 
-	static string str_part;
-	static string dialog_s_text;
-	dialog_s_text.clear();
-
+	LocalString strPart, dialogString;
 	for(uint i = 0, len = str.length(); i < len; ++i)
 	{
 		if(str[i] == '$')
 		{
-			str_part.clear();
+			strPart.clear();
 			++i;
 			if(str[i] == '(')
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				scriptMgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, this, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -517,7 +522,7 @@ string Quest_Scripted::GetString(int index)
 					else if(stage == 1)
 					{
 						string* result = (string*)ctx->GetAddressOfReturnValue();
-						dialog_s_text += *result;
+						dialogString += *result;
 					}
 				});
 				i = pos;
@@ -526,17 +531,17 @@ string Quest_Scripted::GetString(int index)
 			{
 				while(str[i] != '$')
 				{
-					str_part.push_back(str[i]);
+					strPart += str[i];
 					++i;
 				}
-				dialog_s_text += FormatString(str_part);
+				dialogString += FormatString(strPart);
 			}
 		}
 		else
-			dialog_s_text.push_back(str[i]);
+			dialogString += str[i];
 	}
 
-	return dialog_s_text.c_str();
+	return dialogString.c_str();
 }
 
 //=================================================================================================
@@ -574,16 +579,38 @@ void Quest_Scripted::Upgrade(Quest* quest)
 
 	type = Q_SCRIPTED;
 	category = scheme->category;
-	instance = CreateInstance(false);
+	CreateInstance();
 
 	// call method
 	inUpgrade = true;
-	BeforeCall();
-	scriptMgr->RunScript(scheme->fUpgrade, instance, [&data](asIScriptContext* ctx, int stage)
+	scriptMgr->RunScript(scheme->fUpgrade, instance, this, [&data](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgAddress(0, data.vars));
 	});
-	AfterCall();
 	inUpgrade = false;
+}
+
+//=================================================================================================
+bool Quest_Scripted::PostRun()
+{
+	bool showMessage = false;
+	if(journalChanges || journalState == JournalState::Changed)
+	{
+		gameGui->journal->NeedUpdate(Journal::Quests, questIndex);
+		showMessage = true;
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Net::PushChange(NetChange::UPDATE_QUEST);
+			c.id = id;
+			c.count = journalChanges;
+		}
+	}
+	else if(journalState == JournalState::Added)
+		showMessage = true;
+
+	journalState = JournalState::None;
+	journalChanges = 0;
+	return showMessage;
 }

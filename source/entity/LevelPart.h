@@ -17,6 +17,7 @@ struct LevelPart
 	vector<Electro*> electros;
 	vector<Drain> drains;
 	vector<CollisionObject> colliders;
+	vector<DestroyedObject*> destroyedObjects;
 	float lightsDt, drawRange;
 
 	LevelPart(LocationPart* locPart);

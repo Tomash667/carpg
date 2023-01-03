@@ -116,16 +116,16 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 	if(boxState == BOX_VISIBLE)
 	{
-		Int2 text_size = GameGui::font->CalculateSize(boxText);
-		boxBig = Rect::Create(Int2(0, 0), text_size);
-		Int2 size = text_size + Int2(24, 24);
+		Int2 textSize = GameGui::font->CalculateSize(boxText);
+		boxBig = Rect::Create(Int2(0, 0), textSize);
+		Int2 size = textSize + Int2(24, 24);
 		Int2 pos2 = Int2(gui->cursorPos) + Int2(24, 24);
-		Int2 text_pos(12, 12);
+		Int2 textPos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
 		if(boxImg)
 		{
-			text_pos.x += boxImgSize.x + 8;
+			textPos.x += boxImgSize.x + 8;
 			size.x += boxImgSize.x + 8;
 			if(size.y < boxImgSize.y + 24)
 				size.y = boxImgSize.y + 24;
@@ -135,15 +135,15 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		if(size.x < 256)
 			size.x = 256;
 
-		Int2 text_pos2(12, text_pos.y);
-		text_pos2.y += size.y - 12;
+		Int2 textPos2(12, textPos.y);
+		textPos2.y += size.y - 12;
 
 		if(!boxTextSmall.empty())
 		{
-			Int2 size_small = GameGui::fontSmall->CalculateSize(boxTextSmall, size.x - 24);
-			boxSmall = Rect::Create(Int2(0, 0), size_small);
-			int size_y = size_small.y;
-			size.y += size_y + 12;
+			Int2 sizeSmall = GameGui::fontSmall->CalculateSize(boxTextSmall, size.x - 24);
+			boxSmall = Rect::Create(Int2(0, 0), sizeSmall);
+			int sizeY = sizeSmall.y;
+			size.y += sizeY + 12;
 		}
 
 		if(pos2.x + size.x >= gui->wndSize.x)
@@ -152,8 +152,8 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 			pos2.y = gui->wndSize.y - size.y - 1;
 
 		boxImgPos = Int2(pos2.x + 12, pos2.y + 12);
-		boxBig = Rect::Create(text_pos + pos2, text_size);
-		boxSmall += pos2 + text_pos2;
+		boxBig = Rect::Create(textPos + pos2, textSize);
+		boxSmall += pos2 + textPos2;
 		boxSmall.Right() = boxSmall.Left() + boxSize.x - 24;
 
 		boxSize = size;

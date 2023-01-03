@@ -121,7 +121,7 @@ private:
 	bool enterName;
 	// unit
 	DOLL_ANIM anim, anim2;
-	float t, dist;
+	float t;
 	// controls
 	CustomButton customClose, customBt[2];
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
@@ -136,15 +136,15 @@ private:
 	vector<OldFlowItem> flowItems;
 	TooltipController tooltip;
 	// data
-	bool reset_skills_perks, rotating;
+	bool resetSkillsPerks, rotating;
 	cstring txHardcoreMode, txHardcoreDesc, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes,
 		txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany,
 		txFlawExtraPerk, txPerksRemoved;
-	Perk* picked_perk;
+	Perk* pickedPerk;
 	PickItemDialog* pickItemDialog;
 	vector<Perk*> availablePerks;
 	vector<pair<cstring, int>> takenPerks;
 	array<const Item*, SLOT_MAX> items;
-	TexturePtr tBox, tPowerBar;
+	TexturePtr tBox, tPowerBar, tArrowLeft, tArrowRight;
 	RenderTarget* rtChar;
 };

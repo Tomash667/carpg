@@ -70,12 +70,12 @@
 #include "Team.h"
 #include "TeamPanel.h"
 #include "UnitGroup.h"
-#include "Var.h"
 #include "Version.h"
 #include "World.h"
 #include "WorldMapGui.h"
 
 #include <BasicShader.h>
+#include <CrashHandler.h>
 #include <DirectX.h>
 #include <Engine.h>
 #include <GlowShader.h>
@@ -98,9 +98,9 @@
 
 const float LIMIT_DT = 0.3f;
 Game* game;
-CustomCollisionWorld* phyWorld;
+btCollisionWorld* phyWorld;
 GameKeys GKey;
-extern string g_system_dir;
+extern string gSystemDir;
 extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
@@ -176,8 +176,8 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
-	phyWorld = engine->GetPhysicsWorld();
 	engine->UnlockCursor(false);
+	phyWorld = physics->GetWorld();
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
@@ -280,7 +280,7 @@ void Game::LoadDatafiles()
 	loadWarnings = 0;
 
 	// content
-	content.systemDir = g_system_dir;
+	content.systemDir = gSystemDir;
 	content.LoadContent([this](Content::Id id)
 	{
 		switch(id)
@@ -352,11 +352,11 @@ void Game::LoadLanguageFiles()
 	questMgr->LoadLanguage();
 	world->LoadLanguage();
 
-	uint language_errors = Language::GetErrors();
-	if(language_errors != 0)
+	uint languageErrors = Language::GetErrors();
+	if(languageErrors != 0)
 	{
-		Error("Game: %u language errors.", language_errors);
-		loadWarnings += language_errors;
+		Error("Game: %u language errors.", languageErrors);
+		loadWarnings += languageErrors;
 	}
 }
 
@@ -428,7 +428,7 @@ void Game::PostconfigureGame()
 		ValidateGameData(false);
 
 	// show errors notification
-	bool start_game_mode = true;
+	bool startGameMode = true;
 	loadErrors += content.errors;
 	loadWarnings += content.warnings;
 	if(loadErrors > 0 || loadWarnings > 0)
@@ -455,7 +455,7 @@ void Game::PostconfigureGame()
 			info.pause = false;
 			info.autoWrap = true;
 			gui->ShowDialog(info);
-			start_game_mode = false;
+			startGameMode = false;
 		}
 	}
 
@@ -471,7 +471,7 @@ void Game::PostconfigureGame()
 	SetMusic(MusicType::Title);
 
 	// start game mode if selected quickmode
-	if(start_game_mode)
+	if(startGameMode)
 		StartGameMode();
 }
 
@@ -847,10 +847,10 @@ void Game::TakeScreenshot(bool noGui)
 {
 	if(noGui)
 	{
-		int old_flags = drawFlags;
+		int oldFlags = drawFlags;
 		drawFlags = (0xFFFF & ~DF_GUI);
 		DrawGame();
-		drawFlags = old_flags;
+		drawFlags = oldFlags;
 	}
 	else
 		DrawGame();
@@ -1052,6 +1052,7 @@ void Game::SetGameText()
 	StrArray(txAiNoMpPot, "aiNoMpPot");
 	StrArray(txAiCity, "aiCity");
 	StrArray(txAiVillage, "aiVillage");
+	txAiVillageEmpty = Str("aiVillageEmpty");
 	txAiForest = Str("aiForest");
 	txAiMoonwell = Str("aiMoonwell");
 	txAiAcademy = Str("aiAcademy");
@@ -1123,8 +1124,8 @@ void Game::SetGameText()
 	txNeedItem = Str("needItem");
 
 	// rumors
-	StrArray(txRumor, "rumor_");
-	StrArray(txRumorD, "rumor_d_");
+	StrArray(txRumor, "rumor");
+	StrArray(txRumorDrunk, "rumorDrunk");
 
 	// dialogs 1
 	StrArray(txQuestAlreadyGiven, "questAlreadyGiven");
@@ -1319,16 +1320,16 @@ uint Game::ValidateGameData(bool major)
 cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 {
 	auto& k = GKey[key];
-	bool first_key = (k[0] != Key::None),
-		second_key = (k[1] != Key::None);
+	bool firstKey = (k[0] != Key::None),
+		secondKey = (k[1] != Key::None);
 	if(!action)
 		action = k.text;
 
-	if(first_key && second_key)
+	if(firstKey && secondKey)
 		return Format("%s (%s, %s)", action, gameGui->controls->GetKeyText(k[0]), gameGui->controls->GetKeyText(k[1]));
-	else if(first_key || second_key)
+	else if(firstKey || secondKey)
 	{
-		Key used = k[first_key ? 0 : 1];
+		Key used = k[firstKey ? 0 : 1];
 		return Format("%s (%s)", action, gameGui->controls->GetKeyText(used));
 	}
 	else
@@ -1341,8 +1342,7 @@ void Game::PauseGame()
 	if(Net::IsOnline())
 	{
 		gameGui->mpBox->Add(paused ? txGamePaused : txGameResumed);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PAUSED;
+		NetChange& c = Net::PushChange(NetChange::PAUSED);
 		c.id = (paused ? 1 : 0);
 		if(paused && gameState == GS_WORLDMAP && world->GetState() == World::State::TRAVEL)
 			Net::PushChange(NetChange::UPDATE_MAP_POS);
@@ -1456,7 +1456,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 
 		// mark as visited
 		if(l.state != LS_HIDDEN)
-			l.state = LS_ENTERED;
+			l.state = LS_VISITED;
 
 		LoadingStep(txGeneratingMap);
 
@@ -1474,15 +1474,6 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 	else
 		EnterLevel(locGen);
 
-	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
-	LoadResources(txLoadingComplete, false);
-
-	l.lastVisit = world->GetWorldtime();
-	gameLevel->CheckIfLocationCleared();
-	gameLevel->camera.Reset();
-	pc->data.rotBuf = 0.f;
-	SetMusic();
-
 	if(closePortal)
 	{
 		delete gameLevel->location->portal;
@@ -1495,6 +1486,16 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 		OnEnterLocation();
 	}
 
+	gameLevel->CheckIfLocationCleared();
+
+	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
+	LoadResources(txLoadingComplete, false);
+
+	l.lastVisit = world->GetWorldtime();
+	gameLevel->camera.Reset();
+	pc->data.rotBuf = 0.f;
+	SetMusic();
+
 	if(Net::IsOnline())
 	{
 		netMode = NM_SERVER_SEND;
@@ -1503,7 +1504,7 @@ void Game::EnterLocation(int level, int fromPortal, bool closePortal)
 		{
 			preparedStream.Reset();
 			BitStreamWriter f(preparedStream);
-			net->WriteLevelData(f, loaded_resources);
+			net->WriteLevelData(f, loadedResources);
 			Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
 		}
 		else
@@ -1561,7 +1562,7 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 		gameLevel->UpdateLocation(31, 100, false);
 	}
 
-	if(gameLevel->cityCtx && gameState != GS_EXIT_TO_MENU && Net::IsLocal())
+	if(gameLevel->IsSafeSettlement() && gameState != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// ai buy iteams when leaving city
 		team->BuyTeamItems();
@@ -1602,7 +1603,7 @@ void Game::LeaveLocation(bool clear, bool takesTime)
 
 void Game::Event_RandomEncounter(int)
 {
-	gameGui->worldMap->dialog_enc = nullptr;
+	gameGui->worldMap->dialogEnc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	world->StartEncounter();
@@ -1659,8 +1660,7 @@ void Game::CutsceneStart(bool instant)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_START;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_START);
 		c.id = (instant ? 1 : 0);
 	}
 }
@@ -1682,8 +1682,7 @@ void Game::CutsceneImage(const string& image, float time)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_IMAGE;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_IMAGE);
 		c.str = StringPool.Get();
 		*c.str = image;
 		c.f[0] = time;
@@ -1699,8 +1698,7 @@ void Game::CutsceneText(const string& text, float time)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CUTSCENE_TEXT;
+		NetChange& c = Net::PushChange(NetChange::CUTSCENE_TEXT);
 		c.str = StringPool.Get();
 		*c.str = text;
 		c.f[0] = time;
@@ -1721,10 +1719,7 @@ void Game::CutsceneEnded(bool cancel)
 	if(cancel)
 	{
 		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CUTSCENE_SKIP;
-		}
+			Net::PushChange(NetChange::CUTSCENE_SKIP);
 
 		if(Net::IsClient())
 			return;
@@ -1844,8 +1839,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_WARP_TO_ENTRY);
 						c.id = 0;
 					}
 				}
@@ -1859,8 +1853,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_CHANGE_LEVEL;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_CHANGE_LEVEL);
 						c.id = 0;
 					}
 				}
@@ -1880,8 +1873,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_WARP_TO_ENTRY;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_WARP_TO_ENTRY);
 						c.id = 1;
 					}
 				}
@@ -1895,8 +1887,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEAT_CHANGE_LEVEL;
+						NetChange& c = Net::PushChange(NetChange::CHEAT_CHANGE_LEVEL);
 						c.id = 1;
 					}
 				}
@@ -2048,8 +2039,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallbackType = FALLBACK::CLIENT;
 					fallbackTimer = 0.f;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRAIN;
+					NetChange& c = Net::PushChange(NetChange::TRAIN);
 					c.id = fallbackValue;
 					c.count = fallbackValue2;
 				}
@@ -2067,8 +2057,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallbackType = FALLBACK::CLIENT;
 					fallbackTimer = 0.f;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REST;
+					NetChange& c = Net::PushChange(NetChange::REST);
 					c.id = fallbackValue;
 				}
 				break;
@@ -2151,21 +2140,21 @@ void Game::UpdateCamera(float dt)
 		{
 			// in dialog/trade look at target
 			camera.RotateTo(dt, 4.2875104f);
-			Vec3 zoom_pos;
+			Vec3 zoomPos;
 			if(gameGui->inventory->mode == I_LOOT_CHEST)
-				zoom_pos = pc->actionChest->GetCenter();
+				zoomPos = pc->actionChest->GetCenter();
 			else if(gameGui->inventory->mode == I_LOOT_CONTAINER)
-				zoom_pos = pc->actionUsable->GetCenter();
+				zoomPos = pc->actionUsable->GetCenter();
 			else if(gameGui->craft->visible)
-				zoom_pos = pc->unit->usable->GetCenter();
+				zoomPos = pc->unit->usable->GetCenter();
 			else
 			{
 				if(pc->actionUnit->IsAlive())
-					zoom_pos = pc->actionUnit->GetHeadSoundPos();
+					zoomPos = pc->actionUnit->GetHeadSoundPos();
 				else
-					zoom_pos = pc->actionUnit->GetLootCenter();
+					zoomPos = pc->actionUnit->GetLootCenter();
 			}
-			camera.SetZoom(&zoom_pos);
+			camera.SetZoom(&zoomPos);
 		}
 		else
 		{
@@ -2248,9 +2237,9 @@ uint Game::TestGameData(bool major)
 
 	// units
 	Info("Test: Checking units...");
-	for(UnitData* ud_ptr : UnitData::units)
+	for(UnitData* udPtr : UnitData::units)
 	{
-		UnitData& ud = *ud_ptr;
+		UnitData& ud = *udPtr;
 		str.clear();
 
 		// unit inventory
@@ -2513,7 +2502,7 @@ void Game::ChangeLevel(int where)
 
 	gameLevel->location->lastVisit = world->GetWorldtime();
 	gameLevel->CheckIfLocationCleared();
-	bool loaded_resources = gameLevel->location->RequireLoadingResources(nullptr);
+	bool loadedResources = gameLevel->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
@@ -2524,7 +2513,7 @@ void Game::ChangeLevel(int where)
 		netState = NetState::Server_Send;
 		preparedStream.Reset();
 		BitStreamWriter f(preparedStream);
-		net->WriteLevelData(f, loaded_resources);
+		net->WriteLevelData(f, loadedResources);
 		Info("Generated location packet: %d.", preparedStream.GetNumberOfBytesUsed());
 		gameGui->infoBox->Show(txWaitingForPlayers);
 	}
@@ -2730,20 +2719,20 @@ void Game::ClearGame()
 	EntitySystem::clear = false;
 }
 
-void ApplyTextureOverrideToSubmesh(Mesh::Submesh& sub, TexOverride& tex_o)
+void ApplyTextureOverrideToSubmesh(Mesh::Submesh& sub, TexOverride& texOverride)
 {
-	sub.tex = tex_o.diffuse;
-	sub.tex_normal = tex_o.normal;
-	sub.tex_specular = tex_o.specular;
+	sub.tex = texOverride.diffuse;
+	sub.texNormal = texOverride.normal;
+	sub.texSpecular = texOverride.specular;
 }
 
 void ApplyDungeonLightToMesh(Mesh& mesh)
 {
-	for(int i = 0; i < mesh.head.n_subs; ++i)
+	for(int i = 0; i < mesh.head.nSubs; ++i)
 	{
-		mesh.subs[i].specular_color = Vec3(1, 1, 1);
-		mesh.subs[i].specular_intensity = 0.2f;
-		mesh.subs[i].specular_hardness = 10;
+		mesh.subs[i].specularColor = Vec3(1, 1, 1);
+		mesh.subs[i].specularIntensity = 0.2f;
+		mesh.subs[i].specularHardness = 10;
 	}
 }
 
@@ -2845,9 +2834,9 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 	// cleanup units
 	if(Net::IsLocal() && !clear && !net->wasClient)
 	{
-		LoopAndRemove(locPart.units, [&](Unit* p_unit)
+		LoopAndRemove(locPart.units, [&](Unit* pUnit)
 		{
-			Unit& unit = *p_unit;
+			Unit& unit = *pUnit;
 
 			unit.BreakAction(Unit::BREAK_ACTION_MODE::ON_LEAVE);
 
@@ -3090,16 +3079,16 @@ void Game::LoadResources(cstring text, bool worldmap, bool postLoad)
 		}
 
 		// apply mesh instance for newly loaded meshes
-		for(auto& unit_mesh : unitsMeshLoad)
+		for(auto& unitMesh : unitsMeshLoad)
 		{
 			Unit::CREATE_MESH mode;
-			if(unit_mesh.second)
+			if(unitMesh.second)
 				mode = Unit::CREATE_MESH::ON_WORLDMAP;
 			else if(net->mpLoad && Net::IsClient())
 				mode = Unit::CREATE_MESH::AFTER_PRELOAD;
 			else
 				mode = Unit::CREATE_MESH::NORMAL;
-			unit_mesh.first->CreateMesh(mode);
+			unitMesh.first->CreateMesh(mode);
 		}
 		unitsMeshLoad.clear();
 	}
@@ -3158,8 +3147,8 @@ void Game::PreloadResources(bool worldmap)
 			}
 		}
 
-		bool new_value = true;
-		if(gameLevel->location->RequireLoadingResources(&new_value) == false)
+		bool newValue = true;
+		if(gameLevel->location->RequireLoadingResources(&newValue) == false)
 		{
 			// load music
 			gameRes->LoadMusic(gameLevel->GetLocationMusic(), false);
@@ -3174,30 +3163,15 @@ void Game::PreloadResources(bool worldmap)
 
 				// load usables
 				for(Usable* use : locPart.usables)
-				{
-					BaseUsable* base = use->base;
-					if(base->state == ResourceState::NotLoaded)
-					{
-						if(base->variants)
-						{
-							for(Mesh* mesh : base->variants->meshes)
-								resMgr->Load(mesh);
-						}
-						else
-							resMgr->Load(base->mesh);
-						if(base->sound)
-							resMgr->Load(base->sound);
-						base->state = ResourceState::Loaded;
-					}
-				}
+					use->base->EnsureIsLoaded();
 			}
 
 			// load buildings
 			if(gameLevel->cityCtx)
 			{
-				for(CityBuilding& city_building : gameLevel->cityCtx->buildings)
+				for(CityBuilding& cityBuilding : gameLevel->cityCtx->buildings)
 				{
-					Building& building = *city_building.building;
+					Building& building = *cityBuilding.building;
 					if(building.state == ResourceState::NotLoaded)
 					{
 						if(building.mesh)
@@ -3249,10 +3223,10 @@ void Game::PreloadUnit(Unit* unit)
 
 	if(data.tex)
 	{
-		for(TexOverride& tex_o : data.tex->textures)
+		for(TexOverride& texOverride : data.tex->textures)
 		{
-			if(tex_o.diffuse)
-				resMgr->Load(tex_o.diffuse);
+			if(texOverride.diffuse)
+				resMgr->Load(texOverride.diffuse);
 		}
 	}
 
@@ -3315,10 +3289,10 @@ void Game::VerifyUnitResources(Unit* unit)
 	}
 	if(unit->data->tex)
 	{
-		for(TexOverride& tex_o : unit->data->tex->textures)
+		for(TexOverride& texOverride : unit->data->tex->textures)
 		{
-			if(tex_o.diffuse)
-				assert(tex_o.diffuse->IsLoaded());
+			if(texOverride.diffuse)
+				assert(texOverride.diffuse->IsLoaded());
 		}
 	}
 
@@ -3508,8 +3482,7 @@ void Game::RemoveUnit(Unit* unit)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT);
 		c.id = unit->id;
 	}
 }
@@ -3544,8 +3517,7 @@ void Game::OnCloseInventory()
 		{
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
+				NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 				c.unit = pc->unit;
 				c.id = pc->unit->usable->id;
 				c.count = USE_USABLE_END;
@@ -3585,9 +3557,17 @@ void Game::CloseInventory()
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
-		return !questMgr->uniqueCompletedShow && questMgr->uniqueQuestsCompleted == questMgr->uniqueQuests && gameLevel->cityCtx && !dialogContext.dialogMode && pc->unit->IsStanding();
+	{
+		if(questMgr->uniqueCompletedShow || questMgr->uniqueQuestsCompleted != questMgr->uniqueQuests)
+			return false;
+	}
 	else
-		return questMgr->uniqueCompletedShow && gameLevel->cityCtx && !dialogContext.dialogMode && pc->unit->IsStanding();
+	{
+		if(!questMgr->uniqueCompletedShow)
+			return false;
+	}
+
+	return gameLevel->IsSafeSettlement() && !dialogContext.dialogMode && pc->unit->IsStanding();
 }
 
 void Game::UpdateGameNet(float dt)
@@ -3639,14 +3619,26 @@ void Game::OnEnterLocation()
 
 		if(info.saneHeroes > 0)
 		{
-			bool always_use = false;
+			bool alwaysUse = false;
 			switch(gameLevel->location->type)
 			{
 			case L_CITY:
-				if(LocationHelper::IsCity(gameLevel->location))
-					text = RandomString(txAiCity);
-				else
+				switch(gameLevel->location->target)
+				{
+				default:
+				case VILLAGE:
 					text = RandomString(txAiVillage);
+					break;
+				case CITY:
+				case CAPITAL:
+					text = RandomString(txAiCity);
+					break;
+				case VILLAGE_EMPTY:
+				case VILLAGE_DESTROYED:
+				case VILLAGE_DESTROYED2:
+					text = txAiVillageEmpty;
+					break;
+				}
 				break;
 			case L_OUTSIDE:
 				switch(gameLevel->location->target)
@@ -3668,7 +3660,7 @@ void Game::OnEnterLocation()
 				{
 					if(!gameLevel->location->group->name2.empty())
 					{
-						always_use = true;
+						alwaysUse = true;
 						text = Format(txAiCampFull, gameLevel->location->group->name2.c_str());
 					}
 				}
@@ -3677,7 +3669,7 @@ void Game::OnEnterLocation()
 				break;
 			}
 
-			if(text && (always_use || Rand() % 2 == 0))
+			if(text && (alwaysUse || Rand() % 2 == 0))
 				talker = team->GetRandomSaneHero();
 		}
 	}
@@ -3874,14 +3866,14 @@ void Game::OnEnterLevelOrLocation()
 	}
 
 	// events v2
-	for(Event& e : gameLevel->location->events)
+	ScriptEvent event(EVENT_ENTER);
+	event.onEnter.location = gameLevel->location;
+	event.onEnter.unit = nullptr;
+	gameLevel->location->FireEvent(event);
+	for(Unit& unit : team->members)
 	{
-		if(e.type == EVENT_ENTER)
-		{
-			ScriptEvent event(EVENT_ENTER);
-			event.onEnter.location = gameLevel->location;
-			e.quest->FireEvent(event);
-		}
+		event.onEnter.unit = &unit;
+		unit.FireEvent(event);
 	}
 
 	for(LocationPart& locPart : gameLevel->ForEachPart())
@@ -3889,4 +3881,10 @@ void Game::OnEnterLevelOrLocation()
 
 	if(Net::IsClient() && gameLevel->boss)
 		gameGui->levelGui->SetBoss(gameLevel->boss, true);
+}
+
+void Game::CrashCallback()
+{
+	if(inLoad)
+		CrashHandler::AddFile(savePath.c_str(), "Save file");
 }

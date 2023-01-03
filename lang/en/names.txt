@@ -1,8 +1,8 @@
-name_from = "from "
-name_sonOf = "son of "
-name_sonOfPost = ""
-name_sonOfInvalid = ""
-name_prefix = "the "
+nameFrom = "from "
+nameSonOf = "son of "
+nameSonOfPost = ""
+nameSonOfInvalid = ""
+namePrefix = "the "
 
 name random {
 	"Adam"
@@ -328,7 +328,7 @@ name crazy {
 	"Caesar"
 }
 
-name location_start {
+name locationStart {
 	"Amber"
 	"Aqua"
 	"Black"
@@ -345,7 +345,7 @@ name location_start {
 	"Ever"
 	"East"
 	"Fair"
-	"East"
+	"Fay"
 	"Fire"
 	"Gate"
 	"Ghost"
@@ -405,7 +405,7 @@ name location_start {
 	"Zany"
 }
 
-name location_end {
+name locationEnd {
 	"arc"
 	"beam"
 	"castle"
@@ -417,6 +417,7 @@ name location_end {
 	"edge"
 	"field"
 	"fort"
+	"gard"
 	"gate"
 	"helm"
 	"hill"
@@ -435,6 +436,7 @@ name location_end {
 	"pass"
 	"port"
 	"rock"
+	"root"
 	"run"
 	"spring"
 	"star"
@@ -444,6 +446,6 @@ name location_end {
 	"ward"
 	"winter"
 	"wood"
-	"wyvern"
+	"wyrm"
 	"zone"
 }

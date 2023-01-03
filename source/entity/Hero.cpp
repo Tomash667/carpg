@@ -9,18 +9,6 @@
 #include "Team.h"
 #include "Unit.h"
 
-// pre V_0_10 compatibility
-namespace old
-{
-	enum Mode
-	{
-		Wander,
-		Wait,
-		Follow,
-		Leave
-	};
-}
-
 //=================================================================================================
 void Hero::Init(Unit& _unit)
 {
@@ -71,33 +59,6 @@ void Hero::Load(GameReader& f)
 	f >> name;
 	f >> knowName;
 	f >> teamMember;
-	if(LOAD_VERSION < V_0_10)
-	{
-		old::Mode mode;
-		f >> mode;
-		if(teamMember || mode == old::Leave)
-		{
-			UnitOrderEntry* order = UnitOrderEntry::Get();
-			switch(mode)
-			{
-			case old::Wander:
-				order->order = ORDER_WANDER;
-				break;
-			case old::Wait:
-				order->order = ORDER_WAIT;
-				break;
-			case old::Follow:
-				order->order = ORDER_FOLLOW;
-				team->GetLeaderRequest(&order->unit);
-				break;
-			case old::Leave:
-				order->order = ORDER_LEAVE;
-				break;
-			}
-			order->timer = 0.f;
-			unit->order = order;
-		}
-	}
 	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old following
 	f >> credit;
@@ -149,16 +110,16 @@ int Hero::JoinCost() const
 void Hero::PassTime(int days, bool travel)
 {
 	// koñczenie efektów
-	float natural_mod;
-	unit->EndEffects(days, &natural_mod);
+	float naturalMod;
+	unit->EndEffects(days, &naturalMod);
 
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(gameLevel->cityCtx && !travel)
+		if(gameLevel->IsSafeSettlement() && !travel)
 			heal *= 2;
-		heal *= natural_mod * days;
+		heal *= naturalMod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 	}
@@ -189,10 +150,10 @@ void Hero::AddExp(int exp)
 	if(unit->level == MAX_LEVEL)
 		return;
 	expe += int(GetExpMod() * exp);
-	int exp_need = 10000 * unit->level;
-	if(expe >= exp_need)
+	int expNeed = 10000 * unit->level;
+	if(expe >= expNeed)
 	{
-		expe -= exp_need;
+		expe -= expNeed;
 		LevelUp();
 	}
 }

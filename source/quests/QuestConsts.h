@@ -32,7 +32,7 @@ enum QUEST_TYPE
 	Q_BANDITS_COLLECT_TOLL, // removed in V_0_13
 	Q_CAMP_NEAR_CITY, // removed in V_0_16
 	Q_RETRIEVE_PACKAGE,
-	Q_KILL_ANIMALS,
+	Q_KILL_ANIMALS, // removed in V_0_20
 	Q_LOST_ARTIFACT, // removed in V_0_19
 	Q_STOLEN_ARTIFACT, // removed in V_0_18
 	Q_FIND_ARTIFACT, // removed in V_0_15
@@ -41,27 +41,8 @@ enum QUEST_TYPE
 	Q_MAIN, // removed
 	Q_ARTIFACTS, // removed in V_0_14
 	Q_SCRIPTED,
-	Q_DIRE_WOLF
+	Q_DIRE_WOLF // removed in V_0_20
 };
-
-//-----------------------------------------------------------------------------
-// pre V_0_10 compatibility
-namespace old
-{
-	enum QUEST_RUMOR
-	{
-		R_SAWMILL,
-		R_MINE,
-		R_CONTEST,
-		R_BANDITS,
-		R_MAGES,
-		R_MAGES2,
-		R_ORCS,
-		R_GOBLINS,
-		R_EVIL,
-		R_MAX
-	};
-}
 
 //-----------------------------------------------------------------------------
 #define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)

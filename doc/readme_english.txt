@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: https://carpg.pl/en
-Version: 0.18
-Date: 2021-07-02
+Version: 0.20
+Date: 2023-01-??
 
 ===================================================================================================
 1) Table of contents
@@ -160,7 +160,7 @@ someone so it is proposed to play for 4 people. Expect changes for the better!
 
 ===================================================================================================
 6) Changes
-See changelog_eng.txt file.
+See changelog_english.txt file.
 
 ===================================================================================================
 7) Console command
@@ -220,7 +220,7 @@ To open console press ~ [to the left from 1]. Some commands are only available i
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
 	playerDevmode - get/set player developer mode in multiplayer (playerDevmode nick/all [0/1]).
-	qs - pick random character, get ready and start game.
+	quickstart - pick random character, get ready and start game.
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [name], use ? to get list).
 	refreshCooldown - refresh action cooldown/charges.
@@ -376,6 +376,7 @@ BottledByte - Bug reports and coding.
 	* Project Divinity
 	* HorrorPen - Winds of Stories
 	* For Originz - Kevin MacLeod (incompetech.com)
+	* Ruined City Theme - Music by Cleyton Kauffman - https://soundcloud.com/cleytonkauffman
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Sounds:
 	* https://opengameart.org
@@ -386,6 +387,7 @@ BottledByte - Bug reports and coding.
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
 		* newagesoup - wolf growl
 		* wubitog - Slime attack or movement
+		* Little Robot Sound Factory (www.littlerobotsoundfactory.com) - splash
 	* https://www.pacdv.com/sounds/
 	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/

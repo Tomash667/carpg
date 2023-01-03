@@ -167,6 +167,3 @@ struct SpawnPoint
 	Vec3 pos;
 	float rot;
 };
-
-//-----------------------------------------------------------------------------
-extern vector<uint> _toRemove;

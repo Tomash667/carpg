@@ -69,8 +69,8 @@ struct AIController
 
 	/*
 	trzeba znalezc nowa sciezke (pfState == PFS_NOT_USING lub
-		target_tile != start_tile && pfState == PFS_WALKING && last_pf_check < 0 lub
-		dist(start_tile, target_tile) > 1
+		targetTile != startTile && pfState == PFS_WALKING && lastPfCheck < 0 lub
+		dist(startTile, targetTile) > 1
 	1. szuka globalna sciezke
 		a. znaleziono (pfState = PFS_GLOBAL_DONE)
 		b. jesli jest zablokowana to idzie lokalnie (pfState = PFS_GLOBAL_NOT_USED) lub

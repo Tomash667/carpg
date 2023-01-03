@@ -65,7 +65,7 @@ public:
 	Unit* FindUnit(int id);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	Unit* FindUnit(UnitData* ud);
-	Usable* FindUsable(int id);
+	Usable* FindUsable(int id, LocationPart** locPart = nullptr);
 	Door* FindDoor(int id);
 	Trap* FindTrap(int id);
 	Trap* FindTrap(BaseTrap* base, const Vec3& pos);
@@ -98,6 +98,10 @@ public:
 	{
 		return SpawnObjectEntity(*localPart, obj, pos, rot);
 	}
+	Usable* SpawnUsable(BaseObject* obj, const Vec3& pos, float rot)
+	{
+		return SpawnObjectEntity(*localPart, obj, pos, rot);
+	}
 	void PickableItemBegin(LocationPart& locPart, Object& o);
 	bool PickableItemAdd(const Item* item);
 	void PickableItemsFromStock(LocationPart& locPart, Object& o, Stock& stock);
@@ -123,6 +127,8 @@ public:
 	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	void SpawnUnitsGroup(LocationPart& locPart, const Vec3& pos, const Vec3* lookAt, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	Unit* SpawnUnit(LocationPart& locPart, TmpSpawn spawn);
+	Unit* SpawnUnit(LocationPart& locPart, UnitData& unit, int level = -1);
+	void SpawnUnits(UnitGroup* group, int level);
 	struct IgnoreObjects
 	{
 		const Unit** ignoredUnits; // nullptr or array of units with last element of nullptr
@@ -165,6 +171,7 @@ public:
 	void UpdateDungeonMinimap(bool inLevel);
 	void RevealMinimap();
 	bool IsSettlement() { return cityCtx != nullptr; }
+	bool IsSafeSettlement();
 	bool IsCity();
 	bool IsVillage();
 	bool IsTutorial();
@@ -175,6 +182,7 @@ public:
 	MusicType GetLocationMusic();
 	void CleanLevel(int buildingId = -2);
 	GroundItem* SpawnItem(const Item* item, const Vec3& pos);
+	GroundItem* SpawnItemNearLocation(LocationPart& locPart, const Item* item);
 	GroundItem* SpawnItemAtObject(const Item* item, Object* obj);
 	void SpawnItemRandomly(const Item* item, uint count);
 	Unit* GetNearestEnemy(Unit* unit);
@@ -201,12 +209,15 @@ public:
 		bowInstances.push_back(meshInst);
 		meshInst = nullptr;
 	}
+	CityBuilding* GetBuilding(BuildingGroup* group);
 	CityBuilding* GetRandomBuilding(BuildingGroup* group);
 	Room* GetRoom(RoomTarget target);
 	Room* GetFarRoom();
 	Object* FindObjectInRoom(Room& room, BaseObject* base);
 	CScriptArray* FindPath(Room& from, Room& to);
+	CScriptArray* GetUnits();
 	CScriptArray* GetUnits(Room& room);
+	CScriptArray* GetNearbyUnits(const Vec3& pos, float dist);
 	bool FindPlaceNearWall(BaseObject& obj, SpawnPoint& point);
 	void CreateObjectsMeshInstance();
 	void RemoveTmpObjectPhysics();
@@ -218,8 +229,8 @@ public:
 	// ---
 	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
 
-	Location* location; // same as world->current_location
-	int locationIndex; // same as world->current_location_index
+	Location* location; // same as world->currentLocation
+	int locationIndex; // same as world->currentLocationIndex
 	int dungeonLevel;
 	InsideLocationLevel* lvl; // null when in outside location
 	GameCamera camera;

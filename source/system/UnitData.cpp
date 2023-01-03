@@ -163,9 +163,9 @@ TexPack* TexPack::TryGet(Cstring id)
 
 UnitData* UnitData::TryGet(Cstring id)
 {
-	static UnitData unit_data_search;
-	unit_data_search.id = id;
-	auto it = units.find(&unit_data_search);
+	static UnitData unitDataSearch;
+	unitDataSearch.id = id;
+	auto it = units.find(&unitDataSearch);
 	if(it != units.end())
 		return *it;
 

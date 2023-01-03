@@ -13,12 +13,20 @@ Core library
 * void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialogIf. Console output don't work after sleep!
 
 ### Core types
+* string - angelscript type.
+* array - angelscript type. Extra methods:
+	* void shuffle() - randomly shuffle items.
 * Int2 - 2d int point x, y.
 * Vec2 - 2d vector x, y. Static methods:
-  * float Distance(const Vec2& in v1, const Vec2& in v2);
+	* float Distance(const Vec2& in v1, const Vec2& in v2);
 * Vec3 - 3d vector x, y, z. Static methods:
-  * float Distance(const Vec3& in v1, const Vec3& in v2);
+	* float Distance(const Vec3& in v1, const Vec3& in v2);
 * Vec4 - 4d vector x, y, z, w.
+* Box2d - 2d area with two Vec2 v1 and v2. Methods:
+	* float SizeX() const - return x size.
+	* float SizeY() const - return y size.
+* Box - 3d area with two Vec3 v1 and v2. Methods:
+	* Vec3 Midpoint() const - return mid point.
 * string
 	* string Upper() const - return string with first letter uppercase.
 
@@ -43,7 +51,7 @@ Static properties:
 
 * Vars@ globals -  global variables.
 
-Game enums & consts
+Game enums & constans
 -------------------------------------------------------------------------------------------------------------
 ### Funcdefs:
 * float GetLocationCallback(Location@)
@@ -57,14 +65,17 @@ Game enums & consts
 
 ### Enum EVENT
 * EVENT_ANY - used in RemoveEventHandler to remove all handlers.
-* EVENT_ENTER - for locations, send when player enter location.
-* EVENT_PICKUP - for locations, send when someone pickups ground item.
 * EVENT_CLEARED - for locations, send when location is cleared from enemies.
-* EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
-* EVENT_UPDATE - for units, send every frame.
 * EVENT_DIE - for units, send when unit dies.
-* EVENT_TIMEOUT - for quests, send when quest timeout expired.
+* EVENT_DESTROY - for usabled, send when destroyed.
 * EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
+* EVENT_ENTER - for locations and units. Send when player enter specified location or every time specified unit changes location.
+* EVENT_GENERATE - for locations, send on first visit, currently only works for dungeons.
+* EVENT_PICKUP - for locations, send when someone pickups ground item. For units send when someone pickup item from corpse.
+* EVENT_TIMEOUT - for quests, send when quest timeout expired.
+* EVENT_TIMER - for quests, send after passing x days.
+* EVENT_UPDATE - for units, send every frame.
+* EVENT_USE - for item event handler, currently only works for books.
 
 ### Enum flags ITEM_FLAGS
 * ITEM_NOT_SHOP - not generated in shop.
@@ -108,6 +119,7 @@ Game enums & consts
 * LI_CAPITAL
 * LI_HUNTERS_CAMP
 * LI_HILLS
+* LI_VILLAGE_DESTROYED
 
 ### Enum LOCATION_TARGET
 * FOREST
@@ -132,6 +144,9 @@ Game enums & consts
 * THRONE_VAULT
 * HUNTERS_CAMP
 * HILLS
+* VILLAGE_EMPTY
+* VILLAGE_DESTROYED
+* VILLAGE_DESTROYED2
 
 ### Enum MOVE_TYPE
 * MOVE_RUN - always run.
@@ -156,17 +171,18 @@ Game enums & consts
 
 ### Enum UNIT_ORDER
 * ORDER_NONE
-* ORDER_WANDER - for heroes, they wander freely around city.
-* ORDER_WAIT - for heroes, stay close to current position.
-* ORDER_FOLLOW - for heroes, follow team leader.
-* ORDER_LEAVE - unit goes to nearest location exit and leave.
-* ORDER_MOVE - unit moves to position.
-* ORDER_LOOK_AT - unit looks at position.
+* ORDER_ATTACK_OBJECT - attack destroyable object.
+* ORDER_AUTO_TALK - talk with nearest player or leader.
 * ORDER_ESCAPE_TO - unit runs toward position and ignore enemies.
 * ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies.
-* ORDER_GOTO_INN - unit goes to inn.
-* ORDER_GUARD - unit stays close to another unit and remove dontAttack flag when target is attacked.
-* ORDER_AUTO_TALK - ai will talk with nearest player or leader.
+* ORDER_FOLLOW - for heroes, follow team leader.
+* ORDER_GOTO_INN - go to inn.
+* ORDER_GUARD - stay close to another unit and remove dontAttack flag when target is attacked.
+* ORDER_LEAVE - go to nearest location exit and leave.
+* ORDER_LOOK_AT - looks at position.
+* ORDER_MOVE - moves to position.
+* ORDER_WAIT - for heroes, stay close to current position.
+* ORDER_WANDER - for heroes, they wander freely around city.
 
 Game system types
 -------------------------------------------------------------------------------------------------------------
@@ -212,6 +228,7 @@ Item template, can be dynamicaly created for quest items.
 
 Properties:
 
+* string id - readonly
 * string name - can be changed, mostly changed for quest items.
 * int value - readonly
 
@@ -223,7 +240,7 @@ Methods:
 Static methods:
 
 * Item@ Get(const string& in id) - return item with id.
-* Item@ GetRandom(int maxValue) - returns random item with `value <= max_value`, can return quest item.
+* Item@ GetRandom(int maxValue) - returns random item with `value <= maxValue`, can return quest item.
 
 ### ItemList type
 List of items (swords, light armors).
@@ -268,6 +285,7 @@ Members:
 Methods:
 
 * UnitData@ GetLeader(int level) - get group leader that is closest to selected level.
+* UnitData@ GetRandom() - return random unit from group.
 
 Static properties:
 
@@ -291,8 +309,10 @@ Buildings inside city.
 
 Properties:
 
+* Box entryArea - readonly, building entry area, only some buildings have this.
 * Vec3 unitPos - readonly, unit spawn pos.
-* float unitRot - readonly, unit spawn rot.
+* float rot - readonly, building rotation.
+* bool canEnter - can player enter this building, only some buildings allow to change this (inn/hall).
 
 ### Encounter type
 Special encounter on world map.
@@ -314,12 +334,29 @@ Used in quests for event handling.
 Properties:
 
 * EVENT event
-* Location@ location - used for: EVENT_CLEARED, EVENT_ENTER, EVENT_GENERATE.
-* Unit@ unit - used for: EVENT_DIE, EVENT_PICKUP, EVENT_UPDATE.
-* GroundItem@ item - used for EVENT_PICKUP.
-* MapSettings@ mapSettings - used for EVENT_GENERATE.
-* int stage - used for EVENT_GENERATE, stage 0 is before generating (can use mapSettings), stage 1 is after.
-* bool cancel - set to true to cancel default handling of this event.
+* For EVENT_CLEARED:
+  * Location@ onCleared.location - cleared location.
+* For EVENT_DIE:
+  * Unit@ unit - unit that died.
+* For EVENT_DESTROY:
+  * Usable@ usable - destroyed usable.
+* For EVENT_ENTER:
+  * Location@ onEnter.location - entered location.
+  * Unit@ onEnter.unit - entering unit if unit event.
+* For EVENT_GENERATE:
+  * Location@ location - location that is generated.
+  * MapSettings@ mapSettings
+  * int stage - stage 0 is before generating (can use mapSettings), stage 1 is after.
+  * bool cancel - can be used in stage 0 to cancel some default logic.
+* For EVENT_PICKUP:
+  * Unit@ unit - unit picking item.
+  * GroundItem@ groundItem - picked ground item.
+  * Item@ item - picked item.
+* For EVENT_UPDATE:
+  * Unit@ unit - unit to update.
+* For EVENT_USE:
+  * Unit@ unit - unit using item.
+  * Item@ item - used item.
 
 ### GroundItem type
 Item on ground that can be picked up.
@@ -363,10 +400,11 @@ Method:
 * bool IsCity() - true if location is city.
 * bool IsVillage() - true if location is village.
 * void SetKnown() - mark location as known.
-* void AddEventHandler(Quest@, EVENT) - add event to location.
+* void AddEventHandler(Quest@, EVENT) - add event handler to location.
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from location.
 * Unit@ GetMayor() - return mayor/soltys or null when not in city.
 * Unit@ GetCaptain() - return guard captain or null when not in city.
+* Unit@ GetUnit(UnitData@) - return unit or null when not in city.
 * LocationPart@ GetLocationPart(int index) - get location part by index.
 * LocationPart@ GetBuildingLocationPart(const string& id) - get inside building location part (by building group id).
 * int GetRandomLevel() - return random dungeon level (higher chance for lower levels) or -1 when outside location.
@@ -427,6 +465,7 @@ Instance of quest.
 Properties:
 
 * QUEST_STATE state - readonly
+* int progress
 * int timeout - readonly, days until timeout
 
 Methods:
@@ -436,9 +475,11 @@ Methods:
 * void SetCompleted() - mark quest as completed, can only be called when quest is started.
 * void SetFailed() - mark quest as failed, can only be called when quest is started.
 * void SetTimeout(int days) - register quest timeout, can only be called once (removed when quest is completed or failed).
+* void SetTimer(int days) - retgister quest timer, works like timer but work after finishing quest.
 * Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
 * void AddRumor(const string& in str) - add quest rumor to available dialogs.
 * void RemoveRumor() - remove quest rumor from available dialogs.
+* void AddTimer(int days) - register quest timer.
 * void Start(Vars@) - start quest.
 
 Static properties:
@@ -449,6 +490,8 @@ Static methods:
 
 * Quest@ Find(const string& in id) - return quest with id (only works for unique quests).
 * int CalculateReward(int st, const Int2& in stRange, const Int2& in reward) - calculate reward from value range.
+* void AddItemEventHandler(Quest@, Item@) - add event handler for player using item.
+* void RemoveItemEventHandler(Quest@, Item@) - remove event handler for player using item.
 
 ### Spawn type
 Contains information about unit to spawn (template, level).
@@ -497,12 +540,13 @@ Properties:
 
 Methods:
 
+* bool IsAlive() - true if alive.
 * bool IsTeamMember() - true if unit is team member.
 * bool IsFollowing(Unit@) - true if following unit.
 * bool IsEnemy(Unit@) - true if unit is enemy.
 * float GetHpp() - get health percentage 0..1.
-* void Add
-* Item(Item@ item, uint count = 1) - add item, will show message.
+* bool HaveItem(Item@ item) - check if unit have item.
+* void AddItem(Item@ item, uint count = 1) - add item, will show message.
 * void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
 * uint RemoveItem(const string& in itemId, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
 * uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
@@ -510,22 +554,23 @@ Methods:
 * void ConsumeItem(Item@) - unit consume item (food or drink) if not busy.
 * void AddDialog(Quest@, const string& in dialogId, int priority = 0) - add quest dialog to unit.
 * void RemoveDialog(Quest@) - remove quest dialog from unit.
-* void AddEventHandler(Quest@, EVENT) - add event to unit.
-* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event from unit.
+* void AddEventHandler(Quest@, EVENT) - add event handler to unit.
+* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from unit.
 * void OrderClear() - remove all unit orders.
 * void OrderNext() - end current order and start next one.
 * void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dontAttack).
-* UnitOrderBuilder@ OrderWander() - order unit to wander.
-* UnitOrderBuilder@ OrderWait() - order unit to wait.
-* UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
-* UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
-* UnitOrderBuilder@ OrderMove(const Vec3& in pos) - order unit to move to position.
-* UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
+* UnitOrderBuilder@ OrderAttackObject(Usable@) - attack destroyable object.
+* UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
 * UnitOrderBuilder@ OrderEscapeTo(const Vec3& in pos) - order unit to escape to position (will ignore enemies).
 * UnitOrderBuilder@ OrderEscapeToUnit(Unit@) - order unit to escape to unit (will ignore enemies).
+* UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
 * UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
 * UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
-* UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null, Quest@=null) - start dialog when close to player or leader, can use default dialog or selected.
+* UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
+* UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
+* UnitOrderBuilder@ OrderMove(const Vec3& in pos) - order unit to move to position.
+* UnitOrderBuilder@ OrderWait() - order unit to wait.
+* UnitOrderBuilder@ OrderWander() - order unit to wander.
 * void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 * void RotateTo(const Vec3& in pos) - instantly rotates units too look at pos.
 * void RotateTo(float rot) - instantly rotates units.
@@ -547,20 +592,33 @@ Helper class used to set multiple unit orders one after another (for example: `u
 
 Methods:
 
-* UnitOrderBuilder@ WithTimer(float timer) - set order timer.
 * UnitOrderBuilder@ WithMoveType(MOVE_TYPE) - set move type for last order (currently only used for move order).
 * UnitOrderBuilder@ WithRange(float range) - set range for last order (currently only used for move order).
-* UnitOrderBuilder@ ThenWander()
-* UnitOrderBuilder@ ThenWait()
-* UnitOrderBuilder@ ThenFollow(Unit@)
-* UnitOrderBuilder@ ThenLeave()
-* UnitOrderBuilder@ ThenMove(const Vec3& in)
-* UnitOrderBuilder@ ThenLookAt(const Vec3& in)
-* UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
+* UnitOrderBuilder@ WithTimer(float timer) - set order timer.
+* UnitOrderBuilder@ ThenAttackObject(Usable@)
+* UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)
 * UnitOrderBuilder@ ThenEscapeToUnit(Unit@)
+* UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
+* UnitOrderBuilder@ ThenFollow(Unit@)
 * UnitOrderBuilder@ ThenGoToInn()
 * UnitOrderBuilder@ ThenGuard(Unit@)
-* UnitOrderBuilder@ ThenAutoTalk(bool=false, Dialog@=null, Quest@=null)
+* UnitOrderBuilder@ ThenLeave()
+* UnitOrderBuilder@ ThenLookAt(const Vec3& in)
+* UnitOrderBuilder@ ThenMove(const Vec3& in)
+* UnitOrderBuilder@ ThenWait()
+* UnitOrderBuilder@ ThenWander()
+
+### Usable type
+Object that can be used or destroyed.
+
+Properties:
+
+* const Vec3 pos
+
+Methods:
+
+* void AddEventHandler(Quest@, EVENT) - add event handler to usable.
+* void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from usable.
 
 Game components
 -------------------------------------------------------------------------------------------------------------
@@ -585,16 +643,19 @@ Static properties:
 Static methods:
 
 * bool IsSettlement() - true when inside city/village.
+* bool IsSafeSettlement() - true when inside safe settlement.
 * bool IsCity() - true when inside city.
 * bool IsVillage() - true when inside village.
 * bool IsTutorial() - true when inside tutorial.
 * bool IsSafe() - true when current location is safe.
 * bool IsOutside() - true when current location is outside type.
+* bool CanSee(Unit@, Unit@) - true if one unit can see another.
 * Unit@ FindUnit(UnitData@) - finds unit with this unit data.
 * Unit@ GetNearestEnemy(Unit@) - finds nearest unit that is enemy of this unit.
 * GroundItem@ FindItem(Item@) - finds first item.
 * GroundItem@ FindNearestItem(Item@, const Vec3& in pos) - finds nearest item.
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
+* GroundItem@ SpawnItem(LocationPart@, Item@) - spawn item inside building.
 * GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
 * GroundItem@ SpawnItemInsideAnyRoom(Item@) - spawn item in random room on floor.
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
@@ -602,8 +663,11 @@ Static methods:
 * Vec3 FindSpawnPos(LocationPart@, Unit@) - return position for unit spawn/warp in building location part.
 * Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range = 2, int level = -1) - spawns unit near position.
 * Unit@ SpawnUnit(LocationPart@, Spawn) - spawns unit inside location part.
+* Unit@ SpawnUnit(LocationPart@, UnitData@, int level = -1) - spawns unit inside location part.
 * Unit@ SpawnUnit(Room@, UnitData@, int level = -1) - spawn unit inside room.
+* void SpawnUnits(UnitGroup@, int level) - spawn units all around location.
 * Unit@ GetMayor() - returns city mayor or village soltys or null.
+* CityBuilding@ GetBuilding(BuildingGroup@ group) - return first building with selected group.
 * CityBuilding@ GetRandomBuilding(BuildingGroup@ group) - return random building with selected group.
 * Room@ GetRoom(ROOM_TARGET) - get room with selected target.
 * Room@ GetFarRoom() - get random room far from entrance.
@@ -611,9 +675,12 @@ Static methods:
 * Chest@ GetRandomChest(Room@) - get random chest in room.
 * Chest@ GetTreasureChest() - get silver chest in treasure room.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
+* array<Unit@>@ GetUnits() - return all units in main level part.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.
+* array<Unit@>@ GetNearbyUnits(const Vec3& in pos, float dist) - return nearby units.
 * bool FindPlaceNearWall(BaseObject@, SpawnPoint& out - search for place to spawn object near wall.
 * Object@ SpawnObject(BaseObject@, const Vec3& in pos, float rot) - spawn object at position.
+* Usable@ SpawnUsable(BaseObject@, const Vec3& in pos, float rot) - spawn usable at position.
 
 ### StockScript component
 Used in stock script - items to sell by shopkeepers.
@@ -643,7 +710,7 @@ Static methods:
 * void AddExp(int exp) - add experience to team, nagative value is unmodified, otherwise it depends on team size (1 player-200%, 2-150%, 3-125%, 4-100%, 5-75%, 6-60%, 7-50%, 8-40%).
 * void AddReward(uint gold, uint exp = 0) - add gold and experience divided between team members.
 * uint RemoveItem(Item@, uint count = 1) - remove items from team (count 0 = all).
-* void AddMember(Unit@, int type = 0) - add team member, mode: 0-normal, 1-free (no gold), 2-visitor (no gold/exp).
+* void AddMember(Unit@, HERO_TYPE type = HERO_NORMAL) - add team member, mode: HERO_NORMAL-normal, HERO_FREE-free (no gold), HERO_VISITOR-visitor (no gold/exp).
 * void RemoveMember(Unit@) - remove team member.
 * void Warp(const Vec3& in pos, const Vec3& in lookTarget) - warp team to position rotated towards look target.
 * bool PersuasionCheck(int level) - do persuasion check, return true is succeeded.
@@ -662,15 +729,18 @@ Static properties:
 
 Static methods:
 
+* Box2d GetArea() - return world area.
 * uint GetSettlements() - return count of settlements.
-* Location@ GetLocation(uint index) - return location by index.
 * string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
 * string GetDirName(Location@ loc1, Location@ loc2) - get direction name string from loc1 to loc2.
 * float GetTravelDays(float distance) - convert world distance to days of travel required.
 * Vec2 FindPlace(const Vec2& in pos, float range, bool allowExact = false) - find place for location inside range.
 * Vec2 FindPlace(const Vec2& in pos, float minRange, float maxRange) - find place for location inside range.
+* Vec2 FindPlace(const Box2d& in box) - find place for location inside region.
 * bool TryFindPlace(Vec2& pos, float range, bool allowExact = false) - try to find place for location inside range.
 * Vec2 GetRandomPlace() - get random pos for location.
+* Location@ GetLocation(uint index) - return location by index.
+* Location@ GetLocationByType(LOCATION type, LOCATION_TARGET target = -1) - get first location by type.
 * Location@ GetRandomCity() - returns random city (not village).
 * Location@ GetRandomSettlementWithBuilding(const string& in buildingId) - returns random settlement that have this building.
 * Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.

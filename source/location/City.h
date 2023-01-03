@@ -6,28 +6,17 @@
 #include "EntryPoint.h"
 #include "Content.h"
 #include "BuildingGroup.h"
+#include "CityBuilding.h"
 
 //-----------------------------------------------------------------------------
 enum CityTarget
 {
 	VILLAGE,
 	CITY,
-	CAPITAL
-};
-
-//-----------------------------------------------------------------------------
-// Budynek w mieœcie
-struct CityBuilding
-{
-	Building* building;
-	Int2 pt, unitPt;
-	GameDirection dir;
-	Vec3 walkPt;
-
-	CityBuilding() {}
-	explicit CityBuilding(Building* building) : building(building) {}
-	Vec3 GetUnitPos();
-	float GetUnitRot();
+	CAPITAL,
+	VILLAGE_EMPTY,
+	VILLAGE_DESTROYED,
+	VILLAGE_DESTROYED2
 };
 
 //-----------------------------------------------------------------------------
@@ -85,6 +74,7 @@ struct City : public OutsideLocation
 	InsideBuilding* FindInn(int* index = nullptr) { return FindInsideBuilding(BuildingGroup::BG_INN, index); }
 	CityBuilding* FindBuilding(BuildingGroup* group, int* index = nullptr);
 	CityBuilding* FindBuilding(Building* building, int* index = nullptr);
-	bool IsVillage() const { return target == VILLAGE; }
+	bool IsVillage() const { return Any(target, VILLAGE, VILLAGE_EMPTY, VILLAGE_DESTROYED, VILLAGE_DESTROYED2); }
+	bool IsCity() const { return Any(target, CITY, CAPITAL); }
 	void GetEntry(Vec3& pos, float& rot);
 };

@@ -1,7 +1,28 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.19 (???):
+Wersja 0.20 (2023-01-??):
+! nie można wczytywać już zapisów z wersji 0.9 lub starszej
++ kontynuacja fabuły z 4 podzadaniami
++ zniszczalna barykada
++ można dokładnie wybrać ile dni chce się odpoczywać w karczmie
++ poprawki dla czaru ożywienia
++ konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
++ dodawanie wczytywanego zapisu do raportu z crasha
++ aktualizacja bibliotek: Bullet Physics 3.2.4, Curl 7.86,  DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
+- niezgodność nagrody w zadaniu "zabij zwierzęta" pomiędzy tekstem a otrzymanym złotem
+- dodawanie notatek na drugiej stronie nie działało
+- brak efektu uderzenia w cel treningowy u klienta
+- brak efektu uderzenia w cel treningowy przez npc
+- popsuty tekst newsa po wykonaniu zadania z bandytami pobierającymi opłatę
+- lepsze działanie wyszukiwarki lokalizacji
+- npc nie mógł rzucać leczenia na siebie w budynku
+- złe losowe pijane teksty npc w karczmie
+- niezgodność w działaniu mapy świata pomiędzy klientem a serwerem
+- zadanie "zabij zwierzęta" mogło wybrać lokalizację w której już byliśmy i nie było wtedy wrogów
+
+--------------------------------------------------------------------------------
+Wersja 0.19 (2022-12-09):
 ! nie można wczytywać już zapisów z wersji 0.8 lub starszej
 + wolniejsze chodzenie podczas strzelania/rzucania czarów
 + lepszy menadżer sceny - przedmioty na ziemi

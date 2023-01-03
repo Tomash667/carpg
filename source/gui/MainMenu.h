@@ -54,7 +54,7 @@ private:
 	Button bt[BUTTONS];
 	TexturePtr tBackground, tLogo, tFModLogo;
 	CheckVersionStatus checkStatus;
-	int version_new;
+	int versionNew;
 	string version, versionText, versionChangelog;
 	cstring txInfoText, txCheckingVersion, txNewVersion, txNewVersionDialog, txChanges, txDownload, txUpdate, txSkip, txNewerVersion, txNoNewVersion,
 		txCheckVersionError;

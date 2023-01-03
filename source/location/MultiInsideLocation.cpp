@@ -184,14 +184,14 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int questId, int& atLevel, in
 //=================================================================================================
 bool MultiInsideLocation::CheckUpdate(int& daysPassed, int worldtime)
 {
-	bool need_reset = infos[activeLevel].reset;
+	bool needReset = infos[activeLevel].reset;
 	infos[activeLevel].reset = false;
 	if(infos[activeLevel].lastVisit == -1)
 		daysPassed = -1;
 	else
 		daysPassed = worldtime - infos[activeLevel].lastVisit;
 	infos[activeLevel].lastVisit = worldtime;
-	return need_reset;
+	return needReset;
 }
 
 //=================================================================================================

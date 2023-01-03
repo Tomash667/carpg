@@ -11,11 +11,11 @@ struct ListItem
 };
 
 //-----------------------------------------------------------------------------
-static int dialog_state, dialog_result;
-static vector<ListItem*> dialog_items;
+static int dialogState, dialogResult;
+static vector<ListItem*> dialogItems;
 
 //-----------------------------------------------------------------------------
-void UpdateTexts(HWND hwndDlg, int select_index);
+void UpdateTexts(HWND hwndDlg, int selectIndex);
 
 //=================================================================================================
 static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM wParam, LPARAM lParam)
@@ -27,13 +27,13 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 			HWND list = GetDlgItem(hwndDlg, IDC_LIST2);
 			LCID lang = GetUserDefaultLCID();
 
-			int index = 0, best_id = -1, best_dist, default_id = -1;
+			int index = 0, bestId = -1, bestDist, defaultId = -1;
 			Tokenizer t;
 
 			// szukaj plików z informacj¹ o jêzyku
-			for(Language::Map* p_lmap : Language::GetLanguages())
+			for(Language::Map* pLmap : Language::GetLanguages())
 			{
-				Language::Map& lmap = *p_lmap;
+				Language::Map& lmap = *pLmap;
 
 				// parse locale
 				t.FromString(lmap["locale"]);
@@ -43,10 +43,10 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 					while(t.Next())
 					{
 						int locale = t.MustGetInt();
-						if(locale == lang && (best_id == -1 || best_dist < dist))
+						if(locale == lang && (bestId == -1 || bestDist < dist))
 						{
-							best_id = index;
-							best_dist = dist;
+							bestId = index;
+							bestDist = dist;
 						}
 						t.Next();
 						if(t.IsEof())
@@ -61,30 +61,30 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 
 				// check if english for default
 				const string& dir = lmap["dir"];
-				if(dir == "en" && default_id == -1)
-					default_id = index;
+				if(dir == "en" && defaultId == -1)
+					defaultId = index;
 
 				// add to list
 				ListItem* item = new ListItem;
 				item->id = dir;
 				item->text = Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str());
-				dialog_items.push_back(item);
+				dialogItems.push_back(item);
 				SendMessage(list, LB_ADDSTRING, 0, (LPARAM)item->text.c_str());
 
 				++index;
 			}
 
 			// select something
-			int select_index;
-			if(best_id != -1)
-				select_index = best_id;
-			else if(default_id != -1)
-				select_index = default_id;
+			int selectIndex;
+			if(bestId != -1)
+				selectIndex = bestId;
+			else if(defaultId != -1)
+				selectIndex = defaultId;
 			else
-				select_index = 0;
-			SendMessage(list, LB_SETCURSEL, select_index, 0);
+				selectIndex = 0;
+			SendMessage(list, LB_SETCURSEL, selectIndex, 0);
 
-			UpdateTexts(hwndDlg, select_index);
+			UpdateTexts(hwndDlg, selectIndex);
 		}
 		return TRUE;
 
@@ -93,7 +93,7 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 		return TRUE;
 
 	case WM_DESTROY:
-		dialog_state = 2;
+		dialogState = 2;
 		return TRUE;
 
 	case WM_COMMAND:
@@ -103,7 +103,7 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 			switch(HIWORD(wParam))
 			{
 			case LBN_DBLCLK:
-				dialog_result = SendDlgItemMessage(hwndDlg, IDC_LIST2, LB_GETCURSEL, 0, 0);
+				dialogResult = SendDlgItemMessage(hwndDlg, IDC_LIST2, LB_GETCURSEL, 0, 0);
 				DestroyWindow(hwndDlg);
 				return TRUE;
 			case LBN_SELCHANGE:
@@ -114,7 +114,7 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 		case IDOK:
 			if(HIWORD(wParam) == BN_CLICKED)
 			{
-				dialog_result = SendDlgItemMessage(hwndDlg, IDC_LIST2, LB_GETCURSEL, 0, 0);
+				dialogResult = SendDlgItemMessage(hwndDlg, IDC_LIST2, LB_GETCURSEL, 0, 0);
 				DestroyWindow(hwndDlg);
 				return TRUE;
 			}
@@ -134,8 +134,8 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 //=================================================================================================
 bool ShowPickLanguageDialog(string& lang)
 {
-	dialog_result = -1;
-	dialog_state = 0;
+	dialogResult = -1;
+	dialogState = 0;
 
 	if(Language::GetLanguages().empty())
 	{
@@ -147,7 +147,7 @@ bool ShowPickLanguageDialog(string& lang)
 	ShowWindow(hwnd, SW_SHOW);
 
 	MSG aMsg = {};
-	while(dialog_state == 0 && GetMessage(&aMsg, nullptr, 0, 0))
+	while(dialogState == 0 && GetMessage(&aMsg, nullptr, 0, 0))
 	{
 		if(!IsDialogMessage(hwnd, &aMsg))
 		{
@@ -156,24 +156,24 @@ bool ShowPickLanguageDialog(string& lang)
 		}
 	}
 
-	if(dialog_result == -1)
+	if(dialogResult == -1)
 	{
-		DeleteElements(dialog_items);
+		DeleteElements(dialogItems);
 		return false;
 	}
 	else
 	{
-		lang = dialog_items[dialog_result]->id;
-		DeleteElements(dialog_items);
+		lang = dialogItems[dialogResult]->id;
+		DeleteElements(dialogItems);
 		return true;
 	}
 }
 
 //=================================================================================================
-static void UpdateTexts(HWND hwndDlg, int select_index)
+static void UpdateTexts(HWND hwndDlg, int selectIndex)
 {
 	// update texts
-	Language::Map& lmap = *Language::GetLanguages()[select_index];
+	Language::Map& lmap = *Language::GetLanguages()[selectIndex];
 	auto it = lmap.find("text"), end = lmap.end();
 	if(it != end)
 		SetDlgItemText(hwndDlg, IDC_STATIC1, it->second.c_str());

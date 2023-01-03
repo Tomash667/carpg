@@ -3,6 +3,7 @@
 
 #include "Ability.h"
 #include "City.h"
+#include "DestroyedObject.h"
 #include "DungeonMeshBuilder.h"
 #include "Explo.h"
 #include "GameGui.h"
@@ -301,8 +302,29 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
 				node->texOverride = &explo.ability->texExplode;
 				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
+				node->addBlend = false;
 				drawBatch.Add(node);
 			}
+		}
+	}
+
+	// destroyed objects
+	for(DestroyedObject* obj : lvlPart.destroyedObjects)
+	{
+		Mesh* mesh = obj->base->mesh;
+		mesh->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(obj->pos, mesh->head.radius))
+		{
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(mesh);
+			node->center = obj->pos;
+			node->flags |= SceneNode::F_ALPHA_BLEND;
+			node->tint = Vec4(1, 1, 1, obj->timer);
+			node->mat = Matrix::RotationY(obj->rot) * Matrix::Translation(obj->pos);
+			node->addBlend = true;
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			drawBatch.Add(node);
 		}
 	}
 
@@ -317,11 +339,11 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				drawBatch.pes.push_back(&pe);
 				if(drawParticleSphere)
 				{
-					DebugNode* debug_node = DebugNode::Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
-					debug_node->shape = MeshShape::Sphere;
-					debug_node->color = Color::Green;
-					drawBatch.debugNodes.push_back(debug_node);
+					DebugNode* debugNode = DebugNode::Get();
+					debugNode->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
+					debugNode->shape = MeshShape::Sphere;
+					debugNode->color = Color::Green;
+					drawBatch.debugNodes.push_back(debugNode);
 				}
 			}
 		}
@@ -348,6 +370,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING;
 				node->center = portal->pos + Vec3(0, 0.67f + 0.305f, 0);
 				node->mat = Matrix::Rotation(0, portal->rot, -portalAnim * PI * 2) * Matrix::Translation(node->center);
+				node->addBlend = false;
 				drawBatch.Add(node);
 			}
 			portal = portal->nextPortal;
@@ -407,8 +430,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 		{
 			const btCollisionObject* cobj = cobjs[i];
 			const btCollisionShape* shape = cobj->getCollisionShape();
-			Matrix m_world;
-			cobj->getWorldTransform().getOpenGLMatrix(&m_world._11);
+			Matrix mWorld;
+			cobj->getWorldTransform().getOpenGLMatrix(&mWorld._11);
 
 			switch(shape->getShapeType())
 			{
@@ -418,7 +441,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Box;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_world * drawBatch.camera->matViewProj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * mWorld * drawBatch.camera->matViewProj;
 					drawBatch.debugNodes.push_back(node);
 				}
 				break;
@@ -430,7 +453,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::Capsule;
 					node->color = Color(163, 73, 164);
-					node->mat = Matrix::Scale(r, h + r, r) * m_world * drawBatch.camera->matViewProj;
+					node->mat = Matrix::Scale(r, h + r, r) * mWorld * drawBatch.camera->matViewProj;
 					drawBatch.debugNodes.push_back(node);
 				}
 				break;
@@ -441,7 +464,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->shape = MeshShape::Cylinder;
 					node->color = Color(163, 73, 164);
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m_world * drawBatch.camera->matViewProj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * mWorld * drawBatch.camera->matViewProj;
 					drawBatch.debugNodes.push_back(node);
 				}
 				break;
@@ -461,9 +484,9 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 							DebugNode* node = DebugNode::Get();
 							node->shape = MeshShape::Box;
 							node->color = Color(163, 73, 164);
-							Matrix m_child;
-							compound->getChildTransform(i).getOpenGLMatrix(&m_child._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m_child * m_world * drawBatch.camera->matViewProj;
+							Matrix mChild;
+							compound->getChildTransform(i).getOpenGLMatrix(&mChild._11);
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * mChild * mWorld * drawBatch.camera->matViewProj;
 							drawBatch.debugNodes.push_back(node);
 						}
 						else
@@ -479,7 +502,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					DebugNode* node = DebugNode::Get();
 					node->shape = MeshShape::TriMesh;
 					node->color = Color(163, 73, 164);
-					node->mat = m_world * drawBatch.camera->matViewProj;
+					node->mat = mWorld * drawBatch.camera->matViewProj;
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					drawBatch.debugNodes.push_back(node);
 				}
@@ -528,6 +551,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_CULLING | SceneNode::F_NO_ZWRITE;
 			node->center = u.GetHeadPoint();
 			node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(portalAnim * PI * 2) * Matrix::Translation(node->center);
+			node->addBlend = false;
 			drawBatch.Add(node);
 		}
 
@@ -561,6 +585,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	node->mat = Matrix::Scale(u.data->scale) * Matrix::RotationY(u.rot) * Matrix::Translation(u.visualPos);
 	node->texOverride = u.data->GetTextureOverride();
 	node->tint = u.data->tint;
+	node->addBlend = false;
 
 	// light settings
 	if(drawBatch.gatherLights)
@@ -609,8 +634,8 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	}
 
 	// item in hand
-	Mesh* right_hand_item = nullptr;
-	bool in_hand = false;
+	Mesh* rightHandItem = nullptr;
+	bool inHand = false;
 
 	switch(u.weaponState)
 	{
@@ -622,39 +647,39 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			if(u.action == A_SHOOT)
 			{
 				if(u.animationState != AS_SHOOT_SHOT)
-					right_hand_item = gameRes->aArrow;
+					rightHandItem = gameRes->aArrow;
 			}
 			else
-				right_hand_item = gameRes->aArrow;
+				rightHandItem = gameRes->aArrow;
 		}
 		else if(u.weaponTaken == W_ONE_HANDED)
-			in_hand = true;
+			inHand = true;
 		break;
 	case WeaponState::Taking:
 		if(u.animationState == AS_TAKE_WEAPON_MOVED)
 		{
 			if(u.weaponTaken == W_BOW)
-				right_hand_item = gameRes->aArrow;
+				rightHandItem = gameRes->aArrow;
 			else
-				in_hand = true;
+				inHand = true;
 		}
 		break;
 	case WeaponState::Hiding:
 		if(u.animationState == AS_TAKE_WEAPON_START)
 		{
 			if(u.weaponHiding == W_BOW)
-				right_hand_item = gameRes->aArrow;
+				rightHandItem = gameRes->aArrow;
 			else
-				in_hand = true;
+				inHand = true;
 		}
 		break;
 	}
 
 	if(u.usedItem && u.action != A_USE_ITEM)
-		right_hand_item = u.usedItem->mesh;
+		rightHandItem = u.usedItem->mesh;
 
-	if(right_hand_item == gameRes->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
-		right_hand_item = u.act.shoot.ability->mesh;
+	if(rightHandItem == gameRes->aArrow && u.action == A_SHOOT && u.act.shoot.ability && u.act.shoot.ability->mesh)
+		rightHandItem = u.act.shoot.ability->mesh;
 
 	Matrix matScale;
 	if(u.humanData)
@@ -669,9 +694,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 
 	// weapon
 	Mesh* mesh;
-	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
+	if(u.HaveWeapon() && rightHandItem != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointWeapon : NAMES::pointHiddenWeapon);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointWeapon : NAMES::pointHiddenWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
@@ -698,11 +723,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
-			debug_node->shape = MeshShape::Box;
-			debug_node->color = Color::Black;
-			drawBatch.debugNodes.push_back(debug_node);
+			DebugNode* debugNode = DebugNode::Get();
+			debugNode->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
+			debugNode->shape = MeshShape::Box;
+			debugNode->color = Color::Black;
+			drawBatch.debugNodes.push_back(debugNode);
 		}
 	}
 	else if(u.action == A_ATTACK && drawHitbox)
@@ -710,18 +735,18 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		Mesh::Point* hitbox = u.meshInst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
 		if(!hitbox)
 			hitbox = u.meshInst->mesh->FindPoint("hitbox");
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Box;
-		debug_node->color = Color::Black;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Box;
+		debugNode->color = Color::Black;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 
 	// shield
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointShield : NAMES::pointShieldHidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointShield : NAMES::pointShieldHidden);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
@@ -748,22 +773,22 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
 
-			DebugNode* debug_node = DebugNode::Get();
-			debug_node->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
-			debug_node->shape = MeshShape::Box;
-			debug_node->color = Color::Black;
-			drawBatch.debugNodes.push_back(debug_node);
+			DebugNode* debugNode = DebugNode::Get();
+			debugNode->mat = box->mat * node2->mat * drawBatch.camera->matViewProj;
+			debugNode->shape = MeshShape::Box;
+			debugNode->color = Color::Black;
+			drawBatch.debugNodes.push_back(debugNode);
 		}
 	}
 
 	// other item (arrow/potion)
-	if(right_hand_item)
+	if(rightHandItem)
 	{
 		Mesh::Point* point = u.meshInst->mesh->GetPoint(NAMES::pointWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
-		node2->SetMesh(right_hand_item);
+		node2->SetMesh(rightHandItem);
 		node2->center = node->center;
 		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
 		node2->lights = node->lights;
@@ -784,21 +809,21 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// bow
 	if(u.HaveBow())
 	{
-		bool in_hand;
+		bool inHand;
 
 		switch(u.weaponState)
 		{
 		case WeaponState::Hiding:
-			in_hand = (u.weaponHiding == W_BOW && u.animationState == AS_TAKE_WEAPON_START);
+			inHand = (u.weaponHiding == W_BOW && u.animationState == AS_TAKE_WEAPON_START);
 			break;
 		case WeaponState::Hidden:
-			in_hand = false;
+			inHand = false;
 			break;
 		case WeaponState::Taking:
-			in_hand = (u.weaponTaken == W_BOW && u.animationState == AS_TAKE_WEAPON_MOVED);
+			inHand = (u.weaponTaken == W_BOW && u.animationState == AS_TAKE_WEAPON_MOVED);
 			break;
 		case WeaponState::Taken:
-			in_hand = (u.weaponTaken == W_BOW);
+			inHand = (u.weaponTaken == W_BOW);
 			break;
 		}
 
@@ -811,10 +836,10 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		else
 			node2->SetMesh(u.GetBow().mesh);
 		node2->center = node->center;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(in_hand ? NAMES::pointBow : NAMES::pointShieldHidden);
+		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointBow : NAMES::pointShieldHidden);
 		assert(point);
 		Matrix m1;
-		if(in_hand)
+		if(inHand)
 			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.meshInst->matBones[point->bone];
 		else
 			m1 = point->mat * u.meshInst->matBones[point->bone];
@@ -949,22 +974,22 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(drawUnitRadius)
 	{
 		float h = u.GetUnitHeight() / 2;
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Cylinder;
-		debug_node->color = Color::White;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Cylinder;
+		debugNode->color = Color::White;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 	if(drawHitbox)
 	{
 		float h = u.GetUnitHeight() / 2;
 		Box box;
 		u.GetBox(box);
-		DebugNode* debug_node = DebugNode::Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
-		debug_node->shape = MeshShape::Box;
-		debug_node->color = Color::Black;
-		drawBatch.debugNodes.push_back(debug_node);
+		DebugNode* debugNode = DebugNode::Get();
+		debugNode->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
+		debugNode->shape = MeshShape::Box;
+		debugNode->color = Color::Black;
+		drawBatch.debugNodes.push_back(debugNode);
 	}
 }
 
@@ -998,7 +1023,7 @@ void Game::AddObjectToDrawBatch(FrustumPlanes& frustum, const Object& o)
 			node->flags |= SceneNode::F_HAVE_TANGENTS;
 
 		// for simplicity original node in unused and freed at end
-		for(int i = 0; i < mesh.head.n_subs; ++i)
+		for(int i = 0; i < mesh.head.nSubs; ++i)
 		{
 			const Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
 			const float radius = mesh.splits[i].radius * o.scale;
@@ -1032,10 +1057,10 @@ void Game::ListAreas(LocationPart& locPart)
 		{
 			if(IsSet(gameLevel->cityCtx->flags, City::HaveExit))
 			{
-				for(vector<EntryPoint>::const_iterator entry_it = gameLevel->cityCtx->entryPoints.begin(), entry_end = gameLevel->cityCtx->entryPoints.end();
-					entry_it != entry_end; ++entry_it)
+				for(vector<EntryPoint>::const_iterator entryId = gameLevel->cityCtx->entryPoints.begin(), entryEnd = gameLevel->cityCtx->entryPoints.end();
+					entryId != entryEnd; ++entryId)
 				{
-					const EntryPoint& e = *entry_it;
+					const EntryPoint& e = *entryId;
 					Area& a = Add1(drawBatch.areas);
 					a.v[0] = Vec3(e.exitRegion.v1.x, e.exitY, e.exitRegion.v2.y);
 					a.v[1] = Vec3(e.exitRegion.v2.x, e.exitY, e.exitRegion.v2.y);
@@ -1047,11 +1072,14 @@ void Game::ListAreas(LocationPart& locPart)
 			for(vector<InsideBuilding*>::const_iterator it = gameLevel->cityCtx->insideBuildings.begin(), end = gameLevel->cityCtx->insideBuildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
-				Area& a = Add1(drawBatch.areas);
-				a.v[0] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v2.y);
-				a.v[1] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v2.y);
-				a.v[2] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v1.y);
-				a.v[3] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v1.y);
+				if(ib.canEnter)
+				{
+					Area& a = Add1(drawBatch.areas);
+					a.v[0] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v2.y);
+					a.v[1] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v2.y);
+					a.v[2] = Vec3(ib.enterRegion.v1.x, ib.enterY, ib.enterRegion.v1.y);
+					a.v[3] = Vec3(ib.enterRegion.v2.x, ib.enterY, ib.enterRegion.v1.y);
+				}
 			}
 		}
 
@@ -1265,10 +1293,10 @@ void Game::PrepareAreaPath()
 	{
 	case Ability::Charge:
 		{
-			Area2* area_ptr = Area2::Get();
-			Area2& area = *area_ptr;
+			Area2* areaPtr = Area2::Get();
+			Area2& area = *areaPtr;
 			area.ok = 2;
-			drawBatch.areas2.push_back(area_ptr);
+			drawBatch.areas2.push_back(areaPtr);
 
 			const Vec3 from = pc->unit->GetPhysicsPos();
 			const float h = 0.06f;
@@ -1278,8 +1306,8 @@ void Game::PrepareAreaPath()
 			// find max line
 			float t;
 			Vec3 dir(sin(rot) * ability->range, 0, cos(rot) * ability->range);
-			bool ignore_units = IsSet(ability->flags, Ability::IgnoreUnits);
-			gameLevel->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
+			bool ignoreUnits = IsSet(ability->flags, Ability::IgnoreUnits);
+			gameLevel->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignoreUnits](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
 				if(IsSet(flags, CG_TERRAIN))
@@ -1287,7 +1315,7 @@ void Game::PrepareAreaPath()
 				if(IsSet(flags, CG_UNIT))
 				{
 					Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
-					if(ignore_units || unit == pc->unit || !unit->IsStanding())
+					if(ignoreUnits || unit == pc->unit || !unit->IsStanding())
 						return LT_IGNORE;
 				}
 				return LT_COLLIDE;
@@ -1301,20 +1329,20 @@ void Game::PrepareAreaPath()
 				area.points.clear();
 				area.faces.clear();
 
-				Vec3 active_pos = pc->unit->pos;
+				Vec3 activePos = pc->unit->pos;
 				Vec3 step = dir * t / (float)steps;
-				Vec3 unit_offset(pc->unit->pos.x, 0, pc->unit->pos.z);
-				float len_step = len / steps;
-				float active_step = 0;
+				Vec3 unitOffset(pc->unit->pos.x, 0, pc->unit->pos.z);
+				float lenStep = len / steps;
+				float activeStep = 0;
 				Matrix mat = Matrix::RotationY(rot);
 				for(int i = 0; i < steps; ++i)
 				{
-					float current_h = gameLevel->terrain->GetH(active_pos) + h;
-					area.points.push_back(Vec3::Transform(Vec3(-ability->width, current_h, active_step), mat) + unit_offset);
-					area.points.push_back(Vec3::Transform(Vec3(+ability->width, current_h, active_step), mat) + unit_offset);
+					float currentH = gameLevel->terrain->GetH(activePos) + h;
+					area.points.push_back(Vec3::Transform(Vec3(-ability->width, currentH, activeStep), mat) + unitOffset);
+					area.points.push_back(Vec3::Transform(Vec3(+ability->width, currentH, activeStep), mat) + unitOffset);
 
-					active_pos += step;
-					active_step += len_step;
+					activePos += step;
+					activeStep += lenStep;
 				}
 
 				for(int i = 0; i < steps - 1; ++i)
@@ -1467,20 +1495,20 @@ void Game::PrepareAreaPath()
 void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot)
 {
 	const float h = 0.06f;
-	const int circle_points = 10;
+	const int circlePoints = 10;
 
-	area.points.resize(circle_points + 1);
+	area.points.resize(circlePoints + 1);
 	area.points[0] = Vec3(0, h, 0 + range);
 	float angle = 0;
-	for(int i = 0; i < circle_points; ++i)
+	for(int i = 0; i < circlePoints; ++i)
 	{
 		area.points[i + 1] = Vec3(sin(angle) * radius, h, cos(angle) * radius + range);
-		angle += (PI * 2) / circle_points;
+		angle += (PI * 2) / circlePoints;
 	}
 
 	bool outside = (gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside);
 	Matrix mat = Matrix::RotationY(rot);
-	for(int i = 0; i < circle_points + 1; ++i)
+	for(int i = 0; i < circlePoints + 1; ++i)
 	{
 		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
 		if(outside)
@@ -1488,11 +1516,11 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	}
 
 	area.faces.clear();
-	for(int i = 0; i < circle_points; ++i)
+	for(int i = 0; i < circlePoints; ++i)
 	{
 		area.faces.push_back(0);
 		area.faces.push_back(i + 1);
-		area.faces.push_back((i + 2) == (circle_points + 1) ? 1 : (i + 2));
+		area.faces.push_back((i + 2) == (circlePoints + 1) ? 1 : (i + 2));
 	}
 }
 
@@ -1500,30 +1528,30 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 void Game::PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius)
 {
 	const float h = 0.06f;
-	const int circle_points = 10;
+	const int circlePoints = 10;
 
-	area.points.resize(circle_points + 1);
+	area.points.resize(circlePoints + 1);
 	area.points[0] = pos + Vec3(0, h, 0);
 	float angle = 0;
-	for(int i = 0; i < circle_points; ++i)
+	for(int i = 0; i < circlePoints; ++i)
 	{
 		area.points[i + 1] = pos + Vec3(sin(angle) * radius, h, cos(angle) * radius);
-		angle += (PI * 2) / circle_points;
+		angle += (PI * 2) / circlePoints;
 	}
 
 	bool outside = (gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside);
 	if(outside)
 	{
-		for(int i = 0; i < circle_points + 1; ++i)
+		for(int i = 0; i < circlePoints + 1; ++i)
 			area.points[i].y = gameLevel->terrain->GetH(area.points[i]) + h;
 	}
 
 	area.faces.clear();
-	for(int i = 0; i < circle_points; ++i)
+	for(int i = 0; i < circlePoints; ++i)
 	{
 		area.faces.push_back(0);
 		area.faces.push_back(i + 1);
-		area.faces.push_back((i + 2) == (circle_points + 1) ? 1 : (i + 2));
+		area.faces.push_back((i + 2) == (circlePoints + 1) ? 1 : (i + 2));
 	}
 }
 
@@ -1552,58 +1580,58 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 	}
 	else
 	{
-		const Vec2 obj_pos(x, z);
-		const bool is_split = (node && IsSet(node->mesh->head.flags, Mesh::F_SPLIT));
+		const Vec2 objPos(x, z);
+		const bool isSplit = (node && IsSet(node->mesh->head.flags, Mesh::F_SPLIT));
 
 		for(GameLight& light : drawBatch.locPart->lights)
 		{
-			Vec2 light_pos;
+			Vec2 lightPos;
 			float dist;
 			bool ok = true, masked = false;
-			if(!is_split)
+			if(!isSplit)
 			{
 				dist = Distance(x, z, light.pos.x, light.pos.z);
 				if(dist > light.range + radius || !best.CanAdd(dist))
 					continue;
 				if(!IsZero(dist))
 				{
-					light_pos = light.pos.XZ();
-					float range_sum = 0.f;
+					lightPos = light.pos.XZ();
+					float rangeSum = 0.f;
 
 					// are there any masks between object and light?
 					for(LightMask& mask : drawBatch.locPart->masks)
 					{
-						if(LineToRectangleSize(obj_pos, light_pos, mask.pos, mask.size))
+						if(LineToRectangleSize(objPos, lightPos, mask.pos, mask.size))
 						{
 							// move light to one side of mask
-							Vec2 new_pos, new_pos2;
-							float new_dist[2];
+							Vec2 newPos, newPos2;
+							float newDist[2];
 							if(mask.size.x > mask.size.y)
 							{
-								new_pos.x = mask.pos.x - mask.size.x;
-								new_pos2.x = mask.pos.x + mask.size.x;
-								new_pos.y = new_pos2.y = mask.pos.y;
+								newPos.x = mask.pos.x - mask.size.x;
+								newPos2.x = mask.pos.x + mask.size.x;
+								newPos.y = newPos2.y = mask.pos.y;
 							}
 							else
 							{
-								new_pos.x = new_pos2.x = mask.pos.x;
-								new_pos.y = mask.pos.y - mask.size.y;
-								new_pos2.y = mask.pos.y + mask.size.y;
+								newPos.x = newPos2.x = mask.pos.x;
+								newPos.y = mask.pos.y - mask.size.y;
+								newPos2.y = mask.pos.y + mask.size.y;
 							}
-							new_dist[0] = Vec2::Distance(light_pos, new_pos) + Vec2::Distance(new_pos, obj_pos);
-							new_dist[1] = Vec2::Distance(light_pos, new_pos2) + Vec2::Distance(new_pos2, obj_pos);
-							if(new_dist[1] < new_dist[0])
-								new_pos = new_pos2;
+							newDist[0] = Vec2::Distance(lightPos, newPos) + Vec2::Distance(newPos, objPos);
+							newDist[1] = Vec2::Distance(lightPos, newPos2) + Vec2::Distance(newPos2, objPos);
+							if(newDist[1] < newDist[0])
+								newPos = newPos2;
 
 							// recalculate distance
-							range_sum += Vec2::Distance(light_pos, new_pos);
-							dist = range_sum + Distance(x, z, new_pos.x, new_pos.y);
+							rangeSum += Vec2::Distance(lightPos, newPos);
+							dist = rangeSum + Distance(x, z, newPos.x, newPos.y);
 							if(!best.CanAdd(dist))
 							{
 								ok = false;
 								break;
 							}
-							light_pos = new_pos;
+							lightPos = newPos;
 							masked = true;
 						}
 					}
@@ -1611,49 +1639,49 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 			}
 			else
 			{
-				const Vec2 sub_size = node->mesh->splits[sub].box.SizeXZ();
-				light_pos = light.pos.XZ();
-				dist = DistanceRectangleToPoint(obj_pos, sub_size, light_pos);
+				const Vec2 subSize = node->mesh->splits[sub].box.SizeXZ();
+				lightPos = light.pos.XZ();
+				dist = DistanceRectangleToPoint(objPos, subSize, lightPos);
 				if(dist > light.range + radius || !best.CanAdd(dist))
 					continue;
 				if(!IsZero(dist))
 				{
-					float range_sum = 0.f;
+					float rangeSum = 0.f;
 
 					// are there any masks between object and light?
 					for(LightMask& mask : drawBatch.locPart->masks)
 					{
-						if(LineToRectangleSize(obj_pos, light_pos, mask.pos, mask.size))
+						if(LineToRectangleSize(objPos, lightPos, mask.pos, mask.size))
 						{
 							// move light to one side of mask
-							Vec2 new_pos, new_pos2;
-							float new_dist[2];
+							Vec2 newPos, newPos2;
+							float newDist[2];
 							if(mask.size.x > mask.size.y)
 							{
-								new_pos.x = mask.pos.x - mask.size.x;
-								new_pos2.x = mask.pos.x + mask.size.x;
-								new_pos.y = new_pos2.y = mask.pos.y;
+								newPos.x = mask.pos.x - mask.size.x;
+								newPos2.x = mask.pos.x + mask.size.x;
+								newPos.y = newPos2.y = mask.pos.y;
 							}
 							else
 							{
-								new_pos.x = new_pos2.x = mask.pos.x;
-								new_pos.y = mask.pos.y - mask.size.y;
-								new_pos2.y = mask.pos.y + mask.size.y;
+								newPos.x = newPos2.x = mask.pos.x;
+								newPos.y = mask.pos.y - mask.size.y;
+								newPos2.y = mask.pos.y + mask.size.y;
 							}
-							new_dist[0] = Vec2::Distance(light_pos, new_pos) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos);
-							new_dist[1] = Vec2::Distance(light_pos, new_pos2) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos2);
-							if(new_dist[1] < new_dist[0])
-								new_pos = new_pos2;
+							newDist[0] = Vec2::Distance(lightPos, newPos) + DistanceRectangleToPoint(objPos, subSize, newPos);
+							newDist[1] = Vec2::Distance(lightPos, newPos2) + DistanceRectangleToPoint(objPos, subSize, newPos2);
+							if(newDist[1] < newDist[0])
+								newPos = newPos2;
 
 							// recalculate distance
-							range_sum += Vec2::Distance(light_pos, new_pos);
-							dist = range_sum + DistanceRectangleToPoint(obj_pos, sub_size, new_pos);
+							rangeSum += Vec2::Distance(lightPos, newPos);
+							dist = rangeSum + DistanceRectangleToPoint(objPos, subSize, newPos);
 							if(!best.CanAdd(dist))
 							{
 								ok = false;
 								break;
 							}
-							light_pos = new_pos;
+							lightPos = newPos;
 							masked = true;
 						}
 					}
@@ -1665,15 +1693,15 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 
 			if(masked)
 			{
-				float range = light.range - Vec2::Distance(light_pos, light.pos.XZ());
+				float range = light.range - Vec2::Distance(lightPos, light.pos.XZ());
 				if(range > 0)
 				{
-					Light* tmp_light = DrawBatch::lightPool.Get();
-					tmp_light->color = light.color;
-					tmp_light->pos = Vec3(light_pos.x, light.pos.y, light_pos.y);
-					tmp_light->range = range;
-					best.Add(tmp_light, dist);
-					drawBatch.tmpLights.push_back(tmp_light);
+					Light* tmpLight = DrawBatch::lightPool.Get();
+					tmpLight->color = light.color;
+					tmpLight->pos = Vec3(lightPos.x, light.pos.y, lightPos.y);
+					tmpLight->range = range;
+					best.Add(tmpLight, dist);
+					drawBatch.tmpLights.push_back(tmpLight);
 				}
 			}
 			else
@@ -1757,19 +1785,19 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<DungeonPar
 	shader->SetCustomMesh(dungeonMeshBuilder->vb, dungeonMeshBuilder->ib, sizeof(VTangent));
 
 	const bool useFog = sceneMgr->useFog && sceneMgr->useLighting;
-	TexOverride* last_override = nullptr;
+	TexOverride* lastOverride = nullptr;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 	{
 		const DungeonPart& dp = *it;
 
 		// set textures
-		if(last_override != dp.texOverride)
+		if(lastOverride != dp.texOverride)
 		{
 			shader->SetShader(shader->GetShaderId(false, true, false, useFog, sceneMgr->useSpecularmap && dp.texOverride->specular != nullptr,
 				sceneMgr->useNormalmap && dp.texOverride->normal != nullptr, sceneMgr->useLighting, false));
 			shader->SetTexture(dp.texOverride, nullptr, 0);
-			last_override = dp.texOverride;
+			lastOverride = dp.texOverride;
 		}
 
 		const DungeonPartGroup& group = groups[dp.group];

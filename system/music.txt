@@ -47,3 +47,5 @@ music travel = {
 music moonwell = "For Originz.ogg"
 
 music death = "death.ogg"
+
+music emptyCity = "Ruined City Theme.ogg"

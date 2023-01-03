@@ -17,6 +17,7 @@
 #include "GameStats.h"
 #include "GroundItem.h"
 #include "Inventory.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "Language.h"
 #include "Level.h"
@@ -29,13 +30,14 @@
 #include "TeamPanel.h"
 
 #include <Engine.h>
+#include <GetNumberDialog.h>
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.1f;
 const float UNIT_VIEW_B = 0.2f;
 
-cstring order_str[ORDER_MAX] = {
+cstring orderStr[ORDER_MAX] = {
 	"NONE",
 	"WANDER",
 	"WAIT",
@@ -47,7 +49,8 @@ cstring order_str[ORDER_MAX] = {
 	"ESCAPE_TO_UNIT",
 	"GOTO_INN",
 	"GUARD",
-	"AUTO_TALK"
+	"AUTO_TALK",
+	"ATTACK_OBJECT"
 };
 
 //-----------------------------------------------------------------------------
@@ -107,6 +110,9 @@ void LevelGui::LoadLanguage()
 	txHealthPotionDesc = s.Get("healthPotionDesc");
 	txManaPotionDesc = s.Get("manaPotionDesc");
 	txSkipCutscene = s.Get("skipCutscene");
+	txRestPick = s.Get("restPick");
+	txDay = s.Get("day");
+	txDays = s.Get("days");
 	BuffInfo::LoadText();
 }
 
@@ -231,22 +237,22 @@ void LevelGui::DrawFront()
 		debugInfo = false;
 	if(debugInfo)
 	{
-		sorted_units.clear();
+		sortedUnits.clear();
 		for(Unit* unit : pc.unit->locPart->units)
 		{
 			if(!unit->IsAlive())
 				continue;
 			float dist = Vec3::DistanceSquared(gameLevel->camera.from, unit->pos);
-			sorted_units.push_back({ unit, dist, 255, nullptr });
+			sortedUnits.push_back({ unit, dist, 255, nullptr });
 		}
 
 		SortUnits();
 
-		for(auto& it : sorted_units)
+		for(auto& it : sortedUnits)
 		{
 			Unit& u = *it.unit;
-			Vec3 text_pos = u.visualPos;
-			text_pos.y += u.GetUnitHeight();
+			Vec3 textPos = u.visualPos;
+			textPos.y += u.GetUnitHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
@@ -259,7 +265,7 @@ void LevelGui::DrawFront()
 					UnitOrder order = u.GetOrder();
 					str += Format("\nB:%d, F:%d, LVL:%d, U:%d\nAni:%d, Act:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level, u.usable ? 1 : 0,
 						u.animation, u.action, strAiState[ai.state], ai.state == AIController::Idle ? Format("(%s)", strAiIdle[ai.st.idle.action]) : "",
-						ai.timer, ai.locTimer, order_str[order]);
+						ai.timer, ai.locTimer, orderStr[order]);
 					if(order != ORDER_NONE && u.order->timer > 0.f)
 						str += Format(" %.2f", u.order->timer);
 					switch(order)
@@ -284,6 +290,10 @@ void LevelGui::DrawFront()
 								str += Format(",%d", u.order->autoTalkQuest->id);
 						}
 						break;
+					case ORDER_ATTACK_OBJECT:
+						if(Usable* usable = u.order->usable)
+							str += Format(" %s(%d)", usable->base->id.c_str(), usable->id);
+						break;
 					}
 				}
 				else
@@ -292,13 +302,13 @@ void LevelGui::DrawFront()
 						u.busy, u.frozen, u.level, u.usable ? 1 : 0, u.animation, u.action, u.player->action);
 				}
 			}
-			DrawUnitInfo(str, u, text_pos);
+			DrawUnitInfo(str, u, textPos);
 		}
 	}
 	else
 	{
 		// near enemies/allies
-		sorted_units.clear();
+		sortedUnits.clear();
 		for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 		{
 			int alpha;
@@ -327,13 +337,13 @@ void LevelGui::DrawFront()
 			if(alpha)
 			{
 				float dist = Vec3::DistanceSquared(gameLevel->camera.from, it->unit->pos);
-				sorted_units.push_back({ it->unit, dist, alpha, &it->lastPos });
+				sortedUnits.push_back({ it->unit, dist, alpha, &it->lastPos });
 			}
 		}
 
 		SortUnits();
 
-		for(auto& it : sorted_units)
+		for(auto& it : sortedUnits)
 		{
 			if(it.unit != boss)
 				DrawUnitInfo(it.unit->GetName(), *it.unit, *it.lastPos, it.alpha);
@@ -347,32 +357,32 @@ void LevelGui::DrawFront()
 		if(!debugInfo)
 		{
 			Unit* u = game->pc->data.beforePlayerPtr.unit;
-			bool dont_draw = false;
+			bool dontDraw = false;
 			for(vector<UnitView>::iterator it = unitViews.begin(), end = unitViews.end(); it != end; ++it)
 			{
 				if(it->unit == u)
 				{
 					if(it->time > UNIT_VIEW_B || it->time < -UNIT_VIEW_A)
-						dont_draw = true;
+						dontDraw = true;
 					break;
 				}
 			}
-			if(!dont_draw)
+			if(!dontDraw)
 				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos());
 		}
 		break;
 	case BP_CHEST:
 		{
-			Vec3 text_pos = game->pc->data.beforePlayerPtr.chest->pos;
-			text_pos.y += 0.75f;
-			DrawObjectInfo(txChest, text_pos);
+			Vec3 textPos = game->pc->data.beforePlayerPtr.chest->pos;
+			textPos.y += 0.75f;
+			DrawObjectInfo(txChest, textPos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			Vec3 text_pos = game->pc->data.beforePlayerPtr.door->pos;
-			text_pos.y += 1.75f;
-			DrawObjectInfo(game->pc->data.beforePlayerPtr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
+			Vec3 textPos = game->pc->data.beforePlayerPtr.door->pos;
+			textPos.y += 1.75f;
+			DrawObjectInfo(game->pc->data.beforePlayerPtr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, textPos);
 		}
 		break;
 	case BP_ITEM:
@@ -383,22 +393,22 @@ void LevelGui::DrawFront()
 				mesh = item.item->mesh;
 			else
 				mesh = gameRes->aBag;
-			Vec3 text_pos = item.pos;
-			text_pos.y += mesh->head.bbox.v2.y;
+			Vec3 textPos = item.pos;
+			textPos.y += mesh->head.bbox.v2.y;
 			cstring text;
 			if(item.count == 1)
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			DrawObjectInfo(text, text_pos);
+			DrawObjectInfo(text, textPos);
 		}
 		break;
 	case BP_USABLE:
 		{
 			Usable& u = *game->pc->data.beforePlayerPtr.usable;
-			Vec3 text_pos = u.pos;
-			text_pos.y += u.GetMesh()->head.radius;
-			DrawObjectInfo(u.base->name.c_str(), text_pos);
+			Vec3 textPos = u.pos;
+			textPos.y += u.GetMesh()->head.radius;
+			DrawObjectInfo(u.base->name.c_str(), textPos);
 		}
 		break;
 	}
@@ -420,15 +430,15 @@ void LevelGui::DrawFront()
 			int off = int(scrollbar.offset);
 
 			// selection
-			Rect r_img = Rect::Create(Int2(offset.x + border, offset.y + border + game->dialogContext.choiceSelected * GameGui::font->height - off),
+			Rect rImg = Rect::Create(Int2(offset.x + border, offset.y + border + game->dialogContext.choiceSelected * GameGui::font->height - off),
 				Int2(dsize.x - border * 2, GameGui::font->height));
-			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
+			if(rImg.Bottom() >= r.Top() && rImg.Top() < r.Bottom())
 			{
-				if(r_img.Top() < r.Top())
-					r_img.Top() = r.Top();
-				else if(r_img.Bottom() > r.Bottom())
-					r_img.Bottom() = r.Bottom();
-				gui->DrawSpriteRect(tEquipped, r_img, 0xAAFFFFFF);
+				if(rImg.Top() < r.Top())
+					rImg.Top() = r.Top();
+				else if(rImg.Bottom() > r.Bottom())
+					rImg.Bottom() = r.Bottom();
+				gui->DrawSpriteRect(tEquipped, rImg, 0xAAFFFFFF);
 			}
 
 			// text
@@ -438,49 +448,53 @@ void LevelGui::DrawFront()
 				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
+			Rect r2 = { r.Left() + 5, r.Top() - off, r.Right() - 5, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game->dialogContext.dialogText)
+		{
+			r.Left() += 5;
+			r.Right() -= 5;
 			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		}
 	}
 
 	// health bar
 	const Vec2 wndScale(float(gui->wndSize.x) / 800);
-	const bool mp_bar = game->pc->unit->IsUsingMp();
+	const bool mpBar = game->pc->unit->IsUsingMp();
 	Rect part = { 0, 0, 0, 16 };
-	int bar_offset = (mp_bar ? 3 : 2);
+	int barOffset = (mpBar ? 3 : 2);
 	{
 		const float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(hpp * 256);
 		if(part.Right() > 0)
 			gui->DrawSprite2(!IsSet(pc.unit->GetBuffs(), BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
 		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
-		--bar_offset;
+		--barOffset;
 	}
 
 	// stamina bar
 	{
-		const float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
-		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+		const float staminap = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
-		part.Right() = int(stamina_p * 256);
+		part.Right() = int(staminap * 256);
 		if(part.Right() > 0)
 			gui->DrawSprite2(tStaminaBar, mat, &part, nullptr, Color::White);
 		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
-		--bar_offset;
+		--barOffset;
 	}
 
 	// mana bar
-	if(mp_bar)
+	if(mpBar)
 	{
 		const float mpp = pc.unit->GetMpp();
-		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+		const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 		part.Right() = int(mpp * 256);
 		if(part.Right() > 0)
@@ -497,9 +511,9 @@ void LevelGui::DrawFront()
 	}
 
 	// shortcuts
-	const int img_size = 76 * gui->wndSize.x / 1920;
-	const int offset = img_size + 2;
-	const Vec2 scale(float(img_size) / 64);
+	const int imgSize = 76 * gui->wndSize.x / 1920;
+	const int offset = imgSize + 2;
+	const Vec2 scale(float(imgSize) / 64);
 	Int2 spos(256.f * wndScale.x, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
@@ -510,11 +524,11 @@ void LevelGui::DrawFront()
 		gui->DrawSprite2(tShortcut, mat);
 
 		Rect r(spos.x + 2, spos.y + 2);
-		r.p2.x += img_size - 4;
-		r.p2.y += img_size - 4;
+		r.p2.x += imgSize - 4;
+		r.p2.y += imgSize - 4;
 
 		Texture* icon = nullptr;
-		int count = 0, icon_size = 128;
+		int count = 0, iconSize = 128;
 		Ability* ability = nullptr;
 		bool enabled = true, equipped = false;
 		if(shortcut.type == Shortcut::TYPE_SPECIAL)
@@ -542,7 +556,7 @@ void LevelGui::DrawFront()
 		else if(shortcut.type == Shortcut::TYPE_ITEM)
 		{
 			icon = shortcut.item->icon;
-			icon_size = GameResources::ITEM_IMAGE_SIZE;
+			iconSize = GameResources::ITEM_IMAGE_SIZE;
 			if(shortcut.item->IsWearable())
 			{
 				if(pc.unit->HaveItemEquipped(shortcut.item))
@@ -564,7 +578,7 @@ void LevelGui::DrawFront()
 		else if(shortcut.type == Shortcut::TYPE_ABILITY)
 			ability = shortcut.ability;
 
-		const Vec2 scale2(float(img_size - 2) / icon_size);
+		const Vec2 scale2(float(imgSize - 2) / iconSize);
 		pos = Vec2(float(spos.x + 1), float(spos.y + 1));
 		mat = Matrix::Transform2D(nullptr, 0.f, &scale2, nullptr, 0.f, &pos);
 		if(icon)
@@ -668,6 +682,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
+
 			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
@@ -695,8 +710,8 @@ void LevelGui::DrawBack()
 {
 	if(dragAndDrop == 2 && dragAndDropIcon)
 	{
-		const int img_size = 76 * gui->wndSize.x / 1920;
-		const Vec2 scale(float(img_size) / dragAndDropIcon->GetSize().x);
+		const int imgSize = 76 * gui->wndSize.x / 1920;
+		const Vec2 scale(float(imgSize) / dragAndDropIcon->GetSize().x);
 		const Vec2 pos(gui->cursorPos + Int2(16, 16));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(dragAndDropIcon, mat);
@@ -754,8 +769,8 @@ void LevelGui::DrawDeathScreen()
 
 		if((color & 0xFF000000) != 0)
 		{
-			Int2 img_size = tRip->GetSize();
-			gui->DrawSprite(tRip, Center(img_size), color);
+			Int2 imgSize = tRip->GetSize();
+			gui->DrawSprite(tRip, Center(imgSize), color);
 
 			cstring text = Format(game->deathSolo ? txDeathAlone : txDeath, game->pc->kills, gameStats->totalKills - game->pc->kills);
 			Rect rect = { 0, 0, gui->wndSize.x, gui->wndSize.y - 32 };
@@ -776,8 +791,8 @@ void LevelGui::DrawEndOfGameScreen()
 	gui->DrawSpriteFull(tBlack, color);
 
 	// image
-	Int2 sprite_pos = Center(tEmerytura->GetSize());
-	gui->DrawSprite(tEmerytura, sprite_pos, color);
+	Int2 spritePos = Center(tEmerytura->GetSize());
+	gui->DrawSprite(tEmerytura, spritePos, color);
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, gameStats->totalKills - game->pc->kills);
@@ -813,8 +828,8 @@ void LevelGui::DrawSpeechBubbles()
 			sb.visible = true;
 			if(sb.time > 0.25f)
 			{
-				float cam_dist = Vec3::Distance(gameLevel->camera.from, pos);
-				sortedSpeechBubbles.push_back({ &sb, cam_dist, pt });
+				float camDist = Vec3::Distance(gameLevel->camera.from, pos);
+				sortedSpeechBubbles.push_back({ &sb, camDist, pt });
 			}
 		}
 		else
@@ -866,8 +881,8 @@ void LevelGui::DrawObjectInfo(cstring text, const Vec3& pos)
 		return;
 
 	// background
-	Rect bkg_rect = { r.Left() - 1, r.Top() - 1,r.Right() + 1,r.Bottom() + 1 };
-	gui->DrawArea(Color(0, 0, 0, 255 / 3), bkg_rect);
+	Rect rect = { r.Left() - 1, r.Top() - 1,r.Right() + 1,r.Bottom() + 1 };
+	gui->DrawArea(Color(0, 0, 0, 255 / 3), rect);
 
 	// text
 	gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, Color::White, pos);
@@ -887,26 +902,26 @@ void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha
 		hpp = max(unit.GetHpp(), 0.f);
 
 	// background
-	Rect bkg_rect = { r.Left() - 1, r.Top() - 1, r.Right() + 1, r.Bottom() + 1 };
+	Rect rect = { r.Left() - 1, r.Top() - 1, r.Right() + 1, r.Bottom() + 1 };
 	if(hpp >= 0.f)
 	{
-		bkg_rect.p2.y += 4;
+		rect.p2.y += 4;
 		if(unit.IsTeamMember())
-			bkg_rect.p2.y += 3;
+			rect.p2.y += 3;
 		if(unit.IsUsingMp())
-			bkg_rect.p2.y += 3;
+			rect.p2.y += 3;
 	}
-	gui->DrawArea(Color(0, 0, 0, alpha / 3), bkg_rect);
+	gui->DrawArea(Color(0, 0, 0, alpha / 3), rect);
 
 	// text
-	Color text_color;
+	Color textColor;
 	if(unit.IsFriend(*game->pc->unit))
-		text_color = Color(0, 255, 0, alpha);
+		textColor = Color(0, 255, 0, alpha);
 	else if(unit.IsAlive() && unit.IsEnemy(*game->pc->unit))
-		text_color = Color(255, 0, 0, alpha);
+		textColor = Color(255, 0, 0, alpha);
 	else
-		text_color = Color(255, 255, 255, alpha);
-	gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, text_color, pos);
+		textColor = Color(255, 255, 255, alpha);
+	gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, textColor, pos);
 
 	if(hpp >= 0.f)
 	{
@@ -974,29 +989,29 @@ void LevelGui::Update(float dt)
 	else
 		useCursor = false;
 
-	const bool have_manabar = false;
-	float hp_scale = float(gui->wndSize.x) / 800;
-	bool mp_bar = game->pc->unit->IsUsingMp();
-	int bar_offset = (mp_bar ? 3 : 2);
+	const bool haveManabar = false;
+	float hpScale = float(gui->wndSize.x) / 800;
+	bool mpBar = game->pc->unit->IsUsingMp();
+	int barOffset = (mpBar ? 3 : 2);
 
 	// buffs
 	int buffs = game->pc->unit->GetBuffs();
 
 	buffScale = gui->wndSize.x / 1024.f;
 	float off = buffScale * 33;
-	float buf_posy = float(gui->wndSize.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
-	Int2 buff_size(int(buffScale * 32), int(buffScale * 32));
+	float bufPosY = float(gui->wndSize.y - 5) - off - hpScale * (barOffset * 18 - 1);
+	Int2 buffSize(int(buffScale * 32), int(buffScale * 32));
 
 	buffImages.clear();
 
 	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
-		int buff_bit = 1 << i;
-		if(IsSet(buffs, buff_bit))
+		int buffBit = 1 << i;
+		if(IsSet(buffs, buffBit))
 		{
 			auto& info = BuffInfo::info[i];
-			buffImages.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));
-			buf_posy -= off;
+			buffImages.push_back(BuffImage(Vec2(2, bufPosY), info.img, i));
+			bufPosY -= off;
 		}
 	}
 
@@ -1014,7 +1029,7 @@ void LevelGui::Update(float dt)
 	bool anything = useCursor;
 	if(gameGui->inventory->gpTrade->visible || gameGui->book->visible || gameGui->craft->visible)
 		anything = true;
-	bool show_tooltips = anything;
+	bool showTooltips = anything;
 	if(!anything)
 	{
 		for(int i = 0; i < (int)SideButtonId::Max; ++i)
@@ -1023,21 +1038,21 @@ void LevelGui::Update(float dt)
 			{
 				anything = true;
 				if(i != (int)SideButtonId::Minimap)
-					show_tooltips = true;
+					showTooltips = true;
 				break;
 			}
 		}
 	}
 
 	// check cursor over item to show tooltip
-	if(show_tooltips)
+	if(showTooltips)
 	{
 		const Vec2 wndScale(float(gui->wndSize.x) / 800);
 
 		// for buffs
 		for(BuffImage& img : buffImages)
 		{
-			if(Rect::IsInside(gui->cursorPos, Int2(img.pos), buff_size))
+			if(Rect::IsInside(gui->cursorPos, Int2(img.pos), buffSize))
 			{
 				group = TooltipGroup::Buff;
 				id = img.id;
@@ -1047,7 +1062,7 @@ void LevelGui::Update(float dt)
 
 		// for health bar
 		{
-			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
 			if(r.IsInside(gui->cursorPos))
@@ -1055,12 +1070,12 @@ void LevelGui::Update(float dt)
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_HP;
 			}
-			--bar_offset;
+			--barOffset;
 		}
 
 		// for stamina bar
 		{
-			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
 			if(r.IsInside(gui->cursorPos))
@@ -1068,13 +1083,13 @@ void LevelGui::Update(float dt)
 				group = TooltipGroup::Bar;
 				id = Bar::BAR_STAMINA;
 			}
-			--bar_offset;
+			--barOffset;
 		}
 
 		// for mana bar
-		if(mp_bar)
+		if(mpBar)
 		{
-			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (bar_offset * 18 - 1));
+			const Vec2 pos(0.f, float(gui->wndSize.y) - wndScale.y * (barOffset * 18 - 1));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &wndScale, nullptr, 0.f, &pos);
 			const Rect r = gui->GetSpriteRect(tBar, mat);
 			if(r.IsInside(gui->cursorPos))
@@ -1085,7 +1100,7 @@ void LevelGui::Update(float dt)
 		}
 
 		// shortcuts
-		int shortcut_index = GetShortcutIndex();
+		int shortcutIndex = GetShortcutIndex();
 		if(dragAndDrop == 1)
 		{
 			if(Int2::Distance(gui->cursorPos, dragAndDropPos) > 3)
@@ -1101,29 +1116,29 @@ void LevelGui::Update(float dt)
 			if(input->Released(Key::LeftButton))
 			{
 				dragAndDrop = 0;
-				if(shortcut_index != -1)
+				if(shortcutIndex != -1)
 				{
 					if(dragAndDropType == -1)
 					{
 						// drag & drop between game gui shortcuts
-						if(shortcut_index != dragAndDropIndex)
+						if(shortcutIndex != dragAndDropIndex)
 						{
-							game->pc->SetShortcut(shortcut_index, game->pc->shortcuts[dragAndDropIndex].type, game->pc->shortcuts[dragAndDropIndex].value);
+							game->pc->SetShortcut(shortcutIndex, game->pc->shortcuts[dragAndDropIndex].type, game->pc->shortcuts[dragAndDropIndex].value);
 							game->pc->SetShortcut(dragAndDropIndex, Shortcut::TYPE_NONE);
 						}
 					}
 					else
 					{
 						// drag & drop from actions/inventory
-						game->pc->SetShortcut(shortcut_index, (Shortcut::Type)dragAndDropType, dragAndDropIndex);
+						game->pc->SetShortcut(shortcutIndex, (Shortcut::Type)dragAndDropType, dragAndDropIndex);
 					}
 				}
 			}
 		}
-		if(shortcut_index != -1 && game->pc->shortcuts[shortcut_index].type != Shortcut::TYPE_NONE)
+		if(shortcutIndex != -1 && game->pc->shortcuts[shortcutIndex].type != Shortcut::TYPE_NONE)
 		{
 			group = TooltipGroup::Shortcut;
-			id = shortcut_index;
+			id = shortcutIndex;
 			if(!gui->HaveDialog())
 			{
 				if(input->Pressed(Key::LeftButton))
@@ -1131,17 +1146,17 @@ void LevelGui::Update(float dt)
 					dragAndDrop = 1;
 					dragAndDropPos = gui->cursorPos;
 					dragAndDropType = -1;
-					dragAndDropIndex = shortcut_index;
+					dragAndDropIndex = shortcutIndex;
 					dragAndDropIcon = nullptr;
 				}
 				else if(input->PressedRelease(Key::RightButton))
 				{
-					Shortcut& shortcut = game->pc->shortcuts[shortcut_index];
+					Shortcut& shortcut = game->pc->shortcuts[shortcutIndex];
 					if(shortcut.type == Shortcut::TYPE_ABILITY && shortcut.ability == PlayerController::data.abilityReady)
 						PlayerController::data.abilityReady = nullptr;
 					else
 					{
-						game->pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
+						game->pc->SetShortcut(shortcutIndex, Shortcut::TYPE_NONE);
 						group = TooltipGroup::Invalid;
 					}
 					dragAndDrop = 0;
@@ -1158,15 +1173,15 @@ void LevelGui::Update(float dt)
 		sidebar -= dt * 5;
 	sidebar = Clamp(sidebar, 0.f, 1.f);
 
-	if(sidebar > 0.f && !gui->HaveDialog() && show_tooltips)
+	if(sidebar > 0.f && !gui->HaveDialog() && showTooltips)
 	{
-		int img_size = 76 * gui->wndSize.x / 1920;
-		int offset = img_size + 2;
+		int imgSize = 76 * gui->wndSize.x / 1920;
+		int offset = imgSize + 2;
 		int total = offset * max;
 		int sposy = gui->wndSize.y - (gui->wndSize.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
-			if(Rect::IsInside(gui->cursorPos, Int2(int(float(gui->wndSize.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
+			if(Rect::IsInside(gui->cursorPos, Int2(int(float(gui->wndSize.x) - sidebar * offset), sposy - i * offset), Int2(imgSize, imgSize)))
 			{
 				group = TooltipGroup::Sidebar;
 				id = i;
@@ -1235,12 +1250,12 @@ void LevelGui::Update(float dt)
 int LevelGui::GetShortcutIndex()
 {
 	float wndScale = float(gui->wndSize.x) / 800;
-	int img_size = 76 * gui->wndSize.x / 1920;
-	int offset = img_size + 2;
+	int imgSize = 76 * gui->wndSize.x / 1920;
+	int offset = imgSize + 2;
 	Int2 spos(256.f * wndScale, gui->wndSize.y - offset);
 	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
-		Rect r = Rect::Create(spos, Int2(img_size, img_size));
+		Rect r = Rect::Create(spos, Int2(imgSize, imgSize));
 		if(r.IsInside(gui->cursorPos))
 			return i;
 		spos.x += offset;
@@ -1404,20 +1419,20 @@ bool LevelGui::UpdateChoice()
 	const int choices = ctx.choices.size();
 
 	// element pod kursorem
-	int cursor_choice = -1;
+	int cursorChoice = -1;
 	if(gui->cursorPos.x >= offset.x && gui->cursorPos.x < offset.x + dsize.x - 16 && gui->cursorPos.y >= offset.y && gui->cursorPos.y < offset.y + dsize.y - 12)
 	{
 		int w = (gui->cursorPos.y - offset.y + int(scrollbar.offset)) / GameGui::font->height;
 		if(w < choices)
-			cursor_choice = w;
+			cursorChoice = w;
 	}
 
 	// zmiana zaznaczonego elementu myszk¹
 	if(gui->cursorPos != dialogCursorPos)
 	{
 		dialogCursorPos = gui->cursorPos;
-		if(cursor_choice != -1)
-			ctx.choiceSelected = cursor_choice;
+		if(cursorChoice != -1)
+			ctx.choiceSelected = cursorChoice;
 	}
 
 	// strza³ka w górê/dó³
@@ -1472,11 +1487,11 @@ bool LevelGui::UpdateChoice()
 	}
 
 	// wybieranie klikniêciem
-	if(GKey.AllowMouse() && cursor_choice != -1 && input->PressedRelease(Key::LeftButton))
+	if(GKey.AllowMouse() && cursorChoice != -1 && input->PressedRelease(Key::LeftButton))
 	{
 		if(ctx.isLocal)
 			game->pc->data.wastedKey = Key::LeftButton;
-		ctx.choiceSelected = cursor_choice;
+		ctx.choiceSelected = cursorChoice;
 		return true;
 	}
 
@@ -1727,7 +1742,7 @@ OpenPanel LevelGui::GetOpenPanel()
 }
 
 //=================================================================================================
-void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
+void LevelGui::ShowPanel(OpenPanel toOpen, OpenPanel open)
 {
 	if(open == OpenPanel::Unknown)
 		open = GetOpenPanel();
@@ -1768,9 +1783,9 @@ void LevelGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	}
 
 	// open new panel
-	if(open != to_open)
+	if(open != toOpen)
 	{
-		switch(to_open)
+		switch(toOpen)
 		{
 		case OpenPanel::Stats:
 			gameGui->stats->Show();
@@ -1836,9 +1851,9 @@ void LevelGui::PositionPanels()
 void LevelGui::Save(GameWriter& f) const
 {
 	f << speechBubbles.size();
-	for(const SpeechBubble* p_sb : speechBubbles)
+	for(const SpeechBubble* pSb : speechBubbles)
 	{
-		const SpeechBubble& sb = *p_sb;
+		const SpeechBubble& sb = *pSb;
 		f.WriteString2(sb.text);
 		f << (sb.unit ? sb.unit->id : -1);
 		f << sb.size;
@@ -1872,7 +1887,7 @@ void LevelGui::Load(GameReader& f)
 //=================================================================================================
 void LevelGui::SortUnits()
 {
-	std::sort(sorted_units.begin(), sorted_units.end(), [](const SortedUnitView& a, const SortedUnitView& b)
+	std::sort(sortedUnits.begin(), sortedUnits.end(), [](const SortedUnitView& a, const SortedUnitView& b)
 	{
 		return a.dist > b.dist;
 	});
@@ -2168,11 +2183,11 @@ void LevelGui::DrawCutscene(int fallbackAlpha)
 	if(cutsceneImage)
 	{
 		const int alpha = GetAlpha(cutsceneImageState, cutsceneImageTimer, fallbackAlpha);
-		Int2 img_size = cutsceneImage->GetSize();
-		const int max_size = gui->wndSize.y - 128;
-		const Vec2 scale(float(max_size) / img_size.y);
-		img_size *= scale.x;
-		const Vec2 pos((gui->wndSize - img_size) / 2);
+		Int2 imgSize = cutsceneImage->GetSize();
+		const int maxSize = gui->wndSize.y - 128;
+		const Vec2 scale(float(maxSize) / imgSize.y);
+		imgSize *= scale.x;
+		const Vec2 pos((gui->wndSize - imgSize) / 2);
 		const Matrix mat = Matrix::Transform2D(nullptr, 0, &scale, nullptr, 0.f, &pos);
 		gui->DrawSprite2(cutsceneImage, mat, nullptr, nullptr, Color::Alpha(alpha));
 	}
@@ -2214,4 +2229,25 @@ void LevelGui::SetBoss(Unit* boss, bool instant)
 		if(instant)
 			boss = nullptr;
 	}
+}
+
+//=================================================================================================
+void LevelGui::ShowRestDialog()
+{
+	counter = 1;
+	GetNumberDialogParams params(counter, 1, 60);
+	params.parent = this;
+	params.event = [this](int result)
+	{
+		const int days = result == BUTTON_OK ? counter : -1;
+		if(Net::IsLocal())
+			game->dialogContext.OnPickRestDays(days);
+		else
+		{
+			NetChange& c = Net::PushChange(NetChange::PICK_REST);
+			c.id = days;
+		}
+	};
+	params.getText = [this] { return Format(txRestPick, counter, counter == 1 ? txDay : txDays, ItemHelper::GetRestCost(counter)); };
+	GetNumberDialog::Show(params);
 }

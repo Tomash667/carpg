@@ -21,7 +21,7 @@ Net::Mode Net::mode;
 const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
-Net::Net() : peer(nullptr), packetLogger(nullptr), mpLoad(false), mpUseInterp(true), mpInterp(0.05f), wasClient(false)
+Net::Net() : peer(nullptr), packetLogger(nullptr), mpLoad(false), mpUseInterp(true), mpInterp(0.05f), wasClient(false), journalChanges(false)
 {
 }
 
@@ -171,8 +171,7 @@ void Net::StartFastTravel(int who)
 	// send to server/players
 	if(who == 0 || who == 1)
 	{
-		NetChange& c = Add1(changes);
-		c.type = NetChange::FAST_TRAVEL;
+		NetChange& c = PushChange(NetChange::FAST_TRAVEL);
 		c.id = FAST_TRAVEL_START;
 		c.count = 0;
 	}
@@ -240,8 +239,7 @@ void Net::CancelFastTravel(int mode, int id)
 
 	if(IsServer() || (team->IsLeader() && mode == FAST_TRAVEL_CANCEL))
 	{
-		NetChange& c = Add1(changes);
-		c.type = NetChange::FAST_TRAVEL;
+		NetChange& c = PushChange(NetChange::FAST_TRAVEL);
 		c.id = mode;
 		c.count = id;
 	}
@@ -268,15 +266,14 @@ void Net::OnFastTravel(bool accept)
 		fastTravelNotification->text = txFastTravelWaiting;
 		me.fastTravel = true;
 
-		NetChange& c = Add1(changes);
 		if(IsServer())
 		{
-			c.type = NetChange::FAST_TRAVEL_VOTE;
+			NetChange& c = PushChange(NetChange::FAST_TRAVEL_VOTE);
 			c.id = me.id;
 		}
 		else
 		{
-			c.type = NetChange::FAST_TRAVEL;
+			NetChange& c = PushChange(NetChange::FAST_TRAVEL);
 			c.id = FAST_TRAVEL_ACCEPT;
 		}
 	}
@@ -286,8 +283,7 @@ void Net::OnFastTravel(bool accept)
 		fastTravelNotification->Close();
 		fastTravelNotification = nullptr;
 
-		NetChange& c = Add1(changes);
-		c.type = NetChange::FAST_TRAVEL;
+		NetChange& c = PushChange(NetChange::FAST_TRAVEL);
 		c.id = FAST_TRAVEL_DENY;
 		c.count = team->myId;
 	}

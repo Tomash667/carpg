@@ -68,15 +68,15 @@ void LocationLoader::InitTokenizer()
 
 	t.AddKeywords(G_OBJECT_FLAG, {
 		{ "required", RoomType::Obj::F_REQUIRED },
-		{ "in_middle", RoomType::Obj::F_IN_MIDDLE }
+		{ "inMiddle", RoomType::Obj::F_IN_MIDDLE }
 		});
 }
 
 //=================================================================================================
 void LocationLoader::LoadEntity(int, const string& id)
 {
-	RoomType* existing_type = RoomType::Get(id);
-	if(existing_type)
+	RoomType* existingType = RoomType::Get(id);
+	if(existingType)
 		t.Throw("Id must be unique.");
 
 	Ptr<RoomType> type;
@@ -102,40 +102,40 @@ void LocationLoader::LoadEntity(int, const string& id)
 			t.Next();
 			while(!t.IsSymbol('}'))
 			{
-				const string& obj_id = t.MustGetItem();
+				const string& objId = t.MustGetItem();
 				ObjectGroup* group = nullptr;
-				BaseObject* obj = BaseObject::TryGet(obj_id, &group);
+				BaseObject* obj = BaseObject::TryGet(objId, &group);
 				if(!obj)
-					t.Throw("Missing object '%s'.", obj_id.c_str());
+					t.Throw("Missing object '%s'.", objId.c_str());
 				t.Next();
-				RoomType::Obj room_obj;
-				room_obj.forcePos = false;
-				room_obj.forceRot = false;
-				room_obj.flags = 0;
+				RoomType::Obj roomObj;
+				roomObj.forcePos = false;
+				roomObj.forceRot = false;
+				roomObj.flags = 0;
 				if(group)
 				{
-					room_obj.group = group;
-					room_obj.isGroup = true;
+					roomObj.group = group;
+					roomObj.isGroup = true;
 				}
 				else
 				{
-					room_obj.obj = obj;
-					room_obj.isGroup = false;
+					roomObj.obj = obj;
+					roomObj.isGroup = false;
 				}
 				if(t.IsInt())
 				{
-					room_obj.count.x = t.GetUint();
+					roomObj.count.x = t.GetUint();
 					t.Next();
 					if(t.IsInt())
 					{
-						room_obj.count.y = t.GetUint();
+						roomObj.count.y = t.GetUint();
 						t.Next();
 					}
 					else
-						room_obj.count.y = room_obj.count.x;
+						roomObj.count.y = roomObj.count.x;
 				}
 				else
-					room_obj.count = Int2(1);
+					roomObj.count = Int2(1);
 				if(t.IsSymbol('{'))
 				{
 					t.Next();
@@ -147,23 +147,23 @@ void LocationLoader::LoadEntity(int, const string& id)
 						switch(k)
 						{
 						case OK_POS:
-							t.Parse(room_obj.pos);
-							room_obj.forcePos = true;
+							t.Parse(roomObj.pos);
+							roomObj.forcePos = true;
 							break;
 						case OK_ROT:
-							room_obj.rot = t.MustGetFloat();
-							room_obj.forceRot = true;
+							roomObj.rot = t.MustGetFloat();
+							roomObj.forceRot = true;
 							t.Next();
 							break;
 						case OK_FLAGS:
-							t.ParseFlags(G_OBJECT_FLAG, room_obj.flags);
+							t.ParseFlags(G_OBJECT_FLAG, roomObj.flags);
 							t.Next();
 							break;
 						}
 					}
 					t.Next();
 				}
-				type->objs.push_back(room_obj);
+				type->objs.push_back(roomObj);
 			}
 			t.Next();
 			break;

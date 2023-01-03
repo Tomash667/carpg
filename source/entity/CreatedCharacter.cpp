@@ -127,14 +127,14 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	takenPerks.resize(count, TakenPerk(nullptr));
 	for(TakenPerk& tp : takenPerks)
 	{
-		int perk_hash = f.Read<int>();
+		int perkHash = f.Read<int>();
 		f >> tp.value;
 		if(!f)
 			return 1;
-		tp.perk = Perk::Get(perk_hash);
+		tp.perk = Perk::Get(perkHash);
 		if(!tp.perk)
 		{
-			Error("Invalid perk id '%d'.", perk_hash);
+			Error("Invalid perk id '%d'.", perkHash);
 			return 2;
 		}
 		if(!tp.CanTake(ctx))
@@ -146,8 +146,8 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	}
 
 	// search for duplicates, too many types
-	int history_perks = 0,
-		flaw_perks = 0;
+	int historyPerks = 0,
+		flawPerks = 0;
 	for(vector<TakenPerk>::iterator it = takenPerks.begin(), end = takenPerks.end(); it != end; ++it)
 	{
 		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
@@ -159,18 +159,18 @@ int CreatedCharacter::Read(BitStreamReader& f)
 			}
 		}
 		if(IsSet(it->perk->flags, Perk::History))
-			++history_perks;
+			++historyPerks;
 		if(IsSet(it->perk->flags, Perk::Flaw))
-			++flaw_perks;
+			++flawPerks;
 	}
-	if(history_perks > 1)
+	if(historyPerks > 1)
 	{
-		Error("Too many (%d) history perks.", history_perks);
+		Error("Too many (%d) history perks.", historyPerks);
 		return 3;
 	}
-	if(flaw_perks > 2)
+	if(flawPerks > 2)
 	{
-		Error("Toom many (%d) flaw perks.", flaw_perks);
+		Error("Toom many (%d) flaw perks.", flawPerks);
 		return 3;
 	}
 
@@ -202,19 +202,19 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 	for(int i = 0; i < SLOT_MAX; ++i)
 		items[i] = nullptr;
 
-	const bool mage_items = IsSet(clas->flags, Class::F_MAGE_ITEMS);
+	const bool mageItems = IsSet(clas->flags, Class::F_MAGE_ITEMS);
 	const bool poor = HavePerk(Perk::Get("poor"));
 
 	if(HavePerk(Perk::Get("heirloom")))
 	{
 		SkillId best = SkillId::NONE;
-		int best_value = 0, best_value2 = 0;
+		int bestValue = 0, bestValue2 = 0;
 		for(const StartItem& item : StartItem::startItems)
 		{
 			if(item.value != HEIRLOOM)
 				continue;
 			int value = s[(int)item.skill].value;
-			if(value >= best_value)
+			if(value >= bestValue)
 			{
 				Skill& skill = Skill::skills[(int)item.skill];
 				int value2 = a[(int)skill.attrib].value;
@@ -222,23 +222,23 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 *= 2;
 				else
 					value2 += a[(int)skill.attrib2].value;
-				if(value > best_value || (value == best_value && value2 > best_value2))
+				if(value > bestValue || (value == bestValue && value2 > bestValue2))
 				{
 					best = skill.skillId;
-					best_value = value;
-					best_value2 = value2;
+					bestValue = value;
+					bestValue2 = value2;
 				}
 			}
 		}
 
-		const Item* heirloom = StartItem::GetStartItem(best, HEIRLOOM, mage_items);
+		const Item* heirloom = StartItem::GetStartItem(best, HEIRLOOM, mageItems);
 		items[ItemTypeToSlot(heirloom->type)] = heirloom;
 	}
 
 	// weapon
 	if(!items[SLOT_WEAPON])
 	{
-		const SkillId to_check[] = {
+		const SkillId toCheck[] = {
 			SkillId::SHORT_BLADE,
 			SkillId::LONG_BLADE,
 			SkillId::AXE,
@@ -247,11 +247,11 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 		};
 
 		SkillId best = SkillId::NONE;
-		int best_value = 0, best_value2 = 0;
-		for(SkillId sk : to_check)
+		int bestValue = 0, bestValue2 = 0;
+		for(SkillId sk : toCheck)
 		{
 			int value = s[(int)sk].value;
-			if(value >= best_value)
+			if(value >= bestValue)
 			{
 				Skill& skill = Skill::skills[(int)sk];
 				int value2 = a[(int)skill.attrib].value;
@@ -259,47 +259,47 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 *= 2;
 				else
 					value2 += a[(int)skill.attrib2].value;
-				if(value > best_value || (value == best_value && value2 > best_value2))
+				if(value > bestValue || (value == bestValue && value2 > bestValue2))
 				{
 					best = skill.skillId;
-					best_value = value;
-					best_value2 = value2;
+					bestValue = value;
+					bestValue2 = value2;
 				}
 			}
 		}
 
-		items[SLOT_WEAPON] = StartItem::GetStartItem(best, GetItemLevel(best_value, poor), mage_items);
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, GetItemLevel(bestValue, poor), mageItems);
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)SkillId::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, GetItemLevel(val, poor), mage_items);
+		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, GetItemLevel(val, poor), mageItems);
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)SkillId::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, GetItemLevel(val, poor), mage_items);
+		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, GetItemLevel(val, poor), mageItems);
 	}
 
 	// armor
 	if(!items[SLOT_ARMOR])
 	{
-		const SkillId to_check[] = {
+		const SkillId toCheck[] = {
 			SkillId::HEAVY_ARMOR,
 			SkillId::MEDIUM_ARMOR,
 			SkillId::LIGHT_ARMOR
 		};
 
 		SkillId best = SkillId::NONE;
-		int best_value = 0, best_value2 = 0;
-		for(SkillId sk : to_check)
+		int bestValue = 0, bestValue2 = 0;
+		for(SkillId sk : toCheck)
 		{
 			int value = s[(int)sk].value;
-			if(value >= best_value)
+			if(value >= bestValue)
 			{
 				Skill& skill = Skill::skills[(int)sk];
 				int value2 = a[(int)skill.attrib].value;
@@ -307,16 +307,16 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 					value2 *= 2;
 				else
 					value2 += a[(int)skill.attrib2].value;
-				if(value > best_value || (value == best_value && value2 > best_value2))
+				if(value > bestValue || (value == bestValue && value2 > bestValue2))
 				{
 					best = skill.skillId;
-					best_value = value;
-					best_value2 = value2;
+					bestValue = value;
+					bestValue2 = value2;
 				}
 			}
 		}
 
-		items[SLOT_ARMOR] = StartItem::GetStartItem(best, GetItemLevel(best_value, poor), mage_items);
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, GetItemLevel(bestValue, poor), mageItems);
 	}
 }
 
@@ -344,10 +344,10 @@ void WriteCharacterData(BitStreamWriter& f, Class* clas, const HumanData& hd, co
 //=================================================================================================
 int ReadCharacterData(BitStreamReader& f, Class*& clas, HumanData& hd, CreatedCharacter& cc)
 {
-	const string& class_id = f.ReadString1();
+	const string& classId = f.ReadString1();
 	if(!f)
 		return 1;
-	clas = Class::TryGet(class_id);
+	clas = Class::TryGet(classId);
 	if(!clas || !clas->IsPickable())
 		return 2;
 	cc.Clear(clas);

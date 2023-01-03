@@ -218,7 +218,7 @@ ItemScript* ItemScript::TryGet(Cstring id)
 void ItemScript::Parse(Unit& unit) const
 {
 	const int* ps = code.data();
-	int a, b, depth = 0, depth_if = 0;
+	int a, b, depth = 0, depthIf = 0;
 
 	while(*ps != PS_END)
 	{
@@ -228,7 +228,7 @@ void ItemScript::Parse(Unit& unit) const
 		switch(type)
 		{
 		case PS_ONE:
-			if(depth == depth_if)
+			if(depth == depthIf)
 				GiveItem(unit, ps, 1);
 			else
 				SkipItem(ps, 1);
@@ -236,7 +236,7 @@ void ItemScript::Parse(Unit& unit) const
 		case PS_ONE_OF_MANY:
 			a = *ps;
 			++ps;
-			if(depth == depth_if)
+			if(depth == depthIf)
 			{
 				b = Rand() % a;
 				for(int i = 0; i < a; ++i)
@@ -253,7 +253,7 @@ void ItemScript::Parse(Unit& unit) const
 		case PS_CHANCE:
 			a = *ps;
 			++ps;
-			if(depth == depth_if && Rand() % 100 < a)
+			if(depth == depthIf && Rand() % 100 < a)
 				GiveItem(unit, ps, 1);
 			else
 				SkipItem(ps, 1);
@@ -261,7 +261,7 @@ void ItemScript::Parse(Unit& unit) const
 		case PS_CHANCE2:
 			a = *ps;
 			++ps;
-			if(depth == depth_if)
+			if(depth == depthIf)
 			{
 				if(Rand() % 100 < a)
 				{
@@ -279,32 +279,32 @@ void ItemScript::Parse(Unit& unit) const
 			break;
 		case PS_IF_CHANCE:
 			a = *ps;
-			if(depth == depth_if && Rand() % 100 < a)
-				++depth_if;
+			if(depth == depthIf && Rand() % 100 < a)
+				++depthIf;
 			++depth;
 			++ps;
 			break;
 		case PS_IF_LEVEL:
-			if(depth == depth_if && unit.level >= *ps)
-				++depth_if;
+			if(depth == depthIf && unit.level >= *ps)
+				++depthIf;
 			++depth;
 			++ps;
 			break;
 		case PS_ELSE:
-			if(depth == depth_if)
-				--depth_if;
-			else if(depth == depth_if + 1)
-				++depth_if;
+			if(depth == depthIf)
+				--depthIf;
+			else if(depth == depthIf + 1)
+				++depthIf;
 			break;
 		case PS_END_IF:
-			if(depth == depth_if)
-				--depth_if;
+			if(depth == depthIf)
+				--depthIf;
 			--depth;
 			break;
 		case PS_MANY:
 			a = *ps;
 			++ps;
-			if(depth == depth_if)
+			if(depth == depthIf)
 				GiveItem(unit, ps, a);
 			else
 				SkipItem(ps, 1);
@@ -315,7 +315,7 @@ void ItemScript::Parse(Unit& unit) const
 			b = *ps;
 			++ps;
 			a = Random(a, b);
-			if(depth == depth_if && a > 0)
+			if(depth == depthIf && a > 0)
 				GiveItem(unit, ps, a);
 			else
 				SkipItem(ps, 1);

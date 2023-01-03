@@ -6,17 +6,17 @@
 #include <ResourceManager.h>
 
 BuffInfo BuffInfo::info[] = {
-	BuffInfo("buff_regeneration"),
-	BuffInfo("buff_natural"),
-	BuffInfo("buff_food"),
-	BuffInfo("buff_alcohol"),
-	BuffInfo("buff_poison"),
-	BuffInfo("buff_antimagic"),
-	BuffInfo("buff_stamina"),
-	BuffInfo("buff_stun"),
-	BuffInfo("buff_poison_res"),
-	BuffInfo("buff_rooted"),
-	BuffInfo("buff_slow_move")
+	BuffInfo("buffRegeneration"),
+	BuffInfo("buffNatural"),
+	BuffInfo("buffFood"),
+	BuffInfo("buffAlcohol"),
+	BuffInfo("buffPoison"),
+	BuffInfo("buffAntimagic"),
+	BuffInfo("buffStamina"),
+	BuffInfo("buffStun"),
+	BuffInfo("buffPoisonRes"),
+	BuffInfo("buffRooted"),
+	BuffInfo("buffSlowMove")
 };
 
 void BuffInfo::LoadImages()

@@ -33,23 +33,30 @@ void BookPanel::Draw()
 		return;
 
 	// book background
-	Int2 book_size = book->scheme->size * scale;
-	Int2 book_pos = (gui->wndSize - book_size) / 2;
-	Rect r = Rect::Create(book_pos, book_size);
+	Int2 bookSize = book->scheme->size * scale;
+	Int2 bookPos = (gui->wndSize - bookSize) / 2;
+	Rect r = Rect::Create(bookPos, bookSize);
 	gui->DrawSpriteRect(book->scheme->tex, r);
+
+	// regions
+	if(IsDebug() && input->Down(Key::B))
+	{
+		for(Rect& rect : book->scheme->regions)
+			gui->DrawRect(Color::Red, rect * scale + bookPos);
+	}
 
 	// prev page
 	if(currentPage != 0)
 	{
-		Int2 arrow_size = tArrowL->GetSize();
-		gui->DrawSpriteRect(tArrowL, Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale));
+		Int2 arrowSize = tArrowL->GetSize();
+		gui->DrawSpriteRect(tArrowL, Rect::Create(bookPos + book->scheme->prev * scale, arrowSize * scale));
 	}
 
 	// next page
 	if(currentPage != maxPage)
 	{
-		Int2 arrow_size = tArrowR->GetSize();
-		gui->DrawSpriteRect(tArrowR, Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale));
+		Int2 arrowSize = tArrowR->GetSize();
+		gui->DrawSpriteRect(tArrowR, Rect::Create(bookPos + book->scheme->next * scale, arrowSize * scale));
 	}
 
 	// text
@@ -62,18 +69,10 @@ void BookPanel::Draw()
 			continue;
 		if(split.page > currentPage)
 			break;
-		options.rect = book->scheme->regions[split.region] * scale + book_pos;
+		options.rect = book->scheme->regions[split.region] * scale + bookPos;
 		options.linesStart = split.linesStart;
 		options.linesEnd = split.linesEnd;
 		gui->DrawText2(options);
-	}
-
-	if(IsDebug() && input->Down(Key::B))
-	{
-		for(auto& rect : book->scheme->regions)
-		{
-			gui->DrawArea(Color(255, 0, 0, 128), rect * scale + book_pos);
-		}
 	}
 }
 
@@ -87,14 +86,14 @@ void BookPanel::Event(GuiEvent event)
 //=================================================================================================
 void BookPanel::Update(float dt)
 {
-	Int2 book_size = book->scheme->size * scale;
-	Int2 book_pos = (gui->wndSize - book_size) / 2;
+	Int2 bookSize = book->scheme->size * scale;
+	Int2 bookPos = (gui->wndSize - bookSize) / 2;
 
 	// prev page
 	if(currentPage != 0)
 	{
-		Int2 arrow_size = tArrowL->GetSize();
-		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(gui->cursorPos)
+		Int2 arrowSize = tArrowL->GetSize();
+		if(Rect::Create(bookPos + book->scheme->prev * scale, arrowSize * scale).IsInside(gui->cursorPos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(-1);
 	}
@@ -102,8 +101,8 @@ void BookPanel::Update(float dt)
 	// next page
 	if(currentPage != maxPage)
 	{
-		Int2 arrow_size = tArrowR->GetSize();
-		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(gui->cursorPos)
+		Int2 arrowSize = tArrowR->GetSize();
+		if(Rect::Create(bookPos + book->scheme->next * scale, arrowSize * scale).IsInside(gui->cursorPos)
 			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(+1);
 	}
@@ -138,19 +137,19 @@ void BookPanel::SplitBook()
 	splits.clear();
 	textLines.clear();
 
-	uint text_end = book->text.length();
+	uint textEnd = book->text.length();
 	cstring text = book->text.c_str();
-	uint index = 0, line_begin, line_end = 0, region = 0, current_h = 0, page = 0, start_line = 0;
-	int line_width;
-	while(font->SplitLine(line_begin, line_end, line_width, index, text, text_end, 0, regions[region].Size().x))
+	uint index = 0, lineBegin, lineEnd = 0, region = 0, currentH = 0, page = 0, startLine = 0;
+	int lineWidth;
+	while(font->SplitLine(lineBegin, lineEnd, lineWidth, index, text, textEnd, 0, regions[region].Size().x))
 	{
-		textLines.push_back({ line_begin, line_end, line_width });
-		current_h += font->height;
-		if(current_h + font->height > (uint)regions[region].Size().y)
+		textLines.push_back({ lineBegin, lineEnd, lineWidth });
+		currentH += font->height;
+		if(currentH + font->height > (uint)regions[region].Size().y)
 		{
-			current_h = 0;
-			splits.push_back({ page, region, start_line, textLines.size() });
-			start_line = textLines.size();
+			currentH = 0;
+			splits.push_back({ page, region, startLine, textLines.size() });
+			startLine = textLines.size();
 			++region;
 			if(regions.size() == region)
 			{
@@ -167,9 +166,9 @@ void BookPanel::SplitBook()
 	}
 	else
 	{
-		if(textLines.back().end != text_end)
-			textLines.push_back({ text_end, text_end, 0 });
-		splits.push_back({ page, region, start_line, textLines.size() });
+		if(textLines.back().end != textEnd)
+			textLines.push_back({ textEnd, textEnd, 0 });
+		splits.push_back({ page, region, startLine, textLines.size() });
 	}
 
 	maxPage = splits.back().page;

@@ -14,8 +14,8 @@ string Vars::tmpStr;
 //=================================================================================================
 bool Var::IsGeneric(void* ptr, int type)
 {
-	Type is_type = scriptMgr->GetVarType(type);
-	return this->type == is_type && this->ptr == ptr;
+	Type isType = scriptMgr->GetVarType(type);
+	return this->type == isType && this->ptr == ptr;
 }
 
 //=================================================================================================
@@ -31,7 +31,7 @@ Var* Var::SetGeneric(void* ptr, int type)
 void Var::GetGeneric(void* ptr, int type)
 {
 	// TODO: throw on invalid type
-	assert(this->type == scriptMgr->GetVarType(type) || this->type == Type::Magic);
+	assert(this->type == scriptMgr->GetVarType(type));
 	*(void**)ptr = this->ptr;
 }
 
@@ -126,7 +126,7 @@ void Vars::Save(GameWriter& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
-		case Var::Type::Magic:
+		case Var::Type::Array:
 			assert(0); // TODO
 			break;
 		}
@@ -153,8 +153,6 @@ void Vars::Load(GameReader& f)
 		{
 			v = it->second;
 			byte type = f.Read<byte>();
-			if(LOAD_VERSION < V_0_10 && type >= (byte)Var::Type::Int2)
-				type += 4; // added more simple types
 			if(v->registered)
 				assert(v->type == (Var::Type)type);
 			else
@@ -224,7 +222,7 @@ void Vars::Load(GameReader& f)
 		case Var::Type::String:
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
-		case Var::Type::Magic:
+		case Var::Type::Array:
 			assert(0); // TODO
 			break;
 		}

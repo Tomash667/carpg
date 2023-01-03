@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.18
-Data: 2021-07-02
+Wersja: 0.20
+Data: 2023-01-??
 
 ===================================================================================================
 1) Spis treści
@@ -164,7 +164,7 @@ grać w 4 osoby. Oczekuj zmian na lepsze!
 
 ===================================================================================================
 6) Zmiany
-Zobacz plik changelog.txt.
+Zobacz plik changelog_polish.txt.
 
 ===================================================================================================
 7) Komendy w konsoli
@@ -191,8 +191,8 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* changeTitle (true [false]) - zmienia tytuł okna w zależności od trybu gry
 	* checkUpdates ([true] false) - czy sprawdzać czy jest nowa wersja
 	* class (warrior hunter rogue) - wybrana klasa postaci w trybie szybkiej gry
-	* con_pos Int2 - pozycja konsoli x, y
-	* con_size Int2 - rozmiar konsoli x, y
+	* conPos Int2 - pozycja konsoli x, y
+	* conSize Int2 - rozmiar konsoli x, y
 	* console (true [false]) - konsola systemowa
 	* crashMode (none [normal] dataseg full) - określa tryb zapisywania informacji o crashu
 	* grassRange (0-100) - zasięg rysowania trawy
@@ -203,7 +203,7 @@ W pliku konfiguracyjnym (domyślnie carpg.cfg) można używać takich opcji:
 	* log ([true] false) - logowanie do pliku
 	* logFilename ["log.txt"] - plik do logowania
 	* name - imię gracza w trybie szybkiej gry
-	* next_seed - następne ziarno losowości
+	* nextSeed - następne ziarno losowości
 	* nick - zapamiętany wybór nicku w trybie multiplayer
 	* nosound (true [false]) - po ustawieniu muzyka i dźwięki nie jest wczytywane i odtwarzane, nie
 		można zmienić w czasie gry
@@ -307,11 +307,13 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* Project Divinity
 	* HorrorPen - Winds of Stories
 	* For Originz - Kevin MacLeod (incompetech.com)
+	* Ruined City Theme - Music by Cleyton Kauffman - https://soundcloud.com/cleytonkauffman
 	* http://www.deceasedsuperiortechnician.com/
 🔈 Dźwięki:
 	* https://opengameart.org
 		* artisticdude - ogre sounds
 		* OwlishMedia - coughs
+		* Little Robot Sound Factory (www.littlerobotsoundfactory.com) - splash
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

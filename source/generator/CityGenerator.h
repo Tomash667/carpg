@@ -123,6 +123,7 @@ public:
 	int GetNumberOfSteps() override;
 	void Generate() override;
 	void OnEnter() override;
+	void SpawnUnits(UnitGroup* group, int level) override;
 
 private:
 	void CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entryPoints);

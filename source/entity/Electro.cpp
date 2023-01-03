@@ -52,7 +52,7 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 
 		const Vec3 dir = line.to - line.from;
 		const Vec3 step = dir / float(steps);
-		Vec3 prev_off(0.f, 0.f, 0.f);
+		Vec3 prevOff(0.f, 0.f, 0.f);
 
 		trail->parts[0].exists = true;
 		trail->parts[0].next = 1;
@@ -63,10 +63,10 @@ void Electro::AddLine(const Vec3& from, const Vec3& to, float t)
 		{
 			Vec3 p = line.from + step * (float(i) + Random(-0.25f, 0.25f));
 			Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
-			prev_off = (r + prev_off) / 2;
+			prevOff = (r + prevOff) / 2;
 			trail->parts[i].exists = true;
 			trail->parts[i].next = i + 1;
-			trail->parts[i].pt = p + prev_off;
+			trail->parts[i].pt = p + prevOff;
 			trail->parts[i].t = 0;
 		}
 
@@ -118,7 +118,7 @@ bool Electro::Update(float dt)
 				return false;
 			}
 
-			const Vec3 target_pos = lines.back().to;
+			const Vec3 targetPos = lines.back().to;
 
 			// deal damage
 			if(!owner->IsFriend(*target, true))
@@ -130,29 +130,26 @@ bool Electro::Update(float dt)
 
 			// play sound
 			if(ability->soundHit)
-				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
+				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// add particles
 			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
+				pe->emissionInterval = 0.f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
 				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
+				pe->spawn = Int2(8, 12);
 				pe->maxParticles = 12;
-				pe->pos = target_pos;
+				pe->pos = targetPos;
 				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->size = Vec2(ability->sizeParticle, 0.f);
+				pe->alpha = Vec2(1.f, 0.f);
 				pe->mode = 1;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
@@ -160,9 +157,8 @@ bool Electro::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ELECTRO_HIT;
-				c.pos = target_pos;
+				NetChange& c = Net::PushChange(NetChange::ELECTRO_HIT);
+				c.pos = targetPos;
 			}
 
 			Unit* newTarget = FindNextTarget();
@@ -179,8 +175,7 @@ bool Electro::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_ELECTRO;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_ELECTRO);
 					c.extraId = id;
 					c.pos = to;
 				}
@@ -197,33 +192,30 @@ bool Electro::Update(float dt)
 	{
 		if(hitsome && lines.back().t >= 0.25f)
 		{
-			const Vec3 target_pos = lines.back().to;
+			const Vec3 targetPos = lines.back().to;
 			hitsome = false;
 
 			if(ability->soundHit)
-				soundMgr->PlaySound3d(ability->soundHit, target_pos, ability->soundHitDist);
+				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// particles
 			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.01f;
+				pe->emissionInterval = 0.f;
 				pe->life = 0.f;
 				pe->particleLife = 0.5f;
 				pe->emissions = 1;
-				pe->spawnMin = 8;
-				pe->spawnMax = 12;
+				pe->spawn = Int2(8, 12);
 				pe->maxParticles = 12;
-				pe->pos = target_pos;
+				pe->pos = targetPos;
 				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = ability->sizeParticle;
-				pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+				pe->size = Vec2(ability->sizeParticle, 0.f);
+				pe->alpha = Vec2(1.f, 0.f);
 				pe->mode = 1;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
@@ -231,9 +223,8 @@ bool Electro::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ELECTRO_HIT;
-				c.pos = target_pos;
+				NetChange& c = Net::PushChange(NetChange::ELECTRO_HIT);
+				c.pos = targetPos;
 			}
 		}
 		if(lines.back().t >= 0.5f)
@@ -298,15 +289,15 @@ Unit* Electro::FindNextTarget()
 		});
 	}
 
-	const Vec3 target_pos = lines.back().to;
+	const Vec3 targetPos = lines.back().to;
 	Unit* newTarget = nullptr;
 	for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 	{
 		Vec3 hitpoint;
-		Unit* new_hitted;
-		if(gameLevel->RayTest(target_pos, it2->first->GetCenter(), target, hitpoint, new_hitted))
+		Unit* newHitted;
+		if(gameLevel->RayTest(targetPos, it2->first->GetCenter(), target, hitpoint, newHitted))
 		{
-			if(new_hitted == it2->first)
+			if(newHitted == it2->first)
 			{
 				newTarget = it2->first;
 				break;
@@ -378,17 +369,17 @@ void Electro::Load(GameReader& f)
 	f >> owner;
 	if(LOAD_VERSION >= V_0_13)
 	{
-		int ability_hash = f.Read<int>();
-		ability = Ability::Get(ability_hash);
+		int abilityHash = f.Read<int>();
+		ability = Ability::Get(abilityHash);
 		if(!ability)
-			throw Format("Missing ability %u for electro.", ability_hash);
+			throw Format("Missing ability %u for electro.", abilityHash);
 	}
 	else
 	{
-		const string& ability_id = f.ReadString1();
-		ability = Ability::Get(ability_id);
+		const string& abilityId = f.ReadString1();
+		ability = Ability::Get(abilityId);
 		if(!ability)
-			throw Format("Missing ability '%s' for electro.", ability_id.c_str());
+			throw Format("Missing ability '%s' for electro.", abilityId.c_str());
 	}
 	f >> valid;
 	f >> hitsome;

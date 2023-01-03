@@ -73,13 +73,14 @@ Unit* LocationHelper::GetMayor(Location* loc)
 	assert(loc);
 	if(loc->type != L_CITY)
 		return nullptr;
+
 	City* city = static_cast<City*>(loc);
-	cstring unit_id;
-	if(city->target == VILLAGE)
-		unit_id = "soltys";
+	cstring unitId;
+	if(city->IsVillage())
+		unitId = "soltys";
 	else
-		unit_id = "mayor";
-	return ForLocation(loc)->FindUnit(UnitData::Get(unit_id));
+		unitId = "mayor";
+	return ForLocation(loc)->FindUnit(UnitData::Get(unitId));
 }
 
 //=================================================================================================
@@ -89,6 +90,13 @@ Unit* LocationHelper::GetCaptain(Location* loc)
 	if(loc->type != L_CITY)
 		return nullptr;
 	return ForLocation(loc)->FindUnit(UnitData::Get("guard_captain"));
+}
+
+//=================================================================================================
+Unit* LocationHelper::GetUnit(Location* loc, UnitData* ud)
+{
+	assert(loc && ud);
+	return ForLocation(loc)->FindUnit(ud);
 }
 
 //=================================================================================================

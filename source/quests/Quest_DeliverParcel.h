@@ -21,7 +21,7 @@ public:
 	};
 
 	void Start() override;
-	GameDialog* GetDialog(int dialog_type) override;
+	GameDialog* GetDialog(int dialogType) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;

@@ -141,18 +141,18 @@ void PickServerPanel::Update(float dt)
 	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
-		byte msg_id;
-		reader >> msg_id;
+		byte msgId;
+		reader >> msgId;
 
-		switch(msg_id)
+		switch(msgId)
 		{
 		case ID_UNCONNECTED_PONG:
 			if(lanMode)
 			{
 				// header
-				TimeMS time_ms;
+				TimeMS timeMs;
 				char sign[2];
-				reader >> time_ms;
+				reader >> timeMs;
 				reader >> sign;
 				if(!reader || sign[0] != 'C' || sign[1] != 'A')
 				{
@@ -162,10 +162,10 @@ void PickServerPanel::Update(float dt)
 
 				// info about server
 				uint version;
-				byte activePlayers, players_max, flags;
+				byte activePlayers, playersMax, flags;
 				reader >> version;
 				reader >> activePlayers;
-				reader >> players_max;
+				reader >> playersMax;
 				reader >> flags;
 				const string& serverName = reader.ReadString1();
 				if(!reader)
@@ -186,7 +186,7 @@ void PickServerPanel::Update(float dt)
 						Info("PickServer: Updated server %s (%s).", it->name.c_str(), it->adr.ToString());
 						it->name = serverName;
 						it->activePlayers = activePlayers;
-						it->maxPlayers = players_max;
+						it->maxPlayers = playersMax;
 						it->flags = flags;
 						it->timer = 0.f;
 						it->version = version;
@@ -204,7 +204,7 @@ void PickServerPanel::Update(float dt)
 					sd.id = -1;
 					sd.name = serverName;
 					sd.activePlayers = activePlayers;
-					sd.maxPlayers = players_max;
+					sd.maxPlayers = playersMax;
 					sd.adr = packet->systemAddress;
 					sd.flags = flags;
 					sd.timer = 0.f;
@@ -220,7 +220,7 @@ void PickServerPanel::Update(float dt)
 			// disconnecting from server will be received here, ignore message
 			break;
 		default:
-			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
+			Warn("PickServer: Unknown packet %d from %s.", msgId, packet->systemAddress.ToString());
 			break;
 		}
 	}

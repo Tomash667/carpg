@@ -55,9 +55,9 @@ void ClassLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_FLAGS, {
-		{ "mp_bar", Class::F_MP_BAR },
-		{ "mage_items", Class::F_MAGE_ITEMS },
-		{ "from_forest", Class::F_FROM_FOREST },
+		{ "mpBar", Class::F_MP_BAR },
+		{ "mageItems", Class::F_MAGE_ITEMS },
+		{ "fromForest", Class::F_FROM_FOREST },
 		{ "autoheal", Class::F_AUTOHEAL }
 		});
 }
@@ -94,10 +94,10 @@ void ClassLoader::LoadEntity(int top, const string& id)
 			break;
 		case K_ICON:
 			{
-				const string& icon_file = t.MustGetString();
-				clas->icon = resMgr->TryLoad<Texture>(icon_file);
+				const string& iconFile = t.MustGetString();
+				clas->icon = resMgr->TryLoad<Texture>(iconFile);
 				if(!clas->icon)
-					LoadError("Missing icon '%s'.", icon_file.c_str());
+					LoadError("Missing icon '%s'.", iconFile.c_str());
 				t.Next();
 			}
 			break;
@@ -150,10 +150,10 @@ void ClassLoader::LoadEntity(int top, const string& id)
 				t.Next();
 				while(!t.IsSymbol('}'))
 				{
-					const string& item_id = t.MustGetItem();
-					const Item* item = Item::TryGet(item_id);
+					const string& itemid = t.MustGetItem();
+					const Item* item = Item::TryGet(itemid);
 					if(!item)
-						t.Throw("Missing item '%s'.", item_id.c_str());
+						t.Throw("Missing item '%s'.", itemid.c_str());
 					t.Next();
 					int count = t.MustGetInt();
 					t.Next();

@@ -55,7 +55,7 @@ BaseObject& BaseObject::operator = (BaseObject& o)
 }
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(int hash, ObjectGroup** out_group)
+BaseObject* BaseObject::TryGet(int hash, ObjectGroup** outGroup)
 {
 	// find object
 	BaseObject* obj = ContentItem<BaseObject>::TryGet(hash);
@@ -66,8 +66,8 @@ BaseObject* BaseObject::TryGet(int hash, ObjectGroup** out_group)
 	ObjectGroup* group = ObjectGroup::TryGet(hash);
 	if(group)
 	{
-		if(out_group)
-			*out_group = group;
+		if(outGroup)
+			*outGroup = group;
 		return group->GetRandom();
 	}
 

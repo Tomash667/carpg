@@ -3,24 +3,24 @@
 
 Encounter::~Encounter()
 {
-	if(pooled_string)
-		StringPool.Free(pooled_string);
+	if(pooledString)
+		StringPool.Free(pooledString);
 }
 
 const string& Encounter::GetTextS()
 {
-	if(!pooled_string)
+	if(!pooledString)
 	{
-		pooled_string = StringPool.Get();
-		text = pooled_string->c_str();
+		pooledString = StringPool.Get();
+		text = pooledString->c_str();
 	}
-	return *pooled_string;
+	return *pooledString;
 }
 
 void Encounter::SetTextS(const string& str)
 {
-	if(!pooled_string)
-		pooled_string = StringPool.Get();
-	*pooled_string = str;
-	text = pooled_string->c_str();
+	if(!pooledString)
+		pooledString = StringPool.Get();
+	*pooledString = str;
+	text = pooledString->c_str();
 }

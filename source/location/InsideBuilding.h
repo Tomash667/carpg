@@ -13,8 +13,9 @@ struct InsideBuilding final : public LocationPart
 	float outsideRot, top, xsphereRadius, enterY;
 	Building* building;
 	Int2 levelShift;
+	bool canEnter;
 
-	InsideBuilding(int partId) : LocationPart(LocationPart::Type::Building, partId, false) {}
+	InsideBuilding(int partId) : LocationPart(LocationPart::Type::Building, partId, false), canEnter(true) {}
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);

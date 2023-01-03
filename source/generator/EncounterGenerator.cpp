@@ -12,7 +12,6 @@
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
 #include "UnitGroup.h"
-#include "Var.h"
 #include "World.h"
 
 #include <Perlin.h>
@@ -29,7 +28,7 @@ int EncounterGenerator::GetNumberOfSteps()
 //=================================================================================================
 void EncounterGenerator::Generate()
 {
-	enter_dir = (GameDirection)(Rand() % 4);
+	enterDir = (GameDirection)(Rand() % 4);
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -49,7 +48,7 @@ void EncounterGenerator::Generate()
 	}
 
 	// create road
-	if(enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT)
+	if(enterDir == GDIR_LEFT || enterDir == GDIR_RIGHT)
 	{
 		for(uint y = 62; y < 66; ++y)
 		{
@@ -95,7 +94,7 @@ void EncounterGenerator::Generate()
 	}
 
 	// flatten road
-	if(enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT)
+	if(enterDir == GDIR_LEFT || enterDir == GDIR_RIGHT)
 	{
 		for(uint y = 61; y <= 67; ++y)
 		{
@@ -127,7 +126,7 @@ void EncounterGenerator::OnEnter()
 
 	// generate objects
 	game->LoadingStep(game->txGeneratingObjects);
-	SpawnForestObjects((enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT) ? 0 : 1);
+	SpawnForestObjects((enterDir == GDIR_LEFT || enterDir == GDIR_RIGHT) ? 0 : 1);
 
 	// create colliders
 	game->LoadingStep(game->txRecreatingObjects);
@@ -160,20 +159,20 @@ void EncounterGenerator::OnEnter()
 //=================================================================================================
 void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
-	Vec3 look_pt;
-	switch(enter_dir)
+	Vec3 lookPt;
+	switch(enterDir)
 	{
 	case GDIR_RIGHT:
-		look_pt = Vec3(133.f, 0.f, 128.f);
+		lookPt = Vec3(133.f, 0.f, 128.f);
 		break;
 	case GDIR_UP:
-		look_pt = Vec3(128.f, 0.f, 133.f);
+		lookPt = Vec3(128.f, 0.f, 133.f);
 		break;
 	case GDIR_LEFT:
-		look_pt = Vec3(123.f, 0.f, 128.f);
+		lookPt = Vec3(123.f, 0.f, 128.f);
 		break;
 	case GDIR_DOWN:
-		look_pt = Vec3(128.f, 0.f, 123.f);
+		lookPt = Vec3(128.f, 0.f, 123.f);
 		break;
 	}
 
@@ -289,13 +288,13 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			break;
 		case SE_ENEMIES_COMBAT:
 			{
-				far_encounter = true;
-				int group_index = Rand() % 4;
-				int group_index2 = Rand() % 4;
-				if(group_index == group_index2)
-					group_index2 = (group_index2 + 1) % 4;
+				farEncounter = true;
+				int groupIndex = Rand() % 4;
+				int groupIndex2 = Rand() % 4;
+				if(groupIndex == groupIndex2)
+					groupIndex2 = (groupIndex2 + 1) % 4;
 				spawn.level = Max(3, spawn.level + Random(-1, +1));
-				switch(group_index)
+				switch(groupIndex)
 				{
 				case 0:
 					spawn.groupName = "bandits";
@@ -318,7 +317,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 					break;
 				}
 				spawn.level2 = Max(3, spawn.level2 + Random(-1, +1));
-				switch(group_index2)
+				switch(groupIndex2)
 				{
 				case 0:
 					spawn.groupName2 = "bandits";
@@ -383,27 +382,27 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	}
 
 	dialog = spawn.dialog;
-	far_encounter = spawn.farEncounter;
+	farEncounter = spawn.farEncounter;
 
-	float best_dist;
+	float bestDist;
 	const float center = (float)OutsideLocation::size;
-	Vec3 spawn_pos(center, 0, center);
+	Vec3 spawnPos(center, 0, center);
 	if(spawn.backAttack)
 	{
 		const float dist = 12.f;
-		switch(enter_dir)
+		switch(enterDir)
 		{
 		case GDIR_RIGHT:
-			spawn_pos = Vec3(center + dist, 0, center);
+			spawnPos = Vec3(center + dist, 0, center);
 			break;
 		case GDIR_UP:
-			spawn_pos = Vec3(center, 0.f, center + dist);
+			spawnPos = Vec3(center, 0.f, center + dist);
 			break;
 		case GDIR_LEFT:
-			spawn_pos = Vec3(center - dist, 0.f, center);
+			spawnPos = Vec3(center - dist, 0.f, center);
 			break;
 		case GDIR_DOWN:
-			spawn_pos = Vec3(center, 0.f, center - dist);
+			spawnPos = Vec3(center, 0.f, center - dist);
 			break;
 		}
 	}
@@ -412,14 +411,14 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	AITeam* team = spawn.isTeam ? aiMgr->CreateTeam() : nullptr;
 	if(spawn.essential)
 	{
-		int unit_level;
+		int unitLevel;
 		if(spawn.level < 0)
-			unit_level = -spawn.level;
+			unitLevel = -spawn.level;
 		else
-			unit_level = Clamp(spawn.essential->level.Random(), spawn.level / 2, spawn.level);
-		talker = gameLevel->SpawnUnitNearLocation(locPart, spawn_pos, *spawn.essential, &look_pt, unit_level, 4.f);
+			unitLevel = Clamp(spawn.essential->level.Random(), spawn.level / 2, spawn.level);
+		talker = gameLevel->SpawnUnitNearLocation(locPart, spawnPos, *spawn.essential, &lookPt, unitLevel, 4.f);
 		talker->dontAttack = spawn.dontAttack;
-		best_dist = Vec3::Distance(talker->pos, look_pt);
+		bestDist = Vec3::Distance(talker->pos, lookPt);
 		--spawn.count;
 		if(team)
 			team->Add(talker);
@@ -427,14 +426,14 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(spawn.groupName)
 	{
 		UnitGroup* group = UnitGroup::TryGet(spawn.groupName);
-		gameLevel->SpawnUnitsGroup(locPart, spawn_pos, &look_pt, spawn.count, group, spawn.level, [&](Unit* u)
+		gameLevel->SpawnUnitsGroup(locPart, spawnPos, &lookPt, spawn.count, group, spawn.level, [&](Unit* u)
 		{
 			u->dontAttack = spawn.dontAttack;
-			float dist = Vec3::Distance(u->pos, look_pt);
-			if(!talker || dist < best_dist)
+			float dist = Vec3::Distance(u->pos, lookPt);
+			if(!talker || dist < bestDist)
 			{
 				talker = u;
-				best_dist = dist;
+				bestDist = dist;
 			}
 			if(team)
 				team->Add(u);
@@ -448,7 +447,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	{
 		team = (spawn.isTeam2 ? aiMgr->CreateTeam() : nullptr);
 		UnitGroup* group = UnitGroup::TryGet(spawn.groupName2);
-		gameLevel->SpawnUnitsGroup(locPart, spawn_pos, &look_pt, spawn.count2, group, spawn.level2, [&](Unit* u)
+		gameLevel->SpawnUnitsGroup(locPart, spawnPos, &lookPt, spawn.count2, group, spawn.level2, [&](Unit* u)
 		{
 			u->dontAttack = spawn.dontAttack;
 			if(team)
@@ -466,10 +465,10 @@ void EncounterGenerator::SpawnEncounterTeam()
 	float dir;
 
 	const float center = (float)OutsideLocation::size;
-	float dist = (far_encounter ? 12.f : 7.f);
+	float dist = (farEncounter ? 12.f : 7.f);
 
-	Vec3 look_pt;
-	switch(enter_dir)
+	Vec3 lookPt;
+	switch(enterDir)
 	{
 	default:
 	case GDIR_RIGHT:

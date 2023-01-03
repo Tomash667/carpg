@@ -28,7 +28,7 @@ EntityType<Bullet>::Impl EntityType<Bullet>::impl;
 bool Bullet::Update(float dt, LocationPart& locPart)
 {
 	// update position
-	Vec3 prev_pos = pos;
+	Vec3 prevPos = pos;
 	pos += Vec3(sin(rot.y) * speed, yspeed, cos(rot.y) * speed) * dt;
 	if(ability && ability->type == Ability::Ball)
 		yspeed -= 10.f * dt;
@@ -59,14 +59,14 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 		shape = ability->shape;
 	assert(shape->isConvex());
 
-	btTransform tr_from, tr_to;
-	tr_from.setOrigin(ToVector3(prev_pos));
-	tr_from.setRotation(btQuaternion(rot.y, rot.x, rot.z));
-	tr_to.setOrigin(ToVector3(pos));
-	tr_to.setRotation(tr_from.getRotation());
+	btTransform trFrom, trTo;
+	trFrom.setOrigin(ToVector3(prevPos));
+	trFrom.setRotation(btQuaternion(rot.y, rot.x, rot.z));
+	trTo.setOrigin(ToVector3(pos));
+	trTo.setRotation(trFrom.getRotation());
 
 	BulletCallback callback(owner ? owner->cobj : nullptr);
-	phyWorld->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+	phyWorld->convexSweepTest((btConvexShape*)shape, trFrom, trTo, callback);
 	if(!callback.hasHit())
 		return false;
 
@@ -85,8 +85,7 @@ bool Bullet::Update(float dt, LocationPart& locPart)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(net->changes);
-		c.type = NetChange::REMOVE_BULLET;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_BULLET);
 		c.id = id;
 		c.extraId = (hitted != nullptr ? 1 : 0);
 	}
@@ -142,8 +141,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					soundMgr->PlaySound3d(ability->soundHit, hitpoint, ability->soundHitDist);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SPELL_SOUND;
+						NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 						c.extraId = 1;
 						c.ability = ability;
 						c.pos = hitpoint;
@@ -164,16 +162,16 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				m += 0.1f;
 
 			// backstab bonus damage
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
-			float backstab_mod = backstab;
+			float angleDif = AngleDiff(rot.y, hitted->rot);
+			float backstabMod = backstab;
 			if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
-				backstab_mod /= 2;
-			m += angle_dif / PI * backstab_mod;
+				backstabMod /= 2;
+			m += angleDif / PI * backstabMod;
 
 			// apply modifiers
 			float attack = this->attack * m;
 
-			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
+			if(hitted->IsBlocking() && angleDif < PI * 2 / 5)
 			{
 				// play sound
 				const MATERIAL_TYPE material = hitted->GetShield().material;
@@ -184,7 +182,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 					hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, level);
 
 				// reduce damage
-				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
+				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angleDif / (PI * 2 / 5));
 				float stamina = min(block, attack);
 				attack -= block;
 				hitted->RemoveStaminaBlock(stamina);
@@ -201,7 +199,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 						else
 							hitted->animationState = AS_POSITION_HURT;
 
-						if(hitted->meshInst->mesh->head.n_groups == 2)
+						if(hitted->meshInst->mesh->head.nGroups == 2)
 							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
@@ -266,15 +264,15 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			// apply poison
 			if(poisonAttack > 0.f)
 			{
-				float poison_res = hitted->GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = hitted->GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
 					e.sourceId = -1;
 					e.value = -1;
-					e.power = poisonAttack / 5 * poison_res;
+					e.power = poisonAttack / 5 * poisonRes;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}
@@ -304,12 +302,12 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			float dmg = attack;
 			if(owner)
 				dmg += owner->level * ability->dmgBonus;
-			float angle_dif = AngleDiff(rot.y, hitted->rot);
-			float base_dmg = dmg;
+			float angleDif = AngleDiff(rot.y, hitted->rot);
+			float baseDmg = dmg;
 
-			if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
+			if(hitted->IsBlocking() && angleDif < PI * 2 / 5)
 			{
-				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
+				float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angleDif / (PI * 2 / 5));
 				float stamina = min(dmg, block);
 				dmg -= block / 2;
 				hitted->RemoveStaminaBlock(stamina);
@@ -317,7 +315,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 				if(hitted->IsPlayer())
 				{
 					// player blocked spell, train him
-					hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, level);
+					hitted->player->Train(TrainWhat::BlockBullet, baseDmg / hitted->hpmax, level);
 				}
 
 				if(dmg < 0)
@@ -333,15 +331,15 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			// apply poison
 			if(IsSet(ability->flags, Ability::Poison))
 			{
-				float poison_res = hitted->GetPoisonResistance();
-				if(poison_res > 0.f)
+				float poisonRes = hitted->GetPoisonResistance();
+				if(poisonRes > 0.f)
 				{
 					Effect e;
 					e.effect = EffectId::Poison;
 					e.source = EffectSource::Temporary;
 					e.sourceId = -1;
 					e.value = -1;
-					e.power = dmg / 5 * poison_res;
+					e.power = dmg / 5 * poisonRes;
 					e.time = 5.f;
 					hitted->AddEffect(e);
 				}
@@ -360,22 +358,19 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = gameRes->tSpark;
-			pe->emissionInterval = 0.01f;
+			pe->emissionInterval = 0.f;
 			pe->life = 5.f;
 			pe->particleLife = 0.5f;
 			pe->emissions = 1;
-			pe->spawnMin = 10;
-			pe->spawnMax = 15;
+			pe->spawn = Int2(10, 15);
 			pe->maxParticles = 15;
 			pe->pos = hitpoint;
 			pe->speedMin = Vec3(-1, 0, -1);
 			pe->speedMax = Vec3(1, 1, 1);
 			pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
 			pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-			pe->size = 0.3f;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 0.9f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->size = Vec2(0.3f, 0.f);
+			pe->alpha = Vec2(0.9f, 0.f);
 			pe->mode = 0;
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
@@ -437,9 +432,9 @@ void Bullet::Load(GameReader& f)
 	Register();
 	f >> pos;
 	f >> rot;
-	const string& mesh_id = f.ReadString1();
-	if(!mesh_id.empty())
-		mesh = resMgr->Load<Mesh>(mesh_id);
+	const string& meshId = f.ReadString1();
+	if(!meshId.empty())
+		mesh = resMgr->Load<Mesh>(meshId);
 	else
 		mesh = nullptr;
 	f >> speed;
@@ -463,40 +458,33 @@ void Bullet::Load(GameReader& f)
 	}
 	else
 	{
-		const string& ability_id = f.ReadString1();
-		if(!ability_id.empty())
+		const string& abilityId = f.ReadString1();
+		if(!abilityId.empty())
 		{
-			ability = Ability::Get(ability_id);
+			ability = Ability::Get(abilityId);
 			if(!ability)
-				throw Format("Missing ability '%s' for bullet.", ability_id.c_str());
+				throw Format("Missing ability '%s' for bullet.", abilityId.c_str());
 		}
 		else
 			ability = nullptr;
 	}
-	const string& tex_name = f.ReadString1();
-	if(!tex_name.empty())
-		tex = resMgr->Load<Texture>(tex_name);
+	const string& texName = f.ReadString1();
+	if(!texName.empty())
+		tex = resMgr->Load<Texture>(texName);
 	else
 		tex = nullptr;
 	trail = TrailParticleEmitter::GetById(f.Read<int>());
 	if(LOAD_VERSION < V_0_13)
 	{
-		TrailParticleEmitter* old_trail = TrailParticleEmitter::GetById(f.Read<int>());
-		if(old_trail)
-			old_trail->destroy = true;
+		TrailParticleEmitter* oldTrail = TrailParticleEmitter::GetById(f.Read<int>());
+		if(oldTrail)
+			oldTrail->destroy = true;
 	}
 	pe = ParticleEmitter::GetById(f.Read<int>());
 	if(LOAD_VERSION < V_0_16)
 		f.Skip<bool>();
 	f >> level;
-	if(LOAD_VERSION >= V_0_10)
-		f >> backstab;
-	else
-	{
-		int backstabValue;
-		f >> backstabValue;
-		backstab = 0.25f * (backstabValue + 1);
-	}
+	f >> backstab;
 	f >> startPos;
 	if(LOAD_VERSION >= V_0_18)
 		f >> isArrow;
@@ -592,18 +580,15 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 			pe->life = -1;
 			pe->particleLife = 0.5f;
 			pe->emissions = -1;
-			pe->spawnMin = 3;
-			pe->spawnMax = 4;
+			pe->spawn = Int2(3, 4);
 			pe->maxParticles = 50;
 			pe->pos = pos;
 			pe->speedMin = Vec3(-1, -1, -1);
 			pe->speedMax = Vec3(1, 1, 1);
 			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = ability->sizeParticle;
-			pe->opSize = ParticleEmitter::POP_LINEAR_SHRINK;
-			pe->alpha = 1.f;
-			pe->opAlpha = ParticleEmitter::POP_LINEAR_SHRINK;
+			pe->size = Vec2(ability->sizeParticle, 0.f);
+			pe->alpha = Vec2(1.f, 0.f);
 			pe->mode = 1;
 			pe->Init();
 			lvlPart.pes.push_back(pe);

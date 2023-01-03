@@ -1,9 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Var.h"
-#include "ScriptException.h"
 #include "Event.h"
+#include "ScriptContext.h"
+#include "ScriptException.h"
+#include "Var.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -16,31 +17,6 @@
 class TypeBuilder;
 class NamespaceBuilder;
 struct asSFuncPtr;
-
-//-----------------------------------------------------------------------------
-struct ScriptContext
-{
-	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr), quest(nullptr) {}
-
-	PlayerController* pc;
-	Unit* target;
-	vector<ItemSlot>* stock;
-	Quest2* quest;
-
-	void Clear()
-	{
-		pc = nullptr;
-		target = nullptr;
-		stock = nullptr;
-		quest = nullptr;
-	}
-	Quest2* GetQuest()
-	{
-		if(!quest)
-			throw ScriptException("Method must be called from quest.");
-		return quest;
-	}
-};
 
 //-----------------------------------------------------------------------------
 struct SuspendedScript
@@ -57,12 +33,13 @@ public:
 	ScriptManager();
 	~ScriptManager();
 	void Init();
+	void RegisterExtensions();
 	void RegisterCommon();
 	void RegisterGame();
 	void SetException(cstring ex) { lastException = ex; }
 	void RunScript(cstring code);
 	asIScriptFunction* PrepareScript(cstring name, cstring code);
-	void RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
+	void RunScript(asIScriptFunction* func, void* instance = nullptr, Quest2* quest = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
@@ -101,12 +78,6 @@ public:
 	void StopAllScripts();
 	asIScriptContext* SuspendScript();
 	void ResumeScript(asIScriptContext* ctx);
-	void RegisterSharedInstance(QuestScheme* scheme, asIScriptObject* instance)
-	{
-		assert(scheme && instance);
-		sharedInstances.push_back(std::make_pair(scheme, instance));
-	}
-	asIScriptObject* GetSharedInstance(QuestScheme* scheme);
 
 private:
 	struct ScriptTypeInfo
@@ -126,7 +97,9 @@ private:
 	std::map<string, int> varTypeMap;
 	std::unordered_map<int, Vars*> unitVars;
 	ScriptContext ctx;
-	vector<SuspendedScript> suspended_scripts;
-	vector<pair<QuestScheme*, asIScriptObject*>> sharedInstances;
+	vector<SuspendedScript> suspendedScripts;
+	vector<Quest2*> questsStack;
+	std::set<Quest2*> updatedQuests;
+	int callDepth;
 	bool gatherOutput;
 };

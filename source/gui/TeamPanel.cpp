@@ -385,7 +385,11 @@ void TeamPanel::Event(GuiEvent e)
 		else
 		{
 			counter = min(game->pc->credit, game->pc->unit->gold);
-			GetNumberDialog::Show(this, delegate<void(int)>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game->pc->credit), 1, counter, &counter);
+			GetNumberDialogParams params(counter, 1, counter);
+			params.parent = this;
+			params.event = DialogEvent(this, &TeamPanel::OnPayCredit);
+			params.text = Format(txPayCreditAmount, game->pc->credit);
+			GetNumberDialog::Show(params);
 		}
 		break;
 	}
@@ -441,8 +445,7 @@ void TeamPanel::OnPayCredit(int id)
 			game->pc->PayCredit(count);
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PAY_CREDIT;
+			NetChange& c = Net::PushChange(NetChange::PAY_CREDIT);
 			c.id = count;
 		}
 	}
@@ -459,7 +462,11 @@ void TeamPanel::GiveGold(Unit* target)
 	{
 		targetUnit = target;
 		counter = 1;
-		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 1, game->pc->unit->gold, &counter);
+		GetNumberDialogParams params(counter, 1, game->pc->unit->gold);
+		params.parent = this;
+		params.event = DialogEvent(this, &TeamPanel::OnGiveGold);
+		params.text = Format(txGiveGoldAmount, target->GetName());
+		GetNumberDialog::Show(params);
 	}
 }
 
@@ -474,8 +481,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 			SimpleDialog(txAlreadyLeader);
 		else if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LEADER;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LEADER);
 			c.id = team->myId;
 
 			team->leaderId = team->myId;
@@ -490,8 +496,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
 	else if(team->IsLeader() || Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LEADER;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_LEADER);
 		c.id = target->player->id;
 
 		if(Net::IsServer())
@@ -548,8 +553,7 @@ void TeamPanel::OnGiveGold(int id)
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(target->player->playerInfo->changes);
-				c.type = NetChangePlayer::GOLD_RECEIVED;
+				NetChangePlayer& c = target->player->playerInfo->PushChange(NetChangePlayer::GOLD_RECEIVED);
 				c.id = game->pc->id;
 				c.count = counter;
 				target->player->playerInfo->UpdateGold();
@@ -557,8 +561,7 @@ void TeamPanel::OnGiveGold(int id)
 		}
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GIVE_GOLD;
+			NetChange& c = Net::PushChange(NetChange::GIVE_GOLD);
 			c.id = target->id;
 			c.count = counter;
 		}

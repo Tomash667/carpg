@@ -47,7 +47,8 @@ void MusicListLoader::InitTokenizer()
 		{ "boss", MusicType::Boss },
 		{ "travel", MusicType::Travel },
 		{ "moonwell", MusicType::Moonwell },
-		{ "death", MusicType::Death }
+		{ "death", MusicType::Death },
+		{ "emptyCity", MusicType::EmptyCity }
 		});
 }
 

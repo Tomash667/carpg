@@ -188,9 +188,9 @@ void AIController::Load(GameReader& f)
 		break;
 	case Escape:
 		{
-			int room_id = f.Read<int>();
-			if(room_id != -1)
-				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
+			int roomId = f.Read<int>();
+			if(roomId != -1)
+				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 			else
 				st.escape.room = nullptr;
 		}
@@ -201,8 +201,8 @@ void AIController::Load(GameReader& f)
 		break;
 	case SearchEnemy:
 		{
-			int room_id = f.Read<int>();
-			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[room_id];
+			int roomId = f.Read<int>();
+			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 		}
 		break;
 	}
@@ -228,9 +228,9 @@ void AIController::Load(GameReader& f)
 		f.Skip<float>(); // old shoot_yspeed
 	if(LOAD_VERSION < V_0_12)
 	{
-		bool goto_inn;
-		f >> goto_inn;
-		if(goto_inn)
+		bool gotoInn;
+		f >> gotoInn;
+		if(gotoInn)
 			unit->OrderGoToInn();
 	}
 	if(LOAD_VERSION >= V_0_19)
@@ -414,24 +414,25 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(gameLevel->cityCtx && locTimer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(!gameLevel->cityCtx
+		|| locTimer > 0.f
+		|| game->dontWander
+		|| !IsSet(unit->data->flags, F_AI_WANDERS)
+		|| unit->busy != Unit::Busy_No
+		|| unit->GetOrder() == ORDER_WAIT)
+		return false;
+
+	if(unit->IsHero())
 	{
-		if(unit->busy != Unit::Busy_No)
+		if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
 			return false;
-		if(unit->IsHero())
-		{
-			if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
-				return false;
-			else if(questMgr->questTournament->IsGenerated())
-				return false;
-			else
-				return true;
-		}
-		else if(unit->locPart->partType == LocationPart::Type::Outside)
-			return true;
+		else if(questMgr->questTournament->IsGenerated())
+			return false;
 		else
-			return false;
+			return true;
 	}
+	else if(unit->locPart->partType == LocationPart::Type::Outside)
+		return true;
 	else
 		return false;
 }
@@ -468,14 +469,13 @@ void AIController::Shout()
 	game->PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
 
 	// alarm near allies
-	Unit* target_unit = target;
+	Unit* targetUnit = target;
 	for(Unit* u : unit->locPart->units)
 	{
 		if(u->toRemove || unit == u || !u->IsStanding() || u->IsPlayer() || !unit->IsFriend(*u) || u->ai->state == Fighting
@@ -484,7 +484,7 @@ void AIController::Shout()
 
 		if(Vec3::Distance(unit->pos, u->pos) <= ALERT_RANGE && gameLevel->CanSee(*unit, *u))
 		{
-			u->ai->alertTarget = target_unit;
+			u->ai->alertTarget = targetUnit;
 			u->ai->alertTargetPos = targetLastPos;
 		}
 	}
@@ -510,8 +510,7 @@ void AIController::HitReaction(const Vec3& pos)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
@@ -537,7 +536,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.n_groups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.nGroups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -580,7 +579,7 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float speed = (doPowerAttack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
 
-	if(unit->meshInst->mesh->head.n_groups > 1)
+	if(unit->meshInst->mesh->head.nGroups > 1)
 	{
 		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
 		unit->meshInst->groups[1].speed = speed;
@@ -592,12 +591,11 @@ void AIController::DoAttack(Unit* target, bool running)
 		unit->animation = ANI_PLAY;
 	}
 	unit->animationState = (doPowerAttack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);
-	unit->act.attack.hitted = !target;
+	unit->act.attack.hitted = target ? 0 : 1;
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ATTACK;
+		NetChange& c = Net::PushChange(NetChange::ATTACK);
 		c.unit = unit;
 		c.id = (doPowerAttack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 		c.f[1] = speed;

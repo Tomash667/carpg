@@ -22,7 +22,8 @@ enum Group
 enum TopKeyword
 {
 	TK_QUEST,
-	TK_QUEST_LIST
+	TK_QUEST_LIST,
+	TK_CODE
 };
 
 enum Property
@@ -32,7 +33,7 @@ enum Property
 	P_CODE,
 	P_DIALOG,
 	P_FLAGS,
-	P_PROPERTIES
+	P_ALIAS
 };
 
 enum QuestKeyword
@@ -49,7 +50,8 @@ void QuestLoader::DoLoading()
 	engine = scriptMgr->GetEngine();
 	module = engine->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 
-	Load("quests.txt", G_TOP);
+	bool requireId[]{ true, true, false };
+	Load("quests.txt", G_TOP, requireId);
 }
 
 //=================================================================================================
@@ -62,9 +64,12 @@ void QuestLoader::Cleanup()
 //=================================================================================================
 void QuestLoader::InitTokenizer()
 {
+	t.SetFlags(Tokenizer::F_MULTI_KEYWORDS);
+
 	t.AddKeywords(G_TOP, {
 		{ "quest", TK_QUEST },
-		{ "quest_list", TK_QUEST_LIST }
+		{ "questList", TK_QUEST_LIST },
+		{ "code", TK_CODE }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -73,7 +78,7 @@ void QuestLoader::InitTokenizer()
 		{ "code", P_CODE },
 		{ "dialog", P_DIALOG },
 		{ "flags", P_FLAGS },
-		{ "properties", P_PROPERTIES }
+		{ "alias", P_ALIAS }
 		});
 
 	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
@@ -84,8 +89,8 @@ void QuestLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_FLAGS, {
-		{ "dont_count", QuestScheme::DONT_COUNT },
-		{ "not_scripted", QuestScheme::NOT_SCRIPTED }
+		{ "dontCount", QuestScheme::DONT_COUNT },
+		{ "recreate", QuestScheme::RECREATE }
 		});
 }
 
@@ -99,6 +104,9 @@ void QuestLoader::LoadEntity(int top, const string& id)
 		break;
 	case TK_QUEST_LIST:
 		ParseQuestList(id);
+		break;
+	case TK_CODE:
+		ParseCode();
 		break;
 	}
 }
@@ -137,11 +145,11 @@ void QuestLoader::ParseQuest(const string& id)
 			t.Next();
 			while(!t.IsSymbol('}'))
 			{
-				const string& progress_id = t.MustGetItem();
-				int p = quest->GetProgress(progress_id);
+				const string& progressId = t.MustGetItem();
+				int p = quest->GetProgress(progressId);
 				if(p != -1)
-					t.Throw("Progress %s already set.", progress_id.c_str());
-				quest->progress.push_back(progress_id);
+					t.Throw("Progress %s already set.", progressId.c_str());
+				quest->progress.push_back(progressId);
 				t.Next();
 			}
 			if(quest->progress.empty())
@@ -165,40 +173,16 @@ void QuestLoader::ParseQuest(const string& id)
 		case P_FLAGS:
 			t.ParseFlags(G_FLAGS, quest->flags);
 			break;
-		case P_PROPERTIES:
+		case P_ALIAS:
 			{
-				if(!quest->properties.empty())
-					t.Throw("Properties already declared.");
-				int offset = 0;
 				t.AssertSymbol('{');
 				t.Next();
 				while(!t.IsSymbol('}'))
 				{
-					string type = t.MustGetItem();
+					uint newHash = Hash(t.MustGetItem());
 					t.Next();
-					bool isPointer;
-					if(t.IsSymbol('@'))
-					{
-						isPointer = true;
-						t.Next();
-					}
-					else
-						isPointer = false;
-					if(!isPointer)
-						t.Throw("Not implemented property type.");
-					while(true)
-					{
-						const string& name = t.MustGetItem();
-						quest->properties += Format("%s%s get_%s() property { return quest.GetValue(%d); }\n",
-							type.c_str(), isPointer ? "@" : "", name.c_str(), offset);
-						offset += 4;
-						t.Next();
-						if(t.IsSymbol(','))
-							t.Next();
-						else
-							break;
-					}
-					t.AssertSymbol(';');
+					uint oldHash = Hash(t.MustGetItem());
+					quest->varAlias.push_back(std::make_pair(newHash, oldHash));
 					t.Next();
 				}
 			}
@@ -231,19 +215,19 @@ void QuestLoader::ParseQuestList(const string& id)
 	while(!t.IsSymbol('}'))
 	{
 		QuestInfo* info;
-		const string& quest_id = t.MustGetItemKeyword();
-		if(quest_id == "none")
+		const string& questId = t.MustGetItemKeyword();
+		if(questId == "none")
 			info = nullptr;
 		else
 		{
-			info = questMgr->FindQuestInfo(quest_id);
+			info = questMgr->FindQuestInfo(questId);
 			if(!info)
-				t.Throw("Missing quest '%s'.", quest_id.c_str());
+				t.Throw("Missing quest '%s'.", questId.c_str());
 		}
 		for(QuestList::Entry& e : list->entries)
 		{
 			if(e.info == info)
-				t.Throw("Quest '%s' is already on list.", quest_id.c_str());
+				t.Throw("Quest '%s' is already on list.", questId.c_str());
 		}
 		t.Next();
 
@@ -262,6 +246,12 @@ void QuestLoader::ParseQuestList(const string& id)
 		t.Throw("Quest list can't be empty.");
 
 	QuestList::lists.push_back(list.Pin());
+}
+
+//=================================================================================================
+void QuestLoader::ParseCode()
+{
+	globalCode += t.GetBlock('{', '}', false);
 }
 
 //=================================================================================================
@@ -323,10 +313,10 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 	int errors = 0;
 	bool skip = false;
 
-	const string& quest_id = t.MustGetItemKeyword();
-	QuestScheme* scheme = QuestScheme::TryGet(quest_id);
+	const string& questId = t.MustGetItemKeyword();
+	QuestScheme* scheme = QuestScheme::TryGet(questId);
 	if(!scheme)
-		t.Throw("Missing quest '%s'.", quest_id.c_str());
+		t.Throw("Missing quest '%s'.", questId.c_str());
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -364,12 +354,12 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 					int prev = -1;
 					while(!t.IsSymbol('}'))
 					{
-						int str_idx = dialog->strs.size();
+						int strIndex = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						if(prev == -1)
 						{
-							dialog->texts[index].index = str_idx;
+							dialog->texts[index].index = strIndex;
 							dialog->texts[index].exists = true;
 							prev = index;
 						}
@@ -377,7 +367,7 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 						{
 							index = dialog->texts.size();
 							dialog->texts[prev].next = index;
-							dialog->texts.push_back(GameDialog::Text(str_idx));
+							dialog->texts.push_back(GameDialog::Text(strIndex));
 							prev = index;
 						}
 						dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
@@ -385,9 +375,9 @@ int QuestLoader::LoadQuestTexts(Tokenizer& t)
 				}
 				else
 				{
-					int str_idx = dialog->strs.size();
+					int strIndex = dialog->strs.size();
 					dialog->strs.push_back(t.MustGetString());
-					dialog->texts[index].index = str_idx;
+					dialog->texts[index].index = strIndex;
 					dialog->texts[index].exists = true;
 					dialogLoader->CheckDialogText(dialog, index, &scheme->scripts);
 				}
@@ -477,11 +467,8 @@ void QuestLoader::Finalize()
 
 		if(!scheme->fProgress)
 		{
-			if(!IsSet(scheme->flags, QuestScheme::NOT_SCRIPTED))
-			{
-				Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
-				++content.errors;
-			}
+			Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
+			++content.errors;
 		}
 		if(scheme->category != QuestCategory::Unique && !scheme->GetDialog("start"))
 		{
@@ -492,10 +479,10 @@ void QuestLoader::Finalize()
 		uint props = type->GetPropertyCount();
 		for(uint i = 0; i < props; ++i)
 		{
-			int type_id;
-			bool is_ref;
-			type->GetProperty(i, nullptr, &type_id, nullptr, nullptr, nullptr, &is_ref);
-			if(!scriptMgr->CheckVarType(type_id, is_ref))
+			int typeId;
+			bool isRef;
+			type->GetProperty(i, nullptr, &typeId, nullptr, nullptr, nullptr, &isRef);
+			if(!scriptMgr->CheckVarType(typeId, isRef))
 			{
 				Error("Quest '%s' invalid property declaration '%s'.", scheme->id.c_str(), type->GetPropertyDeclaration(i));
 				++content.errors;
@@ -528,12 +515,6 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		"int get_progress() property { return quest.progress; }\n"
 		"void set_progress(int value) property { quest.SetProgress(value); }\n"
 		"string TEXT(int index) { return quest.GetString(index); }\n", scheme->id.c_str());
-	if(!scheme->properties.empty())
-	{
-		code += "// properties\n"
-			"Location@ get_startLoc() property { return quest.startLoc; }\n";
-		code += scheme->properties;
-	}
 	for(int i = 0; i < DialogScripts::F_MAX; ++i)
 	{
 		scheme->scripts.GetFormattedCode((DialogScripts::FUNC)i, str.get_ref());

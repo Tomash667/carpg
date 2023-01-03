@@ -18,13 +18,13 @@ code {
 //=============================================================================
 quest deliver_letter {
 	dialog start {
-		0 "I'm looking for someone who will deliver this letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). Are you interested in it?"
+		0 "I'm looking for someone who will deliver this letter to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name). Are you interested in it?"
 		1 "Yes"
 		2 {
 			"Good, here's the message. You have a month to deliver it and come back with the answer."
 			"Good, take this letter. You have one month to provide me with an answer."
 		}
-		3 "$(end_loc.name) is $(World::GetDirName(start_loc, end_loc)) from here."
+		3 "$(endLoc.name) is $(World::GetDirName(startLoc, endLoc)) from here."
 		4 "No"
 	}
 	
@@ -42,7 +42,7 @@ quest deliver_letter {
 	}
 	
 	dialog end {
-		0 "You disappointed me. You should deliver letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") in $(end_loc.name). Do not expect that I will give you any task."
+		0 "You disappointed me. You should deliver letter to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") in $(endLoc.name). Do not expect that I will give you any task."
 		1 "Deliver a letter"
 		2 "Good. Show me that letter with answer."
 		3 "I see that you are responsible, here's your 250 gold pieces."
@@ -51,10 +51,10 @@ quest deliver_letter {
 	
 	texts {
 		0 "Deliver the letter"
-		1 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
-		2 "I got a letter that I need to deliver to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name). It's $(World::GetDirName(start_loc, end_loc)) from here. I have a month to go there and return."
-		3 "Letter to $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
-		4 "Letter from $(end_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(end_loc.name)"
+		1 "Received from $(startLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(startLoc.name) at $date$."
+		2 "I got a letter that I need to deliver to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name). It's $(World::GetDirName(startLoc, endLoc)) from here. I have a month to go there and return."
+		3 "Letter to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name)"
+		4 "Letter from $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name)"
 		5 "I couldn't deliver the letter on time."
 		6 "I delivered the letter, now I have to return with the answer."
 		7 "I delivered the answer. Quest done!"
@@ -65,8 +65,8 @@ quest deliver_letter {
 //=============================================================================
 quest deliver_resources {
 	dialog start {
-		0 "I have to deliver a box of resource to $(target_loc.name). Normally, I would send one of my people, but since you're already here..."
-		1 "This is quite urgent. $(target_loc.name) needs these resources within 15 days. Are you interested in?"
+		0 "I have to deliver a box of resource to $(targetLoc.name). Normally, I would send one of my people, but since you're already here..."
+		1 "This is quite urgent. $(targetLoc.name) needs these resources within 15 days. Are you interested in?"
 		2 "Yes"
 		3 "No"
 		4 "Take this box and good luck. Try to avoid bandits on the roads."
@@ -88,10 +88,10 @@ quest deliver_resources {
 	}
 	
 	texts {
-		0 "Resources for $(target_loc.name)"
+		0 "Resources for $(targetLoc.name)"
 		1 "Deliver resources"
-		2 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
-		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc, target_loc)) from here."
+		2 "Received from $(startLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(startLoc.name) at $date$."
+		3 "I got the resources I need to deliver within 15 days to $(targetLoc.name) which is $(World::GetDirName(startLoc, targetLoc)) from here."
 		4 "I provided resources on time. Quest done!"
 		5 "I did not have time to deliver resources."
 		6 "Traveling along the road you came across a few bandits. It looks like they've been waiting for you..."
@@ -102,10 +102,10 @@ quest deliver_resources {
 //=============================================================================
 quest bandits_collect_toll {
 	dialog start {
-		0 "On the road between $(start_loc.name) and $(other_loc.name) camped bandits. They charge a fee and are robbing merchants."
+		0 "On the road between $(startLoc.name) and $(otherLoc.name) camped bandits. They charge a fee and are robbing merchants."
 		1 "You have time to take care of them?"
 		2 "Yes"
-		3 "Go to $(other_loc.name) at $(World::GetDirName(start_loc, other_loc)) from here and back. Then certainly you encounter these bandits."
+		3 "Go to $(otherLoc.name) at $(World::GetDirName(startLoc, otherLoc)) from here and back. Then certainly you encounter these bandits."
 		4 "You got half month for this."
 		5 "No"
 	}
@@ -130,8 +130,8 @@ quest bandits_collect_toll {
 
 	texts {
 		0 "Bandits collecting tolls"
-		1 "Obtained from captain guard of $(start_loc.name) at $date$."
-		2 "Bandits are collecting a toll somewhere between $(start_loc.name) and $(other_loc.name) which is $(World::GetDirName(start_loc, other_loc)) from here. I have to get rid of them in half a month."
+		1 "Obtained from captain guard of $(startLoc.name) at $date$."
+		2 "Bandits are collecting a toll somewhere between $(startLoc.name) and $(otherLoc.name) which is $(World::GetDirName(startLoc, otherLoc)) from here. I have to get rid of them in half a month."
 		3 "You encounter group of bandits gathering tolls."
 		4 "I didn't manage to kill the bandits in time."
 		5 "I killed the bandits."
@@ -144,11 +144,11 @@ quest bandits_collect_toll {
 //=============================================================================
 quest camp_near_city {
 	dialog start {
-		0 "Can you imagine that?! $(group.name.Upper()) created camp just near our $(start_loc.IsVillage() ? \"village\" : \"city\")!"
-		1 "I think they want to attack the $(start_loc.IsVillage() ? \"village\" : \"city\")! We have to do something about it!"
+		0 "Can you imagine that?! $(group.name.Upper()) created camp just near our $(startLoc.IsVillage() ? \"village\" : \"city\")!"
+		1 "I think they want to attack the $(startLoc.IsVillage() ? \"village\" : \"city\")! We have to do something about it!"
 		2 "Why do not you go there and take care of them?"
 		3 "Yes"
-		4 "This camp is located $(World::GetDirName(start_loc, camp)) from here. You must take care of it within a month."
+		4 "This camp is located $(World::GetDirName(startLoc, camp)) from here. You must take care of it within a month."
 		5 "Just do not get yourself killed."
 		6 "No"
 	}
@@ -156,18 +156,18 @@ quest camp_near_city {
 	dialog end {
 		0 "If not for you I do not know whether we repelled this attack."
 		1 "Please, take this $(Str(GetReward())) gold pieces."
-		2 "When you weren't here $(group.name) attacked $(start_loc.IsVillage() ? \"village\" : \"city\")! Somehow we defended but many people have died!"
+		2 "When you weren't here $(group.name) attacked $(startLoc.IsVillage() ? \"village\" : \"city\")! Somehow we defended but many people have died!"
 		3 "Do not show up here again!"
 	}
 	
 	texts {
-		0 "Camp near $(start_loc.IsVillage() ? \"village\" : \"city\")"
-		1 "Obtained from captain guard of $(start_loc.name) at $date$."
-		2 "$(group.name.Upper()) created a camp at $(World::GetDirName(start_loc, camp)) from $(start_loc.name). I have to kill them within a month, or else they will attack the $(start_loc.IsVillage() ? \"village\" : \"city\")."
+		0 "Camp near $(startLoc.IsVillage() ? \"village\" : \"city\")"
+		1 "Obtained from captain guard of $(startLoc.name) at $date$."
+		2 "$(group.name.Upper()) created a camp at $(World::GetDirName(startLoc, camp)) from $(startLoc.name). I have to kill them within a month, or else they will attack the $(startLoc.IsVillage() ? \"village\" : \"city\")."
 		3 "I cleared the camp."
 		4 "I informed my quest giver about clearing the camp and received a reward. Quest done!"
 		5 "The time that I had to complete this quest passed."
-		6 "I didn't do this in time and enemies attacked our $(start_loc.IsVillage() ? \"village\" : \"city\")."
+		6 "I didn't do this in time and enemies attacked our $(startLoc.IsVillage() ? \"village\" : \"city\")."
 	}
 }
 
@@ -184,7 +184,7 @@ quest kill_animals {
 	
 	dialog captain {
 		0 "Excellent work, these creatures often troubled travelers."
-		1 "Here you got $reward$ gold pieces as reward."
+		1 "Here you got $(Str(GetReward())) gold pieces as reward."
 		2 "No time for clearing $(targetLoc.name)? Through you, travelers cannot easily wander around."
 	}
 	
@@ -205,7 +205,7 @@ quest find_artifact {
 		0 "I'm looking for a certain artifact known as the $(item.name)."
 		1 "Can you deliver it to me?"
 		2 "Yes"
-		3 "Apparently, the item which I need is in the $(target_loc.name), $(World::GetDirName(start_loc, target_loc)) out of here."
+		3 "Apparently, the item which I need is in the $(targetLoc.name), $(World::GetDirName(startLoc, targetLoc)) out of here."
 		4 "I'll wait until someone brings it to me but up to two months. Good luck!"
 		5 "No"
 	}
@@ -214,14 +214,14 @@ quest find_artifact {
 		0 "Give back artifact"
 		1 "Thank you for this artifact, take this $(Str(GetReward())) gold pieces in thanks."
 		2 "You could not find this artifact? Too bad..."
-		3 "Apparently close to $(World::GetRandomSettlement(start_loc).name) people found some new artifacts, there I leave."
+		3 "Apparently close to $(World::GetRandomSettlement(startLoc).name) people found some new artifacts, there I leave."
 		4 "Good luck in your adventures!"
 	}
 	
 	texts {
 		0 "Find artifact"
-		1 "Obtained from traveler in $(start_loc.name) at $date$."
-		2 "The traveler wants me to find $(item.name) which is located in the $(target_loc.name) to the $(World::GetDirName(start_loc, target_loc)) from here. I have two months for that."
+		1 "Obtained from traveler in $(startLoc.name) at $date$."
+		2 "The traveler wants me to find $(item.name) which is located in the $(targetLoc.name) to the $(World::GetDirName(startLoc, targetLoc)) from here. I have two months for that."
 		3 "I delivered the artifact and received the reward. Quest done!"
 		4 "I didn't bring the artifact in time."
 		5 "The time that I had to complete this quest passed."
@@ -318,7 +318,7 @@ quest alchemist_apprentice {
 		4 "No"
 		5 "Let's go! There, I saw one plant."
 		6 "It's a pity... I'll wait here, maybe you'll change your mind..."
-		7 "Hmmm ... Have you thought about my help offer?"
+		7 "Hmmm... Have you thought about my help offer?"
 		8 "What's happening? We have not found all the plants yet."
 		9 "I see that you handled yourself... Well, I'm going back to $(city.name)."
 		10 "Well done, we've collected everything we could. It's time to get back to the city."
@@ -378,10 +378,9 @@ quest main {
 		5 "Talk to infected villagers and come back to me."
 		6 "One of the villagers attacked you for no reason!?"
 		7 "It's worse than I thought, we must quickly bring in some priest who knows about plagues."
-		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here one of the clerics lives. I have heard that he is researching various diseases."
-		8 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here lives one of the clerics. I have heard that he is researching various diseases."
+		8 "In $(shrineLoc.name) that is $(World::GetDirName(Level::location, shrineLoc)) from here lives one of the clerics. I have heard that he is researching various diseases."
 		9 "Find him and help him discover what our people are suffering from."
-		10 "Find a cleric living in $(shrine_loc.name), without him this village will be empty!"
+		10 "Find a cleric living in $(shrineLoc.name), without him this village will be empty!"
 		11 "I hope this plague can be ended..."
 	}
 	
@@ -390,7 +389,7 @@ quest main {
 		1 "Ask about illness"
 		2 "End dialog"
 		3 "I think the water tasted strange lately. Maybe because of that?"
-		4 "Just a few days ago I was healthy ... I don't know where the plague came from!"
+		4 "Just a few days ago I was healthy... I don't know where the plague came from!"
 		5 "A week ago a traveling merchant was here. I saw him here for the first time."
 		6 "I bought meat from him. Maybe it was stale?"
 		7 "I was in the woods yesterday and something bit me."
@@ -408,18 +407,36 @@ quest main {
 	
 	dialog cleric {
 		0 "Glory be to Imnos!"
-		1 "I was afraid I would die here. Like my guards, killed by these undead ..."
-		2 "Please lead me to $(shrine_loc.name) to the shrine, I have to report what I found here."
+		1 "I was afraid I would die here. Like my guards, killed by these undead..."
+		2 "Please lead me to $(shrineLoc.name) to the shrine, I have to report what I found here."
 		3 "Then I will immediately go with you to help heal this disease."
 		4 "Since you are here, I have one more request for you."
 		5 "On the lower level of the underground there is a book that would be invaluable in my research."
 		6 "If you bring it to me, I will reward you generously."
-		7 "Lead me to the shrine in $(shrine_loc.name), then I will help you."
+		7 "Lead me to the shrine in $(shrineLoc.name), then I will help you."
 		8 "End dialog"
 		9 "Thank you! I need some time to gather information. We'll meet at $(village.name) in $(Str(quest.timeout)) days."
 		10 "Use this time to get better equipment and train yourself."
 		11 "It's good that you are here. We need to talk about the plague..."
-		12 "(This is the end of the main plot for this version. In the meantime try to complete 10 unique quests)"
+		12 "I've examined the people but haven't been able to determine anything yet... I need more information to find the source of this plague."
+		13 "I have information about four villages where the plague also broke out. Someone has to go there and confirm these rumors. The soltys said it was a job for you."
+		14 "Go in any order to $(villages[0].name), $(villages[1].name), $(villages[2].name) and $(villages[3].name)."
+		15 "Now I'm back to research. We count on you!"
+		16 "Get back to me when you get some information."
+		17 "Welcome back! Got any new information?"
+		18 "Good job! Come back when you get more information."
+		19 "Give the soltys's diary"
+		20 "Hmmm, all the villagers just disappeared. It's hard to connect it with other symptoms of the plague."
+		21 "Take this gold collected by the villagers. You will surely need it."
+		22 "Give the weird crystal"
+		23 "This crystal has the same color as the lesions from this plague. I'll send for a magician to examine it thoroughly."
+		24 "Give infected organs"
+		25 "I know it's not a pleasant job, but only by researching these organs can we find a cure for the plague."
+		26 "Give the weird herbs"
+		27 "I have never seen such strange herbs. They look crystallized. I'll send for an experienced alchemist to examine them."
+		28 "Provide information"
+		29 "So you're saying this old man lost his memory? I hope this is not another symptom of the disease. In my spare time, I'll go talk to him, maybe I can restore his memory."
+		30 "(This is the end of the main plot for this version. In the meantime try to complete all unique quests)"
 	}
 	
 	texts {
@@ -434,11 +451,12 @@ quest main {
 		8 "In $(village.name), the plague began to spread more and more. I have to get back there quickly."
 		9 "I have to walk around the village and find infected villagers. Maybe I can establish something."
 		10 "One of the villagers went crazy because of the plague and attacked me."
-		11 "In $(shrine_loc.name) that is $(World::GetDirName(Level::location, shrine_loc)) from here lives a cleric who specializes in diseases. I need to talk with him."
+		11 "In $(shrineLoc.name) that is $(World::GetDirName(Level::location, shrineLoc)) from here lives a cleric who specializes in diseases. I need to talk with him."
 		12 "The cleric I was looking for, $(cleric.realName) went to $(dungeon.name) that is $(World::GetDirName(Level::location, dungeon)) from here to do some research."
-		13 "I found $(cleric.realName) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrine_loc.name), then he will help me."
+		13 "I found $(cleric.realName) in the underground, he was barely alive and his guards were killed by the undead. He wants me to lead him to the shrine in $(shrineLoc.name), then he will help me."
 		14 "I brought $(cleric.realName) to the shrine. He needs time, $(Str(quest.timeout)) days. After that, I should find him in $(village.name)."
 		15 "The cleric should already be in $(village.name)."
+		16 "After talking to the cleric, he sent me to investigate rumors of plague in four villages. They are: $(villages[0].name), $(villages[1].name), $(villages[2].name) and $(villages[3].name)."
 	}
 }
 
@@ -475,5 +493,90 @@ quest dire_wolf {
 		2 "I must go to $(forest.name) and kill the dire wolf that terrorizes the surrounding villages."
 		3 "I killed the dire wolf, I can go back to the hunter's camp and collect my reward."
 		4 "I recived the reward. Quest done!"
+	}
+}
+
+//=============================================================================
+quest main_village1 {
+	texts {
+		0 "Source of the plague in $(village.name)"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
+		3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
+		4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
+		5 "I returned the diary to $(cleric.realName) and got rewarded for it. Quest done!"
+		6 "All the residents of $(village.name) have disappeared somewhere..."
+	}
+}
+
+//=============================================================================
+quest main_village2 {
+	texts {
+		0 "Source of the plague in $(village.name)"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
+		3 "Upon reaching the village, you can already see from afar that something is wrong. Unfortunately, I have to kill all the villagers who have gone mad, it's too late for them. I also need to find some information on the source of the plague."
+		4 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		5 "I found some strange crystal on the soltys's body. Maybe it is responsible for this plague?"
+		6 "I did all I could. Time to go back to $(cleric.realName)."
+		7 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		8 "The plague has hit $(village.name). Nobody survived..."
+	}
+}
+
+//=============================================================================
+quest main_village3 {
+	dialog villager {
+		0 "Thanks for the rescue. I'm getting out of here!"
+	}
+	
+	dialog inn_villager {
+		0 "Thank the gods someone showed up! I thought I was over."
+		1 "It all started with this alchemist..."
+		2 "I'm getting out of here while I still have a chance!"
+	}
+
+	texts {
+		0 "Source of the plague in $(village.name)"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
+		3 "After reaching the village, I saw a fight. I must quickly help the villagers who have not yet fallen ill to repel the attack. I also need to find some information on the source of the plague."
+		4 "One of the villagers hid in the inn. He said that one of the first infected was an alchemist. Maybe I can find some proof on him."
+		5 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		6 "I found some strange herbs. Did they cause the plague?"
+		7 "I did all I could. Time to go back to $(cleric.realName)."
+		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		9 "In $(village.name), infected residents fought with other residents. Fortunately, the situation was brought under control. At least that's what I heard..."
+	}
+}
+
+//=============================================================================
+quest main_village4 {
+	dialog oldman {
+		0 "Hello young man."
+		1 "Thank you for the rescue, our barricade wouldn't last long."
+		2 "Come back to me when you've cleared the village of these madmen. I have something else to tell you."
+		3 "I would like to tell you where this plague came from, unfortunately I have lost my memory..."
+		4 "Could you take me with you to some safe village or town?"
+		5 "Is it safe now?"
+		6 "I hear the sounds of fighting have died down."
+		7 "Yes? I will follow you until we reach some safe village or town."
+		8 "The place looks safe, thank you."
+		9 "Unfortunately, I don't have anything valuable with me, I will pray for the success of your mission."
+		10 "Thank you for your help."
+	}
+	
+	texts {
+		0 "Source of the plague in $(village.name)"
+		1 "Started at $date$."
+		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
+		3 "After reaching the village, I saw a fight. I must quickly help the villagers who have not yet fallen ill to repel the attack. I also need to find some information on the source of the plague."
+		4 "I met an old man in the inn. He wants to talk to me when I clear the area of enemies."
+		5 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
+		6 "The infected villagers are dead, now I can go back and talk to the old man in the tavern."
+		7 "The old man claims he has lost his memory and asked me to take him to any village or town."
+		8 "I led the old man to $(Level::location.name). He thanked me and headed towards the inn. Time to go back to $(cleric.realName)."
+		9 "I passed $(cleric.realName) information and got rewarded for it. Quest done!"
+		10 "The plague has hit $(village.name). Nobody survived..."
 	}
 }

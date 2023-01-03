@@ -72,14 +72,14 @@ int LabyrinthGenerator::TryGenerate(const Int2& mazeSize, const Int2& roomSize, 
 		_m = drillers.end();
 		while(m != _m)
 		{
-			bool remove_driller = false;
+			bool removeDriller = false;
 			switch(dir)
 			{
 			case 0:
 				m->y -= 2;
 				if(m->y < 0 || maze[m->y * mazeSize.x + m->x])
 				{
-					remove_driller = true;
+					removeDriller = true;
 					break;
 				}
 				maze[(m->y + 1) * mazeSize.x + m->x] = true;
@@ -88,7 +88,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& mazeSize, const Int2& roomSize, 
 				m->y += 2;
 				if(m->y >= mazeSize.y || maze[m->y * mazeSize.x + m->x])
 				{
-					remove_driller = true;
+					removeDriller = true;
 					break;
 				}
 				maze[(m->y - 1) * mazeSize.x + m->x] = true;
@@ -97,7 +97,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& mazeSize, const Int2& roomSize, 
 				m->x -= 2;
 				if(m->x < 0 || maze[m->y * mazeSize.x + m->x])
 				{
-					remove_driller = true;
+					removeDriller = true;
 					break;
 				}
 				maze[m->y * mazeSize.x + m->x + 1] = true;
@@ -106,13 +106,13 @@ int LabyrinthGenerator::TryGenerate(const Int2& mazeSize, const Int2& roomSize, 
 				m->x += 2;
 				if(m->x >= mazeSize.x || maze[m->y * mazeSize.x + m->x])
 				{
-					remove_driller = true;
+					removeDriller = true;
 					break;
 				}
 				maze[m->y * mazeSize.x + m->x - 1] = true;
 				break;
 			}
-			if(remove_driller)
+			if(removeDriller)
 				m = drillers.erase(m);
 			else
 			{

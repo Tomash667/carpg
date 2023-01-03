@@ -89,7 +89,7 @@ public:
 	bool HandleSpecial(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleFormatString(const string& str, cstring& result);
-	const Item* FindQuestItemClient(cstring item_id, int questId) const;
+	const Item* FindQuestItemClient(cstring itemId, int questId) const;
 	void AddScriptedQuest(QuestScheme* scheme);
 	QuestInfo* FindQuestInfo(QUEST_TYPE type);
 	QuestInfo* FindQuestInfo(const string& id);
@@ -107,6 +107,10 @@ public:
 	void ProcessQuestRequests();
 	void UpgradeQuests();
 	vector<Location*>& GetUsedCities() { return used; }
+	void AddItemEventHandler(Quest2* quest, const Item* item) { itemEventHandlers.push_back(std::make_pair(quest, item)); }
+	void RemoveItemEventHandler(Quest2* quest, const Item* item);
+	void CheckItemEventHandler(Unit* unit, const Item* item);
+	void AddTimer(Quest2* quest, int days);
 
 	vector<Quest*> unacceptedQuests;
 	vector<Quest*> quests;
@@ -139,10 +143,12 @@ private:
 	vector<QuestItemRequest*> questItemRequests;
 	vector<QuestRequest> questRequests;
 	vector<Quest*> upgradeQuests;
+	vector<pair<Quest2*, int>> timers;
 	int questCounter, force;
 	QuestList* questsMayor, *questsCaptain, *questsRandom;
 	std::map<string, QuestHandler*> specialHandlers, specialIfHandlers, formatStrHandlers;
 	string tmpStr;
 	vector<pair<int, string>> questRumors;
 	vector<Location*> used;
+	vector<pair<Quest2*, const Item*>> itemEventHandlers;
 };

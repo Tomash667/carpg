@@ -1,6 +1,9 @@
 #include "Pch.h"
 #include "BaseUsable.h"
 
+#include <Mesh.h>
+#include <ResourceManager.h>
+
 //-----------------------------------------------------------------------------
 vector<BaseUsable*> BaseUsable::usables;
 
@@ -32,13 +35,19 @@ BaseUsable& BaseUsable::operator = (BaseUsable& u)
 }
 
 //=================================================================================================
-/*BaseUsable* BaseUsable::TryGet(Cstring id)
+void BaseUsable::EnsureIsLoaded()
 {
-	for(auto use : usables)
+	if(state == ResourceState::NotLoaded)
 	{
-		if(use->id == id)
-			return use;
+		if(variants)
+		{
+			for(Mesh* mesh : variants->meshes)
+				resMgr->Load(mesh);
+		}
+		else
+			resMgr->Load(mesh);
+		if(sound)
+			resMgr->Load(sound);
+		state = ResourceState::Loaded;
 	}
-
-	return nullptr;
-}*/
+}

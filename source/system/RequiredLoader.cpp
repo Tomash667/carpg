@@ -47,12 +47,12 @@ void RequiredLoader::InitTokenizer()
 		{ "group", R_GROUP },
 		{ "ability", R_ABILITY },
 		{ "dialog", R_DIALOG },
-		{ "building_group", R_BUILDING_GROUP },
+		{ "buildingGroup", R_BUILDING_GROUP },
 		{ "building", R_BUILDING },
-		{ "building_script", R_BUILDING_SCRIPT },
+		{ "buildingScript", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
 		{ "usable", R_USABLE },
-		{ "quest_list", R_QUEST_LIST }
+		{ "questList", R_QUEST_LIST }
 		});
 }
 
@@ -119,42 +119,42 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		if(id == "list")
 		{
 			t.Next();
-			const string& group_id = t.MustGetItemKeyword();
-			UnitGroup* group = UnitGroup::TryGet(group_id);
+			const string& groupId = t.MustGetItemKeyword();
+			UnitGroup* group = UnitGroup::TryGet(groupId);
 			if(!group)
 			{
-				Error("Missing required unit group list '%s'.", group_id.c_str());
+				Error("Missing required unit group list '%s'.", groupId.c_str());
 				++content.errors;
 			}
 			else if(!group->isList)
 			{
-				Error("Required unit group '%s' is not list.", group_id.c_str());
+				Error("Required unit group '%s' is not list.", groupId.c_str());
 				++content.errors;
 			}
 		}
 		else
 		{
-			bool need_leader = false;
+			bool needLeader = false;
 			if(id == "with_leader")
 			{
-				need_leader = true;
+				needLeader = true;
 				t.Next();
 			}
-			const string& group_id = t.MustGetItemKeyword();
-			UnitGroup* group = UnitGroup::TryGet(group_id);
+			const string& groupId = t.MustGetItemKeyword();
+			UnitGroup* group = UnitGroup::TryGet(groupId);
 			if(!group)
 			{
-				Error("Missing required unit group '%s'.", group_id.c_str());
+				Error("Missing required unit group '%s'.", groupId.c_str());
 				++content.errors;
 			}
 			else if(group->isList)
 			{
-				Error("Required unit group '%s' is list.", group_id.c_str());
+				Error("Required unit group '%s' is list.", groupId.c_str());
 				++content.errors;
 			}
-			else if(need_leader && !group->HaveLeader())
+			else if(needLeader && !group->HaveLeader())
 			{
-				Error("Required unit group '%s' is missing leader.", group_id.c_str());
+				Error("Required unit group '%s' is missing leader.", groupId.c_str());
 				++content.errors;
 			}
 		}
@@ -248,14 +248,14 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		break;
 	case R_QUEST_LIST:
 		{
-			const bool not_none = IsPrefix("not_none");
+			const bool notNone = IsPrefix("notNone");
 			QuestList* list = QuestList::TryGet(id);
 			if(!list)
 			{
 				Error("Missing required quest list '%s'.", id.c_str());
 				++content.errors;
 			}
-			else if(not_none)
+			else if(notNone)
 			{
 				for(QuestList::Entry& e : list->entries)
 				{
@@ -291,27 +291,27 @@ void RequiredLoader::Finalize()
 //=================================================================================================
 void RequiredLoader::CheckStartItems(SkillId skill, bool required)
 {
-	bool have_0 = !required, have_heirloom = false;
+	bool haveZero = !required, haveHeirloom = false;
 
 	for(StartItem& si : StartItem::startItems)
 	{
 		if(si.skill == skill)
 		{
 			if(si.value == 0)
-				have_0 = true;
+				haveZero = true;
 			else if(si.value == HEIRLOOM)
-				have_heirloom = true;
-			if(have_0 && have_heirloom)
+				haveHeirloom = true;
+			if(haveZero && haveHeirloom)
 				return;
 		}
 	}
 
-	if(!have_0)
+	if(!haveZero)
 	{
 		Error("Missing starting item for skill %s.", Skill::skills[(int)skill].id);
 		++content.errors;
 	}
-	if(!have_heirloom)
+	if(!haveHeirloom)
 	{
 		Error("Missing heirloom item for skill %s.", Skill::skills[(int)skill].id);
 		++content.errors;
@@ -321,17 +321,17 @@ void RequiredLoader::CheckStartItems(SkillId skill, bool required)
 //=================================================================================================
 void RequiredLoader::CheckBaseItems()
 {
-	int have_short_blade = 0,
-		have_long_blade = 0,
-		have_axe = 0,
-		have_blunt = 0,
-		have_wand = 0,
-		have_bow = 0,
-		have_shield = 0,
-		have_light_armor = 0,
-		have_medium_armor = 0,
-		have_heavy_armor = 0,
-		have_mage_armor = 0;
+	int haveShortBlade = 0,
+		haveLongBlade = 0,
+		haveAxe = 0,
+		haveBlunt = 0,
+		haveWand = 0,
+		haveBow = 0,
+		haveShield = 0,
+		haveLightArmor = 0,
+		haveMediumArmor = 0,
+		haveHeavyArmor = 0,
+		haveMageArmor = 0;
 	const ItemList& lis = ItemList::Get("base_items");
 
 	for(const ItemList::Entry& e : lis.items)
@@ -340,63 +340,63 @@ void RequiredLoader::CheckBaseItems()
 		if(item->type == IT_WEAPON)
 		{
 			if(IsSet(item->flags, ITEM_MAGE))
-				++have_wand;
+				++haveWand;
 			else
 			{
 				switch(item->ToWeapon().weaponType)
 				{
 				case WT_SHORT_BLADE:
-					++have_short_blade;
+					++haveShortBlade;
 					break;
 				case WT_LONG_BLADE:
-					++have_long_blade;
+					++haveLongBlade;
 					break;
 				case WT_AXE:
-					++have_axe;
+					++haveAxe;
 					break;
 				case WT_BLUNT:
-					++have_blunt;
+					++haveBlunt;
 					break;
 				}
 			}
 		}
 		else if(item->type == IT_BOW)
-			++have_bow;
+			++haveBow;
 		else if(item->type == IT_SHIELD)
-			++have_shield;
+			++haveShield;
 		else if(item->type == IT_ARMOR)
 		{
 			if(IsSet(item->flags, ITEM_MAGE))
-				++have_mage_armor;
+				++haveMageArmor;
 			else
 			{
 				switch(item->ToArmor().armorType)
 				{
 				case AT_LIGHT:
-					++have_light_armor;
+					++haveLightArmor;
 					break;
 				case AT_MEDIUM:
-					++have_medium_armor;
+					++haveMediumArmor;
 					break;
 				case AT_HEAVY:
-					++have_heavy_armor;
+					++haveHeavyArmor;
 					break;
 				}
 			}
 		}
 	}
 
-	CheckBaseItem("short blade weapon", have_short_blade);
-	CheckBaseItem("long blade weapon", have_long_blade);
-	CheckBaseItem("axe weapon", have_axe);
-	CheckBaseItem("blunt weapon", have_blunt);
-	CheckBaseItem("mage weapon", have_wand);
-	CheckBaseItem("bow", have_bow);
-	CheckBaseItem("shield", have_shield);
-	CheckBaseItem("light armor", have_light_armor);
-	CheckBaseItem("medium armor", have_medium_armor);
-	CheckBaseItem("heavy armor", have_heavy_armor);
-	CheckBaseItem("mage armor", have_mage_armor);
+	CheckBaseItem("short blade weapon", haveShortBlade);
+	CheckBaseItem("long blade weapon", haveLongBlade);
+	CheckBaseItem("axe weapon", haveAxe);
+	CheckBaseItem("blunt weapon", haveBlunt);
+	CheckBaseItem("mage weapon", haveWand);
+	CheckBaseItem("bow", haveBow);
+	CheckBaseItem("shield", haveShield);
+	CheckBaseItem("light armor", haveLightArmor);
+	CheckBaseItem("medium armor", haveMediumArmor);
+	CheckBaseItem("heavy armor", haveHeavyArmor);
+	CheckBaseItem("mage armor", haveMageArmor);
 }
 
 //=================================================================================================

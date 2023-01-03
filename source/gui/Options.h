@@ -37,7 +37,7 @@ public:
 private:
 	void SetOptions();
 	void SetSoundDevices();
-	void OnChangeRes(int res_id);
+	void OnChangeRes(int id);
 	void OnChangeMultisampling(int id);
 	void OnChangeLanguage(int id);
 	void ChangeLanguage(int id);

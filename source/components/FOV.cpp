@@ -9,7 +9,7 @@
 #define X false,
 #define _ true,
 
-const bool fov_mask[] = {
+const bool fovMask[] = {
 	X X X _ _ _ _ _ X X X
 	X X _ _ _ _ _ _ _ X X
 	X _ _ _ _ _ _ _ _ _ X
@@ -105,10 +105,10 @@ namespace FOV
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return true;
 
-		Int2 real_pt(x, y);
-		Tile& p = mapa[real_pt.x + real_pt.y * w];
+		Int2 realPt(x, y);
+		Tile& p = mapa[realPt.x + realPt.y * w];
 
-		return (IsBlocking(p) || (p.type == DOORS && findDoorBlocking(real_pt)));
+		return (IsBlocking(p) || (p.type == DOORS && findDoorBlocking(realPt)));
 	}
 
 	inline void visit(int x, int y)
@@ -122,7 +122,7 @@ namespace FOV
 
 	inline bool doesPermissiveVisit(int x, int y)
 	{
-		return !fov_mask[x + 5 + (y + 5) * 11];
+		return !fovMask[x + 5 + (y + 5) * 11];
 	}
 
 	bool actIsBlocked(const Int2& pos)

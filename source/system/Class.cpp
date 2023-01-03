@@ -5,8 +5,8 @@
 #include "UnitGroup.h"
 
 vector<Class*> Class::classes;
-static vector<Class*> player_classes;
-static UnitGroup* heroes, *evil_heroes, *crazies;
+static vector<Class*> playerClasses;
+static UnitGroup* heroes, *evilHeroes, *crazies;
 
 //=================================================================================================
 const Class::PotionEntry& Class::GetPotionEntry(int level) const
@@ -33,7 +33,7 @@ Class* Class::TryGet(Cstring id)
 //=================================================================================================
 Class* Class::GetRandomPlayer()
 {
-	return RandomItem(player_classes);
+	return RandomItem(playerClasses);
 }
 
 //=================================================================================================
@@ -45,7 +45,7 @@ Class* Class::GetRandomHero(bool evil)
 //=================================================================================================
 UnitData* Class::GetRandomHeroData(bool evil)
 {
-	return evil ? evil_heroes->GetRandomUnit() : heroes->GetRandomUnit();
+	return evil ? evilHeroes->GetRandomUnit() : heroes->GetRandomUnit();
 }
 
 //=================================================================================================
@@ -66,7 +66,7 @@ int Class::InitLists()
 	for(Class* clas : classes)
 	{
 		if(clas->player)
-			player_classes.push_back(clas);
+			playerClasses.push_back(clas);
 	}
 
 	int errors = 0;
@@ -74,8 +74,8 @@ int Class::InitLists()
 	heroes = UnitGroup::Get("heroes");
 	errors += VerifyGroup(heroes, false);
 
-	evil_heroes = UnitGroup::Get("evil_heroes");
-	errors += VerifyGroup(evil_heroes, false);
+	evilHeroes = UnitGroup::Get("evil_heroes");
+	errors += VerifyGroup(evilHeroes, false);
 
 	crazies = UnitGroup::Get("crazies");
 	errors += VerifyGroup(crazies, true);

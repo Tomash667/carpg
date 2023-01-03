@@ -23,7 +23,8 @@ enum Top
 {
 	T_BUILDING,
 	T_BUILDING_GROUP,
-	T_BUILDING_SCRIPT
+	T_BUILDING_SCRIPT,
+	T_ALIAS
 };
 
 enum BuildingKeyword
@@ -100,13 +101,14 @@ void BuildingLoader::InitTokenizer()
 {
 	t.AddKeywords(G_TOP, {
 		{ "building", T_BUILDING },
-		{ "building_group", T_BUILDING_GROUP },
-		{ "building_script", T_BUILDING_SCRIPT }
+		{ "buildingGroup", T_BUILDING_GROUP },
+		{ "buildingScript", T_BUILDING_SCRIPT },
+		{ "alias", T_ALIAS }
 		});
 
 	t.AddKeywords(G_BUILDING, {
 		{ "mesh", BK_MESH },
-		{ "inside_mesh", BK_INSIDE_MESH },
+		{ "insideMesh", BK_INSIDE_MESH },
 		{ "flags", BK_FLAGS },
 		{ "scheme", BK_SCHEME },
 		{ "group", BK_GROUP },
@@ -115,12 +117,12 @@ void BuildingLoader::InitTokenizer()
 		});
 
 	t.AddKeywords(G_BUILDING_FLAGS, {
-		{ "favor_center", Building::FAVOR_CENTER },
-		{ "favor_road", Building::FAVOR_ROAD },
-		{ "have_name", Building::HAVE_NAME },
+		{ "favorCenter", Building::FAVOR_CENTER },
+		{ "favorRoad", Building::FAVOR_ROAD },
+		{ "haveName", Building::HAVE_NAME },
 		{ "list", Building::LIST },
-		{ "favor_dist", Building::FAVOR_DIST },
-		{ "no_path", Building::NO_PATH }
+		{ "favorDist", Building::FAVOR_DIST },
+		{ "noPath", Building::NO_PATH }
 		});
 
 	t.AddKeywords(G_SIDE, {
@@ -167,6 +169,9 @@ void BuildingLoader::LoadEntity(int top, const string& id)
 	case T_BUILDING_SCRIPT:
 		ParseBuildingScript(id);
 		break;
+	case T_ALIAS:
+		ParseAlias(id);
+		break;
 	}
 }
 
@@ -183,8 +188,8 @@ void BuildingLoader::Finalize()
 //=================================================================================================
 void BuildingLoader::ParseBuilding(const string& id)
 {
-	auto existing_building = Building::TryGet(id);
-	if(existing_building)
+	Building* existingBuilding = Building::TryGet(id);
+	if(existingBuilding)
 		t.Throw("Id must be unique.");
 
 	Ptr<Building> building;
@@ -203,19 +208,19 @@ void BuildingLoader::ParseBuilding(const string& id)
 		{
 		case BK_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				building->mesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				building->mesh = resMgr->TryGet<Mesh>(meshId);
 				if(!building->mesh)
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing mesh '%s'.", meshId.c_str());
 				t.Next();
 			}
 			break;
 		case BK_INSIDE_MESH:
 			{
-				const string& mesh_id = t.MustGetString();
-				building->insideMesh = resMgr->TryGet<Mesh>(mesh_id);
+				const string& meshId = t.MustGetString();
+				building->insideMesh = resMgr->TryGet<Mesh>(meshId);
 				if(!building->insideMesh)
-					LoadError("Missing mesh '%s'.", mesh_id.c_str());
+					LoadError("Missing mesh '%s'.", meshId.c_str());
 				t.Next();
 			}
 			break;
@@ -275,11 +280,11 @@ void BuildingLoader::ParseBuilding(const string& id)
 			break;
 		case BK_GROUP:
 			{
-				const string& group_id = t.MustGetItem();
-				auto group = BuildingGroup::TryGet(group_id);
+				const string& groupId = t.MustGetItem();
+				auto group = BuildingGroup::TryGet(groupId);
 				if(!group)
 				{
-					Warn("Missing group '%s' for building '%s'.", group_id.c_str(), building->id.c_str());
+					Warn("Missing group '%s' for building '%s'.", groupId.c_str(), building->id.c_str());
 					content.warnings++;
 				}
 				else
@@ -289,11 +294,11 @@ void BuildingLoader::ParseBuilding(const string& id)
 			break;
 		case BK_UNIT:
 			{
-				const string& unit_id = t.MustGetItem();
-				auto unit = UnitData::TryGet(unit_id.c_str());
+				const string& unitId = t.MustGetItem();
+				auto unit = UnitData::TryGet(unitId.c_str());
 				if(!unit)
 				{
-					Warn("Missing unit '%s' for building '%s'.", unit_id.c_str(), building->id.c_str());
+					Warn("Missing unit '%s' for building '%s'.", unitId.c_str(), building->id.c_str());
 					content.warnings++;
 				}
 				else
@@ -317,14 +322,14 @@ void BuildingLoader::ParseBuilding(const string& id)
 				}
 				else if(t.IsInt())
 				{
-					int shift_x = t.GetInt();
+					int shiftX = t.GetInt();
 					t.Next();
-					int shift_y = t.MustGetInt();
+					int shiftY = t.MustGetInt();
 					t.Next();
 					for(int i = 0; i < 4; ++i)
 					{
-						building->shift[i].x = shift_x;
-						building->shift[i].y = shift_y;
+						building->shift[i].x = shiftX;
+						building->shift[i].y = shiftY;
 					}
 				}
 				else
@@ -352,20 +357,20 @@ void BuildingLoader::ParseBuilding(const string& id)
 //=================================================================================================
 void BuildingLoader::ParseBuildingGroup(const string& id)
 {
-	auto existing_building_group = BuildingGroup::TryGet(id);
-	if(existing_building_group)
+	BuildingGroup* existingBuildingGroup = BuildingGroup::TryGet(id);
+	if(existingBuildingGroup)
 		t.Throw("Id must be unique.");
 
-	auto building_group = new BuildingGroup;
-	building_group->id = id;
-	BuildingGroup::groups.push_back(building_group);
+	BuildingGroup* buildingGroup = new BuildingGroup;
+	buildingGroup->id = id;
+	BuildingGroup::groups.push_back(buildingGroup);
 }
 
 //=================================================================================================
 void BuildingLoader::ParseBuildingScript(const string& id)
 {
-	auto existing_building_script = BuildingScript::TryGet(id);
-	if(existing_building_script)
+	BuildingScript* existingBuildingScript = BuildingScript::TryGet(id);
+	if(existingBuildingScript)
 		t.Throw("Id must be unique.");
 	t.Next();
 
@@ -387,15 +392,15 @@ void BuildingLoader::ParseBuildingScript(const string& id)
 //=================================================================================================
 void BuildingLoader::ParseCode(BuildingScript& script)
 {
-	vector<bool> if_state; // false - if block, true - else block
-	bool inline_variant = false,
-		in_shuffle = false;
+	vector<bool> ifState; // false - if block, true - else block
+	bool inlineVariant = false,
+		inShuffle = false;
 
 	while(!t.IsEof())
 	{
 		if(t.IsSymbol('}'))
 		{
-			if(variant && !inline_variant)
+			if(variant && !inlineVariant)
 			{
 				if(code->empty())
 					t.Throw("Empty code for variant %d.", variant->index + 1);
@@ -429,7 +434,7 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 				if(script.variants.empty())
 				{
 					StartVariant(script);
-					inline_variant = true;
+					inlineVariant = true;
 				}
 				else
 					t.Throw("Code outside variant block.");
@@ -440,25 +445,25 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 			case SK_SHUFFLE:
 				if(t.IsKeyword(SK2_START, G_SCRIPT2))
 				{
-					if(in_shuffle)
+					if(inShuffle)
 						t.Throw("Shuffle already started.");
 					code->push_back(BuildingScript::BS_SHUFFLE_START);
-					in_shuffle = true;
+					inShuffle = true;
 					t.Next();
 				}
 				else if(t.IsKeyword(SK2_END, G_SCRIPT2))
 				{
-					if(!in_shuffle)
+					if(!inShuffle)
 						t.Throw("Shuffle not started.");
 					code->push_back(BuildingScript::BS_SHUFFLE_END);
-					in_shuffle = false;
+					inShuffle = false;
 					t.Next();
 				}
 				else
 					t.Unexpected();
 				break;
 			case SK_REQUIRED:
-				if(!if_state.empty())
+				if(!ifState.empty())
 					t.Throw("Required off can't be used inside if else section.");
 				if(script.requiredOffset != (uint)-1)
 					t.Throw("Required already turned off.");
@@ -597,19 +602,19 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 					code->push_back(BuildingScript::BS_IF);
 					code->push_back(symbol);
 				}
-				if_state.push_back(false);
+				ifState.push_back(false);
 				break;
 			case SK_ELSE:
-				if(if_state.empty() || if_state.back() == true)
+				if(ifState.empty() || ifState.back() == true)
 					t.Unexpected();
 				code->push_back(BuildingScript::BS_ELSE);
-				if_state.back() = true;
+				ifState.back() = true;
 				break;
 			case SK_ENDIF:
-				if(if_state.empty())
+				if(ifState.empty())
 					t.Unexpected();
 				code->push_back(BuildingScript::BS_ENDIF);
-				if_state.pop_back();
+				ifState.pop_back();
 				break;
 			case SK_GROUP:
 				{
@@ -637,7 +642,7 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 				if(script.variants.empty())
 				{
 					StartVariant(script);
-					inline_variant = true;
+					inlineVariant = true;
 				}
 				else
 					t.Throw("Code outside variant block.");
@@ -656,9 +661,9 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 			t.Unexpected();
 	}
 
-	if(in_shuffle)
+	if(inShuffle)
 		t.Throw("Missing end shuffle.");
-	else if(!if_state.empty())
+	else if(!ifState.empty())
 		t.Throw("Unclosed if/else block.");
 	else if(script.variants.empty())
 		t.Throw("Empty building script.");
@@ -679,16 +684,14 @@ void BuildingLoader::StartVariant(BuildingScript& script)
 	AddVar("count");
 	AddVar("counter");
 	AddVar("citizens");
-	AddVar("citizens_world");
-	AddVar("first_city", true);
+	AddVar("citizensWorld");
 }
 
 //=================================================================================================
-void BuildingLoader::AddVar(Cstring id, bool isConst)
+void BuildingLoader::AddVar(Cstring id)
 {
 	Var v;
 	v.name = id.s;
-	v.isConst = isConst;
 	v.index = vars.size();
 	vars.push_back(v);
 }
@@ -705,14 +708,12 @@ BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 }
 
 //=================================================================================================
-BuildingLoader::Var& BuildingLoader::GetVar(bool canBeConst)
+BuildingLoader::Var& BuildingLoader::GetVar()
 {
 	const string& id = t.MustGetItem();
 	Var* v = FindVar(id);
 	if(!v)
 		t.Throw("Missing variable '%s'.", id.c_str());
-	if(v->isConst && !canBeConst)
-		t.Throw("Variable '%s' cannot be modified.", id.c_str());
 	t.Next();
 	return *v;
 }
@@ -775,7 +776,7 @@ void BuildingLoader::GetItem()
 	else if(t.IsItem())
 	{
 		// var ?
-		Var& v = GetVar(true);
+		Var& v = GetVar();
 		code->push_back(BuildingScript::BS_PUSH_VAR);
 		code->push_back(v.index);
 	}
@@ -808,9 +809,9 @@ void BuildingLoader::SetupBuildingGroups()
 {
 	BuildingGroup::BG_INN = BuildingGroup::Get("inn");
 	BuildingGroup::BG_HALL = BuildingGroup::Get("hall");
-	BuildingGroup::BG_TRAINING_GROUNDS = BuildingGroup::Get("training_grounds");
+	BuildingGroup::BG_TRAINING_GROUNDS = BuildingGroup::Get("trainingGrounds");
 	BuildingGroup::BG_ARENA = BuildingGroup::Get("arena");
-	BuildingGroup::BG_FOOD_SELLER = BuildingGroup::Get("food_seller");
+	BuildingGroup::BG_FOOD_SELLER = BuildingGroup::Get("foodSeller");
 	BuildingGroup::BG_ALCHEMIST = BuildingGroup::Get("alchemist");
 	BuildingGroup::BG_BLACKSMITH = BuildingGroup::Get("blacksmith");
 	BuildingGroup::BG_MERCHANT = BuildingGroup::Get("merchant");
@@ -900,4 +901,16 @@ void BuildingLoader::CalculateCrc()
 	}
 
 	content.crc[(int)Content::Id::Buildings] = crc.Get();
+}
+
+//=================================================================================================
+void BuildingLoader::ParseAlias(const string& id)
+{
+	Building* building = Building::TryGet(id);
+	if(!building)
+		t.Throw("Missing building '%s'.", id.c_str());
+	t.Next();
+
+	const string& aliasId = t.MustGetItemKeyword();
+	Building::aliases[aliasId] = building;
 }

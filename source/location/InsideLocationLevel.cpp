@@ -14,52 +14,52 @@ Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 	if(rooms.empty())
 		return nullptr;
 
-	float best_dist = 1000.f;
-	Room* best_room = nullptr;
+	float bestDist = 1000.f;
+	Room* bestRoom = nullptr;
 
 	for(Room* room : rooms)
 	{
 		float dist = room->Distance(pos);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
 			if(dist == 0.f)
 				return room;
-			best_dist = dist;
-			best_room = room;
+			bestDist = dist;
+			bestRoom = room;
 		}
 	}
 
-	return best_room;
+	return bestRoom;
 }
 
 //=================================================================================================
 Room* InsideLocationLevel::FindEscapeRoom(const Vec3& myPos, const Vec3& enemyPos)
 {
-	Room* my_room = GetNearestRoom(myPos),
-		*enemy_room = GetNearestRoom(enemyPos);
+	Room* myRoom = GetNearestRoom(myPos),
+		*enemyRoom = GetNearestRoom(enemyPos);
 
-	if(!my_room)
+	if(!myRoom)
 		return nullptr;
 
-	Room* best_room = nullptr;
-	float best_dist = 0.f, dist;
+	Room* bestRoom = nullptr;
+	float bestDist = 0.f, dist;
 	Vec3 mid;
 
-	for(Room* room : my_room->connected)
+	for(Room* room : myRoom->connected)
 	{
-		if(room == enemy_room)
+		if(room == enemyRoom)
 			continue;
 
 		Vec3 mid = room->Center();
 		dist = Vec3::Distance(myPos, mid) - Vec3::Distance(enemyPos, mid);
-		if(dist < best_dist)
+		if(dist < bestDist)
 		{
-			best_dist = dist;
-			best_room = room;
+			bestDist = dist;
+			bestRoom = room;
 		}
 	}
 
-	return best_room;
+	return bestRoom;
 }
 
 //=================================================================================================
@@ -90,27 +90,27 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* out_index, int* out_group)
+Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* outIndex, int* outGroup)
 {
-	int group_index = Rand() % groups.size(),
-		group_start = group_index;
+	int groupIndex = Rand() % groups.size(),
+		groupStart = groupIndex;
 	while(true)
 	{
-		RoomGroup& group = groups[group_index];
+		RoomGroup& group = groups[groupIndex];
 		if(group.target == target)
 		{
 			int index = Rand() % group.rooms.size(),
 				start = index;
 			while(true)
 			{
-				int room_index = group.rooms[index];
-				Room& room = *rooms[room_index];
+				int roomIndex = group.rooms[index];
+				Room& room = *rooms[roomIndex];
 				if(clbk(room))
 				{
-					if(out_index)
-						*out_index = room_index;
-					if(out_group)
-						*out_group = group_index;
+					if(outIndex)
+						*outIndex = roomIndex;
+					if(outGroup)
+						*outGroup = groupIndex;
 					return &room;
 				}
 				index = (index + 1) % group.rooms.size();
@@ -118,8 +118,8 @@ Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)
 					break;
 			}
 		}
-		group_index = (group_index + 1) % groups.size();
-		if(group_index == group_start)
+		groupIndex = (groupIndex + 1) % groups.size();
+		if(groupIndex == groupStart)
 			return nullptr;
 	}
 }
@@ -315,7 +315,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 		f >> nextEntryPt;
 		f >> prevEntryDir;
 		f >> nextEntryDir;
-		if(f.Read<bool>()) // staircase_down_in_wall
+		if(f.Read<bool>()) // staircaseDownInWall
 			nextEntryType = ENTRY_STAIRS_DOWN_IN_WALL;
 	}
 }
@@ -328,7 +328,7 @@ Room& InsideLocationLevel::GetFarRoom(bool haveNextEntry, bool noTarget)
 	{
 		Room* prevEntryRoom = GetPrevEntryRoom();
 		Room* nextEntryRoom = GetNextEntryRoom();
-		int best_dist, dist;
+		int bestDist, dist;
 		Room* best = nullptr;
 
 		for(Room* room : rooms)
@@ -336,9 +336,9 @@ Room& InsideLocationLevel::GetFarRoom(bool haveNextEntry, bool noTarget)
 			if(room->IsCorridor() || (noTarget && room->target != RoomTarget::None))
 				continue;
 			dist = Int2::Distance(room->pos, prevEntryRoom->pos) + Int2::Distance(room->pos, nextEntryRoom->pos);
-			if(!best || dist > best_dist)
+			if(!best || dist > bestDist)
 			{
-				best_dist = dist;
+				bestDist = dist;
 				best = room;
 			}
 		}
@@ -348,7 +348,7 @@ Room& InsideLocationLevel::GetFarRoom(bool haveNextEntry, bool noTarget)
 	else
 	{
 		Room* prevEntryRoom = GetPrevEntryRoom();
-		int best_dist, dist;
+		int bestDist, dist;
 		Room* best = nullptr;
 
 		for(Room* room : rooms)
@@ -356,9 +356,9 @@ Room& InsideLocationLevel::GetFarRoom(bool haveNextEntry, bool noTarget)
 			if(room->IsCorridor() || (noTarget && room->target != RoomTarget::None))
 				continue;
 			dist = Int2::Distance(room->pos, prevEntryRoom->pos);
-			if(!best || dist > best_dist)
+			if(!best || dist > bestDist)
 			{
-				best_dist = dist;
+				bestDist = dist;
 				best = room;
 			}
 		}

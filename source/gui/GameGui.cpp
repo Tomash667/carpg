@@ -42,7 +42,7 @@
 
 GameGui* gameGui;
 FontPtr GameGui::font, GameGui::fontSmall, GameGui::fontBig;
-extern string g_system_dir;
+extern string gSystemDir;
 
 //=================================================================================================
 GameGui::GameGui() : loadScreen(nullptr), levelGui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
@@ -95,7 +95,7 @@ void GameGui::Init()
 {
 	// layout
 	LayoutLoader* loader = new LayoutLoader(gui);
-	Layout* layout = loader->LoadFromFile(Format("%s/layout.txt", g_system_dir.c_str()));
+	Layout* layout = loader->LoadFromFile(Format("%s/layout.txt", gSystemDir.c_str()));
 	font = loader->GetFont("normal");
 	fontSmall = loader->GetFont("small");
 	fontBig = loader->GetFont("big");
@@ -283,25 +283,25 @@ void GameGui::UpdateGui(float dt)
 	else if(GKey.AllowKeyboard() && game->gameState == GS_LEVEL && game->deathScreen == 0 && !game->dialogContext.dialogMode && !game->cutscene)
 	{
 		OpenPanel open = levelGui->GetOpenPanel(),
-			to_open = OpenPanel::None;
+			toOpen = OpenPanel::None;
 
 		if(GKey.PressedRelease(GK_STATS))
-			to_open = OpenPanel::Stats;
+			toOpen = OpenPanel::Stats;
 		else if(GKey.PressedRelease(GK_INVENTORY))
-			to_open = OpenPanel::Inventory;
+			toOpen = OpenPanel::Inventory;
 		else if(GKey.PressedRelease(GK_TEAM_PANEL))
-			to_open = OpenPanel::Team;
+			toOpen = OpenPanel::Team;
 		else if(GKey.PressedRelease(GK_JOURNAL))
-			to_open = OpenPanel::Journal;
+			toOpen = OpenPanel::Journal;
 		else if(GKey.PressedRelease(GK_MINIMAP))
-			to_open = OpenPanel::Minimap;
+			toOpen = OpenPanel::Minimap;
 		else if(GKey.PressedRelease(GK_ABILITY_PANEL))
-			to_open = OpenPanel::Ability;
+			toOpen = OpenPanel::Ability;
 		else if(open == OpenPanel::Trade && input->PressedRelease(Key::Escape))
-			to_open = OpenPanel::Trade; // ShowPanel will hide when already opened
+			toOpen = OpenPanel::Trade; // ShowPanel will hide when already opened
 
-		if(to_open != OpenPanel::None)
-			levelGui->ShowPanel(to_open, open);
+		if(toOpen != OpenPanel::None)
+			levelGui->ShowPanel(toOpen, open);
 
 		switch(open)
 		{
@@ -416,6 +416,7 @@ void GameGui::OnResize()
 	gui->OnResize();
 	if(levelGui)
 		levelGui->PositionPanels();
+	book->Event(GuiEvent_WindowResize);
 	console->Event(GuiEvent_WindowResize);
 	craft->Event(GuiEvent_WindowResize);
 }

@@ -93,7 +93,7 @@ void MainMenu::Draw()
 
 	Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, "Devmode(2013,2022) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2023) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wndSize.x - 512 - 16;
 	r.Right() = gui->wndSize.x - 16;
@@ -152,9 +152,9 @@ void MainMenu::UpdateCheckVersion()
 	}
 	else if(checkStatus == CheckVersionStatus::Done)
 	{
-		if(version_new > VERSION)
+		if(versionNew > VERSION)
 		{
-			cstring str = VersionToString(version_new);
+			cstring str = VersionToString(versionNew);
 			versionText = Format(txNewVersion, str);
 			Info("New version %s is available.", str);
 
@@ -165,7 +165,7 @@ void MainMenu::UpdateCheckVersion()
 			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
-			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(version_new));
+			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(versionNew));
 			if(!versionChangelog.empty())
 				info.text += Format("\n\n%s\n%s", txChanges, versionChangelog.c_str());
 			info.type = DIALOG_YESNO;
@@ -174,7 +174,7 @@ void MainMenu::UpdateCheckVersion()
 
 			gui->ShowDialog(info);
 		}
-		else if(version_new < VERSION)
+		else if(versionNew < VERSION)
 		{
 			versionText = txNewerVersion;
 			Info("You have newer version then available.");
@@ -200,8 +200,8 @@ void MainMenu::UpdateCheckVersion()
 void MainMenu::CheckVersion()
 {
 	auto cancel = [&]() { return checkStatus == CheckVersionStatus::Cancel; };
-	version_new = api->GetVersion(cancel, versionChangelog, versionUpdate);
-	checkStatus = (version_new < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
+	versionNew = api->GetVersion(cancel, versionChangelog, versionUpdate);
+	checkStatus = (versionNew < 0 ? CheckVersionStatus::Error : CheckVersionStatus::Done);
 }
 
 //=================================================================================================

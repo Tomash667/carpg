@@ -18,7 +18,7 @@ class Pathfinding
 
 public:
 	bool FindPath(LocationPart& locPart, const Int2& startTile, const Int2& targetTile, vector<Int2>& path, bool canOpenDoors = true, bool wandering = false, vector<Int2>* blocked = nullptr);
-	int FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& my_tile, const Int2& targetTile, const Unit* me, const Unit* other, const void* usable = nullptr, bool isEndPoint = false);
+	int FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& myTile, const Int2& targetTile, const Unit* me, const Unit* other, const void* usable = nullptr, bool isEndPoint = false);
 	void Draw(BasicShader* shader);
 	void SetTarget(Unit* target) { marked = target; }
 	bool IsDebugDraw() const { return marked != nullptr; }

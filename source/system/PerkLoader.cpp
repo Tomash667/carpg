@@ -83,15 +83,15 @@ void PerkLoader::InitTokenizer()
 		t.AddKeyword(EffectInfo::effects[i].id, i, G_EFFECT);
 
 	t.AddKeywords(G_SPECIAL_REQUIRED, {
-		{ "no_perk", SR_NO_PERK },
-		{ "can_mod", SR_CAN_MOD }
+		{ "noPerk", SR_NO_PERK },
+		{ "canMod", SR_CAN_MOD }
 		});
 
 	t.AddKeywords(G_SPECIAL_EFFECT, {
 		{ "aptitude", SE_APTITUDE },
-		{ "picked_attribute", SE_PICKED_ATTRIBUTE },
-		{ "picked_skill", SE_PICKED_SKILL },
-		{ "skill_point", SE_SKILL_POINT },
+		{ "pickedAttribute", SE_PICKED_ATTRIBUTE },
+		{ "pickedSkill", SE_PICKED_SKILL },
+		{ "skillPoint", SE_SKILL_POINT },
 		{ "gold", SE_GOLD }
 		});
 }
@@ -100,10 +100,10 @@ void PerkLoader::InitTokenizer()
 void PerkLoader::LoadEntity(int, const string& id)
 {
 	const int hash = Hash(id);
-	Perk* existing_perk = Perk::Get(hash);
-	if(existing_perk && existing_perk->defined)
+	Perk* existingPerk = Perk::Get(hash);
+	if(existingPerk && existingPerk->defined)
 	{
-		if(existing_perk->id == id)
+		if(existingPerk->id == id)
 			t.Throw("Id must be unique.");
 		else
 			t.Throw("Id hash collision.");
@@ -139,10 +139,10 @@ void PerkLoader::LoadEntity(int, const string& id)
 				if(t.IsKeyword(0, G_TOP))
 				{
 					t.Next();
-					const int perk_hash = ParsePerkId()->hash;
-					perk->required.push_back({ Perk::Required::HAVE_PERK, perk_hash, 0 });
+					const int perkHash = ParsePerkId()->hash;
+					perk->required.push_back({ Perk::Required::HAVE_PERK, perkHash, 0 });
 					crc.Update(Perk::Required::HAVE_PERK);
-					crc.Update(perk_hash);
+					crc.Update(perkHash);
 				}
 				else if(t.IsKeywordGroup(G_SPECIAL_REQUIRED))
 				{
@@ -150,10 +150,10 @@ void PerkLoader::LoadEntity(int, const string& id)
 					t.Next();
 					if(special == SR_NO_PERK)
 					{
-						const int perk_hash = ParsePerkId()->hash;
-						perk->required.push_back({ Perk::Required::HAVE_NO_PERK, perk_hash, 0 });
+						const int perkHash = ParsePerkId()->hash;
+						perk->required.push_back({ Perk::Required::HAVE_NO_PERK, perkHash, 0 });
 						crc.Update(Perk::Required::HAVE_NO_PERK);
-						crc.Update(perk_hash);
+						crc.Update(perkHash);
 					}
 					else
 					{
@@ -293,10 +293,10 @@ void PerkLoader::LoadEntity(int, const string& id)
 		}
 	}
 
-	if(existing_perk)
+	if(existingPerk)
 	{
-		RemoveElement(Perk::perks, existing_perk);
-		delete existing_perk;
+		RemoveElement(Perk::perks, existingPerk);
+		delete existingPerk;
 	}
 	Perk::hashPerks[hash] = perk;
 	Perk::perks.push_back(perk.Pin());
