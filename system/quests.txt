@@ -1883,7 +1883,7 @@ quest alchemist_apprentice
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.onPickup.groundItem.base is herb)
+				if(e.onPickup.item is herb)
 				{
 					if(lastItem is e.onPickup.groundItem)
 						@lastItem = null;
@@ -2601,7 +2601,7 @@ quest side_cleric
 
 		void OnEvent(Event@ e)
 		{
-			if(e.event == EVENT_PICKUP && e.onPickup.groundItem.base is book)
+			if(e.event == EVENT_PICKUP && e.onPickup.item is book)
 			{
 				progress = P_CLERIC_PICKED;
 				Level::location.RemoveEventHandler(quest);

@@ -621,6 +621,7 @@ void Game::UpdateAi(float dt)
 					moveType = MovePoint;
 					targetPos = u.order->pos;
 					lookAt = LookAtWalk;
+					tryPhase = true;
 					switch(u.order->moveType)
 					{
 					default:

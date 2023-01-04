@@ -2924,13 +2924,15 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						c.count = (upAnim ? 1 : 0);
 					}
 
+					locPart.RemoveGroundItem(groundItem, false);
+
 					ScriptEvent event(EVENT_PICKUP);
 					event.onPickup.unit = unit;
 					event.onPickup.groundItem = groundItem;
 					event.onPickup.item = groundItem->item;
 					gameLevel->location->FireEvent(event);
 
-					locPart.RemoveGroundItem(groundItem);
+					delete groundItem;
 				}
 				else
 				{

@@ -862,6 +862,8 @@ void World::GenerateWorld()
 	SmoothTiles();
 
 	this->startLocation = locations[startLocation];
+	currentLocation = nullptr;
+	currentLocationIndex = -1;
 	tomirSpawned = false;
 }
 

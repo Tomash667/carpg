@@ -51,7 +51,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->drawCol, "drawCol", "draw colliders (drawCol 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->gameSpeed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
 	cmds.push_back(ConsoleCommand(&game->nextSeed, "nextSeed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->dontWander, "dontWander", "citizens don't wander around city (dontWander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->dontWander, "dontWander", "citizens don't wander around city (dontWander 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->drawFlags, "drawFlags", "set which elements of game draw (drawFlags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mpInterp, "mpInterp", "interpolation interval (mpInterp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mpUseInterp", "set use of interpolation (mpUseInterp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));

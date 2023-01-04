@@ -20,6 +20,9 @@ Version 0.20 (???):
 - wrong drunk idle texts inside inn
 - incompatibility in world map between client and server
 - quest "kill animals" could pick already cleared location and there would be no enemies
+- couldn't finish quest "herbs for the alchemist" [Zielu]
+- when asking about nearby locations npc don't say that hunters camp is empty [Zielu]
+- broken save when exited to menu and started new game
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

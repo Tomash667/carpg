@@ -102,27 +102,27 @@ relatedAttributes = "Related attributes"
 
 attribute str {
 	name "Strength"
-	desc "\tIncreases the damage dealt in melee combat, block power, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
+	desc "Increases the damage dealt in melee combat, block power, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\nUsing heavy weapons and armor or carrying heavy items trains strength.\n\nAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
 }
 attribute end {
 	name "Endurance"
-	desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor, concentration."
+	desc "Increases health, stamina and resistance.\n\nTaking damage and natural healing trains endurance.\n\nAffected skills: medium armor, heavy armor, concentration."
 }
 attribute dex {
 	name "Dexterity"
-	desc "\tIncreases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffected skills: one-handed weapons, short blade, long blade, bows, shields, light armor, medium armor."
+	desc "Increases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\nRunning and fighting trains dexterity.\n\nAffected skills: one-handed weapons, short blade, long blade, bows, shields, light armor, medium armor."
 }
 attribute int {
 	name "Intelligence"
-	desc "\tIncreases power of mage spells and learning speed.\n\tAffected skills: mystic magic, alchemy."
+	desc "Increases power of mage spells and learning speed.\n\nAffected skills: mystic magic, alchemy."
 }
 attribute wis {
 	name "Wisdom"
-	desc "\tIncreases the power of druid spells.\n\tAffected skills: concentration."
+	desc "Increases the power of druid spells.\n\nAffected skills: concentration."
 }
 attribute cha {
 	name "Charisma"
-	desc "\tIncreases the power of cleric spells and chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: gods magic, persuasion."
+	desc "Increases the power of cleric spells and chance to affect others.\n\nTalking and trading trains charisma.\n\nAffected skills: gods magic, persuasion."
 }
 
 //------------------------------------------------------------------------------

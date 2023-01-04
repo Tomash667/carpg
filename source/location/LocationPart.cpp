@@ -740,7 +740,7 @@ void LocationPart::RemoveGroundItem(int questId)
 }
 
 //=================================================================================================
-void LocationPart::RemoveGroundItem(GroundItem* groundItem)
+void LocationPart::RemoveGroundItem(GroundItem* groundItem, bool del)
 {
 	assert(groundItem);
 
@@ -760,7 +760,9 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 	}
 
 	RemoveElement(groundItems, groundItem);
-	delete groundItem;
+
+	if(del)
+		delete groundItem;
 }
 
 //=================================================================================================

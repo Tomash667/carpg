@@ -895,6 +895,8 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					c3.count = (upAnimation ? 1 : 0);
 				}
 
+				locPart->RemoveGroundItem(groundItem, false);
+
 				// event
 				ScriptEvent event(EVENT_PICKUP);
 				event.onPickup.unit = &unit;
@@ -902,7 +904,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				event.onPickup.item = groundItem->item;
 				gameLevel->location->FireEvent(event);
 
-				locPart->RemoveGroundItem(groundItem);
+				delete groundItem;
 			}
 			break;
 		// player consume item

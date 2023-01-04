@@ -4333,7 +4333,7 @@ void Level::SpawnItemRandomly(const Item* item, uint count)
 	for(uint i = 0; i < count; ++i)
 	{
 		const float s = (float)OutsideLocation::size;
-		Vec2 pos = Vec2(s, s) + Vec2::RandomPoissonDiscPoint() * (s - 30.f);
+		Vec2 pos = Vec2(s, s) + Vec2::RandomPoissonDiscPoint() * (s - 34.f);
 		SpawnGroundItemInsideRadius(item, pos, 3.f, true);
 	}
 }

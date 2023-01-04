@@ -1136,6 +1136,7 @@ void Game::SetGameText()
 	StrArray(txNearLocEmpty, "nearLocEmpty");
 	txNearLocCleared = Str("nearLocCleared");
 	StrArray(txNearLocEnemy, "nearLocEnemy");
+	txNearLocHunters = Str("nearLocHunters");
 	StrArray(txNoNews, "noNews");
 	StrArray(txAllNews, "allNews");
 	txAllNearLoc = Str("allNearLoc");

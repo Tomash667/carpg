@@ -351,7 +351,7 @@ bool Team::HaveClass(Class* clas) const
 	{
 		for(PlayerInfo& info : net->players)
 		{
-			if(info.left != PlayerInfo::LEFT_NO && info.cc.clas == clas)
+			if(info.left == PlayerInfo::LEFT_NO && info.cc.clas == clas)
 				return true;
 		}
 	}
