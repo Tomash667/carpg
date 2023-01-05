@@ -63,8 +63,7 @@ void Quest::OnStart(cstring name)
 		gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ADD_QUEST;
+		NetChange& c = Net::PushChange(NetChange::ADD_QUEST);
 		c.id = id;
 	}
 }
@@ -79,9 +78,8 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& newMsgs)
 	gameGui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
+		NetChange& c = Net::PushChange(NetChange::UPDATE_QUEST);
 		c.id = id;
-		c.type = NetChange::UPDATE_QUEST;
 		c.count = newMsgs.size();
 	}
 }

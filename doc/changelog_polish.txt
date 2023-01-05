@@ -20,6 +20,9 @@ Wersja 0.20 (???):
 - złe losowe pijane teksty npc w karczmie
 - niezgodność w działaniu mapy świata pomiędzy klientem a serwerem
 - zadanie "zabij zwierzęta" mogło wybrać lokalizację w której już byliśmy i nie było wtedy wrogów
+- nie można było ukończyć zadania "zioła dla alchemika" [Zielu]
+- gdy pytamy o okoliczne lokalizacje npc nie mówi że obóz łowców jest pusty [Zielu]
+- uszkodzony zapis gdy z gry wróciło się do menu i rozpoczęło nową grę
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

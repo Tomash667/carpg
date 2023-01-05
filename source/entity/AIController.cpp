@@ -469,8 +469,7 @@ void AIController::Shout()
 	game->PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
@@ -511,8 +510,7 @@ void AIController::HitReaction(const Vec3& pos)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
@@ -597,8 +595,7 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ATTACK;
+		NetChange& c = Net::PushChange(NetChange::ATTACK);
 		c.unit = unit;
 		c.id = (doPowerAttack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 		c.f[1] = speed;

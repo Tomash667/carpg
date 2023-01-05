@@ -445,8 +445,7 @@ void TeamPanel::OnPayCredit(int id)
 			game->pc->PayCredit(count);
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PAY_CREDIT;
+			NetChange& c = Net::PushChange(NetChange::PAY_CREDIT);
 			c.id = count;
 		}
 	}
@@ -482,8 +481,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 			SimpleDialog(txAlreadyLeader);
 		else if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LEADER;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LEADER);
 			c.id = team->myId;
 
 			team->leaderId = team->myId;
@@ -498,8 +496,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
 	else if(team->IsLeader() || Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LEADER;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_LEADER);
 		c.id = target->player->id;
 
 		if(Net::IsServer())
@@ -556,8 +553,7 @@ void TeamPanel::OnGiveGold(int id)
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(target->player->playerInfo->changes);
-				c.type = NetChangePlayer::GOLD_RECEIVED;
+				NetChangePlayer& c = target->player->playerInfo->PushChange(NetChangePlayer::GOLD_RECEIVED);
 				c.id = game->pc->id;
 				c.count = counter;
 				target->player->playerInfo->UpdateGold();
@@ -565,8 +561,7 @@ void TeamPanel::OnGiveGold(int id)
 		}
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GIVE_GOLD;
+			NetChange& c = Net::PushChange(NetChange::GIVE_GOLD);
 			c.id = target->id;
 			c.count = counter;
 		}

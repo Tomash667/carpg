@@ -459,7 +459,7 @@ quest main {
 		1 "Zaraza? Nic o tym nie wiem..."
 		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.realName)?"
 		3 "Zazwyczaj mo¿na go tu znaleŸæ ale aktualnie wyruszy³ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) st¹d."
-		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go niewidzia³em."
+		4 "Mam nadzieje ¿e nic mu nie jest, od kilku dni go nie widzia³em."
 	}
 	
 	dialog cleric {
@@ -492,7 +492,7 @@ quest main {
 		26 "Oddaj dziwne zio³a"
 		27 "Nigdy nie widzia³em takich dziwnych zió³. Wygl¹daj¹ jak skrystalizowane. Poœlê po jakiegoœ doœwiadczonego alchemika ¿eby je zbada³."
 		28 "Przeka¿ informacje"
-		29 "Wiêc mówisz ¿e ten starzec straci³ pamieæ? Mam nadzieje ¿e to nie jest kolejny objaw choroby. W wolnym czasie pójdê z nim porozmawiaæ, mo¿e uda mi siê przywróciæ mu pamiêæ."
+		29 "Wiêc mówisz ¿e ten starzec straci³ pamiêæ? Mam nadzieje ¿e to nie jest kolejny objaw choroby. W wolnym czasie pójdê z nim porozmawiaæ, mo¿e uda mi siê przywróciæ mu pamiêæ."
 		30 "(To koniec g³ównej fabu³y na t¹ wersjê. Spróbuj w miêdzyczasie ukoñczyæ wszystkie unikalne zadania)"
 	}
 	
@@ -560,7 +560,7 @@ quest main_village1 {
 		1 "Rozpoczêto dnia $date$."
 		2 "Kleryk $(cleric.realName) zleci³ mi znalezienie Ÿród³a zarazy. Jednym z miejsc które muszê sprawdziæ jest $(village.name)."
 		3 "Dotar³em na miejsce. Wioska wygl¹da na opuszczon¹. Muszê sprawdziæ w karczmie i domu so³tysa, mo¿e tam ktoœ jest."
-		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu znikneli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
+		4 "Znalaz³em dziennik miejscowego so³tysa. Wynika z niego ¿e wszyscy po prostu zniknêli w ci¹gu kilku dniach. Powinienem wróciæ z tymi informacjami do $(cleric.realName)."
 		5 "Odda³em dziennik $(cleric.realName) i dosta³em za to nagrodê. Zadanie wykonane!"
 		6 "Wszyscy mieszkañcy $(village.name) gdzieœ zniknêli..."
 	}

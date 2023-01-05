@@ -63,8 +63,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -95,8 +94,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -217,8 +215,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				state = 0;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -294,8 +291,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SHOOT_ARROW;
+						NetChange& c = Net::PushChange(NetChange::SHOOT_ARROW);
 						c << bullet->id
 							<< -1 // owner
 							<< bullet->startPos
@@ -305,8 +301,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 							<< bullet->yspeed
 							<< 0; // ability
 
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::TRIGGER_TRAP;
+						NetChange& c2 = Net::PushChange(NetChange::TRIGGER_TRAP);
 						c2.id = id;
 					}
 				}
@@ -351,8 +346,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				state = 0;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -388,8 +382,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					soundMgr->PlaySound3d(fireball->soundHit, pos, fireball->soundHitDist);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SPELL_SOUND;
+						NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 						c.extraId = 1;
 						c.ability = fireball;
 						c.pos = pos;
@@ -398,8 +391,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_TRAP;
+					NetChange& c = Net::PushChange(NetChange::REMOVE_TRAP);
 					c.id = id;
 				}
 
@@ -440,8 +432,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}

@@ -1856,7 +1856,7 @@ dialog generic_idle {
 		"Hmmm, what was I supposed to do?"
 		"I thought that I had more gold."
 		"What if I threw it all to hell?"
-		"Nowdays, you can't rely on anyone, that's what."
+		"Nowadays, you can't rely on anyone, that's what."
 	}
 	1 { // outside location
 		"At least it's not raining."

@@ -51,7 +51,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->drawCol, "drawCol", "draw colliders (drawCol 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->gameSpeed, "speed", "game speed (speed 0-10)", F_CHEAT | F_GAME | F_WORLD_MAP | F_MP_VAR, 0.01f, 10.f));
 	cmds.push_back(ConsoleCommand(&game->nextSeed, "nextSeed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->dontWander, "dontWander", "citizens don't wander around city (dontWander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->dontWander, "dontWander", "citizens don't wander around city (dontWander 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->drawFlags, "drawFlags", "set which elements of game draw (drawFlags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mpInterp, "mpInterp", "interpolation interval (mpInterp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mpUseInterp", "set use of interpolation (mpUseInterp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
@@ -101,7 +101,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h])", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
+	cmds.push_back(ConsoleCommand(CMD_QUICKSTART, "quickstart", "pick random character, get ready and start game", F_MENU | F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "breakAction", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
@@ -208,7 +208,10 @@ void CommandParser::ParseCommand(const string& commandStr, PrintMsgFunc printMsg
 				{
 					if(!IsSet(it->flags, F_MULTIPLAYER))
 					{
-						Msg("You can't use command '%s' in multiplayer.", token.c_str());
+						if(IsSet(it->flags, F_SINGLEPLAYER))
+							Msg("You can't use command '%s' in multiplayer.", token.c_str());
+						else
+							Msg("You can't use command '%s' in game.", token.c_str());
 						return;
 					}
 					else if(IsSet(it->flags, F_SERVER) && !Net::IsServer())
@@ -229,7 +232,10 @@ void CommandParser::ParseCommand(const string& commandStr, PrintMsgFunc printMsg
 				{
 					if(!IsSet(it->flags, F_SINGLEPLAYER))
 					{
-						Msg("You can't use command '%s' in singleplayer.", token.c_str());
+						if(IsSet(it->flags, F_MULTIPLAYER))
+							Msg("You can't use command '%s' in singleplayer.", token.c_str());
+						else
+							Msg("You can't use command '%s' in game.", token.c_str());
 						return;
 					}
 				}
@@ -377,8 +383,7 @@ void CommandParser::ParseScript()
 	}
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RUN_SCRIPT;
+		NetChange& c = Net::PushChange(NetChange::RUN_SCRIPT);
 		c.str = StringPool.Get();
 		*c.str = code;
 		c.id = (targetUnit ? targetUnit->id : -1);
@@ -447,8 +452,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					game->pc->unit->AddItem2(item, count, isTeam ? count : 0, false);
 				else
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_ADD_ITEM;
+					NetChange& c = Net::PushChange(NetChange::CHEAT_ADD_ITEM);
 					c.baseItem = item;
 					c.count = count;
 					c.id = isTeam ? 1 : 0;
@@ -573,8 +577,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 				else
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = (cmd.cmd == CMD_SET_STAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
+					NetChange& c = Net::PushChange(cmd.cmd == CMD_SET_STAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
 					c.id = value;
 					c.count = (skill ? 1 : 0);
 					c.i = num;
@@ -719,8 +722,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 				else
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_SPAWN_UNIT;
+					NetChange& c = Net::PushChange(NetChange::CHEAT_SPAWN_UNIT);
 					c.baseUnit = data;
 					c.count = count;
 					c.id = level;
@@ -1094,8 +1096,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		else if(Net::IsOnline())
 		{
 			int n = Random(1, 100);
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::RANDOM_NUMBER;
+			NetChange& c = Net::PushChange(NetChange::RANDOM_NUMBER);
 			c.id = n;
 			c.unit = game->pc->unit;
 			gameGui->AddMsg(Format("You rolled %d.", n));
@@ -1117,8 +1118,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 						if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 						{
 							info.devmode = b;
-							NetChangePlayer& c = Add1(info.pc->playerInfo->changes);
-							c.type = NetChangePlayer::DEVMODE;
+							NetChangePlayer& c = info.pc->playerInfo->PushChange(NetChangePlayer::DEVMODE);
 							c.id = (b ? 1 : 0);
 						}
 					}
@@ -1131,8 +1131,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					else if(info->devmode != b)
 					{
 						info->devmode = b;
-						NetChangePlayer& c = Add1(info->pc->playerInfo->changes);
-						c.type = NetChangePlayer::DEVMODE;
+						NetChangePlayer& c = info->pc->playerInfo->PushChange(NetChangePlayer::DEVMODE);
 						c.id = (b ? 1 : 0);
 					}
 				}
@@ -1179,8 +1178,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			game->noai = t.MustGetBool();
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_NOAI;
+				NetChange& c = Net::PushChange(NetChange::CHEAT_NOAI);
 				c.id = (game->noai ? 1 : 0);
 			}
 		}
@@ -1260,9 +1258,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			Msg(s);
 		}
 		break;
-	case CMD_QS:
-		if(!gameGui->server->Quickstart())
-			Msg("Not everyone is ready.");
+	case CMD_QUICKSTART:
+		if(gameGui->server->visible)
+		{
+			if(!gameGui->server->Quickstart())
+				Msg("Not everyone is ready.");
+		}
+		else
+			game->StartQuickGame();
 		break;
 	case CMD_CLEAR:
 		switch(source)
@@ -1825,8 +1828,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				gameLevel->CleanLevel(buildingId);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CLEAN_LEVEL;
+				NetChange& c = Net::PushChange(NetChange::CLEAN_LEVEL);
 				c.id = buildingId;
 			}
 		}
@@ -1841,8 +1843,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				ArenaCombat(s);
 			else
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEAT_ARENA;
+				NetChange& c = Net::PushChange(NetChange::CHEAT_ARENA);
 				c.str = StringPool.Get();
 				*c.str = s;
 			}
@@ -1933,8 +1934,7 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 
 	if(result && !str.empty())
 	{
-		NetChangePlayer& c = Add1(info.changes);
-		c.type = NetChangePlayer::GENERIC_CMD_RESPONSE;
+		NetChangePlayer& c = info.PushChange(NetChangePlayer::GENERIC_CMD_RESPONSE);
 		c.str = str.Pin();
 	}
 
@@ -1964,8 +1964,7 @@ void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& inf
 
 	if(!str.empty())
 	{
-		NetChangePlayer& c = Add1(info.changes);
-		c.type = NetChangePlayer::GENERIC_CMD_RESPONSE;
+		NetChangePlayer& c = info.PushChange(NetChangePlayer::GENERIC_CMD_RESPONSE);
 		c.str = str.Pin();
 	}
 }
@@ -2415,8 +2414,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 				warp.building = -1;
 				warp.timer = 1.f;
 				unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::PREPARE_WARP;
+				player->playerInfo->PushChange(NetChangePlayer::PREPARE_WARP);
 			}
 			else
 			{
@@ -2433,8 +2431,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					warp.building = buildingIndex;
 					warp.timer = 1.f;
 					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					NetChangePlayer& c = Add1(player->playerInfo->changes);
-					c.type = NetChangePlayer::PREPARE_WARP;
+					player->playerInfo->PushChange(NetChangePlayer::PREPARE_WARP);
 				}
 				else
 				{
@@ -2582,8 +2579,7 @@ void CommandParser::HealUnit(Unit& unit)
 		unit.hp = unit.hpmax;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = &unit;
 		}
 	}
@@ -2592,8 +2588,7 @@ void CommandParser::HealUnit(Unit& unit)
 		unit.mp = unit.mpmax;
 		if(Net::IsServer() && unit.IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 			c.unit = &unit;
 		}
 	}
@@ -2602,8 +2597,7 @@ void CommandParser::HealUnit(Unit& unit)
 		unit.stamina = unit.staminaMax;
 		if(Net::IsServer() && unit.IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 			c.unit = &unit;
 		}
 	}
@@ -3146,8 +3140,7 @@ void CommandParser::CmdList()
 //=================================================================================================
 NetChangeWriter CommandParser::PushGenericCmd(CMD cmd)
 {
-	NetChange& c = Add1(Net::changes);
-	c.type = NetChange::GENERIC_CMD;
+	NetChange& c = Net::PushChange(NetChange::GENERIC_CMD);
 	return (c << (byte)cmd);
 }
 

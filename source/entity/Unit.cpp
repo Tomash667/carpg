@@ -404,8 +404,7 @@ void Unit::SetGold(int newGold)
 			soundMgr->PlaySound2d(gameRes->sCoins);
 		else
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::SOUND;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::SOUND);
 			c.id = 0;
 			player->playerInfo->UpdateGold();
 		}
@@ -501,8 +500,7 @@ bool Unit::DropItem(int index, uint count)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 		}
 	}
@@ -515,8 +513,7 @@ bool Unit::DropItem(int index, uint count)
 			items.erase(items.begin() + index);
 		}
 
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_ITEM;
+		NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -553,16 +550,14 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 
 			if(IsVisible(slot))
 			{
-				NetChange& c2 = Add1(Net::changes);
+				NetChange& c2 = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 				c2.unit = this;
 				c2.id = slot;
-				c2.type = NetChange::CHANGE_EQUIPMENT;
 			}
 		}
 	}
@@ -570,8 +565,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	{
 		item = nullptr;
 
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_ITEM;
+		NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
@@ -680,8 +674,7 @@ int Unit::ConsumeItem(int index)
 	// wyœlij komunikat
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CONSUME_ITEM;
+		NetChange& c = Net::PushChange(NetChange::CONSUME_ITEM);
 		if(Net::IsServer())
 		{
 			c.unit = this;
@@ -716,8 +709,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 	{
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CONSUME_ITEM;
+			NetChange& c = Net::PushChange(NetChange::CONSUME_ITEM);
 			c.unit = this;
 			c.id = (int)&item;
 			c.count = (force ? 1 : 0);
@@ -827,8 +819,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 		{
 			if(!player->isLocal)
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::ADD_ITEMS;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::ADD_ITEMS);
 				c.item = item;
 				c.count = count;
 				c.id = teamCount;
@@ -849,8 +840,7 @@ void Unit::AddItem2(const Item* item, uint count, uint teamCount, bool showMsg, 
 
 			if(u && !u->player->isLocal)
 			{
-				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
-				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
+				NetChangePlayer& c = u->player->playerInfo->PushChange(NetChangePlayer::ADD_ITEMS_TRADER);
 				c.item = item;
 				c.id = id;
 				c.count = count;
@@ -901,8 +891,7 @@ void Unit::AddEffect(Effect& e, bool send)
 	{
 		if(player && !player->IsLocal())
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::ADD_EFFECT;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::ADD_EFFECT);
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
 			c.a1 = e.sourceId;
@@ -913,8 +902,7 @@ void Unit::AddEffect(Effect& e, bool send)
 
 		if(e.IsVisible())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ADD_UNIT_EFFECT;
+			NetChange& c = Net::PushChange(NetChange::ADD_UNIT_EFFECT);
 			c.unit = this;
 			c.id = (int)e.effect;
 			c.extraFloat = e.time;
@@ -991,8 +979,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					hp = hpmax;
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 					c.unit = this;
 				}
 			}
@@ -1051,8 +1038,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				humanData->hairColor = Vec4(0, 1, 0, 1);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HAIR_COLOR;
+					NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 					c.unit = this;
 				}
 			}
@@ -1065,8 +1051,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					mp = mpmax;
 				if(Net::IsOnline() && IsTeamMember())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_MP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 					c.unit = this;
 				}
 			}
@@ -1188,8 +1173,7 @@ void Unit::UpdateEffects(float dt)
 			hp = hpmax;
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = this;
 		}
 	}
@@ -1230,8 +1214,7 @@ void Unit::UpdateEffects(float dt)
 			mp = mpmax;
 		if(Net::IsServer() && IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 			c.unit = this;
 		}
 	}
@@ -1247,8 +1230,7 @@ void Unit::UpdateEffects(float dt)
 				stamina = staminaMax;
 			if(Net::IsServer() && IsTeamMember())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_STAMINA;
+				NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 				c.unit = this;
 			}
 		}
@@ -1295,8 +1277,7 @@ void Unit::UpdateEffects(float dt)
 			stamina = staminaMax;
 		if(Net::IsServer() && IsTeamMember())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 			c.unit = this;
 		}
 	}
@@ -3160,8 +3141,7 @@ void Unit::ReequipItems()
 		{
 			if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 				c.unit = this;
 				c.id = i;
 			}
@@ -3248,8 +3228,7 @@ void Unit::RemoveQuestItem(int questId)
 			items.erase(it);
 			if(IsOtherPlayer())
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_QUEST_ITEM);
 				c.id = questId;
 			}
 			return;
@@ -3457,8 +3436,7 @@ void Unit::RemoveEffect(EffectId effect)
 
 	if(visible && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT_EFFECT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT_EFFECT);
 		c.unit = this;
 		c.id = (int)effect;
 	}
@@ -3644,8 +3622,7 @@ void Unit::EquipItem(int index)
 
 	if(Net::IsServer() && IsVisible(slot))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.unit = this;
 		c.id = slot;
 	}
@@ -3680,9 +3657,8 @@ void Unit::RemoveItem(int iIndex, bool activeLocation)
 		slots[s] = nullptr;
 		if(activeLocation && IsVisible(s))
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
-			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.id = s;
 		}
 	}
@@ -3714,8 +3690,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 
 		if(Net::IsServer() && net->activePlayers > 1 && IsVisible(type))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
 			c.id = type;
 		}
@@ -3728,8 +3703,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 		{
 			if(!player->isLocal)
 			{
-				NetChangePlayer& c = Add1(player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS;
+				NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS);
 				c.id = iIndex;
 				c.count = removed;
 			}
@@ -3749,8 +3723,7 @@ uint Unit::RemoveItem(int iIndex, uint count)
 
 			if(t && t->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(t->player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
+				NetChangePlayer& c = t->player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS_TRADER);
 				c.id = id;
 				c.count = removed;
 				c.a = iIndex;
@@ -3797,8 +3770,7 @@ void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 		usedItem = nullptr;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_USED_ITEM;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_USED_ITEM);
 			c.unit = this;
 		}
 	}
@@ -3806,8 +3778,7 @@ void Unit::RemoveEquippedItem(ITEM_SLOT slot)
 		RemoveItemEffects(item, slot);
 	if(Net::IsServer() && IsVisible(slot))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.unit = this;
 		c.id = slot;
 	}
@@ -3829,8 +3800,7 @@ void Unit::RemoveAllEquippedItems()
 
 		if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 			c.unit = this;
 			c.id = i;
 		}
@@ -4213,8 +4183,7 @@ void Unit::RemoveEffects(bool send)
 		Effect e = effects[index];
 		if(send)
 		{
-			NetChangePlayer& c = Add1(player->playerInfo->changes);
-			c.type = NetChangePlayer::REMOVE_EFFECT;
+			NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::REMOVE_EFFECT);
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
 			c.a1 = e.sourceId;
@@ -4685,8 +4654,7 @@ void Unit::RemoveMana(float value)
 		player->Train(TrainWhat::Mana, value, 0);
 	if(Net::IsServer() && IsTeamMember())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_MP;
+		NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 		c.unit = this;
 	}
 }
@@ -4702,8 +4670,7 @@ void Unit::RemoveStamina(float value)
 		player->Train(TrainWhat::Stamina, value, 0);
 	if(Net::IsServer() && IsTeamMember())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_STAMINA;
+		NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 		c.unit = this;
 	}
 }
@@ -4875,8 +4842,7 @@ void Unit::RevealName(bool setName)
 	hero->knowName = true;
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TELL_NAME;
+		NetChange& c = Net::PushChange(NetChange::TELL_NAME);
 		c.unit = this;
 		c.id = setName ? 1 : 0;
 	}
@@ -4898,8 +4864,7 @@ void Unit::SetKnownName(bool known)
 	hero->knowName = true;
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TELL_NAME;
+		NetChange& c = Net::PushChange(NetChange::TELL_NAME);
 		c.unit = this;
 		c.id = 0;
 	}
@@ -4961,9 +4926,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 {
 	if(notify && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
+		NetChange& c = Net::PushChange(NetChange::BREAK_ACTION);
 		c.unit = this;
-		c.type = NetChange::BREAK_ACTION;
 	}
 
 	switch(action)
@@ -5150,8 +5114,7 @@ void Unit::Fall()
 		// komunikat
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::FALL;
+			NetChange& c = Net::PushChange(NetChange::FALL);
 			c.unit = this;
 		}
 
@@ -5313,8 +5276,7 @@ void Unit::Standup(bool warp, bool leave)
 
 	if(Net::IsServer() && gameLevel->ready && !leave)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STAND_UP;
+		NetChange& c = Net::PushChange(NetChange::STAND_UP);
 		c.unit = this;
 	}
 }
@@ -5351,8 +5313,7 @@ void Unit::Die(Unit* killer)
 				mark = true;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::MARK_UNIT;
+					NetChange& c = Net::PushChange(NetChange::MARK_UNIT);
 					c.unit = this;
 					c.id = 1;
 				}
@@ -5393,9 +5354,8 @@ void Unit::Die(Unit* killer)
 		// message
 		if(Net::IsOnline())
 		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::DIE;
-			c2.unit = this;
+			NetChange& c = Net::PushChange(NetChange::DIE);
+			c.unit = this;
 		}
 
 		// stats
@@ -5499,16 +5459,14 @@ void Unit::DropGold(int count)
 		// wyœlij info o animacji
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
+			NetChange& c = Net::PushChange(NetChange::DROP_ITEM);
 			c.unit = this;
 		}
 	}
 	else
 	{
 		// wyœlij komunikat o wyrzucaniu z³ota
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_GOLD;
+		NetChange& c = Net::PushChange(NetChange::DROP_GOLD);
 		c.id = count;
 	}
 }
@@ -5554,16 +5512,14 @@ void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::HIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::HIT_SOUND);
 		c.pos = hitpoint;
 		c.id = mat2;
 		c.count = mat;
 
 		if(playBodyHit)
 		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::HIT_SOUND;
+			NetChange& c2 = Net::PushChange(NetChange::HIT_SOUND);
 			c2.pos = hitpoint;
 			c2.id = mat2;
 			c2.count = MAT_BODY;
@@ -5755,8 +5711,7 @@ bool Unit::SetWeaponState(bool takesOut, WeaponType type, bool send)
 
 	if(send && Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TAKE_WEAPON;
+		NetChange& c = Net::PushChange(NetChange::TAKE_WEAPON);
 		c.unit = this;
 		c.id = takesOut ? 0 : 1;
 	}
@@ -5837,9 +5792,8 @@ void Unit::UpdateInventory(bool notify)
 			{
 				if(slots[i] != prevSlots[i] && IsVisible((ITEM_SLOT)i))
 				{
-					NetChange& c = Add1(Net::changes);
+					NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 					c.unit = this;
-					c.type = NetChange::CHANGE_EQUIPMENT;
 					c.id = i;
 				}
 			}
@@ -6156,10 +6110,7 @@ void Unit::OrderAttack()
 		{
 			team->craziesAttack = true;
 			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_FLAGS;
-			}
+				Net::PushChange(NetChange::CHANGE_FLAGS);
 		}
 	}
 	else
@@ -6341,8 +6292,7 @@ void Unit::Talk(cstring text, int playAnim)
 	// sent
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK;
+		NetChange& c = Net::PushChange(NetChange::TALK);
 		c.unit = this;
 		c.str = StringPool.Get();
 		*c.str = text;
@@ -6466,8 +6416,7 @@ void Unit::StopUsingUsable(bool send)
 
 	if(send && Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_USABLE;
+		NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 		c.unit = this;
 		c.id = usable->id;
 		c.count = USE_USABLE_STOP;
@@ -6698,8 +6647,7 @@ void Unit::CastSpell()
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CREATE_SPELL_BALL;
+					NetChange& c = Net::PushChange(NetChange::CREATE_SPELL_BALL);
 					c << ability.hash
 						<< bullet->id
 						<< id
@@ -6760,8 +6708,7 @@ void Unit::CastSpell()
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CREATE_ELECTRO;
+				NetChange& c = Net::PushChange(NetChange::CREATE_ELECTRO);
 				c.extraId = e->id;
 				c.pos = e->lines[0].from;
 				memcpy(c.f, &e->lines[0].to, sizeof(Vec3));
@@ -6797,12 +6744,10 @@ void Unit::CastSpell()
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
+						NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 						c.unit = this;
 
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::CREATE_DRAIN;
+						NetChange& c2 = Net::PushChange(NetChange::CREATE_DRAIN);
 						c2.unit = this;
 					}
 				}
@@ -6844,8 +6789,7 @@ void Unit::CastSpell()
 				target->hp = target->hpmax;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
+					NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 					c.unit = target;
 				}
 
@@ -6863,8 +6807,7 @@ void Unit::CastSpell()
 					target->hp = Min(target->hp + dmg, target->hpmax);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
+						NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 						c.unit = target;
 					}
 				}
@@ -6982,8 +6925,7 @@ void Unit::CastSpell()
 		soundMgr->PlaySound3d(ability.soundCast, coord, ability.soundCastDist);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
+			NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 			c.extraId = 0;
 			c.ability = &ability;
 			c.pos = coord;
@@ -7235,10 +7177,9 @@ void Unit::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
+					NetChange& c = Net::PushChange(NetChange::TAKE_WEAPON);
 					c.unit = this;
 					c.id = 0;
-					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
 			else if(meshInst->IsEnded(1))
@@ -7478,8 +7419,7 @@ void Unit::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SHOOT_ARROW;
+					NetChange& c = Net::PushChange(NetChange::SHOOT_ARROW);
 					c << bullet->id
 						<< id
 						<< bullet->startPos
@@ -7538,8 +7478,7 @@ void Unit::Update(float dt)
 					animationState = AS_ATTACK_CAN_HIT;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = this;
 						c.id = AID_Attack;
 						c.f[1] = speed;
@@ -7704,8 +7643,7 @@ void Unit::Update(float dt)
 			else if(IsLocalPlayer() && animationState == AS_CAST_ANIMATION && meshInst->GetProgress(groupIndex) >= data->frames->t[F_CAST])
 			{
 				animationState = AS_CAST_CASTED;
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CAST_SPELL;
+				NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 				c.pos = targetPos;
 			}
 			if(meshInst->IsEnded(groupIndex))
@@ -7761,8 +7699,7 @@ void Unit::Update(float dt)
 					changed = true;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::USE_USABLE;
+						NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 						c.unit = this;
 						c.id = usable->id;
 						c.count = USE_USABLE_END;
@@ -7811,8 +7748,7 @@ void Unit::Update(float dt)
 								soundMgr->PlaySound3d(bu.sound, GetCenter(), Usable::SOUND_DIST);
 								if(Net::IsServer())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::USABLE_SOUND;
+									NetChange& c = Net::PushChange(NetChange::USABLE_SOUND);
 									c.unit = this;
 								}
 							}
@@ -7948,8 +7884,7 @@ void Unit::Update(float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
+				NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 				c.unit = this;
 				c.id = usable->id;
 				c.count = USE_USABLE_END;
@@ -8303,8 +8238,7 @@ void Unit::Moved(bool warped, bool dash)
 							game->fallbackType = FALLBACK::WAIT_FOR_WARP;
 							game->fallbackTimer = -1.f;
 							frozen = FROZEN::YES;
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ENTER_BUILDING;
+							NetChange& c = Net::PushChange(NetChange::ENTER_BUILDING);
 							c.id = insideBuilding->partId;
 						}
 						break;
@@ -8539,8 +8473,7 @@ void Unit::ChangeBase(UnitData* ud, bool updateItems)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_UNIT_BASE;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_UNIT_BASE);
 		c.unit = this;
 	}
 }
@@ -8593,8 +8526,7 @@ void Unit::MoveToLocation(LocationPart* newLocPart, const Vec3& newPos)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::SPAWN_UNIT;
+					NetChange& c = Net::PushChange(NetChange::SPAWN_UNIT);
 					c.unit = this;
 				}
 			}
@@ -8692,8 +8624,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_BLOOD;
+			NetChange& c = Net::PushChange(NetChange::SPAWN_BLOOD);
 			c.id = data->blood;
 			c.pos = pe->pos;
 		}
@@ -8743,8 +8674,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 				hurtTimer += 1.f;
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UNIT_SOUND;
+				NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 				c.unit = this;
 				c.id = SOUND_PAIN;
 			}
@@ -8757,8 +8687,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		// send update hp
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = this;
 		}
 	}
@@ -8874,9 +8803,8 @@ bool Unit::DoShieldSmash()
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::STUNNED);
 			c.unit = hitted;
-			c.type = NetChange::STUNNED;
 		}
 	}
 
@@ -8920,8 +8848,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 		MATERIAL_TYPE weaponMat = (!bash ? GetWeaponMaterial() : GetShield().material);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HIT_SOUND;
+			NetChange& c = Net::PushChange(NetChange::HIT_SOUND);
 			c.pos = hitpoint;
 			c.id = weaponMat;
 			c.count = hittedMat;
@@ -9056,8 +8983,7 @@ void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 
 		if(Net::IsServer() && notify)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ATTACK;
+			NetChange& c = Net::PushChange(NetChange::ATTACK);
 			c.unit = this;
 			c.id = prepare ? AID_StartShoot : AID_Shoot;
 			c.f[1] = speed;

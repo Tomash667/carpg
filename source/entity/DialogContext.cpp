@@ -104,8 +104,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog, Quest* quest)
 			game->PlayAttachedSound(*talker, sound, Unit::TALK_SOUND_DIST);
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UNIT_SOUND;
+				NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 				c.unit = talker;
 				c.id = SOUND_TALK;
 			}
@@ -204,8 +203,7 @@ void DialogContext::Update(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TALK;
+					NetChange& c = Net::PushChange(NetChange::TALK);
 					c.unit = pc->unit;
 					c.str = StringPool.Get();
 					*c.str = msg;
@@ -316,8 +314,7 @@ void DialogContext::UpdateClient()
 			const int prevChoice = choiceSelected;
 			if(gameGui->levelGui->UpdateChoice())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHOICE;
+				NetChange& c = Net::PushChange(NetChange::CHOICE);
 				c.id = choiceSelected;
 
 				mode = WAIT_MP_RESPONSE;
@@ -331,8 +328,7 @@ void DialogContext::UpdateClient()
 			GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
 			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SKIP_DIALOG;
+			NetChange& c = Net::PushChange(NetChange::SKIP_DIALOG);
 			c.id = skipId;
 			skipId = -1;
 		}
@@ -1350,7 +1346,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		Location& loc = *locations[id];
 		loc.SetKnown();
 		dialogString = Format(game->txNearLoc, GetLocationDirName(world->GetWorldPos(), loc.pos), loc.name.c_str());
-		if(loc.group->IsEmpty())
+		if(loc.type == L_OUTSIDE && loc.target == HUNTERS_CAMP)
+			dialogString += game->txNearLocHunters;
+		else if(loc.group->IsEmpty())
 			dialogString += RandomString(game->txNearLocEmpty);
 		else if(loc.state == LS_CLEARED)
 			dialogString += Format(game->txNearLocCleared, loc.group->name3.c_str());
@@ -1461,8 +1459,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		pc->unit->humanData->hairColor = gHairColors[8];
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
+			NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 			c.unit = pc->unit;
 		}
 	}
@@ -1488,8 +1485,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		}
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::HAIR_COLOR;
+			NetChange& c = Net::PushChange(NetChange::HAIR_COLOR);
 			c.unit = pc->unit;
 		}
 	}
@@ -1598,8 +1594,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		talker->PlaySound(gameRes->sCoughs, Unit::COUGHS_SOUND_DIST);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UNIT_MISC_SOUND;
+			NetChange& c = Net::PushChange(NetChange::UNIT_MISC_SOUND);
 			c.unit = talker;
 		}
 	}
@@ -1806,8 +1801,7 @@ void DialogContext::Talk(cstring msg)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK;
+		NetChange& c = Net::PushChange(NetChange::TALK);
 		c.unit = talker;
 		c.str = StringPool.Get();
 		*c.str = msg;

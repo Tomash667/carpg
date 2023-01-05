@@ -62,7 +62,7 @@ dialog traveling_merchant {
 	}
 	1 "Pohandlujmy"
 	2 "Czym siê zajmujesz?"
-	3 "Jestem wêdrownym kupcem. Prowadzê t¹ karawane do $(World::GetClosestLocation(L_CITY, World::pos).name), sprzedam tam z zyskiem moje towary."
+	3 "Jestem wêdrownym kupcem. Prowadzê t¹ karawanê do $(World::GetClosestLocation(L_CITY, World::pos).name), sprzedam tam z zyskiem moje towary."
 	4 "Koniec rozmowy"
 }
 
@@ -288,7 +288,7 @@ dialog clerk {
 
 //==============================================================================
 dialog arena_master {
-	0 "Poczekaj chwilê, musze zobaczyæ ile jest chêtnych osób do wziêcia udzia³u w zawodach."
+	0 "Poczekaj chwilê, muszê zobaczyæ ile jest chêtnych osób do wziêcia udzia³u w zawodach."
 	1 "Za chwilê rozpoczn¹ siê zawody, chcesz siê zapisaæ? Wpisowe to 100 sztuk z³ota."
 	2 "Tak"
 	3 "Dobrze. Zaczekaj a¿ zobaczê ilu jest chêtnych."
@@ -380,7 +380,7 @@ dialog hero {
 	4 "Aktualnie trwa jakaœ walka na arenie, musimy zaczekaæ."
 	5 {
 		"Nie mogê teraz walczyæ bo od razu mnie pokonasz. Muszê siê trochê podkurowaæ."
-		"Najpierw musze siê poleczyæ."
+		"Najpierw muszê siê poleczyæ."
 	}
 	6 "Rób co chcesz"
 	7 {
@@ -524,7 +524,7 @@ dialog crazy {
 		"Nie widzia³eœ ¿e przed chwil¹ przegra³em?!"
 	}
 	3 {
-		"Chcesz ¿ebym stuk³ ciê na kwaœne jab³ko i pokaza³ ¿e jesteœ nic nie wartym œmieciem? Nie ma problemu!"
+		"Chcesz ¿ebym st³uk³ ciê na kwaœne jab³ko i pokaza³ ¿e jesteœ nic nie wartym œmieciem? Nie ma problemu!"
 		"Poka¿e ci co to prawdziwa si³a!"
 		"Mam nadzieje ¿e lubisz ból!"
 		"Tylko siê nie pop³acz jak znowu przegrasz!"
@@ -957,7 +957,7 @@ dialog q_bandits_master {
 	0 "Witaj poszukiwaczu przygód!"
 	1 "Jestem Arto, mistrz agentów jego królewskiej moœci."
 	2 "Mam zadanie dla kogoœ takiego jak ty."
-	3 "Bandyci za³o¿yli w pobli¿u swoj¹ baze ale nikt nie wie gdzie to jest, szykuj¹ siê do przejêcia miasta, oczywiœcie nieoficjalnie."
+	3 "Bandyci za³o¿yli w pobli¿u swoj¹ bazê ale nikt nie wie gdzie to jest, szykuj¹ siê do przejêcia miasta, oczywiœcie nieoficjalnie."
 	4 "Potrzebujê kogoœ kto pomo¿e mi siê ich pozbyæ."
 	5 "Jesteœ zainteresowany prac¹ dla mnie?"
 	6 "Tak"
@@ -1461,7 +1461,7 @@ dialog q_mine_investor {
 	45 "Z³oto"
 	46 "Oto twoje z³oto. Jeœli nie chcesz do koñca ¿ycia uganiaæ siê za potworami to radzê ci je zainwestowaæ."
 	47 "Udzia³y"
-	48 "M¹dry wybór. Budowa kopalni zajmiê trochê czasu, miesi¹c, góra dwa."
+	48 "M¹dry wybór. Budowa kopalni zajmie trochê czasu, miesi¹c, góra dwa."
 	49 "Gdy tylko ruszy wydobycie przyœlê kogoœ po ciebie."
 	50 "Czym siê zajmujesz?"
 	51 "Dorobi³em siê na handlu egzotycznymi towarami. Od tego czasu inwestuje w ró¿ne przedsiêwziêcia, kopalnie, tartaki czy wyprawy."
@@ -1822,7 +1822,7 @@ dialog mage_seller {
 	}
 	1 "Pohandlujmy"
 	2 "Czym siê zajmujesz?"
-	3 "Jestem magiem. Razem z kilkoma innymi magami w wie¿y zajmujemy siê umagicznaniem przedmiotów."
+	3 "Jestem magiem. Razem z kilkoma innymi magami w wie¿y zajmujemy siê umagicznianiem przedmiotów."
 	4 "Zapytaj o dziwny kamieñ"
 	5 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia, wygl¹da na to ¿e jest przeklêty."
 	6 "Koniec rozmowy"

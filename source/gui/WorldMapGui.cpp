@@ -153,12 +153,25 @@ void WorldMapGui::Draw()
 	{
 		if(!*it)
 			continue;
+
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
+
+		int alpha;
+		if(loc.state == LS_KNOWN)
+		{
+			if(world->currentLocation == &loc)
+				alpha = 192;
+			else
+				alpha = 128;
+		}
+		else
+			alpha = 255;
+
 		const Vec2 pos(WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
-		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color::Alpha(128) : Color::White);
+		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, Color::Alpha(alpha));
 	}
 
 	// encounter locations
@@ -760,8 +773,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ENCOUNTER;
+		NetChange& c = Net::PushChange(NetChange::ENCOUNTER);
 		c.str = StringPool.Get();
 		*c.str = text;
 

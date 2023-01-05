@@ -602,9 +602,8 @@ bool Quest_Scripted::PostRun()
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::UPDATE_QUEST);
 			c.id = id;
-			c.type = NetChange::UPDATE_QUEST;
 			c.count = journalChanges;
 		}
 	}

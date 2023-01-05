@@ -2925,7 +2925,7 @@ other q_magowie_kula2 {
 }
 
 other q_orkowie_klucz {
-	weight 1
+	weight 0.1
 	value 0
 	tex "rusty-key.png"
 	flags {notShop notRandom important}

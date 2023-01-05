@@ -697,8 +697,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_ITEM;
+			NetChange& c = Net::PushChange(NetChange::SPAWN_ITEM);
 			c.item = groundItem;
 		}
 	}
@@ -741,7 +740,7 @@ void LocationPart::RemoveGroundItem(int questId)
 }
 
 //=================================================================================================
-void LocationPart::RemoveGroundItem(GroundItem* groundItem)
+void LocationPart::RemoveGroundItem(GroundItem* groundItem, bool del)
 {
 	assert(groundItem);
 
@@ -755,14 +754,15 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_ITEM);
 			c.id = groundItem->id;
 		}
 	}
 
 	RemoveElement(groundItems, groundItem);
-	delete groundItem;
+
+	if(del)
+		delete groundItem;
 }
 
 //=================================================================================================
@@ -968,8 +968,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		soundMgr->PlaySound3d(ability.soundHit, pos, ability.soundHitDist);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
+			NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 			c.extraId = 1;
 			c.ability = &ability;
 			c.pos = pos;
@@ -1146,8 +1145,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_OBJECT;
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
 					c.id = -1;
 					c.pos = hitpoint;
 				}
@@ -1195,8 +1193,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_OBJECT;
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
 					c.id = usable->id;
 					c.pos = hitpoint;
 				}
@@ -1207,8 +1204,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::DESTROY_USABLE;
+						NetChange& c = Net::PushChange(NetChange::DESTROY_USABLE);
 						c.id = usable->id;
 					}
 
@@ -1241,8 +1237,7 @@ Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CREATE_EXPLOSION;
+		NetChange& c = Net::PushChange(NetChange::CREATE_EXPLOSION);
 		c.ability = ability;
 		c.pos = explo->pos;
 	}

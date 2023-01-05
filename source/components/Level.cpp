@@ -586,8 +586,7 @@ void Level::RemoveOldTrap(BaseTrap* baseTrap, Unit* owner, uint maxAllowed)
 	{
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_TRAP;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_TRAP);
 			c.id = bestTrap->id;
 		}
 
@@ -607,8 +606,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 	toRemove.push_back(unit);
 	if(notify && Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_UNIT);
 		c.id = unit->id;
 	}
 }
@@ -2035,8 +2033,7 @@ Unit* Level::CreateUnit(UnitData& base, int level, bool createPhysics)
 
 	if(Net::IsServer() && ready)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_UNIT;
+		NetChange& c = Net::PushChange(NetChange::SPAWN_UNIT);
 		c.unit = unit;
 	}
 
@@ -2955,8 +2952,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 	{
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
+		NetChange& c = Net::PushChange(NetChange::WARP);
 		c.unit = &unit;
 		if(unit.IsPlayer())
 			unit.player->playerInfo->warping = true;
@@ -3011,8 +3007,7 @@ void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos,
 	{
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
+		NetChange& c = Net::PushChange(NetChange::WARP);
 		c.unit = &unit;
 		if(unit.IsPlayer())
 			unit.player->playerInfo->warping = true;
@@ -3177,8 +3172,7 @@ Trap* Level::CreateTrap(const Vec3& pos, TRAP_TYPE type, int id)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CREATE_TRAP;
+		NetChange& c = Net::PushChange(NetChange::CREATE_TRAP);
 		c.extraId = trap->id;
 		c.id = type;
 		c.pos = pos;
@@ -4275,8 +4269,7 @@ void Level::CleanLevel(int buildingId)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CLEAN_LEVEL;
+		NetChange& c = Net::PushChange(NetChange::CLEAN_LEVEL);
 		c.id = buildingId;
 	}
 }
@@ -4343,7 +4336,7 @@ void Level::SpawnItemRandomly(const Item* item, uint count)
 	for(uint i = 0; i < count; ++i)
 	{
 		const float s = (float)OutsideLocation::size;
-		Vec2 pos = Vec2(s, s) + Vec2::RandomPoissonDiscPoint() * (s - 30.f);
+		Vec2 pos = Vec2(s, s) + Vec2::RandomPoissonDiscPoint() * (s - 34.f);
 		SpawnGroundItemInsideRadius(item, pos, 3.f, true);
 	}
 }
@@ -5074,8 +5067,7 @@ void Level::StartBossFight(Unit& unit)
 	game->SetMusic(MusicType::Boss);
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::BOSS_START;
+		NetChange& c = Net::PushChange(NetChange::BOSS_START);
 		c.unit = &unit;
 	}
 }
@@ -5148,8 +5140,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PARTICLE_EFFECT;
+		NetChange& c = Net::PushChange(NetChange::PARTICLE_EFFECT);
 		c.ability = ability;
 		c.pos = pos;
 		c.extraFloats[0] = bounds.x;

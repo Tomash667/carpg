@@ -609,8 +609,7 @@ void Journal::AddRumor(cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ADD_RUMOR;
+		NetChange& c = Net::PushChange(NetChange::ADD_RUMOR);
 		c.id = rumors.size();
 	}
 
