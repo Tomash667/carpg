@@ -23,6 +23,7 @@ Wersja 0.20 (???):
 - nie można było ukończyć zadania "zioła dla alchemika" [Zielu]
 - gdy pytamy o okoliczne lokalizacje npc nie mówi że obóz łowców jest pusty [Zielu]
 - uszkodzony zapis gdy z gry wróciło się do menu i rozpoczęło nową grę
+- w multiplayer rozpoczynanie z łowcą w drużynie nie pokazywało gdzie jest obóz [Zielu]
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

@@ -347,21 +347,10 @@ bool Team::HaveOtherPlayer()
 bool Team::HaveClass(Class* clas) const
 {
 	assert(clas);
-	if(net->IsServer())
+	for(const Unit& unit : activeMembers)
 	{
-		for(PlayerInfo& info : net->players)
-		{
-			if(info.left == PlayerInfo::LEFT_NO && info.cc.clas == clas)
-				return true;
-		}
-	}
-	else
-	{
-		for(const Unit& unit : members)
-		{
-			if(unit.GetClass() == clas)
-				return true;
-		}
+		if(unit.GetClass() == clas)
+			return true;
 	}
 	return false;
 }
