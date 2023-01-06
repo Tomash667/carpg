@@ -566,7 +566,8 @@ public:
 	uint RemoveItemS(const string& itemId, uint count);
 	void RemoveEquippedItem(ITEM_SLOT slot);
 	void RemoveAllEquippedItems();
-	int CountItem(const Item* item);
+	uint GetItemCount(const Item* item);
+	uint GetItemTeamCount(const Item* item);
 	const string& GetNameS() const
 	{
 		if(IsPlayer())

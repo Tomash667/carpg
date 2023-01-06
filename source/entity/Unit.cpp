@@ -4037,7 +4037,7 @@ float Unit::GetItemAiValue(const Item* item) const
 }
 
 //=================================================================================================
-int Unit::CountItem(const Item* item)
+uint Unit::GetItemCount(const Item* item)
 {
 	assert(item);
 
@@ -4055,13 +4055,42 @@ int Unit::CountItem(const Item* item)
 	}
 	else
 	{
-		int count = 0;
+		uint count = 0;
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		{
 			if(it->item == item)
 				++count;
 		}
 		return count;
+	}
+}
+
+//=================================================================================================
+uint Unit::GetItemTeamCount(const Item* item)
+{
+	assert(item);
+
+	if(item->IsStackable())
+	{
+		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+		{
+			if(it->item == item)
+			{
+				// zak³ada ¿e mo¿na mieæ tylko jeden stack takich przedmiotów
+				return it->teamCount;
+			}
+		}
+		return 0;
+	}
+	else
+	{
+		uint teamCount = 0;
+		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+		{
+			if(it->item == item && it->teamCount > 0)
+				++teamCount;
+		}
+		return teamCount;
 	}
 }
 

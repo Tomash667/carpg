@@ -7,6 +7,7 @@ Version 0.20 (???):
 + destroyable barricade
 + can pick exact value how long to rest in inn
 + improvements to raise spell
++ alchemy panel improvements, potions created from team ingredients are now team items
 + converted quests "kill animals", "dire wolf" to script
 + adding loading save file to crash report
 + update libraries: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13

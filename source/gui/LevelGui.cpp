@@ -569,7 +569,7 @@ void LevelGui::DrawFront()
 			}
 			else if(shortcut.item->IsStackable())
 			{
-				count = pc.unit->CountItem(shortcut.item);
+				count = pc.unit->GetItemCount(shortcut.item);
 				enabled = (count > 0);
 			}
 			else
