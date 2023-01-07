@@ -216,6 +216,11 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 		return 1.f;
 	}
 
+	bool hasHit() const
+	{
+		return closest <= 1.f;
+	}
+
 	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
 	vector<float>* tList;
 	float endT, closest;

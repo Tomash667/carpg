@@ -100,7 +100,7 @@ void Door::Update(float dt, LocationPart& locPart)
 
 				for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 				{
-					if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), pos.x, pos.z, WIDTH, THICKNESS, rot))
+					if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetRadius(), pos.x, pos.z, WIDTH, THICKNESS, rot))
 					{
 						blocking = true;
 						break;

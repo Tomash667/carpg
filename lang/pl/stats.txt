@@ -102,27 +102,27 @@ relatedAttributes = "Powi¹zane atrybuty"
 
 attribute str {
 	name "Si³a"
-	desc "\tZwiêksza zadawane obra¿enia w walce wrêcz, si³ê bloku, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
+	desc "Zwiêksza zadawane obra¿enia w walce wrêcz, si³ê bloku, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\nU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\nWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
 }
 attribute end {
 	name "Kondycja"
-	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja."
+	desc "Zwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\nOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\nWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja."
 }
 attribute dex {
 	name "Zrêcznoœæ"
-	desc "\tZwiêksza wytrzyma³oœæ, szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
+	desc "Zwiêksza wytrzyma³oœæ, szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\nBieganie i walka trenuje zrêcznoœæ.\n\nWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
 }
 attribute int {
 	name "Inteligencja"
-	desc "\tZwiêksza si³ê czarów maga i szybkoœæ nauki.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, alchemia."
+	desc "Zwiêksza si³ê czarów maga i szybkoœæ nauki.\n\nWp³ywa na umiejêtnoœci: mistyczna magia, alchemia."
 }
 attribute wis {
 	name "M¹droœæ"
-	desc "\tZwiêksza si³ê czarów druida.\n\tWp³ywa na umiejêtnoœci: koncentracja."
+	desc "Zwiêksza si³ê czarów druida.\n\nWp³ywa na umiejêtnoœci: koncentracja."
 }
 attribute cha {
 	name "Charyzma"
-	desc "\tZwiêksza si³ê czarów kap³ana i szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: magia bogów, targowanie."
+	desc "Zwiêksza si³ê czarów kap³ana i szansê na przekonanie innych.\n\nRozmawianie i handel trenuje charyzmê.\n\nWp³ywa na umiejêtnoœci: magia bogów, perswazja."
 }
 
 //------------------------------------------------------------------------------

@@ -361,15 +361,15 @@ item am_chainmail_mith {
 }
 item am_scale {
 	name "Scale armor"
-	desc "Leather armor covered with metal pieces whick look like fish scales."
+	desc "Leather armor covered with metal pieces which look like fish scales."
 }
 item am_scale_hq {
 	name "High quality scale armor"
-	desc "Leather armor covered with metal pieces whick look like fish scales. This one is of high quality."
+	desc "Leather armor covered with metal pieces which look like fish scales. This one is of high quality."
 }
 item am_scale_m {
 	name "Magical scale armor"
-	desc "Leather armor covered with metal pieces whick look like fish scales. This one is magical."
+	desc "Leather armor covered with metal pieces which look like fish scales. This one is magical."
 }
 item am_dragonscale {
 	name "Dragonscale armor"
@@ -703,7 +703,7 @@ item r_carry {
 	desc "+50% to carry capacity."
 }
 item r_gods_magic {
-	name "Ring of beliver"
+	name "Ring of believer"
 	desc "+10 to gods magic skill."
 }
 item r_concentration {
@@ -731,8 +731,8 @@ item r_dex2 {
 	desc "+15 to dexterity."
 }
 item r_int2 {
-	name "Ring of greater inteligence"
-	desc "+15 to inteligence."
+	name "Ring of greater intelligence"
+	desc "+15 to intelligence."
 }
 item r_wis2 {
 	name "Ring of greater wisdom"

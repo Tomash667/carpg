@@ -31,6 +31,7 @@ GameResources::~GameResources()
 {
 	delete scene;
 	delete camera;
+	delete tmpMeshInst;
 	for(auto& item : itemTextureMap)
 		delete item.second;
 	for(Texture* tex : overrideItemTextures)
@@ -55,6 +56,8 @@ void GameResources::Init()
 	camera->aspect = 1.f;
 	camera->znear = 0.1f;
 	camera->zfar = 25.f;
+
+	tmpMeshInst = new MeshInstance(nullptr);
 
 	aHuman = resMgr->Load<Mesh>("human.qmsh");
 	rtItem = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE), RenderTarget::F_NO_DRAW);

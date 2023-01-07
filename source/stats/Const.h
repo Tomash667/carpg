@@ -34,6 +34,7 @@ const float ARROW_TIMER = 5.f;
 const float TRAP_ARROW_SPEED = 45.f;
 const float MIN_H = 1.5f;
 const float TRAIN_KILL_RATIO = 0.1f;
+const float CAN_SHOOT_EXTRA_RADIUS = 0.2f;
 
 const float HIT_SOUND_DIST = 1.5f;
 const float SHOOT_SOUND_DIST = 1.f;

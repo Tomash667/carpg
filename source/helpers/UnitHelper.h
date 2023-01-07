@@ -20,4 +20,6 @@ namespace UnitHelper
 	array<BetterItem, 2> GetBetterRings(const Unit& unit);
 	array<pair<const Item*, float>, 2> GetBetterRingsInternal(const Unit& unit, float minValue);
 	int CalculateChance(int value, int min, int max);
+	const Matrix* GetCastPoint(const Unit& unit);
+	const Matrix* GetShootPoint(const Unit& unit);
 }

@@ -324,7 +324,10 @@ bool AIController::CheckPotion(bool inCombat)
 			if(index == -1)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-					unit->Talk(RandomString(game->txAiNoHpPot));
+				{
+					const int playAnim = (inCombat ? 0 : -1);
+					unit->Talk(RandomString(game->txAiNoHpPot), playAnim);
+				}
 				havePotion = HavePotion::No;
 				return false;
 			}
@@ -351,7 +354,10 @@ bool AIController::CheckPotion(bool inCombat)
 				if(index == -1)
 				{
 					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-						unit->Talk(RandomString(game->txAiNoMpPot));
+					{
+						const int playAnim = (inCombat ? 0 : -1);
+						unit->Talk(RandomString(game->txAiNoMpPot), playAnim);
+					}
 					haveMpPotion = HavePotion::No;
 					return false;
 				}
@@ -456,7 +462,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bulletSpeed) const
 		return target.GetCenter();
 
 	Vec3 pos = target.pos + ((b + std::sqrt(delta)) / (2 * a)) * Vec3(vel.x, 0, vel.z);
-	pos.y += target.GetUnitHeight() / 2;
+	pos.y += target.GetHeight() / 2;
 	return pos;
 }
 

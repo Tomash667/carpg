@@ -492,7 +492,7 @@ quest dire_wolf {
 		1 "Received from the leader of hunters at $date$"
 		2 "I must go to $(forest.name) and kill the dire wolf that terrorizes the surrounding villages."
 		3 "I killed the dire wolf, I can go back to the hunter's camp and collect my reward."
-		4 "I recived the reward. Quest done!"
+		4 "I received the reward. Quest done!"
 	}
 }
 

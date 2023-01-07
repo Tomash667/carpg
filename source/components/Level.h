@@ -193,9 +193,7 @@ public:
 	bool IsSafe();
 	bool CanFastTravel();
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit, bool checkDist = true);
-	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
-	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
 		vector<float>* tList = nullptr, bool useClbk2 = false, float* endT = nullptr);
@@ -240,7 +238,8 @@ public:
 	// colliders
 	btHeightfieldTerrainShape* terrainShape;
 	btCollisionObject* objTerrain;
-	btCollisionShape* shapeWall, *shapeStairs, *shapeStairsPart[2], *shapeBlock, *shapeBarrier, *shapeDoor, *shapeArrow, *shapeSummon, *shapeFloor;
+	btCollisionShape* shapeWall, *shapeStairs, *shapeStairsPart[2], *shapeBlock, *shapeBarrier, *shapeDoor, *shapeArrow, *shapeSummon, *shapeFloor,
+		*shapeTestSphere;
 	btBvhTriangleMeshShape* dungeonShape;
 	btCollisionObject* objDungeon;
 	SimpleMesh* dungeonMesh;

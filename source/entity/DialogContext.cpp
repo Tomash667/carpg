@@ -1346,7 +1346,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		Location& loc = *locations[id];
 		loc.SetKnown();
 		dialogString = Format(game->txNearLoc, GetLocationDirName(world->GetWorldPos(), loc.pos), loc.name.c_str());
-		if(loc.group->IsEmpty())
+		if(loc.type == L_OUTSIDE && loc.target == HUNTERS_CAMP)
+			dialogString += game->txNearLocHunters;
+		else if(loc.group->IsEmpty())
 			dialogString += RandomString(game->txNearLocEmpty);
 		else if(loc.state == LS_CLEARED)
 			dialogString += Format(game->txNearLocCleared, loc.group->name3.c_str());

@@ -536,7 +536,7 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	gameLevel->globalCol.clear();
 	gameLevel->GatherCollisionObjects(locPart, gameLevel->globalCol, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
-	const float r = me->GetUnitRadius() - 0.25f / 2;
+	const float r = me->GetRadius() - 0.25f / 2;
 
 	if(marked == me)
 	{

@@ -150,7 +150,6 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "crazies_talked") == 0)
 	{
-		ctx.talker->ai->morale = -100.f;
 		craziesState = State::TalkedWithCrazy;
 
 		GlobalEncounter* globalEnc = new GlobalEncounter;

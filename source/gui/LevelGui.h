@@ -157,8 +157,8 @@ private:
 	CutsceneState cutsceneImageState, cutsceneTextState;
 	Int2 dragAndDropPos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
-		tMinistamina, tMinimp, tCrosshair, tCrosshair2, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tEmerytura,
-		tEquipped, tDialog, tShortcutAction, tRip, tBlack;
+		tMinistamina, tMinimp, tCrosshair, tCrosshair2, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tHealthPotion, tManaPotion, tRetiring,
+		tEquipped, tChoice, tDialog, tShortcutAction, tRip, tBlack;
 	TexturePtr dragAndDropIcon, cutsceneImage;
 	vector<pair<Texture*, float>> cutsceneNextImages;
 	Scrollbar scrollbar;

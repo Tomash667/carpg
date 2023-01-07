@@ -93,5 +93,5 @@ public:
 	void AddGroundItem(GroundItem* groundItem, bool adjustY = true);
 	bool RemoveGroundItem(const Item* item);
 	void RemoveGroundItem(int questId);
-	void RemoveGroundItem(GroundItem* item);
+	void RemoveGroundItem(GroundItem* item, bool del = true);
 };
