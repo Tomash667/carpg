@@ -324,7 +324,10 @@ bool AIController::CheckPotion(bool inCombat)
 			if(index == -1)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-					unit->Talk(RandomString(game->txAiNoHpPot));
+				{
+					const int playAnim = (inCombat ? 0 : -1);
+					unit->Talk(RandomString(game->txAiNoHpPot), playAnim);
+				}
 				havePotion = HavePotion::No;
 				return false;
 			}
@@ -351,7 +354,10 @@ bool AIController::CheckPotion(bool inCombat)
 				if(index == -1)
 				{
 					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-						unit->Talk(RandomString(game->txAiNoMpPot));
+					{
+						const int playAnim = (inCombat ? 0 : -1);
+						unit->Talk(RandomString(game->txAiNoMpPot), playAnim);
+					}
 					haveMpPotion = HavePotion::No;
 					return false;
 				}

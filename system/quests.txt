@@ -3219,6 +3219,7 @@ quest main_village4
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
 					@oldman = Level::SpawnUnit(locPart, UnitData::Get("q_main_oldman"));
 					oldman.OrderAutoTalk();
+					oldman.dontAttack = true;
 					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
 					unit.OrderAutoTalk();
 					

@@ -26,6 +26,7 @@ Wersja 0.20 (???):
 - gdy pytamy o okoliczne lokalizacje npc nie mówi że obóz łowców jest pusty [Zielu]
 - uszkodzony zapis gdy z gry wróciło się do menu i rozpoczęło nową grę
 - w multiplayer rozpoczynanie z łowcą w drużynie nie pokazywało gdzie jest obóz [Zielu]
+- brak animacji podczas walki gdy npc mówi że nie ma miksturek [Zielu]
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

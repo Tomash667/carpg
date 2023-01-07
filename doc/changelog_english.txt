@@ -26,6 +26,7 @@ Version 0.20 (???):
 - when asking about nearby locations npc don't say that hunters camp is empty [Zielu]
 - broken save when exited to menu and started new game
 - in multiplayer starting with hunter didn't revealed where the camp is [Zielu]
+- no animation when npc talk that he don't have potions in combat [Zielu]
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

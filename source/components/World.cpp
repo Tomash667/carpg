@@ -2462,6 +2462,8 @@ void World::StartEncounter(int enc, UnitGroup* group)
 						encounter.special = SE_BANDITS_VS_TRAVELERS;
 					else if(input->Down(Key::C))
 						encounter.special = SE_CRAZY_COOK;
+					else if(input->Down(Key::M))
+						encounter.special = SE_CRAZY_MAGE;
 				}
 
 				if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
