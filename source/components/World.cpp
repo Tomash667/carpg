@@ -1402,8 +1402,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f.isLocal = false;
 	f >> emptyLocations;
 	f >> createCamp;
-	if(LOAD_VERSION < V_0_11 && createCamp > 10)
-		createCamp = 10;
 	f >> worldPos;
 	f >> revealTimer;
 	if(LOAD_VERSION < V_0_14_1 && revealTimer < 0)

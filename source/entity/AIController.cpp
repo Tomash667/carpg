@@ -281,26 +281,8 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 			int partId;
 			f >> partId;
 			f >> idle.region.pos;
-			if(LOAD_VERSION >= V_0_11)
-			{
-				f >> idle.region.exit;
-				idle.region.locPart = gameLevel->GetLocationPartById(partId);
-			}
-			else
-			{
-				if(partId == LocationPart::OLD_EXIT_ID)
-				{
-					idle.region.exit = true;
-					idle.region.locPart = gameLevel->GetLocationPartById(LocationPart::OUTSIDE_ID);
-				}
-				else
-				{
-					idle.region.exit = false;
-					idle.region.locPart = gameLevel->GetLocationPartById(partId);
-					if(!idle.region.locPart)
-						idle.region.locPart = gameLevel->localPart;
-				}
-			}
+			f >> idle.region.exit;
+			idle.region.locPart = gameLevel->GetLocationPartById(partId);
 		}
 		break;
 	default:

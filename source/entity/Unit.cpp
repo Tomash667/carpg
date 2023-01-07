@@ -2104,8 +2104,6 @@ void Unit::Load(GameReader& f)
 		stats = data->GetStats(sub);
 	}
 	f >> gold;
-	if(LOAD_VERSION < V_0_11)
-		f.Skip<int>(); // old inside_building
 	f >> toRemove;
 	f >> temporary;
 	f >> questId;
@@ -2468,10 +2466,7 @@ void Unit::Load(GameReader& f)
 			switch(order->order)
 			{
 			case ORDER_FOLLOW:
-				if(LOAD_VERSION >= V_0_11)
-					f >> order->unit;
-				else
-					team->GetLeaderRequest(&order->unit);
+				f >> order->unit;
 				break;
 			case ORDER_LOOK_AT:
 				f >> order->pos;

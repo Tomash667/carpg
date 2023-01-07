@@ -87,46 +87,12 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// pre V_0_11 compatibility
-namespace old
-{
-	enum SPAWN_GROUP
-	{
-		SG_RANDOM,
-		SG_GOBLINS,
-		SG_ORCS,
-		SG_BANDITS,
-		SG_UNDEAD,
-		SG_NECROMANCERS,
-		SG_MAGES,
-		SG_GOLEMS,
-		SG_MAGES_AND_GOLEMS,
-		SG_EVIL,
-		SG_NONE,
-		SG_UNKNOWN,
-		SG_CHALLANGE,
-		SG_MAX
-	};
-
-	UnitGroup* OldToNew(SPAWN_GROUP spawn);
-}
-
-//-----------------------------------------------------------------------------
 inline void operator << (GameWriter& f, UnitGroup* group)
 {
 	f << group->id;
 }
 inline void operator >> (GameReader& f, UnitGroup*& group)
 {
-	if(LOAD_VERSION >= V_0_11)
-	{
-		const string& id = f.ReadString1();
-		group = UnitGroup::Get(id);
-	}
-	else
-	{
-		old::SPAWN_GROUP spawn;
-		f.Read(spawn);
-		group = old::OldToNew(spawn);
-	}
+	const string& id = f.ReadString1();
+	group = UnitGroup::Get(id);
 }

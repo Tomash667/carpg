@@ -54,10 +54,7 @@ void InsideBuilding::Load(GameReader& f)
 	if(LOAD_VERSION >= V_0_20)
 		f >> canEnter;
 
-	if(LOAD_VERSION >= V_0_11)
-		LocationPart::Load(f);
-	else
-		LocationPart::Load(f, old::LoadCompatibility::InsideBuilding);
+	LocationPart::Load(f);
 }
 
 //=================================================================================================

@@ -58,8 +58,6 @@ void MultiInsideLocation::Load(GameReader& f)
 	f >> activeLevel;
 	f >> generated;
 
-	if(LOAD_VERSION < V_0_11)
-		f.Read<uint>(); // skip levels count, already set in constructor
 	const bool prevIsLocal = f.isLocal;
 	for(int i = 0; i < generated; ++i)
 	{

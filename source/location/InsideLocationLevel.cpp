@@ -238,64 +238,30 @@ void InsideLocationLevel::LoadLevel(GameReader& f)
 	map = new Tile[w * h];
 	f.Read(map, sizeof(Tile) * w * h);
 
-	if(LOAD_VERSION >= V_0_11)
+	LocationPart::Load(f);
+
+	// rooms
+	rooms.resize(f.Read<uint>());
+	int index = 0;
+	for(Room*& room : rooms)
 	{
-		LocationPart::Load(f);
-
-		// rooms
-		rooms.resize(f.Read<uint>());
-		int index = 0;
-		for(Room*& room : rooms)
-		{
-			room = Room::Get();
-			room->index = index++;
-			room->Load(f);
-		}
-		for(Room* room : rooms)
-		{
-			for(Room*& c : room->connected)
-				c = rooms[(int)c];
-		}
-
-		// room groups
-		index = 0;
-		groups.resize(f.Read<uint>());
-		for(RoomGroup& group : groups)
-		{
-			group.Load(f);
-			group.index = index++;
-		}
+		room = Room::Get();
+		room->index = index++;
+		room->Load(f);
 	}
-	else
+	for(Room* room : rooms)
 	{
-		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevel);
+		for(Room*& c : room->connected)
+			c = rooms[(int)c];
+	}
 
-		// rooms
-		rooms.resize(f.Read<uint>());
-		int index = 0;
-		for(Room*& room : rooms)
-		{
-			room = Room::Get();
-			room->index = index++;
-			room->Load(f);
-		}
-		for(Room* room : rooms)
-		{
-			for(Room*& c : room->connected)
-				c = rooms[(int)c];
-		}
-
-		// room groups
-		index = 0;
-		groups.resize(f.Read<uint>());
-		for(RoomGroup& group : groups)
-		{
-			group.Load(f);
-			group.index = index++;
-		}
-		RoomGroup::SetRoomGroupConnections(groups, rooms);
-
-		LocationPart::Load(f, old::LoadCompatibility::InsideLocationLevelTraps);
+	// room groups
+	index = 0;
+	groups.resize(f.Read<uint>());
+	for(RoomGroup& group : groups)
+	{
+		group.Load(f);
+		group.index = index++;
 	}
 
 	if(LOAD_VERSION >= V_0_16)

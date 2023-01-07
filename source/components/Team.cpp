@@ -476,11 +476,6 @@ void Team::Load(GameReader& f)
 
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
-
-	// apply leader requests
-	for(Entity<Unit>* unit : leaderRequests)
-		*unit = leader;
-	leaderRequests.clear();
 }
 
 void Team::Update(int days, UpdateMode mode)
