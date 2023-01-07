@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.21 (???):
 ! nie można wczytywać już zapisów z wersji 0.10 lub starszej
++ aktualizacja bibliotek: AngelScript 2.35.1, DirectXMath 3.18
 
 --------------------------------------------------------------------------------
 Wersja 0.20 (2023-01-07):
@@ -15,7 +16,7 @@ Wersja 0.20 (2023-01-07):
 + usprawnienia w panelu alchemi, mikstury utworzone z zasobów drużynowych są teraz drużynowe
 + konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
 + dodawanie wczytywanego zapisu do raportu z crasha
-+ aktualizacja bibliotek: Bullet Physics 3.2.4, Curl 7.86,  DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
++ aktualizacja bibliotek: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
 - niezgodność nagrody w zadaniu "zabij zwierzęta" pomiędzy tekstem a otrzymanym złotem
 - dodawanie notatek na drugiej stronie nie działało
 - brak efektu uderzenia w cel treningowy u klienta

@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.21 (???):
 ! cannot load saves from version 0.10 or older
++ updated libraries: AngelScript 2.35.1, DirectXMath 3.18
 
 --------------------------------------------------------------------------------
 Version 0.20 (2023-01-07):
