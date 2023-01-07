@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.20 (???):
+Version 0.20 (2023-01-07):
 ! cannot load saves from version 0.9 or older
 + continued storyline with 4 subquests
 + destroyable barricade

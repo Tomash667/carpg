@@ -68,7 +68,7 @@ void LevelPart::Save(GameWriter& f)
 void LevelPart::Load(GameReader& f)
 {
 	int particleVersion;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 		particleVersion = 3;
 	else if(LOAD_VERSION >= V_0_13)
 		particleVersion = 2;
@@ -117,7 +117,7 @@ void LevelPart::Load(GameReader& f)
 		bullet->Load(f);
 	}
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 	{
 		destroyedObjects.resize(f.Read<uint>());
 		for(DestroyedObject* obj : destroyedObjects)

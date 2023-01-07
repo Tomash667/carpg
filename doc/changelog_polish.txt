@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.20 (???):
+Wersja 0.20 (2023-01-07):
 ! nie można wczytywać już zapisów z wersji 0.9 lub starszej
 + kontynuacja fabuły z 4 podzadaniami
 + zniszczalna barykada

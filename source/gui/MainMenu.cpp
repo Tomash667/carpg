@@ -93,7 +93,7 @@ void MainMenu::Draw()
 
 	Rect r = { 0, 0, gui->wndSize.x, gui->wndSize.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GameGui::font, "Devmode(2013,2022) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2023) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wndSize.x - 512 - 16;
 	r.Right() = gui->wndSize.x - 16;

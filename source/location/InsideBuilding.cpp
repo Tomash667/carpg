@@ -51,7 +51,7 @@ void InsideBuilding::Load(GameReader& f)
 	f >> region1;
 	f >> region2;
 	f >> enterY;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 		f >> canEnter;
 
 	if(LOAD_VERSION >= V_0_11)

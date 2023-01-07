@@ -125,7 +125,7 @@ void Location::Load(GameReader& f)
 	}
 	f >> pos;
 	f >> name;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 		f >> state;
 	else
 	{

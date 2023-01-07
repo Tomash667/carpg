@@ -2216,7 +2216,7 @@ void Unit::Load(GameReader& f)
 				f >> act.attack.index;
 				f >> act.attack.power;
 				f >> act.attack.run;
-				if(LOAD_VERSION >= V_DEV)
+				if(LOAD_VERSION >= V_0_20)
 					f >> act.attack.hitted;
 				else
 				{
