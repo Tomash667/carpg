@@ -42,7 +42,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						trigger = true;
 						break;
@@ -110,7 +110,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(!unit->IsAlive())
 						continue;
-					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						bool found = false;
 						for(Unit* unit2 : *hitted)
@@ -192,7 +192,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						reactivate = false;
 						break;
@@ -233,7 +233,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						trigger = true;
 						break;
@@ -323,7 +323,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						empty = false;
 						break;
@@ -362,7 +362,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 			{
 				if(unit->IsStanding()
 					&& (!owner || owner->IsEnemy(*unit))
-					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 				{
 					trigger = true;
 					break;
@@ -411,7 +411,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						trigger = true;
 						break;
@@ -450,7 +450,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					{
 						if(unit->IsStanding()
 							&& (!owner || owner->IsEnemy(*unit))
-							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetRadius()))
 						{
 							const float dist = Vec3::Distance(pos, unit->pos);
 							if(dist < bestDist)

@@ -6,6 +6,7 @@ Version 0.20 (???):
 + continued storyline with 4 subquests
 + destroyable barricade
 + can pick exact value how long to rest in inn
++ better npc targeting for spell casting aroud corners
 + improvements to raise spell
 + alchemy panel improvements, potions created from team ingredients are now team items
 + converted quests "kill animals", "dire wolf" to script

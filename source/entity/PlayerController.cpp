@@ -1951,7 +1951,7 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 		unit->action = A_CAST;
 		unit->animationState = AS_CAST_ANIMATION;
 		unit->act.cast.ability = ability;
-		unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 		if(isLocal)
 		{
 			unit->targetPos = data.abilityPoint;
@@ -2474,7 +2474,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					u.pos += dir;
 					moved = true;
 				}
-				else if(gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+				else if(gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u))
 					moved = true;
 
 				if(moved)
@@ -3405,7 +3405,7 @@ void PlayerController::ReadBook(int index)
 		{
 			unit->action = A_USE_ITEM;
 			unit->usedItem = slot.item;
-			unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 			if(Net::IsServer())
 			{
 				NetChange& c = Net::PushChange(NetChange::USE_ITEM);

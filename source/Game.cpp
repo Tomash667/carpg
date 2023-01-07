@@ -2887,7 +2887,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 								if(gameLevel->cityCtx)
 								{
 									InsideBuilding* inn = gameLevel->cityCtx->FindInn();
-									gameLevel->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+									gameLevel->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetRadius(), unit.pos, 20);
 									unit.visualPos = unit.pos;
 									unit.locPart = inn;
 									inn->units.push_back(&unit);

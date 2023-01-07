@@ -147,8 +147,9 @@ void LevelGui::LoadData()
 	tRanged = resMgr->Load<Texture>("bow-arrow.png");
 	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
 	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
-	tEmerytura = resMgr->Load<Texture>("emerytura.jpg");
+	tRetiring = resMgr->Load<Texture>("emerytura.jpg");
 	tEquipped = resMgr->Load<Texture>("equipped.png");
+	tChoice = resMgr->Load<Texture>("choice.png");
 	tDialog = resMgr->Load<Texture>("dialog.png");
 	tShortcutAction = resMgr->Load<Texture>("shortcut_action.png");
 	tRip = resMgr->Load<Texture>("rip.jpg");
@@ -252,7 +253,7 @@ void LevelGui::DrawFront()
 		{
 			Unit& u = *it.unit;
 			Vec3 textPos = u.visualPos;
-			textPos.y += u.GetUnitHeight();
+			textPos.y += u.GetHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
@@ -368,7 +369,7 @@ void LevelGui::DrawFront()
 				}
 			}
 			if(!dontDraw)
-				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos());
+				DrawUnitInfo(u->GetName(), *u, u->GetTextPos());
 		}
 		break;
 	case BP_CHEST:
@@ -438,7 +439,7 @@ void LevelGui::DrawFront()
 					rImg.Top() = r.Top();
 				else if(rImg.Bottom() > r.Bottom())
 					rImg.Bottom() = r.Bottom();
-				gui->DrawSpriteRect(tEquipped, rImg, 0xAAFFFFFF);
+				gui->DrawSpriteRect(tChoice, rImg, 0xAAFFFFFF);
 			}
 
 			// text
@@ -791,8 +792,8 @@ void LevelGui::DrawEndOfGameScreen()
 	gui->DrawSpriteFull(tBlack, color);
 
 	// image
-	Int2 spritePos = Center(tEmerytura->GetSize());
-	gui->DrawSprite(tEmerytura, spritePos, color);
+	Int2 spritePos = Center(tRetiring->GetSize());
+	gui->DrawSprite(tRetiring, spritePos, color);
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, gameStats->totalKills - game->pc->kills);
@@ -2018,7 +2019,7 @@ void LevelGui::AddUnitView(Unit* unit)
 		if(view.unit == unit)
 		{
 			view.valid = true;
-			view.lastPos = unit->GetUnitTextPos();
+			view.lastPos = unit->GetTextPos();
 			return;
 		}
 	}
@@ -2027,7 +2028,7 @@ void LevelGui::AddUnitView(Unit* unit)
 	uv.valid = true;
 	uv.unit = unit;
 	uv.time = 0.f;
-	uv.lastPos = unit->GetUnitTextPos();
+	uv.lastPos = unit->GetTextPos();
 }
 
 //=================================================================================================

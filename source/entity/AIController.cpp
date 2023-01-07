@@ -456,7 +456,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bulletSpeed) const
 		return target.GetCenter();
 
 	Vec3 pos = target.pos + ((b + std::sqrt(delta)) / (2 * a)) * Vec3(vel.x, 0, vel.z);
-	pos.y += target.GetUnitHeight() / 2;
+	pos.y += target.GetHeight() / 2;
 	return pos;
 }
 

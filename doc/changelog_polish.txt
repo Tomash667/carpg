@@ -6,6 +6,7 @@ Wersja 0.20 (???):
 + kontynuacja fabuły z 4 podzadaniami
 + zniszczalna barykada
 + można dokładnie wybrać ile dni chce się odpoczywać w karczmie
++ lepsze celowanie przez npc z czarów zza rogu
 + poprawki dla czaru ożywienia
 + usprawnienia w panelu alchemi, mikstury utworzone z zasobów drużynowych są teraz drużynowe
 + konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
