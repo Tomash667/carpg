@@ -23,7 +23,8 @@ enum TopKeyword
 {
 	TK_QUEST,
 	TK_QUEST_LIST,
-	TK_CODE
+	TK_CODE,
+	TK_ALIAS
 };
 
 enum Property
@@ -50,7 +51,7 @@ void QuestLoader::DoLoading()
 	engine = scriptMgr->GetEngine();
 	module = engine->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 
-	bool requireId[]{ true, true, false };
+	bool requireId[]{ true, true, false, true };
 	Load("quests.txt", G_TOP, requireId);
 }
 
@@ -69,7 +70,8 @@ void QuestLoader::InitTokenizer()
 	t.AddKeywords(G_TOP, {
 		{ "quest", TK_QUEST },
 		{ "questList", TK_QUEST_LIST },
-		{ "code", TK_CODE }
+		{ "code", TK_CODE },
+		{ "alias", TK_ALIAS }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -107,6 +109,9 @@ void QuestLoader::LoadEntity(int top, const string& id)
 		break;
 	case TK_CODE:
 		ParseCode();
+		break;
+	case TK_ALIAS:
+		ParseAlias(id);
 		break;
 	}
 }
@@ -195,6 +200,7 @@ void QuestLoader::ParseQuest(const string& id)
 		t.Throw("Quest type not set.");
 
 	questMgr->AddScriptedQuest(quest.Get());
+	QuestScheme::ids[quest->id] = quest.Get();
 	QuestScheme::schemes.push_back(quest.Pin());
 }
 
@@ -252,6 +258,21 @@ void QuestLoader::ParseQuestList(const string& id)
 void QuestLoader::ParseCode()
 {
 	globalCode += t.GetBlock('{', '}', false);
+}
+
+//=================================================================================================
+void QuestLoader::ParseAlias(const string& id)
+{
+	QuestScheme* scheme = QuestScheme::TryGet(id);
+	if(!scheme)
+		t.Throw("Missing quest '%s'.", id.c_str());
+	t.Next();
+
+	const string& aliasId = t.MustGetItemKeyword();
+	if(QuestScheme::TryGet(aliasId))
+		t.Throw("Alias or quest already exists.");
+
+	QuestScheme::ids[aliasId] = scheme;
 }
 
 //=================================================================================================

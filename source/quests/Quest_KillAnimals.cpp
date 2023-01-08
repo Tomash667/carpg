@@ -7,7 +7,7 @@
 Quest::LoadResult Quest_KillAnimals::Load(GameReader& f)
 {
 	if(LOAD_VERSION >= V_0_17)
-		Quest2::LoadQuest2(f, "kill_animals");
+		Quest2::LoadQuest2(f, "killAnimals");
 	else
 	{
 		Quest::Load(f);
@@ -30,7 +30,7 @@ void Quest_KillAnimals::LoadDetails(GameReader& f)
 //=================================================================================================
 void Quest_KillAnimals::GetConversionData(ConversionData& data)
 {
-	data.id = "kill_animals";
+	data.id = "killAnimals";
 	data.Add("startLoc", startLoc);
 	data.Add("targetLoc", targetLoc);
 	data.Add("startTime", startTime);

@@ -1540,8 +1540,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				source = EffectSource::Perk;
 				if(t.Next())
 				{
-					const string& perkName = t.MustGetItem();
-					Perk* perk = Perk::Get(perkName);
+					const string& perkId = t.MustGetItem();
+					Perk* perk = Perk::Get(perkId);
 					if(perk)
 					{
 						sourceId = perk->hash;
@@ -1624,14 +1624,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(!game->pc->data.selectedUnit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
-			Msg("Perk name required. Use 'list perks' to display list.");
+			Msg("Perk id required. Use 'list perks' to display list.");
 		else
 		{
-			const string& name = t.MustGetItem();
-			Perk* perk = Perk::Get(name);
+			const string& perkId = t.MustGetItem();
+			Perk* perk = Perk::Get(perkId);
 			if(!perk)
 			{
-				Msg("Invalid perk '%s'.", name.c_str());
+				Msg("Invalid perk '%s'.", perkId.c_str());
 				break;
 			}
 
@@ -1684,14 +1684,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		if(!game->pc->data.selectedUnit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
-			Msg("Perk name required. Use 'list perks' to display list.");
+			Msg("Perk id required. Use 'list perks' to display list.");
 		else
 		{
-			const string& name = t.MustGetItem();
-			Perk* perk = Perk::Get(name);
+			const string& perkId = t.MustGetItem();
+			Perk* perk = Perk::Get(perkId);
 			if(!perk)
 			{
-				Msg("Invalid perk '%s'.", name.c_str());
+				Msg("Invalid perk '%s'.", perkId.c_str());
 				break;
 			}
 

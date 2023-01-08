@@ -557,7 +557,7 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 
 		if(u.HaveEffect(EffectId::Rooted, EffectValue_Rooted_Vines))
 		{
-			const float scale = u.GetUnitRadius() / 0.3f;
+			const float scale = u.GetRadius() / 0.3f;
 			SceneNode* node = SceneNode::Get();
 			node->SetMesh(gameRes->mVine);
 			node->center = u.pos;
@@ -973,16 +973,16 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// unit hitbox radius
 	if(drawUnitRadius)
 	{
-		float h = u.GetUnitHeight() / 2;
+		float h = u.GetHeight() / 2;
 		DebugNode* debugNode = DebugNode::Get();
-		debugNode->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
+		debugNode->mat = Matrix::Scale(u.GetRadius(), h, u.GetRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * drawBatch.camera->matViewProj;
 		debugNode->shape = MeshShape::Cylinder;
 		debugNode->color = Color::White;
 		drawBatch.debugNodes.push_back(debugNode);
 	}
 	if(drawHitbox)
 	{
-		float h = u.GetUnitHeight() / 2;
+		float h = u.GetHeight() / 2;
 		Box box;
 		u.GetBox(box);
 		DebugNode* debugNode = DebugNode::Get();

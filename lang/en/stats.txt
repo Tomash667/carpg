@@ -58,7 +58,7 @@ axe = "Axe"
 
 //------------------------------------------------------------------------------
 // ABILITIES
-ability bull_charge {
+ability bullCharge {
 	name "Bull's charge"
 	desc "You charge forward stunning all enemies in your path and dealing $cr{power} damage$c- to them."
 }
@@ -74,23 +74,23 @@ ability heal {
 	name "Heal"
 	desc "Restore $cg{power} health points$c- to the target."
 }
-ability summon_wolf {
+ability summonWolf {
 	name "Animal ally"
 	desc "You summon a wolf that will help you in combat until it is killed."
 }
-ability thunder_bolt {
+ability thunderBolt {
 	name "Thunderbolt"
 	desc "You throw thunderbolt at enemy, electric charge deal $cr{power} damage$c- and will bounce to nearby enemies."
 }
-ability entangling_arrow {
+ability entanglingArrow {
 	name "Entangling arrow"
 	desc "You shoot a special arrow that, when hit, holds the target in place for 2 seconds."
 }
-ability fire_trap {
+ability fireTrap {
 	name "Fire trap"
 	desc "You create a rune that explodes when someone steps on it, dealing $cr{power} damage$c-. You can have 3 runes at the same time."
 }
-ability bear_trap {
+ability bearTrap {
 	name "Bear trap"
 	desc "You put trap on ground that hold enemy in place and deal $cr{power} damage$c-. You can have 3 traps at the same time."
 }
@@ -180,11 +180,11 @@ class warrior {
 
 //------------------------------------------------------------------------------
 // PERKS
-perk bad_back {
+perk badBack {
 	name "Bad back"
 	desc "Your back is not suitable for carrying heavy loads. Reduced strength by 5 points and decreased carrying capacity."
 }
-perk chronic_disease {
+perk chronicDisease {
 	name "Chronic disease"
 	desc "Since you were a child you got sick faster than all the others. Reduced endurance by 5 points and decreased wounds healing speed."
 }
@@ -192,7 +192,7 @@ perk sluggish {
 	name "Sluggish"
 	desc "You are sluggish. Reduced dexterity by 5 points and slower running speed."
 }
-perk slow_learner {
+perk slowLearner {
 	name "Slow learner"
 	desc "Learning new skills comes with great difficulty for you. Reduces intelligence by 5 points and slows down skill growth."
 }
@@ -213,12 +213,12 @@ perk skilled {
 	name "Skilled"
 	desc "Gives three extra skill points."
 }
-perk skill_focus {
+perk skillFocus {
 	name "Skill focus"
 	desc "Increases chosen skill by 5 points and increases the speed with which you gain experience in it."
 	details "Increased skill: {value}"
 }
-perk alchemist_apprentice {
+perk alchemistApprentice {
 	name "Alchemist apprentice"
 	desc "You worked as an alchemist apprentice. You know the basics of alchemy (+10) and under the watchful eye of the master you brewed a large number of potions."
 }
@@ -226,7 +226,7 @@ perk wealthy {
 	name "Wealthy"
 	desc "You come from a wealthy family. You receive 2500 gold so you can buy better equipment."
 }
-perk very_wealthy {
+perk veryWealthy {
 	name "Very wealthy"
 	desc "You come from a very wealthy. You received a small sum of 50000 gold to help you start the adventure as a hero."
 }
@@ -238,7 +238,7 @@ perk leader {
 	name "Leader"
 	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you. Heroes gain experience faster when you are in charge."
 }
-perk strong_back {
+perk strongBack {
 	name "Strong back"
 	desc "+25% to maximum carrying capacity."
 }
@@ -258,7 +258,7 @@ perk tough {
 	name "Tough"
 	desc "+100 to maximum health."
 }
-perk hard_skin {
+perk hardSkin {
 	name "Hard skin"
 	desc "+10 to defense."
 }
@@ -266,7 +266,7 @@ perk adaptation {
 	name "Adaptation"
 	desc "Gives resistance to poisons."
 }
-perk perfect_health {
+perk perfectHealth {
 	name "Perfect health"
 	desc "Gives a health regeneration that restores 5 points per second."
 }
@@ -274,19 +274,19 @@ perk energetic {
 	name "Energetic"
 	desc "+100 stamina."
 }
-perk strong_aura {
+perk strongAura {
 	name "Strong aura"
 	desc "+100 to maximum mana."
 }
-perk mana_harmony {
+perk manaHarmony {
 	name "Mana harmony"
 	desc "Increase mana regeneration by 100%."
 }
-perk magic_adept {
+perk magicAdept {
 	name "Magic adept"
 	desc "Increase spells damage."
 }
-perk traveling_merchant {
+perk travelingMerchant {
 	name "Student of traveling merchant"
 	desc "In your youth you spent several years traveling with traveling merchants. You know how to persuade (+10) and start with 500 gold more."
 }

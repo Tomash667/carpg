@@ -2624,7 +2624,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					unit.action = A_USE_ITEM;
 					unit.usedItem = slot.item;
-					unit.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+					unit.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 
 					NetChange& c = PushChange(NetChange::USE_ITEM);
 					c.unit = &unit;
@@ -2869,7 +2869,7 @@ bool Net::CheckMove(Unit& unit, const Vec3& pos)
 {
 	gameLevel->globalCol.clear();
 
-	const float radius = unit.GetUnitRadius();
+	const float radius = unit.GetRadius();
 	Level::IgnoreObjects ignore{};
 	const Unit* ignoredUnits[2]{ &unit };
 	const void* ignoredObjects[2]{};

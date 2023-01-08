@@ -25,6 +25,7 @@
 #include "LevelPart.h"
 #include "OffscreenLocation.h"
 #include "PlayerInfo.h"
+#include "PhysicCallbacks.h"
 #include "Portal.h"
 #include "Quest2.h"
 #include "QuestManager.h"
@@ -44,6 +45,7 @@
 #include <SoundManager.h>
 #include <Terrain.h>
 
+//-----------------------------------------------------------------------------
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
@@ -61,6 +63,67 @@ const float Unit::COUGHS_SOUND_DIST = 1.f;
 EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
 vector<int> effectsToRemove;
+
+//-----------------------------------------------------------------------------
+cstring NAMES::pointWeapon = "bron";
+cstring NAMES::pointHiddenWeapon = "schowana";
+cstring NAMES::pointShield = "tarcza";
+cstring NAMES::pointShieldHidden = "tarcza_plecy";
+cstring NAMES::pointBow = "luk";
+cstring NAMES::pointCast = "castpoint";
+cstring NAMES::points[] = {
+	"bron",
+	"schowana",
+	"tarcza",
+	"tarcza_plecy",
+	"luk"
+};
+uint NAMES::nPoints = countof(points);
+
+//-----------------------------------------------------------------------------
+cstring NAMES::aniTakeWeapon = "wyjmuje";
+cstring NAMES::aniTakeWeaponNoShield = "wyjmuje_bez_tarczy";
+cstring NAMES::aniTakeBow = "wyjmij_luk";
+cstring NAMES::aniMove = "idzie";
+cstring NAMES::aniRun = "biegnie";
+cstring NAMES::aniLeft = "w_lewo";
+cstring NAMES::aniRight = "w_prawo";
+cstring NAMES::aniStand = "stoi";
+cstring NAMES::aniBattle = "bojowy";
+cstring NAMES::aniBattleBow = "bojowy_luk";
+cstring NAMES::aniDie = "umiera";
+cstring NAMES::aniHurt = "trafiony";
+cstring NAMES::aniShoot = "atak_luk";
+cstring NAMES::aniBlock = "blok";
+cstring NAMES::aniBash = "bash";
+cstring NAMES::aniBase[] = {
+	"idzie",
+	"w_lewo",
+	"w_prawo",
+	"stoi",
+	"bojowy",
+	"umiera"
+};
+cstring NAMES::aniHumanoid[] = {
+	"wyjmuje",
+	"wyjmij_luk",
+	"bojowy_luk",
+	"atak_luk",
+	"blok",
+	"bash"
+};
+cstring NAMES::aniAttacks[] = {
+	"atak1",
+	"atak2",
+	"atak3",
+	"atak4",
+	"atak5",
+	"atak6"
+};
+cstring NAMES::aniCast = "cast";
+uint NAMES::nAniBase = countof(aniBase);
+uint NAMES::nAniHumanoid = countof(aniHumanoid);
+int NAMES::maxAttacks = countof(aniAttacks);
 
 //=================================================================================================
 Unit::~Unit()
@@ -1487,12 +1550,12 @@ void Unit::CalculateLoad()
 //=================================================================================================
 void Unit::GetBox(Box& box) const
 {
-	float radius = GetUnitRadius();
+	float radius = GetRadius();
 	box.v1.x = pos.x - radius;
 	box.v1.y = pos.y;
 	box.v1.z = pos.z - radius;
 	box.v2.x = pos.x + radius;
-	box.v2.y = pos.y + max(MIN_H, GetUnitHeight());
+	box.v2.y = pos.y + max(MIN_H, GetHeight());
 	box.v2.z = pos.z + radius;
 }
 
@@ -2041,8 +2104,6 @@ void Unit::Load(GameReader& f)
 		stats = data->GetStats(sub);
 	}
 	f >> gold;
-	if(LOAD_VERSION < V_0_11)
-		f.Skip<int>(); // old inside_building
 	f >> toRemove;
 	f >> temporary;
 	f >> questId;
@@ -2153,7 +2214,7 @@ void Unit::Load(GameReader& f)
 				f >> act.attack.index;
 				f >> act.attack.power;
 				f >> act.attack.run;
-				if(LOAD_VERSION >= V_DEV)
+				if(LOAD_VERSION >= V_0_20)
 					f >> act.attack.hitted;
 				else
 				{
@@ -2405,10 +2466,7 @@ void Unit::Load(GameReader& f)
 			switch(order->order)
 			{
 			case ORDER_FOLLOW:
-				if(LOAD_VERSION >= V_0_11)
-					f >> order->unit;
-				else
-					team->GetLeaderRequest(&order->unit);
+				f >> order->unit;
 				break;
 			case ORDER_LOOK_AT:
 				f >> order->pos;
@@ -3827,66 +3885,6 @@ void Unit::ClearInventory()
 }
 
 //=================================================================================================
-cstring NAMES::pointWeapon = "bron";
-cstring NAMES::pointHiddenWeapon = "schowana";
-cstring NAMES::pointShield = "tarcza";
-cstring NAMES::pointShieldHidden = "tarcza_plecy";
-cstring NAMES::pointBow = "luk";
-cstring NAMES::pointCast = "castpoint";
-cstring NAMES::points[] = {
-	"bron",
-	"schowana",
-	"tarcza",
-	"tarcza_plecy",
-	"luk"
-};
-uint NAMES::nPoints = countof(points);
-
-//=================================================================================================
-cstring NAMES::aniTakeWeapon = "wyjmuje";
-cstring NAMES::aniTakeWeaponNoShield = "wyjmuje_bez_tarczy";
-cstring NAMES::aniTakeBow = "wyjmij_luk";
-cstring NAMES::aniMove = "idzie";
-cstring NAMES::aniRun = "biegnie";
-cstring NAMES::aniLeft = "w_lewo";
-cstring NAMES::aniRight = "w_prawo";
-cstring NAMES::aniStand = "stoi";
-cstring NAMES::aniBattle = "bojowy";
-cstring NAMES::aniBattleBow = "bojowy_luk";
-cstring NAMES::aniDie = "umiera";
-cstring NAMES::aniHurt = "trafiony";
-cstring NAMES::aniShoot = "atak_luk";
-cstring NAMES::aniBlock = "blok";
-cstring NAMES::aniBash = "bash";
-cstring NAMES::aniBase[] = {
-	"idzie",
-	"w_lewo",
-	"w_prawo",
-	"stoi",
-	"bojowy",
-	"umiera"
-};
-cstring NAMES::aniHumanoid[] = {
-	"wyjmuje",
-	"wyjmij_luk",
-	"bojowy_luk",
-	"atak_luk",
-	"blok",
-	"bash"
-};
-cstring NAMES::aniAttacks[] = {
-	"atak1",
-	"atak2",
-	"atak3",
-	"atak4",
-	"atak5",
-	"atak6"
-};
-uint NAMES::nAniBase = countof(aniBase);
-uint NAMES::nAniHumanoid = countof(aniHumanoid);
-int NAMES::maxAttacks = countof(aniAttacks);
-
-//=================================================================================================
 // unused?
 Vec3 Unit::GetEyePos() const
 {
@@ -4037,7 +4035,7 @@ float Unit::GetItemAiValue(const Item* item) const
 }
 
 //=================================================================================================
-int Unit::CountItem(const Item* item)
+uint Unit::GetItemCount(const Item* item)
 {
 	assert(item);
 
@@ -4055,13 +4053,42 @@ int Unit::CountItem(const Item* item)
 	}
 	else
 	{
-		int count = 0;
+		uint count = 0;
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		{
 			if(it->item == item)
 				++count;
 		}
 		return count;
+	}
+}
+
+//=================================================================================================
+uint Unit::GetItemTeamCount(const Item* item)
+{
+	assert(item);
+
+	if(item->IsStackable())
+	{
+		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+		{
+			if(it->item == item)
+			{
+				// zak³ada ¿e mo¿na mieæ tylko jeden stack takich przedmiotów
+				return it->teamCount;
+			}
+		}
+		return 0;
+	}
+	else
+	{
+		uint teamCount = 0;
+		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+		{
+			if(it->item == item && it->teamCount > 0)
+				++teamCount;
+		}
+		return teamCount;
 	}
 }
 
@@ -5530,8 +5557,8 @@ void Unit::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 //=================================================================================================
 void Unit::CreatePhysics(bool position)
 {
-	float r = GetUnitRadius();
-	float h = max(MIN_H, GetUnitHeight());
+	float r = GetRadius();
+	float h = max(MIN_H, GetHeight());
 
 	btCapsuleShape* caps = new btCapsuleShape(r, h - r * 2);
 	cobj = new btCollisionObject;
@@ -5549,7 +5576,7 @@ void Unit::UpdatePhysics(const Vec3* targetPos)
 {
 	Vec3 phyPos = targetPos ? *targetPos : pos;
 	if(liveState == ALIVE)
-		phyPos.y += max(MIN_H, GetUnitHeight()) / 2;
+		phyPos.y += max(MIN_H, GetHeight()) / 2;
 
 	cobj->getWorldTransform().setOrigin(ToVector3(phyPos));
 	physics->UpdateAabb(cobj);
@@ -6380,7 +6407,7 @@ void Unit::StopUsingUsable(bool send)
 	timer = 0.f;
 	usedItem = nullptr;
 
-	const float unitRadius = GetUnitRadius();
+	const float unitRadius = GetRadius();
 
 	gameLevel->globalCol.clear();
 	Level::IgnoreObjects ignore{};
@@ -6556,18 +6583,7 @@ void Unit::CastSpell()
 {
 	Ability& ability = *act.cast.ability;
 
-	Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::pointCast);
-	Vec3 coord;
-
-	if(point)
-	{
-		meshInst->SetupBones();
-		Matrix m = point->mat * meshInst->matBones[point->bone] * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
-		coord = Vec3::TransformZero(m);
-	}
-	else
-		coord = GetHeadPoint();
-
+	const Vec3 coord = GetCastPoint();
 	float dmg = GetAbilityPower(ability);
 
 	switch(ability.type)
@@ -6794,7 +6810,7 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				Vec2 bounds(target->GetUnitRadius(), 0);
+				Vec2 bounds(target->GetRadius(), 0);
 				Vec3 pos = target->GetLootCenter();
 				pos.y += 0.5f;
 				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
@@ -6813,7 +6829,7 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				Vec2 bounds(target->GetUnitRadius(), target->GetUnitHeight());
+				Vec2 bounds(target->GetRadius(), target->GetHeight());
 				Vec3 pos;
 				if(target->liveState == Unit::FALL || target->liveState == Unit::DEAD)
 					pos = target->GetLootCenter();
@@ -7307,20 +7323,13 @@ void Unit::Update(float dt)
 				Bullet* bullet = new Bullet;
 				locPart->lvlPart->bullets.push_back(bullet);
 
-				meshInst->SetupBones();
-
-				Mesh::Point* point = meshInst->mesh->GetPoint(NAMES::pointWeapon);
-				assert(point);
-
-				Matrix m2 = point->mat * meshInst->matBones[point->bone] * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
-
 				bullet->Register();
 				bullet->isArrow = true;
 				bullet->attack = CalculateAttack(&GetBow());
 				bullet->level = level;
 				bullet->backstab = GetBackstabMod(&GetBow());
 				bullet->rot = Vec3(PI / 2, rot + PI, 0);
-				bullet->pos = Vec3::TransformZero(m2);
+				bullet->pos = GetShootPoint();
 				bullet->mesh = gameRes->aArrow;
 				bullet->speed = GetArrowSpeed();
 				bullet->timer = ARROW_TIMER;
@@ -7826,14 +7835,14 @@ void Unit::Update(float dt)
 							visualPos = pos = Vec3::Lerp(targetPos, targetPos2, timer * 2);
 							changed = true;
 							gameLevel->globalCol.clear();
-							float myRadius = GetUnitRadius();
+							float myRadius = GetRadius();
 							bool ok = true;
 							for(vector<Unit*>::iterator it2 = locPart->units.begin(), end2 = locPart->units.end(); it2 != end2; ++it2)
 							{
 								if(this == *it2 || !(*it2)->IsStanding())
 									continue;
 
-								float radius = (*it2)->GetUnitRadius();
+								float radius = (*it2)->GetRadius();
 								if(Distance((*it2)->pos.x, (*it2)->pos.z, pos.x, pos.z) <= radius + myRadius)
 								{
 									ok = false;
@@ -8301,7 +8310,7 @@ void Unit::Moved(bool warped, bool dash)
 		{
 			if(portal->targetLoc != -1 && Vec3::Distance2d(pos, portal->pos) < 2.f)
 			{
-				if(CircleToRotatedRectangle(pos.x, pos.z, GetUnitRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
+				if(CircleToRotatedRectangle(pos.x, pos.z, GetRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
 				{
 					if(team->IsLeader())
 					{
@@ -8610,7 +8619,7 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 		else
 		{
 			pe->pos = pos;
-			pe->pos.y += GetUnitHeight() * 2.f / 3;
+			pe->pos.y += GetHeight() * 2.f / 3;
 		}
 		pe->speedMin = Vec3(-1, 0, -1);
 		pe->speedMax = Vec3(1, 1, 1);
@@ -9034,4 +9043,60 @@ bool Unit::HaveEventHandler(EventType eventType) const
 	}
 
 	return false;
+}
+
+//=================================================================================================
+bool Unit::CanShootAtLocation(const void* ptr, const Vec3& targetPos, bool cast) const
+{
+	assert(ptr);
+
+	btTransform tFrom, tTo;
+	tFrom.setIdentity();
+	tFrom.setOrigin(ToVector3(cast ? GetCastPoint() : GetShootPoint()));
+	tTo.setIdentity();
+	tTo.setOrigin(ToVector3(targetPos));
+
+	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk = [=](btCollisionObject* cobj, bool first)
+	{
+		void* userPtr = cobj->getUserPointer();
+		if(userPtr == this || userPtr == ptr)
+			return LT_IGNORE;
+		else
+			return LT_COLLIDE;
+	};
+
+	ConvexCallback callback(clbk, nullptr, false);
+
+	phyWorld->convexSweepTest((btConvexShape*)gameLevel->shapeTestSphere, tFrom, tTo, callback);
+
+	return !callback.hasHit();
+}
+
+//=================================================================================================
+bool Unit::CanShootAtUnit(const Unit& target, const Vec3& targetPos, bool cast) const
+{
+	Vec3 adjustedPos = targetPos;
+	adjustedPos.y += max(CAN_SHOOT_EXTRA_RADIUS, target.GetHeight() / 2);
+	return CanShootAtLocation(&target, adjustedPos, cast);
+}
+
+//=================================================================================================
+Vec3 Unit::GetCastPoint() const
+{
+	if(const Matrix* mat = UnitHelper::GetCastPoint(*this))
+	{
+		Matrix m = (*mat) * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
+		return Vec3::TransformZero(m);
+	}
+	else
+		return GetHeadPoint();
+}
+
+//=================================================================================================
+Vec3 Unit::GetShootPoint() const
+{
+	const Matrix* mat = UnitHelper::GetShootPoint(*this);
+	assert(mat);
+	Matrix matFinal = (*mat) * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
+	return Vec3::TransformZero(matFinal);
 }

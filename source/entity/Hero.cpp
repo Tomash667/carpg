@@ -59,8 +59,6 @@ void Hero::Load(GameReader& f)
 	f >> name;
 	f >> knowName;
 	f >> teamMember;
-	if(LOAD_VERSION < V_0_11)
-		f.Skip<int>(); // old following
 	f >> credit;
 	f >> expe;
 	f >> melee;

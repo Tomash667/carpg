@@ -16,7 +16,7 @@ code {
 }
 
 //=============================================================================
-quest deliver_letter {
+quest deliverLetter {
 	dialog start {
 		0 "I'm looking for someone who will deliver this letter to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name). Are you interested in it?"
 		1 "Yes"
@@ -63,7 +63,7 @@ quest deliver_letter {
 }
 
 //=============================================================================
-quest deliver_resources {
+quest deliverResources {
 	dialog start {
 		0 "I have to deliver a box of resource to $(targetLoc.name). Normally, I would send one of my people, but since you're already here..."
 		1 "This is quite urgent. $(targetLoc.name) needs these resources within 15 days. Are you interested in?"
@@ -100,7 +100,7 @@ quest deliver_resources {
 }
 
 //=============================================================================
-quest bandits_collect_toll {
+quest banditsCollectToll {
 	dialog start {
 		0 "On the road between $(startLoc.name) and $(otherLoc.name) camped bandits. They charge a fee and are robbing merchants."
 		1 "You have time to take care of them?"
@@ -142,7 +142,7 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
-quest camp_near_city {
+quest campNearCity {
 	dialog start {
 		0 "Can you imagine that?! $(group.name.Upper()) created camp just near our $(startLoc.IsVillage() ? \"village\" : \"city\")!"
 		1 "I think they want to attack the $(startLoc.IsVillage() ? \"village\" : \"city\")! We have to do something about it!"
@@ -172,7 +172,7 @@ quest camp_near_city {
 }
 
 //=============================================================================
-quest kill_animals {
+quest killAnimals {
 	dialog start {
 		0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
 		1 "Are you interested?"
@@ -243,7 +243,7 @@ quest wanted {
 }
 
 //=============================================================================
-quest find_artifact {
+quest findArtifact {
 	dialog start {
 		0 "I'm looking for a certain artifact known as the $(item.name)."
 		1 "Can you deliver it to me?"
@@ -272,7 +272,7 @@ quest find_artifact {
 }
 
 //=============================================================================
-quest lost_artifact {
+quest lostArtifact {
 	dialog start {
 		0 "I found $(item.name) but unfortunately, I lost it on the way back."
 		1 "Can you find it?"
@@ -301,7 +301,7 @@ quest lost_artifact {
 }
 
 //=============================================================================
-quest stolen_artifact {
+quest stolenArtifact {
 	dialog start {
 		0 "$(Upper1(group.name)) has stolen my $(item.name)."
 		1 "Can you retrieve it?"
@@ -330,7 +330,7 @@ quest stolen_artifact {
 }
 
 //=============================================================================
-quest alchemist_apprentice {
+quest alchemistApprentice {
 	dialog alchemist {
 		0 "Welcome. Are you here for the task?"
 		1 "Task"
@@ -504,7 +504,7 @@ quest main {
 }
 
 //=============================================================================
-quest side_cleric {
+quest sideCleric {
 	dialog end {
 		0 "Give the book"
 		1 "Did you get that book?"
@@ -521,7 +521,7 @@ quest side_cleric {
 }
 
 //=============================================================================
-quest dire_wolf {
+quest direWolf {
 	dialog hunter {
 		0 "Quest"
 		1 "Do you want to prove that you are one of us?"
@@ -540,7 +540,7 @@ quest dire_wolf {
 }
 
 //=============================================================================
-quest main_village1 {
+quest mainVillage1 {
 	texts {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
@@ -553,7 +553,7 @@ quest main_village1 {
 }
 
 //=============================================================================
-quest main_village2 {
+quest mainVillage2 {
 	texts {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
@@ -568,7 +568,7 @@ quest main_village2 {
 }
 
 //=============================================================================
-quest main_village3 {
+quest mainVillage3 {
 	dialog villager {
 		0 "Thanks for the rescue. I'm getting out of here!"
 	}
@@ -594,7 +594,7 @@ quest main_village3 {
 }
 
 //=============================================================================
-quest main_village4 {
+quest mainVillage4 {
 	dialog oldman {
 		0 "Hello young man."
 		1 "Thank you for the rescue, our barricade wouldn't last long."

@@ -97,7 +97,7 @@ void GameCamera::Update(float dt)
 	const Vec3 backwardDir = Vec3::Transform(Vec3::UnitY, Matrix::Rotation(rot.y, rot.x + shift, 0));
 
 	Vec3 pos = target->pos;
-	pos.y += target->GetUnitHeight() + tmpH;
+	pos.y += target->GetHeight() + tmpH;
 
 	if(zoom)
 		realTo = zoomPos;

@@ -4,7 +4,7 @@
 //=================================================================================================
 Quest::LoadResult Quest_DireWolf::Load(GameReader& f)
 {
-	Quest2::LoadQuest2(f, "dire_wolf");
+	Quest2::LoadQuest2(f, "direWolf");
 	return LoadResult::Convert;
 }
 
@@ -17,7 +17,7 @@ void Quest_DireWolf::LoadDetails(GameReader& f)
 //=================================================================================================
 void Quest_DireWolf::GetConversionData(ConversionData& data)
 {
-	data.id = "dire_wolf";
+	data.id = "direWolf";
 	data.Add("startLoc", startLoc);
 	data.Add("forest", forest);
 

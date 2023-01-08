@@ -16,6 +16,13 @@
 #include <ResourceManager.h>
 #include <SoundManager.h>
 
+enum Group
+{
+	G_NONE = -1,
+	G_RECIPE,
+	G_INGREDIENTS
+};
+
 struct RecipeItem : public GuiElement
 {
 	explicit RecipeItem(Recipe* recipe) : recipe(recipe)
@@ -47,6 +54,7 @@ struct RecipeItem : public GuiElement
 	string text;
 };
 
+//=================================================================================================
 CraftPanel::CraftPanel()
 {
 	messenger->Register(Msg::LearnRecipe, Messenger::Delegate(this, &CraftPanel::OnLearnRecipe));
@@ -69,12 +77,15 @@ CraftPanel::CraftPanel()
 	Add(&right);
 }
 
+//=================================================================================================
 void CraftPanel::LoadData()
 {
 	tItemBar = resMgr->Load<Texture>("item_bar.png");
+	tUsed = resMgr->Load<Texture>("equipped.png");
 	sAlchemy = resMgr->Load<Sound>("alchemy.mp3");
 }
 
+//=================================================================================================
 void CraftPanel::LoadLanguage()
 {
 	Language::Section s = Language::GetSection("CraftPanel");
@@ -84,6 +95,7 @@ void CraftPanel::LoadLanguage()
 	txIngredients = s.Get("ingredients");
 }
 
+//=================================================================================================
 void CraftPanel::Draw()
 {
 	//============ LEFT PANEL ===============
@@ -114,6 +126,9 @@ void CraftPanel::Draw()
 	gui->DrawText(GameGui::fontBig, txIngredients, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// ingredients
+	Recipe* recipe = nullptr;
+	if(RecipeItem* recipeItem = list.GetItemCast<RecipeItem>())
+		recipe = recipeItem->recipe;
 	int countW = (right.size.x - 48) / 63;
 	int countH = (right.size.y - 66) / 63;
 	int shiftX = right.pos.x + 24 + (right.size.x - 48 - countW * 63) / 2;
@@ -129,11 +144,27 @@ void CraftPanel::Draw()
 			if(index < ingredients.size())
 			{
 				pair<const Item*, uint>& p = ingredients[index];
+				if(recipe)
+				{
+					bool isUsed = false;
+					for(pair<const Item*, uint>& p2 : recipe->ingredients)
+					{
+						if(p.first == p2.first)
+						{
+							isUsed = true;
+							break;
+						}
+					}
+
+					if(isUsed)
+						gui->DrawSprite(tUsed, Int2(shift + Int2(1)));
+				}
+
 				gui->DrawSprite(p.first->icon, Int2(shift + Int2(1)));
 				if(p.second > 1u)
 				{
-					Rect rect3 = Rect::Create(Int2(shiftX + x * 63 + 2, shiftY + y * 63), Int2(64, 63));
-					gui->DrawText(GameGui::font, Format("%d", p.second), DTF_BOTTOM, Color::Black, rect3);
+					Rect rect3 = Rect::Create(Int2(shiftX + x * 63 + 5, shiftY + y * 63 - 3), Int2(64, 63));
+					gui->DrawText(GameGui::font, Format("%d", p.second), DTF_BOTTOM | DTF_OUTLINE, Color::White, rect3);
 				}
 			}
 		}
@@ -142,6 +173,7 @@ void CraftPanel::Draw()
 	tooltip.Draw();
 }
 
+//=================================================================================================
 void CraftPanel::Update(float dt)
 {
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
@@ -152,15 +184,22 @@ void CraftPanel::Update(float dt)
 
 	Container::Update(dt);
 
+	int group = G_NONE, id = -1;
+
+	// recipes
 	list.mouseFocus = focus;
 	list.focus = focus;
 	list.Update(dt);
+	if(int hover = list.GetHover(); hover != -1)
+	{
+		group = G_RECIPE;
+		id = hover;
+	}
 
 	button.mouseFocus = focus;
 	button.Update(dt);
 
 	// ingredients
-	int group = -1, id = -1;
 	if(focus)
 	{
 		int countW = (right.size.x - 48) / 63;
@@ -177,7 +216,7 @@ void CraftPanel::Update(float dt)
 					break;
 				if(Rect::IsInside(gui->cursorPos, Int2(shiftX + x * 63, shiftY + y * 63), Int2(64, 64)))
 				{
-					group = 0;
+					group = G_INGREDIENTS;
 					id = index;
 					break;
 				}
@@ -187,6 +226,7 @@ void CraftPanel::Update(float dt)
 	tooltip.UpdateTooltip(dt, group, id);
 }
 
+//=================================================================================================
 void CraftPanel::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
@@ -217,7 +257,7 @@ void CraftPanel::Event(GuiEvent e)
 			else
 			{
 				list.Select(0);
-				Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+				Recipe* recipe = list.GetItemCast<RecipeItem>()->recipe;
 				button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 			}
 			tooltip.Clear();
@@ -230,7 +270,7 @@ void CraftPanel::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Custom)
 	{
-		Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+		Recipe* recipe = list.GetItemCast<RecipeItem>()->recipe;
 		uint max = HaveIngredients(recipe);
 		if(max == 1 || input->Down(Key::Control))
 		{
@@ -256,6 +296,7 @@ void CraftPanel::Event(GuiEvent e)
 	}
 }
 
+//=================================================================================================
 void CraftPanel::SetRecipes(bool rememberRecipe)
 {
 	Recipe* prevRecipe = nullptr;
@@ -291,6 +332,7 @@ void CraftPanel::SetRecipes(bool rememberRecipe)
 	}
 }
 
+//=================================================================================================
 void CraftPanel::SetIngredients()
 {
 	ingredients.clear();
@@ -304,27 +346,39 @@ void CraftPanel::SetIngredients()
 	}
 }
 
+//=================================================================================================
 void CraftPanel::GetTooltip(TooltipController* tooltip, int group, int id, bool refresh)
 {
-	pair<const Item*, uint>& p = ingredients[id];
+	const Item* item;
+	uint count;
+	if(group == G_RECIPE)
+	{
+		Recipe* recipe = list.GetItems()[id]->Cast<RecipeItem>()->recipe;
+		item = recipe->result;
+		count = 1u;
+	}
+	else
+	{
+		pair<const Item*, uint>& p = ingredients[id];
+		item = p.first;
+		count = p.second;
+	}
+
 	tooltip->anything = true;
-	GetItemString(tooltip->text, p.first, nullptr, p.second);
-	tooltip->smallText = p.first->desc;
-	tooltip->img = p.first->icon;
+	GetItemString(tooltip->text, item, nullptr, count);
+	tooltip->smallText = item->desc;
+	tooltip->img = item->icon;
 }
 
+//=================================================================================================
 void CraftPanel::OnCraft(int id)
 {
 	if(id == BUTTON_CANCEL || counter == 0)
 		return;
-	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+	Recipe* recipe = list.GetItemCast<RecipeItem>()->recipe;
 	if(Net::IsLocal())
 	{
-		for(pair<const Item*, uint>& p : recipe->ingredients)
-			game->pc->unit->RemoveItem(p.first, p.second * counter);
-		game->pc->unit->AddItem2(recipe->result, counter, 0u);
-		float value = ((float)recipe->skill + 25) / 25.f * 1000 * counter;
-		game->pc->Train(TrainWhat::Craft, value, 0);
+		DoCraft(*game->pc, recipe, counter);
 		AfterCraft();
 	}
 	else
@@ -335,12 +389,29 @@ void CraftPanel::OnCraft(int id)
 	}
 }
 
+//=================================================================================================
+void CraftPanel::DoCraft(PlayerController& player, Recipe* recipe, uint count)
+{
+	uint teamCount = count;
+	for(pair<const Item*, uint>& p : recipe->ingredients)
+	{
+		uint ingredientTeamCount = player.unit->GetItemTeamCount(p.first) / p.second;
+		teamCount = min(teamCount, ingredientTeamCount);
+		player.unit->RemoveItem(p.first, p.second * count);
+	}
+	player.unit->AddItem2(recipe->result, count, teamCount);
+	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
+	player.Train(TrainWhat::Craft, value, 0);
+}
+
+//=================================================================================================
 void CraftPanel::OnSelectionChange(int index)
 {
-	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+	Recipe* recipe = list.GetItemCast<RecipeItem>()->recipe;
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 }
 
+//=================================================================================================
 uint CraftPanel::HaveIngredients(Recipe* recipe)
 {
 	assert(recipe);
@@ -367,40 +438,38 @@ uint CraftPanel::HaveIngredients(Recipe* recipe)
 	return maxCount;
 }
 
+//=================================================================================================
 void CraftPanel::Show()
 {
 	gameGui->levelGui->ClosePanels();
 	Control::Show();
 }
 
+//=================================================================================================
 bool CraftPanel::DoPlayerCraft(PlayerController& player, Recipe* recipe, uint count)
 {
 	assert(recipe && count > 0);
 	for(pair<const Item*, uint>& p : recipe->ingredients)
 	{
-		if((uint)player.unit->CountItem(p.first) < p.second * count)
+		if((uint)player.unit->GetItemCount(p.first) < p.second * count)
 			return false;
 	}
 
-	for(pair<const Item*, uint>& p : recipe->ingredients)
-		player.unit->RemoveItem(p.first, p.second * count);
-	player.unit->AddItem2(recipe->result, count, 0u);
-	float value = ((float)recipe->skill + 25) / 25.f * 1000 * count;
-	player.Train(TrainWhat::Craft, value, 0);
-
+	DoCraft(player, recipe, count);
 	player.playerInfo->PushChange(NetChangePlayer::AFTER_CRAFT);
-
 	return true;
 }
 
+//=================================================================================================
 void CraftPanel::AfterCraft()
 {
-	Recipe* recipe = static_cast<RecipeItem*>(list.GetItem())->recipe;
+	Recipe* recipe = list.GetItemCast<RecipeItem>()->recipe;
 	soundMgr->PlaySound2d(sAlchemy);
 	SetIngredients();
 	button.state = HaveIngredients(recipe) >= 1u ? Button::NONE : Button::DISABLED;
 }
 
+//=================================================================================================
 void CraftPanel::OnLearnRecipe()
 {
 	gameGui->messages->AddGameMsg3(GMS_LEARNED_RECIPE);

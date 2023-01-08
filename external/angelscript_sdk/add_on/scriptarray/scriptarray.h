@@ -120,10 +120,11 @@ protected:
 	CScriptArray(const CScriptArray &other);
 	virtual ~CScriptArray();
 
-	bool  Less(const void *a, const void *b, bool asc, asIScriptContext *ctx, SArrayCache *cache);
+	bool  Less(const void *a, const void *b, bool asc);
 	void *GetArrayItemPointer(int index);
 	void *GetDataPointer(void *buffer);
 	void  Copy(void *dst, void *src);
+	void  Swap(void *a, void *b);
 	void  Precache();
 	bool  CheckMaxSize(asUINT numElements);
 	void  Resize(int delta, asUINT at);

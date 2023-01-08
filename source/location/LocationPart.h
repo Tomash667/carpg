@@ -13,20 +13,6 @@ struct LightMask
 };
 
 //-----------------------------------------------------------------------------
-// pre V_0_11 compatibility
-namespace old
-{
-	enum class LoadCompatibility
-	{
-		None,
-		InsideBuilding,
-		InsideLocationLevel,
-		InsideLocationLevelTraps,
-		OutsideLocation
-	};
-}
-
-//-----------------------------------------------------------------------------
 // Part of location (outside, building or dungeon level)
 struct LocationPart
 {
@@ -38,7 +24,6 @@ struct LocationPart
 	};
 
 	static const int OUTSIDE_ID = -1;
-	static const int OLD_EXIT_ID = -2; // pre V_0_11
 
 	const int partId; // -1 outside, 0+ building or dungeon level
 	const Type partType;
@@ -63,7 +48,7 @@ public:
 	void BuildScene();
 	void Update(float dt);
 	void Save(GameWriter& f);
-	void Load(GameReader& f, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
+	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	void Clear();

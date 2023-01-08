@@ -1402,8 +1402,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f.isLocal = false;
 	f >> emptyLocations;
 	f >> createCamp;
-	if(LOAD_VERSION < V_0_11 && createCamp > 10)
-		createCamp = 10;
 	f >> worldPos;
 	f >> revealTimer;
 	if(LOAD_VERSION < V_0_14_1 && revealTimer < 0)
@@ -2462,6 +2460,8 @@ void World::StartEncounter(int enc, UnitGroup* group)
 						encounter.special = SE_BANDITS_VS_TRAVELERS;
 					else if(input->Down(Key::C))
 						encounter.special = SE_CRAZY_COOK;
+					else if(input->Down(Key::M))
+						encounter.special = SE_CRAZY_MAGE;
 				}
 
 				if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)

@@ -30,7 +30,7 @@ code {
 }
 
 //=============================================================================
-quest deliver_letter {
+quest deliverLetter {
 	dialog start {
 		0 "Szukam kogoú kto dostarczy ten list do $(endLoc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(endLoc.name). Jesteú zainteresowany?"
 		1 "Tak"
@@ -77,7 +77,7 @@ quest deliver_letter {
 }
 
 //=============================================================================
-quest deliver_resources {
+quest deliverResources {
 	dialog start {
 		0 "Mam do dostarczenia skrzynkÍ z zasobami do $(targetLoc.name). Normalnie wys≥a≥ bym jednego z moich ludzi ale skoro juø tu jesteú..."
 		1 "Jest to doúÊ pilne. $(targetLoc.name) potrzebuje tych zasobÛw w ciπgu 15 dni. Jesteú zainteresowany?"
@@ -114,7 +114,7 @@ quest deliver_resources {
 }
 
 //=============================================================================
-quest bandits_collect_toll {
+quest banditsCollectToll {
 	dialog start {
 		0 "Na drodze pomiÍdzy $(startLoc.name) a $(otherLoc.name) koczujπ bandyci. Pobierajπ op≥atÍ i okradajπ kupcÛw."
 		1 "Masz czas aby siÍ nimi zajπÊ?"
@@ -156,7 +156,7 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
-quest camp_near_city {
+quest campNearCity {
 	dialog start {
 		0 "Wyobraøasz to sobie?! $(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obÛz tuø ko≥o $(startLoc.IsVillage() ? \"naszej wioski\" : \"naszego miasta\")!"
 		1 "Chyba chcπ zaatakowaÊ $(startLoc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Musimy coú z tym zrobiÊ!"
@@ -186,7 +186,7 @@ quest camp_near_city {
 }
 
 //=============================================================================
-quest kill_animals {
+quest killAnimals {
 	dialog start {
 		0 "Szukam kogoú kto zajmie siÍ jednπ z okolicznych lokalizacji w ktÛre zagnieüdzi≥o siÍ sporo stworzeÒ."
 		1 "Jesteú zainteresowany?"
@@ -257,7 +257,7 @@ quest wanted {
 }
 
 //=============================================================================
-quest find_artifact {
+quest findArtifact {
 	dialog start {
 		0 "PoszukujÍ pewnego artefaktu znanego jako $(item.name)."
 		1 "Czy moøesz mi go dostarczyÊ?"
@@ -286,7 +286,7 @@ quest find_artifact {
 }
 
 //=============================================================================
-quest lost_artifact {
+quest lostArtifact {
 	dialog start {
 		0 "Znalaz≥em $(item.name) ale niestety go zgubi≥em w drodze powrotnej."
 		1 "Czy moøesz go dla mnie odnaleüÊ?"
@@ -315,7 +315,7 @@ quest lost_artifact {
 }
 
 //=============================================================================
-quest stolen_artifact {
+quest stolenArtifact {
 	dialog start {
 		0 "$(Upper1(group.name)) $(group.female ? \"ukrad\\xB3y\" : \"ukradli\") mi $(item.name)."
 		1 "Czy moøesz go dla mnie odzyskaÊ?"
@@ -344,7 +344,7 @@ quest stolen_artifact {
 }
 
 //=============================================================================
-quest alchemist_apprentice {
+quest alchemistApprentice {
 	dialog alchemist {
 		0 "Witaj. Jesteú tu w sprawie zadania?"
 		1 "Zadanie"
@@ -518,7 +518,7 @@ quest main {
 }
 
 //=============================================================================
-quest side_cleric {
+quest sideCleric {
 	dialog end {
 		0 "Oddaj ksiÍgÍ"
 		1 "Zdoby≥eú tπ ksiÍgÍ?"
@@ -535,7 +535,7 @@ quest side_cleric {
 }
 
 //=============================================================================
-quest dire_wolf {
+quest direWolf {
 	dialog hunter {
 		0 "Zadanie"
 		1 "Chcesz udowodniÊ øe jesteú jednym z nas?"
@@ -554,7 +554,7 @@ quest dire_wolf {
 }
 
 //=============================================================================
-quest main_village1 {
+quest mainVillage1 {
 	texts {
 		0 "èrÛd≥o zarazy w $(village.name)"
 		1 "RozpoczÍto dnia $date$."
@@ -567,7 +567,7 @@ quest main_village1 {
 }
 
 //=============================================================================
-quest main_village2 {
+quest mainVillage2 {
 	texts {
 		0 "èrÛd≥o zarazy w $(village.name)"
 		1 "RozpoczÍto dnia $date$."
@@ -582,7 +582,7 @@ quest main_village2 {
 }
 
 //=============================================================================
-quest main_village3 {
+quest mainVillage3 {
 	dialog villager {
 		0 "DziÍki za ratunek. WynoszÍ siÍ stπd!"
 	}
@@ -608,7 +608,7 @@ quest main_village3 {
 }
 
 //=============================================================================
-quest main_village4 {
+quest mainVillage4 {
 	dialog oldman {
 		0 "Witaj m≥odzieÒcze."
 		1 "DziÍkuje za ratunek, nasza barykada by zbyt d≥ugo nie wytrzyma≥a."

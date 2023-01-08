@@ -652,7 +652,7 @@ buildingScript villageDestroyed2 {
 }
 
 //================================================================================
-// prev V_DEV
+// prev V_0_20
 alias trainingGrounds training_grounds
 alias cityHall city_hall
 alias villageHall village_hall

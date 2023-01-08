@@ -58,7 +58,7 @@ Level* gameLevel;
 //=================================================================================================
 Level::Level() : localPart(nullptr), terrain(nullptr), terrainShape(nullptr), dungeonShape(nullptr), dungeonShapeData(nullptr), shapeWall(nullptr),
 shapeStairs(nullptr), shapeStairsPart(), shapeBlock(nullptr), shapeBarrier(nullptr), shapeDoor(nullptr), shapeArrow(nullptr), shapeSummon(nullptr),
-shapeFloor(nullptr), dungeonMesh(nullptr), ready(false)
+shapeFloor(nullptr), shapeTestSphere(nullptr), dungeonMesh(nullptr), ready(false)
 {
 	camera.zfar = 80.f;
 }
@@ -83,6 +83,7 @@ Level::~Level()
 	delete shapeArrow;
 	delete shapeSummon;
 	delete shapeFloor;
+	delete shapeTestSphere;
 }
 
 //=================================================================================================
@@ -132,6 +133,7 @@ void Level::Init()
 	shapeBarrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 	shapeSummon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
 	shapeFloor = new btBoxShape(btVector3(20.f, 0.01f, 20.f));
+	shapeTestSphere = new btSphereShape(CAN_SHOOT_EXTRA_RADIUS);
 
 	Mesh::Point* point = gameRes->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
@@ -192,7 +194,7 @@ void Level::ProcessUnitWarps()
 			RemoveElement(warp.unit->locPart->units, warp.unit);
 			warp.unit->locPart = &building;
 			Vec3 pos;
-			if(!WarpToRegion(building, (warp.unit->inArena == 0 ? building.region1 : building.region2), warp.unit->GetUnitRadius(), pos, 20))
+			if(!WarpToRegion(building, (warp.unit->inArena == 0 ? building.region1 : building.region2), warp.unit->GetRadius(), pos, 20))
 			{
 				// failed to warp to arena, spawn outside of arena
 				warp.unit->locPart = localPart;
@@ -2104,7 +2106,7 @@ Vec3 Level::FindSpawnPos(LocationPart& locPart, Unit* unit)
 	InsideBuilding& inside = static_cast<InsideBuilding&>(locPart);
 
 	Vec3 pos;
-	WarpToRegion(locPart, inside.region1, unit->GetUnitRadius(), pos, 20);
+	WarpToRegion(locPart, inside.region1, unit->GetRadius(), pos, 20);
 	return pos;
 }
 
@@ -2363,7 +2365,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 				}
 				while(1);
 
-				radius = (*it)->GetUnitRadius();
+				radius = (*it)->GetRadius();
 				pos = (*it)->GetColliderPos();
 				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 				{
@@ -2384,7 +2386,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 				if(!*it || !(*it)->IsStanding())
 					continue;
 
-				radius = (*it)->GetUnitRadius();
+				radius = (*it)->GetRadius();
 				Vec3 pos = (*it)->GetColliderPos();
 				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 				{
@@ -2564,7 +2566,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 				}
 				while(1);
 
-				radius = (*it)->GetUnitRadius();
+				radius = (*it)->GetRadius();
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 				{
 					CollisionObject& co = Add1(objects);
@@ -2584,7 +2586,7 @@ void Level::GatherCollisionObjects(LocationPart& locPart, vector<CollisionObject
 				if(!(*it)->IsStanding())
 					continue;
 
-				radius = (*it)->GetUnitRadius();
+				radius = (*it)->GetRadius();
 				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
 				{
 					CollisionObject& co = Add1(objects);
@@ -2908,7 +2910,7 @@ void Level::SpawnBlood()
 //=================================================================================================
 void Level::WarpUnit(Unit& unit, const Vec3& pos)
 {
-	const float unitRadius = unit.GetUnitRadius();
+	const float unitRadius = unit.GetRadius();
 
 	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
@@ -2979,7 +2981,7 @@ bool Level::WarpToRegion(LocationPart& locPart, const Box2d& region, float radiu
 //=================================================================================================
 void Level::WarpNearLocation(LocationPart& locPart, Unit& unit, const Vec3& pos, float extraRadius, bool allowExact, int tries)
 {
-	const float radius = unit.GetUnitRadius();
+	const float radius = unit.GetRadius();
 
 	globalCol.clear();
 	IgnoreObjects ignore = { 0 };
@@ -4528,17 +4530,22 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool checkDist)
 //=================================================================================================
 bool Level::CanShootAtLocation(const Vec3& from, const Vec3& to) const
 {
-	RaytestAnyUnitCallback callback;
-	phyWorld->rayTest(ToVector3(from), ToVector3(to), callback);
-	return callback.clear;
-}
+	btTransform tFrom, tTo;
+	tFrom.setIdentity();
+	tFrom.setOrigin(ToVector3(from));
+	tTo.setIdentity();
+	tTo.setOrigin(ToVector3(to));
 
-//=================================================================================================
-bool Level::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const
-{
-	RaytestWithIgnoredCallback callback(&me, ptr);
-	phyWorld->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
-	return !callback.hit;
+	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk = [](btCollisionObject* cobj, bool first)
+	{
+		return LT_COLLIDE;
+	};
+
+	ConvexCallback callback(clbk, nullptr, false);
+
+	phyWorld->convexSweepTest((btConvexShape*)shapeTestSphere, tFrom, tTo, callback);
+
+	return !callback.hasHit();
 }
 
 //=================================================================================================

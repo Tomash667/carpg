@@ -2252,11 +2252,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							if(ability->animation.empty())
 							{
 								if(unit->meshInst->mesh->head.nGroups == 2)
-									unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+									unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 								else
 								{
 									unit->animation = ANI_PLAY;
-									unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+									unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 0);
 								}
 							}
 							else
@@ -2785,7 +2785,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					else
 					{
 						unit->action = A_USE_ITEM;
-						unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+						unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 				}
 			}

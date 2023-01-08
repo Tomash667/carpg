@@ -46,12 +46,12 @@ code
 // 2. generate corner dungeon with gladiator armor
 // 3. create secret vault
 //=============================================================================
-quest global_init
+quest globalInit
 {
 	type unique
 	flags dontCount
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		artifactsLoc artifacts_loc
 	}
@@ -169,7 +169,7 @@ quest global_init
 // DELIVER LETTER - random mayor quest
 // Go to nearby city with letter and return with response.
 //=============================================================================
-quest deliver_letter
+quest deliverLetter
 {
 	type mayor
 	progress {
@@ -238,7 +238,7 @@ quest deliver_letter
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		endLoc end_loc
@@ -355,7 +355,7 @@ quest deliver_letter
 // Deliver reources from one city to another. Bandits attack in middle or in
 // destination.
 //=============================================================================
-quest deliver_resources
+quest deliverResources
 {
 	type mayor
 	progress {
@@ -412,7 +412,7 @@ quest deliver_resources
 		end2
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		targetLoc target_loc
@@ -550,7 +550,7 @@ quest deliver_resources
 // BANDITS COLLECT TOLL - random captain quest
 // Encounter bandits on road and kill them.
 //=============================================================================
-quest bandits_collect_toll
+quest banditsCollectToll
 {
 	type captain
 	progress {
@@ -625,7 +625,7 @@ quest bandits_collect_toll
 		showChoices
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		otherLoc other_loc
@@ -739,7 +739,7 @@ quest bandits_collect_toll
 // CAMP NEAR CITY - random captain quest
 // Bandits have camp near city, need to clean it up.
 //=============================================================================
-quest camp_near_city
+quest campNearCity
 {
 	type captain
 	progress {
@@ -785,7 +785,7 @@ quest camp_near_city
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 	}
@@ -908,7 +908,7 @@ quest camp_near_city
 // KILL ANIMALS - random captain quest
 // Go to forest/cave and kill all animals.
 //=============================================================================
-quest kill_animals
+quest killAnimals
 {
 	type captain
 	progress {
@@ -1277,7 +1277,7 @@ quest wanted
 // FIND ARTIFACT - random traveler quest
 // Go to crypt and recover artifact from treasure.
 //=============================================================================
-quest find_artifact
+quest findArtifact
 {
 	type random
 	progress {
@@ -1326,7 +1326,7 @@ quest find_artifact
 		end
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		startLoc start_loc
 		targetLoc target_loc
@@ -1469,7 +1469,7 @@ quest find_artifact
 // LOST ARTIFACT - random traveler quest
 // Traveler found artifact but lost it inside dungeon. Need to recover it from ground.
 //=============================================================================
-quest lost_artifact
+quest lostArtifact
 {
 	type random
 	progress {
@@ -1656,7 +1656,7 @@ quest lost_artifact
 // STOLEN ARTIFACT - random traveler quest
 // Random artifact was stolen, stronger enemy in dungeon/camp have it
 //=============================================================================
-quest stolen_artifact
+quest stolenArtifact
 {
 	type random
 	progress {
@@ -1875,7 +1875,7 @@ quest stolen_artifact
 //=============================================================================
 // ALCHEMIST APPRENTICE - unique quest given by alchemist
 //=============================================================================
-quest alchemist_apprentice
+quest alchemistApprentice
 {
 	type unique
 	progress {
@@ -2023,7 +2023,7 @@ quest alchemist_apprentice
 		}
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		lastItem last_item
 		lastPos last_pos
@@ -2361,46 +2361,46 @@ quest main
 			talk 14
 			talk 15
 		case P_MAIN_CLERIC_GO_TO_VILLAGES
-			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"main_village1\").progress == P_MAIN_V1_READ"
+			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"mainVillage1\").progress == P_MAIN_V1_READ"
 			{
 				choice 19
 				{
 					doOnce
 					talk 20
-					script "Quest::Find(\"main_village1\").progress = P_MAIN_V1_DONE; ++counter;"
+					script "Quest::Find(\"mainVillage1\").progress = P_MAIN_V1_DONE; ++counter;"
 					talk 21
 					restart
 				}
 			}
-			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_crystal\")) && Quest::Find(\"main_village2\").progress == P_MAIN_V2_CLEARED_PICKED"
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_crystal\")) && Quest::Find(\"mainVillage2\").progress == P_MAIN_V2_CLEARED_PICKED"
 			{
 				choice 22
 				{
 					doOnce
 					talk 23
-					script "Quest::Find(\"main_village2\").progress = P_MAIN_V2_DONE; ++counter;"
+					script "Quest::Find(\"mainVillage2\").progress = P_MAIN_V2_DONE; ++counter;"
 					talk 21
 					restart
 				}
 			}
-			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_herbs\")) && Quest::Find(\"main_village3\").progress == P_MAIN_V3_CLEARED_PICKED"
+			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_herbs\")) && Quest::Find(\"mainVillage3\").progress == P_MAIN_V3_CLEARED_PICKED"
 			{
 				choice 26
 				{
 					doOnce
 					talk 27
-					script "Quest::Find(\"main_village3\").progress = P_MAIN_V3_DONE; ++counter;"
+					script "Quest::Find(\"mainVillage3\").progress = P_MAIN_V3_DONE; ++counter;"
 					talk 21
 					restart
 				}
 			}
-			if script "Quest::Find(\"main_village4\").progress == P_MAIN_V4_LEAVE"
+			if script "Quest::Find(\"mainVillage4\").progress == P_MAIN_V4_LEAVE"
 			{
 				choice 28
 				{
 					doOnce
 					talk 29
-					script "Quest::Find(\"main_village4\").progress = P_MAIN_V4_DONE; ++counter;"
+					script "Quest::Find(\"mainVillage4\").progress = P_MAIN_V4_DONE; ++counter;"
 					talk 21
 					restart
 				}
@@ -2445,7 +2445,7 @@ quest main
 		end2
 	}
 	
-	// pre V_DEV
+	// pre V_0_20
 	alias {
 		shrineLoc shrine_loc
 	}
@@ -2698,13 +2698,13 @@ quest main
 					Vars vars;
 					vars["cleric"] = cleric;
 					vars["city"] = shrineLoc;
-					Quest::Find("side_cleric").Start(vars);
+					Quest::Find("sideCleric").Start(vars);
 				}
 				break;
 			case P_MAIN_CLERIC_RETURNED_TALKED:
 				{
 					int days = 10;
-					if(Quest::Find("side_cleric").state == Q_COMPLETED)
+					if(Quest::Find("sideCleric").state == Q_COMPLETED)
 						days = 5;
 					quest.SetTimeout(days);
 					quest.AddEntry(TEXT(14));
@@ -2736,7 +2736,7 @@ quest main
 					for(int i = 0; i < 4; ++i)
 					{
 						vars["index"] = i;
-						Quest::Find("main_village" + quests[i]).Start(vars);
+						Quest::Find("mainVillage" + quests[i]).Start(vars);
 						@villages[i] = vars["village"];
 					}
 					
@@ -2752,7 +2752,7 @@ quest main
 //=============================================================================
 // SIDE QUEST - cleric
 //=============================================================================
-quest side_cleric
+quest sideCleric
 {
 	type unique
 	progress {
@@ -2828,7 +2828,7 @@ quest side_cleric
 //=============================================================================
 // UNIQUE HUNTERS QUEST - kill boss wolf
 //=============================================================================
-quest dire_wolf
+quest direWolf
 {
 	type unique
 	progress {
@@ -2957,7 +2957,7 @@ quest dire_wolf
 //=============================================================================
 // MAIN QUEST - VILLAGE 1 (empty)
 //=============================================================================
-quest main_village1
+quest mainVillage1
 {
 	type unique
 	flags recreate
@@ -3036,7 +3036,7 @@ quest main_village1
 //=============================================================================
 // MAIN QUEST - VILLAGE 2 (enemies)
 //=============================================================================
-quest main_village2
+quest mainVillage2
 {
 	type unique
 	flags recreate
@@ -3147,7 +3147,7 @@ quest main_village2
 //=============================================================================
 // MAIN QUEST - VILLAGE 3 (enemies + citizens)
 //=============================================================================
-quest main_village3
+quest mainVillage3
 {
 	type unique
 	flags recreate
@@ -3330,7 +3330,7 @@ quest main_village3
 //=============================================================================
 // MAIN QUEST - VILLAGE 4 (old man)
 //=============================================================================
-quest main_village4
+quest mainVillage4
 {
 	type unique
 	flags recreate
@@ -3434,6 +3434,7 @@ quest main_village4
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
 					@oldman = Level::SpawnUnit(locPart, UnitData::Get("q_main_oldman"));
 					oldman.OrderAutoTalk();
+					oldman.dontAttack = true;
 					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
 					unit.OrderAutoTalk();
 					
@@ -3512,25 +3513,46 @@ quest main_village4
 // QUEST LISTS
 //=============================================================================
 questList mayor {
-	deliver_letter 3
-	deliver_parcel 3
-	deliver_resources 3
-	spread_news 2
-	retrieve_package 2
+	deliverLetter 3
+	deliverParcel 3
+	deliverResources 3
+	spreadNews 2
+	retrievePackage 2
 	none 2
 }
 
 questList captain {
-	rescue_captive 2
-	bandits_collect_toll 2
-	camp_near_city 2
-	kill_animals 2
+	rescueCaptive 2
+	banditsCollectToll 2
+	campNearCity 2
+	killAnimals 2
 	wanted 2
 	none 1
 }
 
 questList random {
-	find_artifact 1
-	lost_artifact 1
-	stolen_artifact 1
+	findArtifact 1
+	lostArtifact 1
+	stolenArtifact 1
 }
+
+//=============================================================================
+// ALIASES
+//=============================================================================
+// pre V_DEV
+alias globalInit global_init
+alias deliverLetter deliver_letter
+alias deliverResources deliver_resources
+alias banditsCollectToll bandits_collect_toll
+alias campNearCity camp_near_city
+alias killAnimals kill_animals
+alias findArtifact find_artifact
+alias lostArtifact lost_artifact
+alias stolenArtifact stolen_artifact
+alias alchemistApprentice alchemist_apprentice
+alias sideCleric side_cleric
+alias direWolf dire_wolf
+alias mainVillage1 main_village1
+alias mainVillage2 main_village2
+alias mainVillage3 main_village3
+alias mainVillage4 main_village4

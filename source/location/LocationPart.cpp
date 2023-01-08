@@ -151,231 +151,70 @@ void LocationPart::Save(GameWriter& f)
 }
 
 //=================================================================================================
-void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
+void LocationPart::Load(GameReader& f)
 {
 	if(f.isLocal && !lvlPart)
 		lvlPart = new LevelPart(this);
 
-	switch(compatibility)
+	units.resize(f.Read<uint>());
+	for(Unit*& unit : units)
 	{
-	case old::LoadCompatibility::None:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			traps.resize(f.Read<uint>());
-			for(Trap*& trap : traps)
-			{
-				trap = new Trap;
-				trap->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideBuilding:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideLocationLevel:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			groundItems.resize(f.Read<int>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideLocationLevelTraps:
-		{
-			traps.resize(f.Read<uint>());
-			for(Trap*& trap : traps)
-			{
-				trap = new Trap;
-				trap->Load(f);
-			}
-		}
-		break;
-	case old::LoadCompatibility::OutsideLocation:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-		}
-		break;
+		unit = new Unit;
+		unit->Load(f);
+		unit->locPart = this;
 	}
 
-	if(lvlPart && Any(compatibility, old::LoadCompatibility::None, old::LoadCompatibility::InsideBuilding))
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
+	{
+		object = new Object;
+		object->Load(f);
+	}
+
+	usables.resize(f.Read<uint>());
+	for(Usable*& usable : usables)
+	{
+		usable = new Usable;
+		usable->Load(f);
+	}
+
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
+	{
+		door = new Door;
+		door->Load(f);
+	}
+
+	chests.resize(f.Read<uint>());
+	for(Chest*& chest : chests)
+	{
+		chest = new Chest;
+		chest->Load(f);
+	}
+
+	groundItems.resize(f.Read<uint>());
+	for(GroundItem*& groundItem : groundItems)
+	{
+		groundItem = new GroundItem;
+		groundItem->Load(f);
+	}
+
+	traps.resize(f.Read<uint>());
+	for(Trap*& trap : traps)
+	{
+		trap = new Trap;
+		trap->Load(f);
+	}
+
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
+
+	lights.resize(f.Read<uint>());
+	for(GameLight& light : lights)
+		light.Load(f);
+
+	if(lvlPart)
 		lvlPart->Load(f);
 }
 

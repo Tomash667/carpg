@@ -15,6 +15,7 @@ private:
 	void ParseQuest(const string& id);
 	void ParseQuestList(const string& id);
 	void ParseCode();
+	void ParseAlias(const string& id);
 	void LoadTexts() override;
 	int LoadQuestTexts(Tokenizer& t);
 	void Finalize() override;

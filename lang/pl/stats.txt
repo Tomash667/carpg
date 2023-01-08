@@ -58,7 +58,7 @@ axe = "Topór"
 
 //------------------------------------------------------------------------------
 // ABILITIES
-ability bull_charge {
+ability bullCharge {
 	name "Bycza szar¿a"
 	desc "Szar¿ujesz do przodu og³uszaj¹c wszystkich po drodze i zadaj¹c im $cr{power} obra¿eñ$c-."
 }
@@ -74,23 +74,23 @@ ability heal {
 	name "Uzdrowienie"
 	desc "Przywraca $cg{power} punktów ¿ycia$c- celowi."
 }
-ability summon_wolf {
+ability summonWolf {
 	name "Zwierzêcy sojusznik"
 	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
 }
-ability thunder_bolt {
+ability thunderBolt {
 	name "Piorun"
 	desc "Rzucasz piorun we wroga, ³adunek elektryczny zadaje $cr{power} obra¿eñ$c- przeskakuje na pobliskich przeciwników."
 }
-ability entangling_arrow {
+ability entanglingArrow {
 	name "Oplataj¹ca strza³a"
 	desc "Strzelasz specjaln¹ strza³¹ która po trafieniu przytrzymuje cel w miejscu przez 2 sekundy."
 }
-ability fire_trap {
+ability fireTrap {
 	name "Ognista pu³apka"
 	desc "Tworzysz runê która gdy ktoœ na ni¹ nadepnie eksploduje zadaj¹c $cr{power} obra¿eñ$c-. Mo¿esz mieæ jednoczeœnie 3 runy."
 }
-ability bear_trap {
+ability bearTrap {
 	name "Pu³apka na niedzwiedzie"
 	desc "K³adziesz na ziemi pu³apkê która przytrzymuje wroga w miejscu i zadaje $cr{power} obra¿eñ$c-. Mo¿esz mieæ jednoczeœnie 3 pu³apki."
 }
@@ -180,11 +180,11 @@ class warrior {
 
 //------------------------------------------------------------------------------
 // PERKS
-perk bad_back {
+perk badBack {
 	name "S³abe plecy"
 	desc "Twoje plecy nie nadaj¹ siê do noszenia ciê¿arów. Zmniejsza si³ê o 5 i zmniejsza maksymalny udŸwig."
 }
-perk chronic_disease {
+perk chronicDisease {
 	name "Przewlek³a choroba"
 	desc "Od dziecka jesteœ bardziej chorowity ni¿ inni. Zmniejsza kondycjê o 5 i wolniej leczysz siê z obra¿eñ."
 }
@@ -192,7 +192,7 @@ perk sluggish {
 	name "Ospa³y"
 	desc "Jesteœ powolny. Zmniejsza zrêcznoœæ o 5 i wolniej biegasz."
 }
-perk slow_learner {
+perk slowLearner {
 	name "Powolny uczeñ"
 	desc "Nauczenie nowych umiejêtnoœci przychodzi ci z trudem. Zmniejsza inteligencjê o 5 punktów i spowalnia szkolenie umiejêtnoœci."
 }
@@ -213,12 +213,12 @@ perk skilled {
 	name "Fachowiec"
 	desc "Daje trzy dodatkowe punkty umiejêtnoœci."
 }
-perk skill_focus {
+perk skillFocus {
 	name "Skupienie na umiejêtnoœci"
 	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów. Przyœpiesza szybkoœæ zdobywania tej umiejêtnoœci."
 	details "Zwiêkszona umiejêtnoœæ: {value}"
 }
-perk alchemist_apprentice {
+perk alchemistApprentice {
 	name "Uczeñ alchemika"
 	desc "Pracowa³eœ jako uczeñ alchemika. Znasz siê na podstawach alchemii (+10) i pod czujnym okiem mistrza uwarzy³eœ spor¹ liczbê mikstur."
 }
@@ -226,7 +226,7 @@ perk wealthy {
 	name "Bogaty"
 	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 2500 sztuk z³ota aby zakupiæ lepszy ekwipunek."
 }
-perk very_wealthy {
+perk veryWealthy {
 	name "Bardzo bogaty"
 	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 50000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
 }
@@ -238,7 +238,7 @@ perk leader {
 	name "Przywódca"
 	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³. Bohaterowie szybciej zdobywaj¹ doœwiadczenie gdy ty dowodzisz dru¿yn¹."
 }
-perk strong_back {
+perk strongBack {
 	name "Silne plecy"
 	desc "+25% do maksymalnego udŸwigu."
 }
@@ -258,7 +258,7 @@ perk tough {
 	name "Twardy"
 	desc "+100 do maksymalnego zdrowia."
 }
-perk hard_skin {
+perk hardSkin {
 	name "Twarda skóra"
 	desc "+10 do obrony."
 }
@@ -266,7 +266,7 @@ perk adaptation {
 	name "Przystosowanie"
 	desc "Zapewnia odpornoœæ na trucizny."
 }
-perk perfect_health {
+perk perfectHealth {
 	name "Perfekcyjne zdrowie"
 	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
 }
@@ -274,19 +274,19 @@ perk energetic {
 	name "Energiczny"
 	desc "+100 do wytrzyma³oœci."
 }
-perk strong_aura {
+perk strongAura {
 	name "Silna aura"
 	desc "+100 do maksymalnej many."
 }
-perk mana_harmony {
+perk manaHarmony {
 	name "Harmonia many"
 	desc "Zwiêksza szybkoœæ przywracania many o 100%."
 }
-perk magic_adept {
+perk magicAdept {
 	name "Adept magii"
 	desc "Zwiêksza obra¿enia od czarów."
 }
-perk traveling_merchant {
+perk travelingMerchant {
 	name "Uczeñ wêdrownego kupca"
 	desc "W m³odoœci spêdzi³eœ kilka lat podró¿uj¹c wraz z wêdrownymi kupcami. Znasz siê na perswazji (+10) i rozpoczynasz maj¹c o 500 sztuk z³ota wiêcej."
 }
