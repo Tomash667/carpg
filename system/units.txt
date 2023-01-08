@@ -174,7 +174,7 @@ profile cleric {
 			cleric 1.5
 		}
 		perk talent charisma
-		perk skill_focus godsMagic
+		perk skillFocus godsMagic
 		items {
 			$-2weapon
 			$-1armor
@@ -290,7 +290,7 @@ profile hunter {
 			cleric 0
 		}
 		perk talent dexterity
-		perk skill_focus bow
+		perk skillFocus bow
 		items {
 			$-2weapon
 			!light_armor
@@ -377,7 +377,7 @@ profile hunter {
 			cleric 0
 		}
 		perk talent dexterity
-		perk skill_focus weapon
+		perk skillFocus weapon
 		items {
 			$weapon
 			!light_armor
@@ -465,7 +465,7 @@ profile hunter {
 			cleric 0
 		}
 		perk talent endurance
-		perk skill_focus weapon
+		perk skillFocus weapon
 		items {
 			$weapon
 			!medium_armor
@@ -573,7 +573,7 @@ profile mage {
 			cleric 0
 		}
 		perk talent inteligence
-		perk skill_focus mysticMagic
+		perk skillFocus mysticMagic
 		items {
 			!wand
 			!mage_armor
@@ -689,7 +689,7 @@ profile rogue {
 			cleric 0
 		}
 		perk talent dexterity
-		perk skill_focus weapon
+		perk skillFocus weapon
 		items {
 			$weapon
 			!light_armor
@@ -775,7 +775,7 @@ profile rogue {
 			cleric 0
 		}
 		perk talent dexterity
-		perk skill_focus bow
+		perk skillFocus bow
 		items {
 			$-2weapon
 			!light_armor
@@ -885,7 +885,7 @@ profile warrior {
 			cleric 0
 		}
 		perk talent endurance
-		perk skill_focus armor
+		perk skillFocus armor
 		items {
 			$weapon
 			!shield
@@ -973,7 +973,7 @@ profile warrior {
 			cleric 0
 		}
 		perk talent strength
-		perk skill_focus weapon
+		perk skillFocus weapon
 		items {
 			$weapon
 			!shield
@@ -1063,7 +1063,7 @@ profile warrior {
 			cleric 0
 		}
 		perk talent strength
-		perk skill_focus weapon
+		perk skillFocus weapon
 		items {
 			$weapon
 			!medium_armor

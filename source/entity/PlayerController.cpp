@@ -132,7 +132,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		// inventory
 		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
-		if(HavePerk(Perk::Get("alchemist_apprentice")))
+		if(HavePerk(Perk::Get("alchemistApprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
 		unit->RecalculateWeight();

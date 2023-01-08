@@ -175,7 +175,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		if(unit.player->HavePerk(Perk::Get("asocial")))
 			persuasion -= 20;
 		if(unit.player->action == PlayerAction::Trade
-			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
+			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemistApprentice")))
 			persuasion += 20;
 	}
 

@@ -18,6 +18,12 @@ enum Group
 	G_SPECIAL_EFFECT
 };
 
+enum TopKeyword
+{
+	T_PERK,
+	T_ALIAS
+};
+
 enum Keyword
 {
 	K_FLAGS,
@@ -57,7 +63,10 @@ void PerkLoader::Cleanup()
 //=================================================================================================
 void PerkLoader::InitTokenizer()
 {
-	t.AddKeyword("perk", 0, G_TOP);
+	t.AddKeywords(G_TOP, {
+		{ "perk", T_PERK },
+		{ "alias", T_ALIAS }
+		});
 
 	t.AddKeywords(G_KEYWORD, {
 		{ "flags", K_FLAGS },
@@ -97,7 +106,16 @@ void PerkLoader::InitTokenizer()
 }
 
 //=================================================================================================
-void PerkLoader::LoadEntity(int, const string& id)
+void PerkLoader::LoadEntity(int top, const string& id)
+{
+	if(top == T_PERK)
+		ParsePerk(id);
+	else
+		ParseAlias(id);
+}
+
+//=================================================================================================
+void PerkLoader::ParsePerk(const string& id)
 {
 	const int hash = Hash(id);
 	Perk* existingPerk = Perk::Get(hash);
@@ -319,6 +337,22 @@ Perk* PerkLoader::ParsePerkId()
 	}
 	t.Next();
 	return perk;
+}
+
+//=================================================================================================
+void PerkLoader::ParseAlias(const string& id)
+{
+	Perk* perk = Perk::Get(id);
+	if(!perk)
+		t.Throw("Missing perk '%s'.", id.c_str());
+	t.Next();
+
+	const string& aliasId = t.MustGetItemKeyword();
+	int hash = Hash(aliasId);
+	if(Perk::Get(hash))
+		t.Throw("Alias or perk already exists.");
+
+	Perk::hashPerks[hash] = perk;
 }
 
 //=================================================================================================
