@@ -72,10 +72,10 @@ void QuestManager::Init()
 	infos.push_back(QuestInfo(Q_ORCS, QuestCategory::Unique, "orcs"));
 	infos.push_back(QuestInfo(Q_ORCS2, QuestCategory::Unique, "orcs2"));
 	infos.push_back(QuestInfo(Q_EVIL, QuestCategory::Unique, "evil"));
-	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
-	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
-	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
-	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
+	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliverParcel"));
+	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spreadNews"));
+	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescueCaptive"));
+	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrievePackage"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
 

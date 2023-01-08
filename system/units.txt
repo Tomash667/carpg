@@ -1942,6 +1942,16 @@ unit q_gobliny_ochroniarz : base_human {
 
 unit tut_goblin : goblin {
 	flags | {aiStay aiGuard ~aiTrain}
+	items {
+		if chance 5 {
+			frying_pan
+		}
+		else {
+			random {!long_blade !axe !blunt !short_blade}
+		}
+		chance 25 al_goblin
+		random 0 2 !orc_food
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -3411,7 +3421,7 @@ unit xwokloiz : base_human {
 		2 p_hp
 	}
 	gold {10 50}
-	dialog "alchemist_apprentice/xwokloiz"
+	dialog "alchemistApprentice/xwokloiz"
 }
 
 unit q_main_academy : trainer {
@@ -3434,12 +3444,12 @@ unit q_main_ill_villager : villager {
 }
 
 unit q_main_villager_def : villager {
-	dialog "main_village3/villager"
+	dialog "mainVillage3/villager"
 	flags {human aiStay}
 }
 
 unit q_main_oldman : villager {
-	dialog "main_village4/oldman"
+	dialog "mainVillage4/oldman"
 	flags {human aiStay hero peaceful specificName}
 	items {
 		dagger_short

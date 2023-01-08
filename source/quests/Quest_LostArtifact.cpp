@@ -15,7 +15,7 @@ Quest::LoadResult Quest_LostArtifact::Load(GameReader& f)
 //=================================================================================================
 void Quest_LostArtifact::GetConversionData(ConversionData& data)
 {
-	data.id = "lost_artifact";
+	data.id = "lostArtifact";
 	data.Add("item", item);
 	data.Add("startLoc", startLoc);
 	data.Add("targetLoc", targetLoc);

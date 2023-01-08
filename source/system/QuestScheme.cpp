@@ -6,6 +6,7 @@
 #include <angelscript.h>
 
 vector<QuestScheme*> QuestScheme::schemes;
+std::map<string, QuestScheme*> QuestScheme::ids;
 
 //=================================================================================================
 QuestScheme::~QuestScheme()
@@ -16,11 +17,9 @@ QuestScheme::~QuestScheme()
 //=================================================================================================
 QuestScheme* QuestScheme::TryGet(const string& id)
 {
-	for(QuestScheme* scheme : schemes)
-	{
-		if(scheme->id == id)
-			return scheme;
-	}
+	auto it = ids.find(id);
+	if(it != ids.end())
+		return it->second;
 	return nullptr;
 }
 

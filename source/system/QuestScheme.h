@@ -32,5 +32,6 @@ struct QuestScheme
 	int GetPropertyId(uint nameHash);
 
 	static vector<QuestScheme*> schemes;
+	static std::map<string, QuestScheme*> ids;
 	static QuestScheme* TryGet(const string& id);
 };

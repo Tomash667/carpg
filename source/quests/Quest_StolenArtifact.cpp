@@ -18,7 +18,7 @@ Quest::LoadResult Quest_StolenArtifact::Load(GameReader& f)
 //=================================================================================================
 void Quest_StolenArtifact::GetConversionData(ConversionData& data)
 {
-	data.id = "stolen_artifact";
+	data.id = "stolenArtifact";
 	data.Add("item", item);
 	data.Add("group", group);
 	data.Add("startLoc", startLoc);
