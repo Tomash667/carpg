@@ -1,6 +1,5 @@
 #include <CarpgLibCore.h>
 #include "Pak.h"
-#include <zlib.h>
 
 bool Pak::Open(Cstring filename)
 {
@@ -38,41 +37,37 @@ bool Pak::HaveFile(Cstring filename)
 {
 	for(uint i = 0; i < file_count; ++i)
 	{
-		if(strcmp(file_table[i].filename, "updater.exe") == 0)
+		if(strcmp(file_table[i].filename, filename) == 0)
 			return true;
 	}
 	return false;
 }
 
-void Pak::Extract()
+bool Pak::Extract()
 {
+	bool ok = true;
 	string dir;
-	Buffer* buf = Buffer::Get();
-	Buffer* decompressed = Buffer::Get();
 	for(uint i = 0; i < file_count; ++i)
 	{
 		// read
 		Pak::File& f = file_table[i];
-		buf->Resize(f.compressed_size);
 		file.SetPos(f.offset);
-		file.Read(buf->Data(), f.compressed_size);
+		Buffer* buf = file.ReadToBuffer(f.compressed_size);
 
 		// decompress
-		Buffer* result;
-		if(f.compressed_size == f.size)
-			result = buf;
-		else
-		{
-			uint real_size = f.size;
-			decompressed->Resize(real_size);
-			uncompress((Bytef*)decompressed->Data(), (uLongf*)&real_size, (const Bytef*)buf->Data(), f.compressed_size);
-			result = decompressed;
-		}
+		if(f.compressed_size != f.size)
+			buf = buf->Decompress(f.size);
 
 		// save
 		dir = io::PathToDirectory(f.filename);
 		if(!dir.empty())
 			io::CreateDirectories(dir);
-		FileWriter::WriteAll(f.filename, result);
+		if(!FileWriter::WriteAll(f.filename, buf))
+		{
+			printf("ERROR: Failed to replace file '%s'.\n", f.filename);
+			ok = false;
+		}
+		buf->Free();
 	}
+	return ok;
 }

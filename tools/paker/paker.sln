@@ -10,10 +10,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paker", "paker.vcxproj", "{
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "..\..\carpglib\core.vcxproj", "{F4474539-550F-4B4C-B497-DDA017E53854}"
+	ProjectSection(ProjectDependencies) = postProject
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {76424983-1BE0-4E8D-9023-8AA316172A00}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blob", "Blob\Blob.csproj", "{59511DC6-AEEC-4851-8C1D-A25AB1B0467E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlobProxy", "BlobProxy\BlobProxy.vcxproj", "{99EA1979-F65A-4E05-9D8E-6BD045CF6B8C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LIbs", "LIbs", "{767A6FFD-9B39-4927-BA83-689E876A2F41}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\..\carpglib\external\zlib\contrib\vstudio\zlibstat.vcxproj", "{76424983-1BE0-4E8D-9023-8AA316172A00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,9 +70,21 @@ Global
 		{99EA1979-F65A-4E05-9D8E-6BD045CF6B8C}.Release|Win32.Build.0 = Release|Win32
 		{99EA1979-F65A-4E05-9D8E-6BD045CF6B8C}.Release|x64.ActiveCfg = Release|x64
 		{99EA1979-F65A-4E05-9D8E-6BD045CF6B8C}.Release|x64.Build.0 = Release|x64
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|Win32.ActiveCfg = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|Win32.Build.0 = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Debug|x64.ActiveCfg = Debug|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|Any CPU.ActiveCfg = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|Win32.ActiveCfg = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|Win32.Build.0 = Release|Win32
+		{76424983-1BE0-4E8D-9023-8AA316172A00}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F4474539-550F-4B4C-B497-DDA017E53854} = {767A6FFD-9B39-4927-BA83-689E876A2F41}
+		{76424983-1BE0-4E8D-9023-8AA316172A00} = {767A6FFD-9B39-4927-BA83-689E876A2F41}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E7E034DB-DB1A-49D1-8538-6A002069C477}

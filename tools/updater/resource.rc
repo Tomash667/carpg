@@ -1,0 +1,28 @@
+#include <windows.h>
+
+//------------------------------------
+// Ikona
+Icon ICON "updater.ico"
+
+//------------------------------------
+// Informacje o wersji
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION		0,2,0,0
+PRODUCTVERSION 	0,2,0,0
+FILEFLAGSMASK  	VS_FFI_FILEFLAGSMASK
+FILEFLAGS      	0
+FILEOS         	VOS_NT_WINDOWS32
+FILETYPE       	VFT_APP
+FILESUBTYPE    	VFT2_UNKNOWN
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "FileVersion", "0.2"
+			VALUE "ProductVersion", "0.2"
+			VALUE "FileDescription", "CaRpg auto-updater"
+			VALUE "ProductName", "CaRpg auto-updater"
+		END
+	END
+END
