@@ -9,6 +9,7 @@
 #include "LevelPart.h"
 #include "LocationPart.h"
 #include "Net.h"
+#include "ParticleEffect.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>
@@ -136,21 +137,12 @@ bool Electro::Update(float dt)
 			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
+				gameRes->peElectroHit->Apply(pe);
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawn = Int2(8, 12);
-				pe->maxParticles = 12;
 				pe->pos = targetPos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
 				pe->size = Vec2(ability->sizeParticle, 0.f);
-				pe->alpha = Vec2(1.f, 0.f);
-				pe->mode = 1;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
 			}
@@ -202,21 +194,12 @@ bool Electro::Update(float dt)
 			if(ability->texParticle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
+				gameRes->peElectroHit->Apply(pe);
 				pe->tex = ability->texParticle;
-				pe->emissionInterval = 0.f;
-				pe->life = 0.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawn = Int2(8, 12);
-				pe->maxParticles = 12;
 				pe->pos = targetPos;
-				pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-				pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 				pe->posMax = Vec3(ability->size, ability->size, ability->size);
 				pe->size = Vec2(ability->sizeParticle, 0.f);
-				pe->alpha = Vec2(1.f, 0.f);
-				pe->mode = 1;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
 			}

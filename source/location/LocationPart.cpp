@@ -15,6 +15,7 @@
 #include "Level.h"
 #include "LevelPart.h"
 #include "Net.h"
+#include "ParticleEffect.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "Room.h"
@@ -834,21 +835,12 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		if(ability.texParticle && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
+			gameRes->peSpellBall->Apply(pe);
 			pe->tex = ability.texParticle;
-			pe->emissionInterval = 0.f;
-			pe->life = 0.f;
-			pe->particleLife = 0.5f;
-			pe->emissions = 1;
-			pe->spawn = Int2(8, 12);
-			pe->maxParticles = 12;
 			pe->pos = pos;
-			pe->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-			pe->speedMax = Vec3(1.5f, 1.5f, 1.5f);
 			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 			pe->posMax = Vec3(ability.size, ability.size, ability.size);
 			pe->size = Vec2(ability.size / 2, 0.f);
-			pe->alpha = Vec2(1.f, 0.f);
-			pe->mode = 1;
 			pe->Init();
 			lvlPart->pes.push_back(pe);
 		}
@@ -955,21 +947,8 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tSpark;
-				pe->emissionInterval = 0.f;
-				pe->life = 5.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawn = Int2(10, 15);
-				pe->maxParticles = 15;
+				gameRes->peHit->Apply(pe);
 				pe->pos = hitpoint;
-				pe->speedMin = Vec3(-1, 0, -1);
-				pe->speedMax = Vec3(1, 1, 1);
-				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = Vec2(0.3f, 0.f);
-				pe->alpha = Vec2(0.9f, 0.f);
-				pe->mode = 0;
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 
@@ -1010,21 +989,8 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 				hitted = nullptr;
 
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = gameRes->tSpark;
-				pe->emissionInterval = 0.f;
-				pe->life = 5.f;
-				pe->particleLife = 0.5f;
-				pe->emissions = 1;
-				pe->spawn = Int2(10, 15);
-				pe->maxParticles = 15;
+				gameRes->peHit->Apply(pe);
 				pe->pos = hitpoint;
-				pe->speedMin = Vec3(-1, 0, -1);
-				pe->speedMax = Vec3(1, 1, 1);
-				pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-				pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = Vec2(0.3f, 0.f);
-				pe->alpha = Vec2(0.9f, 0.f);
-				pe->mode = 0;
 				pe->Init();
 				lvlPart->pes.push_back(pe);
 

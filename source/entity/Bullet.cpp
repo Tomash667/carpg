@@ -12,6 +12,7 @@
 #include "LocationPart.h"
 #include "Net.h"
 #include "Object.h"
+#include "ParticleEffect.h"
 #include "PhysicCallbacks.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
@@ -357,21 +358,8 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			soundMgr->PlaySound3d(gameRes->GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 
 			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = gameRes->tSpark;
-			pe->emissionInterval = 0.f;
-			pe->life = 5.f;
-			pe->particleLife = 0.5f;
-			pe->emissions = 1;
-			pe->spawn = Int2(10, 15);
-			pe->maxParticles = 15;
+			gameRes->peHit->Apply(pe);
 			pe->pos = hitpoint;
-			pe->speedMin = Vec3(-1, 0, -1);
-			pe->speedMax = Vec3(1, 1, 1);
-			pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-			pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-			pe->size = Vec2(0.3f, 0.f);
-			pe->alpha = Vec2(0.9f, 0.f);
-			pe->mode = 0;
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 
@@ -575,21 +563,12 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		if(ability->texParticle)
 		{
 			pe = new ParticleEmitter;
+			gameRes->peSpellHit->Apply(pe);
 			pe->tex = ability->texParticle;
-			pe->emissionInterval = 0.1f;
-			pe->life = -1;
-			pe->particleLife = 0.5f;
-			pe->emissions = -1;
-			pe->spawn = Int2(3, 4);
-			pe->maxParticles = 50;
 			pe->pos = pos;
-			pe->speedMin = Vec3(-1, -1, -1);
-			pe->speedMax = Vec3(1, 1, 1);
 			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
 			pe->posMax = Vec3(ability->size, ability->size, ability->size);
 			pe->size = Vec2(ability->sizeParticle, 0.f);
-			pe->alpha = Vec2(1.f, 0.f);
-			pe->mode = 1;
 			pe->Init();
 			lvlPart.pes.push_back(pe);
 		}

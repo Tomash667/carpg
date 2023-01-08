@@ -24,6 +24,7 @@
 #include "LevelGui.h"
 #include "LevelPart.h"
 #include "OffscreenLocation.h"
+#include "ParticleEffect.h"
 #include "PlayerInfo.h"
 #include "PhysicCallbacks.h"
 #include "Portal.h"
@@ -6641,21 +6642,12 @@ void Unit::CastSpell()
 				if(ability.texParticle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
+					gameRes->peSpellBall->Apply(pe);
 					pe->tex = ability.texParticle;
-					pe->emissionInterval = 0.1f;
-					pe->life = -1;
-					pe->particleLife = 0.5f;
-					pe->emissions = -1;
-					pe->spawn = Int2(3, 4);
-					pe->maxParticles = 50;
 					pe->pos = bullet->pos;
-					pe->speedMin = Vec3(-1, -1, -1);
-					pe->speedMax = Vec3(1, 1, 1);
 					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
 					pe->posMax = Vec3(ability.size, ability.size, ability.size);
 					pe->size = Vec2(ability.sizeParticle, 0.f);
-					pe->alpha = Vec2(1.f, 0.f);
-					pe->mode = 1;
 					pe->Init();
 					locPart->lvlPart->pes.push_back(pe);
 					bullet->pe = pe;
@@ -8607,13 +8599,8 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 	if(!IsSet(dmgFlags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
+		gameRes->peBlood->Apply(pe);
 		pe->tex = gameRes->tBlood[data->blood];
-		pe->emissionInterval = 0.f;
-		pe->life = 5.f;
-		pe->particleLife = 0.5f;
-		pe->emissions = 1;
-		pe->spawn = Int2(10, 15);
-		pe->maxParticles = 15;
 		if(hitpoint)
 			pe->pos = *hitpoint;
 		else
@@ -8621,13 +8608,6 @@ void Unit::GiveDmg(float dmg, Unit* giver, const Vec3* hitpoint, int dmgFlags)
 			pe->pos = pos;
 			pe->pos.y += GetHeight() * 2.f / 3;
 		}
-		pe->speedMin = Vec3(-1, 0, -1);
-		pe->speedMax = Vec3(1, 1, 1);
-		pe->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-		pe->posMax = Vec3(0.1f, 0.1f, 0.1f);
-		pe->size = Vec2(0.3f, 0.f);
-		pe->alpha = Vec2(0.9f, 0.f);
-		pe->mode = 0;
 		pe->Init();
 		locPart->lvlPart->pes.push_back(pe);
 
