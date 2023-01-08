@@ -38,6 +38,13 @@ void BookPanel::Draw()
 	Rect r = Rect::Create(bookPos, bookSize);
 	gui->DrawSpriteRect(book->scheme->tex, r);
 
+	// regions
+	if(IsDebug() && input->Down(Key::B))
+	{
+		for(Rect& rect : book->scheme->regions)
+			gui->DrawRect(Color::Red, rect * scale + bookPos);
+	}
+
 	// prev page
 	if(currentPage != 0)
 	{
@@ -66,14 +73,6 @@ void BookPanel::Draw()
 		options.linesStart = split.linesStart;
 		options.linesEnd = split.linesEnd;
 		gui->DrawText2(options);
-	}
-
-	if(IsDebug() && input->Down(Key::B))
-	{
-		for(auto& rect : book->scheme->regions)
-		{
-			gui->DrawArea(Color(255, 0, 0, 128), rect * scale + bookPos);
-		}
 	}
 }
 

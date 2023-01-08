@@ -100,7 +100,7 @@ void Door::Update(float dt, LocationPart& locPart)
 
 				for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 				{
-					if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), pos.x, pos.z, WIDTH, THICKNESS, rot))
+					if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetRadius(), pos.x, pos.z, WIDTH, THICKNESS, rot))
 					{
 						blocking = true;
 						break;
@@ -262,8 +262,7 @@ void Door::Open()
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_DOOR;
+		NetChange& c = Net::PushChange(NetChange::USE_DOOR);
 		c.id = id;
 		c.count = 0;
 	}
@@ -296,8 +295,7 @@ void Door::Close()
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_DOOR;
+		NetChange& c = Net::PushChange(NetChange::USE_DOOR);
 		c.id = id;
 		c.count = 1;
 	}
@@ -366,8 +364,7 @@ void Door::SetState(bool closing)
 	if(Net::IsServer())
 	{
 		// send to other players
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_DOOR;
+		NetChange& c = Net::PushChange(NetChange::USE_DOOR);
 		c.id = id;
 		c.count = (closing ? 1 : 0);
 	}

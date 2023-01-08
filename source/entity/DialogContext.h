@@ -37,7 +37,8 @@ struct DialogContext
 		WAIT_CHOICES,
 		WAIT_TALK,
 		WAIT_TIMER,
-		WAIT_MP_RESPONSE
+		WAIT_MP_RESPONSE,
+		WAIT_DIALOG
 	};
 
 	struct Entry
@@ -83,6 +84,7 @@ struct DialogContext
 		mode = WAIT_TIMER;
 		timer = _timer;
 	}
+	void OnPickRestDays(int days);
 
 private:
 	void UpdateLoop();

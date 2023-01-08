@@ -2396,10 +2396,8 @@ void CityGenerator::OnEnter()
 	CreateMinimap();
 
 	// add player team
-	Vec3 spawnPos;
-	float spawnDir;
-	city->GetEntry(spawnPos, spawnDir);
-	gameLevel->AddPlayerTeam(spawnPos, spawnDir);
+	city->GetEntry(teamPos, teamDir);
+	gameLevel->AddPlayerTeam(teamPos, teamDir);
 
 	questMgr->GenerateQuestUnits(true);
 
@@ -2701,7 +2699,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		if(Rand() % 2 == 0 || !trainingGrounds)
 		{
 			// inside inn
-			gameLevel->SpawnUnitInsideInn(ud, level.Random(), inn, true);
+			gameLevel->SpawnUnitInsideInn(ud, level.Random(), inn, Level::SU_TEMPORARY);
 		}
 		else
 		{

@@ -493,8 +493,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 								u.ai->changeAiMode = true;
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CHANGE_UNIT_BASE;
+									NetChange& c = Net::PushChange(NetChange::CHANGE_UNIT_BASE);
 									c.unit = &u;
 								}
 								break;

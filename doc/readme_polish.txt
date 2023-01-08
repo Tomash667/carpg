@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: https://carpg.pl
-Wersja: 0.19
-Data: 2022-12-09
+Wersja: 0.20
+Data: 2023-01-07
 
 ===================================================================================================
 1) Spis treści
@@ -313,6 +313,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* https://opengameart.org
 		* artisticdude - ogre sounds
 		* OwlishMedia - coughs
+		* Little Robot Sound Factory (www.littlerobotsoundfactory.com) - splash
 	* https://www.freesound.org/
 		* DrMinky - Slime Death, Slime Land
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large

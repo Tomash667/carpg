@@ -263,7 +263,7 @@ ability bearTrap {
 	learningPoints 3
 }
 
-// pre V_DEV names
+// pre V_0_20 names
 alias magicBolt magic_bolt
 alias xmagicBolt xmagic_bolt
 alias spitPoison spit_poison

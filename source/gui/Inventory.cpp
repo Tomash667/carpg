@@ -731,8 +731,12 @@ void InventoryPanel::Update(float dt)
 					{
 						// drop selected count
 						counter = 1;
+						GetNumberDialogParams params(counter, 1, slot->count);
+						params.parent = this;
+						params.event = DialogEvent(this, &InventoryPanel::OnDropItem);
+						params.text = base.txDropItemCount;
 						base.lock.Lock(iIndex, *slot);
-						base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
+						base.lockDialog = GetNumberDialog::Show(params);
 						lastIndex = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -844,8 +848,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnSellItem);
+							params.text = base.txSellItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -872,8 +880,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnBuyItem);
+							params.text = base.txBuyItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -900,8 +912,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnPutItem);
+							params.text = base.txPutItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -960,8 +976,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->count);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnLootItem);
+							params.text = base.txLootItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 1, slot->count, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -993,8 +1013,7 @@ void InventoryPanel::Update(float dt)
 					// message
 					if(Net::IsClient())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::GET_ITEM;
+						NetChange& c = Net::PushChange(NetChange::GET_ITEM);
 						c.id = iIndex;
 						c.count = 1;
 					}
@@ -1014,9 +1033,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->teamCount);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnShareGiveItem);
+							params.text = base.txShareGiveItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
-								base.txShareGiveItemCount, 1, slot->teamCount, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1053,9 +1075,12 @@ void InventoryPanel::Update(float dt)
 						else
 						{
 							counter = 1;
+							GetNumberDialogParams params(counter, 1, slot->teamCount);
+							params.parent = this;
+							params.event = DialogEvent(this, &InventoryPanel::OnShareTakeItem);
+							params.text = base.txShareTakeItemCount;
 							base.lock.Lock(iIndex, *slot);
-							base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
-								1, slot->teamCount, &counter);
+							base.lockDialog = GetNumberDialog::Show(params);
 							lastIndex = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1125,8 +1150,7 @@ void InventoryPanel::Update(float dt)
 						{
 							base.lock.Lock(iIndex, *slot, true);
 							base.lockDialog = nullptr;
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::IS_BETTER_ITEM;
+							NetChange& c = Net::PushChange(NetChange::IS_BETTER_ITEM);
 							c.id = iIndex;
 						}
 					}
@@ -1142,9 +1166,12 @@ void InventoryPanel::Update(float dt)
 							else
 							{
 								counter = 1;
+								GetNumberDialogParams params(counter, 1, slot->count);
+								params.parent = this;
+								params.event = DialogEvent(this, &InventoryPanel::OnGivePotion);
+								params.text = base.txGivePotionCount;
 								base.lock.Lock(iIndex, *slot);
-								base.lockDialog = GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount,
-									1, slot->count, &counter);
+								base.lockDialog = GetNumberDialog::Show(params);
 								lastIndex = INDEX_INVALID;
 								if(mode == INVENTORY)
 									base.tooltip.Clear();
@@ -1198,8 +1225,7 @@ void InventoryPanel::Update(float dt)
 					{
 						base.lock.Lock(slotType, true);
 						base.lockDialog = nullptr;
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::IS_BETTER_ITEM;
+						NetChange& c = Net::PushChange(NetChange::IS_BETTER_ITEM);
 						c.id = iIndex;
 					}
 				}
@@ -1216,12 +1242,24 @@ void InventoryPanel::Update(float dt)
 			if(mode == INVENTORY)
 				base.tooltip.Clear();
 			counter = 1;
+			GetNumberDialogParams params(counter, 1, unit->gold);
+			params.parent = this;
 			if(mode == INVENTORY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnDropGold);
+				params.text = base.txDropGoldCount;
+			}
 			else if(mode == LOOT_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutGold), base.txPutGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnPutGold);
+				params.text = base.txPutGoldCount;
+			}
 			else if(mode == GIVE_MY || mode == SHARE_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 1, unit->gold, &counter);
+			{
+				params.event = DialogEvent(this, &InventoryPanel::OnGiveGold);
+				params.text = base.txGiveGoldCount;
+			}
+			GetNumberDialog::Show(params);
 		}
 	}
 }
@@ -1351,10 +1389,7 @@ void InventoryPanel::Event(GuiEvent e)
 		game->pc->chestTrade->clear();
 
 		if(Net::IsClient())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GET_ALL_ITEMS;
-		}
+			Net::PushChange(NetChange::GET_ALL_ITEMS);
 
 		// pick item sound
 		for(int i = 0; i < 3; ++i)
@@ -1384,8 +1419,7 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.id = SlotToIIndex(slot);
 	}
 }
@@ -1432,8 +1466,7 @@ void InventoryPanel::EquipSlotItem(int index)
 	// send message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_EQUIPMENT);
 		c.id = index;
 	}
 }
@@ -1618,8 +1651,7 @@ void InventoryPanel::OnTakeItem(int id)
 		team->CheckCredit(true);
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TAKE_ITEM_CREDIT;
+		NetChange& c = Net::PushChange(NetChange::TAKE_ITEM_CREDIT);
 		c.id = index;
 	}
 }
@@ -1701,8 +1733,7 @@ void InventoryPanel::BuyItem(int index, uint count)
 		// message
 		if(Net::IsClient())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GET_ITEM;
+			NetChange& c = Net::PushChange(NetChange::GET_ITEM);
 			c.id = index;
 			c.count = count;
 		}
@@ -1751,8 +1782,7 @@ void InventoryPanel::SellItem(int index, uint count)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -1780,8 +1810,7 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
@@ -1806,8 +1835,7 @@ void InventoryPanel::OnPutGold(int id)
 		soundMgr->PlaySound2d(gameRes->sCoins);
 		if(Net::IsClient())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PUT_GOLD;
+			NetChange& c = Net::PushChange(NetChange::PUT_GOLD);
 			c.count = counter;
 		}
 	}
@@ -1841,8 +1869,7 @@ void InventoryPanel::LootItem(int index, uint count)
 			unit->usedItem = nullptr;
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::REMOVE_USED_ITEM;
+				NetChange& c = Net::PushChange(NetChange::REMOVE_USED_ITEM);
 				c.unit = unit;
 			}
 		}
@@ -1852,8 +1879,7 @@ void InventoryPanel::LootItem(int index, uint count)
 			unit->mark = false;
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::MARK_UNIT;
+				NetChange& c = Net::PushChange(NetChange::MARK_UNIT);
 				c.unit = unit;
 				c.id = 0;
 			}
@@ -1883,8 +1909,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::GET_ITEM;
+		NetChange& c = Net::PushChange(NetChange::GET_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -1944,8 +1969,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	// send change
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -1978,8 +2002,7 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 	// send change
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = SlotToIIndex(slot);
 		c.count = 1;
 	}
@@ -2004,8 +2027,7 @@ void InventoryPanel::OnGiveGold(int id)
 			u->gold += counter;
 			if(u->IsPlayer() && u->player != game->pc)
 			{
-				NetChangePlayer& c = Add1(u->player->playerInfo->changes);
-				c.type = NetChangePlayer::GOLD_RECEIVED;
+				NetChangePlayer& c = u->player->playerInfo->PushChange(NetChangePlayer::GOLD_RECEIVED);
 				c.id = game->pc->id;
 				c.count = counter;
 				u->player->playerInfo->UpdateGold();
@@ -2013,8 +2035,7 @@ void InventoryPanel::OnGiveGold(int id)
 		}
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::GIVE_GOLD;
+			NetChange& c = Net::PushChange(NetChange::GIVE_GOLD);
 			c.id = u->id;
 			c.count = counter;
 		}
@@ -2081,8 +2102,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -2126,8 +2146,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::GET_ITEM;
+		NetChange& c = Net::PushChange(NetChange::GET_ITEM);
 		c.id = index;
 		c.count = count;
 	}
@@ -2200,8 +2219,7 @@ void InventoryPanel::OnGiveItem(int id)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = iindex;
 		c.count = 1;
 	}
@@ -2258,8 +2276,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	// message
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PUT_ITEM;
+		NetChange& c = Net::PushChange(NetChange::PUT_ITEM);
 		c.id = index;
 		c.count = count;
 	}

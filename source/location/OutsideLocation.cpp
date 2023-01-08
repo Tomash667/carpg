@@ -69,10 +69,7 @@ void OutsideLocation::Load(GameReader& f)
 
 	if(lastVisit != -1)
 	{
-		if(LOAD_VERSION >= V_0_11)
-			LocationPart::Load(f);
-		else
-			LocationPart::Load(f, old::LoadCompatibility::OutsideLocation);
+		LocationPart::Load(f);
 
 		// terrain
 		int size2 = size + 1;

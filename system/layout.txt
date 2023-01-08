@@ -192,6 +192,11 @@ control "ListBox" {
 		image "selection.png"
 		color {255 255 255 170}
 	}
+	hover {
+		mode IMAGE
+		image "selection.png"
+		color {255 255 255 85}
+	}
 	downArrow "dialog_down.png"
 	font "normal"
 	padding 2

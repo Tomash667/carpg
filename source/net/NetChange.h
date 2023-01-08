@@ -205,6 +205,7 @@ struct NetChange
 		SET_CAN_ENTER, // change inside building canEnter [int(id), bool(count)-canEnter]
 		HIT_OBJECT, // hit object effect [int(id)-usable id or -1 for normal objects, Vec3(pos)]
 		DESTROY_USABLE, // destroy usable [int(id)-usable id]
+		PICK_REST, // response to pick rest days dialog [int(id)-days]
 
 		MAX
 	} type;

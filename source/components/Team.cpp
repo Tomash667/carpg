@@ -91,8 +91,7 @@ void Team::AddMember(Unit* unit, HeroType type)
 	// send info to other players
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RECRUIT_NPC;
+		NetChange& c = Net::PushChange(NetChange::RECRUIT_NPC);
 		c.unit = unit;
 	}
 
@@ -134,8 +133,7 @@ void Team::RemoveMember(Unit* unit)
 	// send info to other players
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::KICK_NPC;
+		NetChange& c = Net::PushChange(NetChange::KICK_NPC);
 		c.id = unit->id;
 	}
 
@@ -349,21 +347,10 @@ bool Team::HaveOtherPlayer()
 bool Team::HaveClass(Class* clas) const
 {
 	assert(clas);
-	if(net->IsServer())
+	for(const Unit& unit : activeMembers)
 	{
-		for(PlayerInfo& info : net->players)
-		{
-			if(info.left != PlayerInfo::LEFT_NO && info.cc.clas == clas)
-				return true;
-		}
-	}
-	else
-	{
-		for(const Unit& unit : members)
-		{
-			if(unit.GetClass() == clas)
-				return true;
-		}
+		if(unit.GetClass() == clas)
+			return true;
 	}
 	return false;
 }
@@ -489,11 +476,6 @@ void Team::Load(GameReader& f)
 
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
-
-	// apply leader requests
-	for(Entity<Unit>* unit : leaderRequests)
-		*unit = leader;
-	leaderRequests.clear();
 }
 
 void Team::Update(int days, UpdateMode mode)
@@ -838,8 +820,7 @@ void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 			if(!ctx.isLocal && tsi.from == ctx.pc->unit)
 			{
-				NetChangePlayer& c = Add1(tsi.from->player->playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS;
+				NetChangePlayer& c = tsi.from->player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS);
 				c.id = tsi.index;
 				c.count = 1;
 			}
@@ -870,8 +851,7 @@ void Team::TeamShareSellItem(DialogContext& ctx)
 		tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 		if(!ctx.isLocal)
 		{
-			NetChangePlayer& c = Add1(tsi.from->player->playerInfo->changes);
-			c.type = NetChangePlayer::REMOVE_ITEMS;
+			NetChangePlayer& c = tsi.from->player->playerInfo->PushChange(NetChangePlayer::REMOVE_ITEMS);
 			c.id = tsi.index;
 			c.count = 1;
 			tsi.from->player->playerInfo->UpdateGold();
@@ -1391,8 +1371,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 			Unit* trader = FindPlayerTradingWithUnit(u);
 			if(trader != game->pc->unit)
 			{
-				NetChangePlayer& c = Add1(trader->player->playerInfo->changes);
-				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
+				NetChangePlayer& c = trader->player->playerInfo->PushChange(NetChangePlayer::UPDATE_TRADER_GOLD);
 				c.id = u.id;
 				c.count = u.gold;
 			}
@@ -1484,8 +1463,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool isQuest)
 			Unit* trader = FindPlayerTradingWithUnit(unit);
 			if(trader != game->pc->unit)
 			{
-				NetChangePlayer& c = Add1(trader->player->playerInfo->changes);
-				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
+				NetChangePlayer& c = trader->player->playerInfo->PushChange(NetChangePlayer::UPDATE_TRADER_GOLD);
 				c.id = unit.id;
 				c.count = unit.gold;
 			}
@@ -1763,8 +1741,7 @@ void Team::UpdateInvestment(int questId, int gold)
 			investment.gold = gold;
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_INVESTMENT;
+				NetChange& c = Net::PushChange(NetChange::UPDATE_INVESTMENT);
 				c.id = questId;
 				c.count = gold;
 			}

@@ -125,7 +125,28 @@ void Location::Load(GameReader& f)
 	}
 	f >> pos;
 	f >> name;
-	f >> state;
+	if(LOAD_VERSION >= V_0_20)
+		f >> state;
+	else
+	{
+		old::LOCATION_STATE oldState;
+		f >> oldState;
+		switch(oldState)
+		{
+		case old::LS_VISITED:
+			state = LS_KNOWN;
+			break;
+		case old::LS_ENTERED:
+			state = LS_VISITED;
+			break;
+		case old::LS_CLEARED:
+			state = LS_CLEARED;
+			break;
+		default:
+			state = (LOCATION_STATE)oldState;
+			break;
+		}
+	}
 	if(LOAD_VERSION >= V_0_12)
 		f >> target;
 	int questId = f.Read<int>();
@@ -311,8 +332,7 @@ void Location::SetKnown()
 		state = LS_KNOWN;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_STATE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_STATE);
 			c.id = index;
 		}
 	}
@@ -388,8 +408,7 @@ void Location::SetImage(LOCATION_IMAGE image)
 		this->image = image;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_IMAGE;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_IMAGE);
 			c.id = index;
 		}
 	}
@@ -403,8 +422,7 @@ void Location::SetName(cstring name)
 		this->name = name;
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_LOCATION_NAME;
+			NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 			c.id = index;
 		}
 	}
@@ -419,8 +437,7 @@ void Location::SetNamePrefix(cstring prefix)
 	name = Format("%s %s", prefix, strs[1].c_str());
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LOCATION_NAME;
+		NetChange& c = Net::PushChange(NetChange::CHANGE_LOCATION_NAME);
 		c.id = index;
 	}
 }

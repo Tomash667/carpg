@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: https://carpg.pl/en
-Version: 0.19
-Date: 2022-12-09
+Version: 0.20
+Date: 2023-01-07
 
 ===================================================================================================
 1) Table of contents
@@ -220,7 +220,7 @@ To open console press ~ [to the left from 1]. Some commands are only available i
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
 	playerDevmode - get/set player developer mode in multiplayer (playerDevmode nick/all [0/1]).
-	qs - pick random character, get ready and start game.
+	quickstart - pick random character, get ready and start game.
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [name], use ? to get list).
 	refreshCooldown - refresh action cooldown/charges.
@@ -387,6 +387,7 @@ BottledByte - Bug reports and coding.
 		* InspectorJ (www.jshaw.co.uk) - Boiling Water, Large
 		* newagesoup - wolf growl
 		* wubitog - Slime attack or movement
+		* Little Robot Sound Factory (www.littlerobotsoundfactory.com) - splash
 	* https://www.pacdv.com/sounds/
 	* https://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/

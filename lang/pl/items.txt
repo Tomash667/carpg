@@ -57,7 +57,7 @@ item sword_serrated {
 }
 item sword_mercenary {
 	name "Miecz najemnika"
-	desc "Wykonane na zlecenie dla elitarnego oddzia³u najemników. Miecze te przetrwa³y du¿ej ni¿ pamieæ o ich nazwie..."
+	desc "Wykonane na zlecenie dla elitarnego oddzia³u najemników. Miecze te przetrwa³y d³u¿ej ni¿ pamieæ o ich nazwie..."
 }
 item sword_adamantine {
 	name "Adamantowy miecz"
@@ -100,7 +100,7 @@ item axe_dwarf {
 }
 item axe_giant {
 	name "Topór giganta"
-	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
+	desc "Magiczny topór. Zwiêksza si³ê u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
 }
 item axe_ripper {
 	name "Rozpruwacz"
@@ -219,7 +219,7 @@ item q_gobliny_luk {
 // SHIELD
 item shield_plank {
 	name "Tarcza z desek"
-	desc "Prowizoryczna tarcza zrobiona z kawa³ków p³otu. Tanszej nie znajdziesz."
+	desc "Prowizoryczna tarcza zrobiona z kawa³ków p³otu. Tañszej nie znajdziesz."
 }
 item shield_wood {
 	name "Drewniana tarcza"
@@ -261,15 +261,15 @@ item shield_death {
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
 item al_padded {
-	name "Przeszywnica"
+	name "Przeszywanica"
 	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
 }
 item al_padded_hq {
-	name "Przeszywnica wysokiej jakoœci"
+	name "Przeszywanica wysokiej jakoœci"
 	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_padded_m {
-	name "Magiczna przeszywnica"
+	name "Magiczna przeszywanica"
 	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
 }
 item al_leather {
@@ -448,7 +448,7 @@ item ah_plate_adam {
 }
 item ah_black_armor {
 	name "Czarna zbroja"
-	desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
+	desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a..."
 	//desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
 }
 item ah_crystal {
@@ -619,7 +619,7 @@ item r_dex {
 	desc "+5 do zrêcznoœci."
 }
 item r_int {
-	name "Pierœcien inteligencji"
+	name "Pierœcieñ inteligencji"
 	desc "+5 do inteligencji."
 }
 item r_wis {
@@ -671,7 +671,7 @@ item r_axe {
 	desc "+10 do umiejêtnoœci topór."
 }
 item r_blunt {
-	name "Pierœcieñ bronii obuchowej"
+	name "Pierœcieñ broni obuchowej"
 	desc "+10 do umiejêtnoœci broñ obuchowa."
 }
 item r_bow {
@@ -692,7 +692,7 @@ item r_medium_armor {
 }
 item r_heavy_armor {
 	name "Pierœcieñ ciê¿kiego pancerz"
-	desc "+10 do umiejêtnoœci ciêzki pancerz."
+	desc "+10 do umiejêtnoœci ciê¿ki pancerz."
 }
 item r_persuasion {
 	name "Pierœcieñ perswazji"
@@ -1110,12 +1110,12 @@ item q_yellow_herbs {
 item book_history {
 	name "Wspó³czesna historia œwiata"
 	desc "Ksi¹¿ka historyczna."
-	text "*** Wspó³czesna historia œwiata ***\n\nWspó³czesny kalendarz zosta³ stworzony przez I³geniusza Trzeciego w roku 103. Za pocz¹tek nowego kalendarza wzi¹³ rok za³o¿enia królestwa Nyrtany.\n\nRok dzieli siê na 12 miesiêcy, ka¿dy z nich ma 30 dni. Niekórzy dziel¹ miesi¹c na trzy dziesiêcio dniowe okresy - dekadni.\n\nZim¹ 607 roku zda¿y³a siê dziwna rzecz. Wiele potworów na terenie ca³ego królestwa sta³o siê bardzo agresywnych. Tradycyjna armia mia³a du¿e problemy z rozwi¹zaniem tego problemu. Powsta³o wiele grup œmia³ków które walczy³y z potworami.\n\nW roku 610 zosta³a za³o¿ona Akademia. Jej zadaniem jest szkolenie bohaterów, którzy s¹ wyszkolenie do walki z potworami tak by sytuacja siê nie powtórzy³a."
+	text "*** Wspó³czesna historia œwiata ***\n\nWspó³czesny kalendarz zosta³ stworzony przez I³geniusza Trzeciego w roku 103. Za pocz¹tek nowego kalendarza wzi¹³ rok za³o¿enia królestwa Nyrtany.\n\nRok dzieli siê na 12 miesiêcy, ka¿dy z nich ma 30 dni. Niektórzy dziel¹ miesi¹c na trzy dziesiêciodniowe okresy - dekadni.\n\nZim¹ 607 roku zdarzy³a siê dziwna rzecz. Wiele potworów na terenie ca³ego królestwa sta³o siê bardzo agresywnych. Tradycyjna armia mia³a du¿e problemy z rozwi¹zaniem tego problemu. Powsta³o wiele grup œmia³ków które walczy³y z potworami.\n\nW roku 610 zosta³a za³o¿ona Akademia. Jej zadaniem jest szkolenie bohaterów, którzy s¹ wyszkolenie do walki z potworami tak by sytuacja siê nie powtórzy³a."
 }
 item book_orcs {
 	name "Orkowa horda"
 	desc "Ksiêga o orkach."
-	text "*** Orkowa horda ***\n\nOrki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwyk³e humanoidalne bestie morduj¹ce wieœniaków i pal¹ce wioski. Przyszli oni z pó³nocnych gór gdy nadesz³a zima stulecia. Hordy orków wyla³y siê z gór niczym fala.\n\nOrkowie ¿yj¹ g³ównie pod ziemi¹ w jaskiniach, lub na zewn¹trz niedaleko w lasach. Rzadko rozbijaj¹ tymczasowe obozy pod go³ym niebem, boj¹ siê ¿e niebo zawali im siê na g³owy. Pos³uguj¹ siê prymitywnym jêzykiem który po zapisaniu wygl¹da jak bazgro³y. Rzadko zdarza siê ¿e ork nie jest pó³-g³ówkiem, wtedy zostaje szamanem. Niektórzy szamani znaj¹ jêzyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiê armiê orków jest strach przed swoim wodzem. Czêsto wybuchaj¹ miedzy nimi walki o to kto jest silniejszy."
+	text "*** Orkowa horda ***\n\nOrki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwyk³e humanoidalne bestie morduj¹ce wieœniaków i pal¹ce wioski. Przyszli oni z pó³nocnych gór gdy nadesz³a zima stulecia. Hordy orków wyla³y siê z gór niczym fala.\n\nOrkowie ¿yj¹ g³ównie pod ziemi¹ w jaskiniach, lub na zewn¹trz niedaleko w lasach. Rzadko rozbijaj¹ tymczasowe obozy pod go³ym niebem, boj¹ siê ¿e niebo zawali im siê na g³owy. Pos³uguj¹ siê prymitywnym jêzykiem który po zapisaniu wygl¹da jak bazgro³y. Rzadko zdarza siê ¿e ork nie jest pó³g³ówkiem, wtedy zostaje szamanem. Niektórzy szamani znaj¹ jêzyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiê armiê orków jest strach przed swoim wodzem. Czêsto wybuchaj¹ miedzy nimi walki o to kto jest silniejszy."
 }
 item book_undead {
 	name "Plaga nieumar³ych"
@@ -1160,7 +1160,7 @@ item book_q_cleric {
 item book_q_journal {
 	name "Dziennik so³tysa"
 	desc "Znaleziony w opuszczonej wiosce."
-	text "  Poniedzia³ek - znowu zagin¹³ gdzieœ Dominik, miejscowy pijaczek. Pewnie znowu le¿y zachlany w krzakach.\n\n  Wtorek - kolejny dzieñ nikt nie widzia³ Dominika. Dodatkowo zniknê³o dwóch goœci karczmy. No chyba ¿e wymknêli siê w œrodku nocy bez p³acenia.\n\n  Œroda - piêæ nowych osób zniknê³ bez œladu. Co tu siê dzieje? Rozkaza³em stra¿nikom pilnowaæ drogi do wioski dzieñ i noc.\n\n  Czwartek - gdy rano siê obudzi³em nie spotka³em nikogo w wiosce! Idê przeszukaæ okolicê, mam pewne podejrzenia. Zostawiam tu mój dziennik w razie gdybym nie wróci³. Obym siê myli³..."
+	text "  Poniedzia³ek - znowu zagin¹³ gdzieœ Dominik, miejscowy pijaczek. Pewnie znowu le¿y zachlany w krzakach.\n\n  Wtorek - kolejny dzieñ nikt nie widzia³ Dominika. Dodatkowo zniknê³o dwóch goœci karczmy. No chyba ¿e wymknêli siê w œrodku nocy bez p³acenia.\n\n  Œroda - piêæ nowych osób zniknê³o bez œladu. Co tu siê dzieje? Rozkaza³em stra¿nikom pilnowaæ drogi do wioski dzieñ i noc.\n\n  Czwartek - gdy rano siê obudzi³em nie spotka³em nikogo w wiosce! Idê przeszukaæ okolicê, mam pewne podejrzenia. Zostawiam tu mój dziennik w razie gdybym nie wróci³. Obym siê myli³..."
 }
 item crypt_note {
 	name "Stara notatka"

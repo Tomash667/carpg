@@ -356,8 +356,7 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 		AddGameMsg3(id);
 	else
 	{
-		NetChangePlayer& c = Add1(player->playerInfo->changes);
-		c.type = NetChangePlayer::GAME_MESSAGE;
+		NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::GAME_MESSAGE);
 		c.id = id;
 	}
 }
@@ -421,8 +420,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(player->playerInfo->changes);
-		c.type = NetChangePlayer::GAME_MESSAGE_FORMATTED;
+		NetChangePlayer& c = player->playerInfo->PushChange(NetChangePlayer::GAME_MESSAGE_FORMATTED);
 		c.id = id;
 		c.count = value;
 		c.a = subtype;

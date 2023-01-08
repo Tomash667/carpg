@@ -1,17 +1,37 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.20 (???):
+Wersja 0.21 (???):
+! nie można wczytywać już zapisów z wersji 0.10 lub starszej
++ aktualizacja bibliotek: AngelScript 2.35.1, DirectXMath 3.18
+
+--------------------------------------------------------------------------------
+Wersja 0.20 (2023-01-07):
 ! nie można wczytywać już zapisów z wersji 0.9 lub starszej
 + kontynuacja fabuły z 4 podzadaniami
-+ konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
 + zniszczalna barykada
++ można dokładnie wybrać ile dni chce się odpoczywać w karczmie
++ lepsze celowanie przez npc z czarów zza rogu
 + poprawki dla czaru ożywienia
-+ aktualizacja bibliotek: Bullet Physics 3.2.4, Curl 7.86,  DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
++ usprawnienia w panelu alchemi, mikstury utworzone z zasobów drużynowych są teraz drużynowe
++ konwersja zadań "zabij zwierzęta", "złowieszczy wilk" na skrypty
++ dodawanie wczytywanego zapisu do raportu z crasha
++ aktualizacja bibliotek: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
 - niezgodność nagrody w zadaniu "zabij zwierzęta" pomiędzy tekstem a otrzymanym złotem
 - dodawanie notatek na drugiej stronie nie działało
 - brak efektu uderzenia w cel treningowy u klienta
 - brak efektu uderzenia w cel treningowy przez npc
+- popsuty tekst newsa po wykonaniu zadania z bandytami pobierającymi opłatę
+- lepsze działanie wyszukiwarki lokalizacji
+- npc nie mógł rzucać leczenia na siebie w budynku
+- złe losowe pijane teksty npc w karczmie
+- niezgodność w działaniu mapy świata pomiędzy klientem a serwerem
+- zadanie "zabij zwierzęta" mogło wybrać lokalizację w której już byliśmy i nie było wtedy wrogów
+- nie można było ukończyć zadania "zioła dla alchemika" [Zielu]
+- gdy pytamy o okoliczne lokalizacje npc nie mówi że obóz łowców jest pusty [Zielu]
+- uszkodzony zapis gdy z gry wróciło się do menu i rozpoczęło nową grę
+- w multiplayer rozpoczynanie z łowcą w drużynie nie pokazywało gdzie jest obóz [Zielu]
+- brak animacji podczas walki gdy npc mówi że nie ma miksturek [Zielu]
 
 --------------------------------------------------------------------------------
 Wersja 0.19 (2022-12-09):

@@ -309,7 +309,7 @@ struct Unit : public EntityType<Unit>
 			radius *= ((humanData->height - 1) * 0.2f + 1.f);
 		return radius;
 	}
-	float GetUnitRadius() const
+	float GetRadius() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
 			return 0.3f * ((humanData->height - 1) * 0.2f + 1.f);
@@ -325,7 +325,7 @@ struct Unit : public EntityType<Unit>
 		else
 			return targetPos2;
 	}
-	float GetUnitHeight() const
+	float GetHeight() const
 	{
 		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * data->scale * ((humanData->height - 1) * 0.2f + 1.f);
@@ -335,28 +335,28 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetPhysicsPos() const
 	{
 		Vec3 p = pos;
-		p.y += max(MIN_H, GetUnitHeight()) * 0.5f + 0.1f;
+		p.y += max(MIN_H, GetHeight()) * 0.5f + 0.1f;
 		return p;
 	}
 	Vec3 GetHeadPoint() const
 	{
 		Vec3 pt = visualPos;
-		pt.y += GetUnitHeight() * 1.1f;
+		pt.y += GetHeight() * 1.1f;
 		return pt;
 	}
 	Vec3 GetHeadSoundPos() const
 	{
 		Vec3 pt = visualPos;
-		pt.y += GetUnitHeight() * 0.9f;
+		pt.y += GetHeight() * 0.9f;
 		return pt;
 	}
-	Vec3 GetUnitTextPos() const
+	Vec3 GetTextPos() const
 	{
 		Vec3 pt;
 		if(IsStanding())
 		{
 			pt = visualPos;
-			pt.y += GetUnitHeight();
+			pt.y += GetHeight();
 		}
 		else
 		{
@@ -462,7 +462,7 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetCenter() const
 	{
 		Vec3 pt = pos;
-		pt.y += GetUnitHeight() / 2;
+		pt.y += GetHeight() / 2;
 		return pt;
 	}
 	int FindHealingPotion() const;
@@ -566,7 +566,8 @@ public:
 	uint RemoveItemS(const string& itemId, uint count);
 	void RemoveEquippedItem(ITEM_SLOT slot);
 	void RemoveAllEquippedItems();
-	int CountItem(const Item* item);
+	uint GetItemCount(const Item* item);
+	uint GetItemTeamCount(const Item* item);
 	const string& GetNameS() const
 	{
 		if(IsPlayer())
@@ -899,6 +900,11 @@ public:
 	void AlertAllies(Unit* target);
 	void FireEvent(ScriptEvent& e);
 	bool HaveEventHandler(EventType eventType) const;
+	bool CanShootAtLocation(const void* ptr, const Vec3& pos, bool cast) const;
+	bool CanShootAtUnit(const Unit& target, const Vec3& pos, bool cast) const;
+private:
+	Vec3 GetCastPoint() const;
+	Vec3 GetShootPoint() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -933,6 +939,7 @@ struct NAMES
 	static cstring aniBase[];
 	static cstring aniHumanoid[];
 	static cstring aniAttacks[];
+	static cstring aniCast;
 	static uint nAniBase;
 	static uint nAniHumanoid;
 	static int maxAttacks;

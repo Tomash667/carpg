@@ -26,6 +26,7 @@ private:
 	void SetRecipes(bool rememberRecipe);
 	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void OnCraft(int id);
+	void DoCraft(PlayerController& player, Recipe* recipe, uint count);
 	void OnSelectionChange(int index);
 	uint HaveIngredients(Recipe* recipe);
 	void OnLearnRecipe();
@@ -36,7 +37,7 @@ private:
 	ListBox list;
 	Button button;
 	TooltipController tooltip;
-	TexturePtr tItemBar;
+	TexturePtr tItemBar, tUsed;
 	SoundPtr sAlchemy;
 	cstring txAlchemy, txCraftCount, txIngredients;
 };

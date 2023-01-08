@@ -246,7 +246,7 @@ void World::UpdateLocations()
 		{
 			loc->reset = true;
 			if(loc->state == LS_CLEARED)
-				loc->state = LS_ENTERED;
+				loc->state = LS_VISITED;
 			if(loc->type == L_DUNGEON)
 			{
 				InsideLocation* inside = static_cast<InsideLocation*>(loc);
@@ -477,8 +477,7 @@ int World::AddLocation(Location* loc)
 				loc->index = index;
 				if(Net::IsOnline() && !net->prepareWorld)
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_LOCATION;
+					NetChange& c = Net::PushChange(NetChange::ADD_LOCATION);
 					c.id = index;
 				}
 				return index;
@@ -491,8 +490,7 @@ int World::AddLocation(Location* loc)
 	{
 		if(Net::IsOnline() && !net->prepareWorld)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ADD_LOCATION;
+			NetChange& c = Net::PushChange(NetChange::ADD_LOCATION);
 			c.id = locations.size();
 		}
 		loc->index = locations.size();
@@ -864,6 +862,8 @@ void World::GenerateWorld()
 	SmoothTiles();
 
 	this->startLocation = locations[startLocation];
+	currentLocation = nullptr;
+	currentLocationIndex = -1;
 	tomirSpawned = false;
 }
 
@@ -873,7 +873,7 @@ void World::StartInLocation()
 	state = State::ON_MAP;
 	currentLocationIndex = startLocation->index;
 	currentLocation = startLocation;
-	currentLocation->state = LS_ENTERED;
+	currentLocation->state = LS_VISITED;
 	worldPos = currentLocation->pos;
 	gameLevel->locationIndex = currentLocationIndex;
 	gameLevel->location = currentLocation;
@@ -1402,8 +1402,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f.isLocal = false;
 	f >> emptyLocations;
 	f >> createCamp;
-	if(LOAD_VERSION < V_0_11 && createCamp > 10)
-		createCamp = 10;
 	f >> worldPos;
 	f >> revealTimer;
 	if(LOAD_VERSION < V_0_14_1 && revealTimer < 0)
@@ -2264,8 +2262,7 @@ void World::Travel(int index, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::TRAVEL);
 		c.id = index;
 	}
 }
@@ -2298,8 +2295,7 @@ void World::TravelPos(const Vec2& pos, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TRAVEL_POS;
+		NetChange& c = Net::PushChange(NetChange::TRAVEL_POS);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2464,6 +2460,8 @@ void World::StartEncounter(int enc, UnitGroup* group)
 						encounter.special = SE_BANDITS_VS_TRAVELERS;
 					else if(input->Down(Key::C))
 						encounter.special = SE_CRAZY_COOK;
+					else if(input->Down(Key::M))
+						encounter.special = SE_CRAZY_MAGE;
 				}
 
 				if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
@@ -2538,8 +2536,7 @@ void World::StopTravel(const Vec2& pos, bool send)
 	state = State::ON_MAP;
 	if(Net::IsOnline() && send)
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::STOP_TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::STOP_TRAVEL);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2555,12 +2552,10 @@ void World::EndTravel()
 	{
 		currentLocation = travelLocation;
 		currentLocationIndex = travelLocation->index;
+		worldPos = currentLocation->pos;
 		travelLocation = nullptr;
 		gameLevel->locationIndex = currentLocationIndex;
 		gameLevel->location = currentLocation;
-		Location& loc = *gameLevel->location;
-		loc.SetVisited();
-		worldPos = loc.pos;
 	}
 	else
 		worldPos = travelTargetPos;
@@ -2579,16 +2574,13 @@ void World::Warp(int index, bool order)
 
 	currentLocationIndex = index;
 	currentLocation = locations[currentLocationIndex];
+	worldPos = currentLocation->pos;
 	gameLevel->locationIndex = currentLocationIndex;
 	gameLevel->location = currentLocation;
-	Location& loc = *currentLocation;
-	loc.SetVisited();
-	worldPos = loc.pos;
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_TRAVEL;
+		NetChange& c = Net::PushChange(NetChange::CHEAT_TRAVEL);
 		c.id = index;
 	}
 }
@@ -2610,8 +2602,7 @@ void World::WarpPos(const Vec2& pos, bool order)
 
 	if(Net::IsServer() || (Net::IsClient() && order))
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHEAT_TRAVEL_POS;
+		NetChange& c = Net::PushChange(NetChange::CHEAT_TRAVEL_POS);
 		c.pos.x = pos.x;
 		c.pos.y = pos.y;
 	}
@@ -2856,8 +2847,7 @@ void World::DeleteCamp(Camp* camp, bool remove)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_CAMP;
+		NetChange& c = Net::PushChange(NetChange::REMOVE_CAMP);
 		c.id = index;
 	}
 

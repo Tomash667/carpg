@@ -57,7 +57,7 @@ void Usable::Load(GameReader& f)
 		container->Load(f);
 	}
 	// events
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_20)
 	{
 		events.resize(f.Read<uint>());
 		for(Event& event : events)

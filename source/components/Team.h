@@ -42,7 +42,6 @@ public:
 	uint GetActiveNpcCount();
 	uint GetActiveTeamSize() { return activeMembers.size(); }
 	Unit* GetLeader() const { return leader; }
-	void GetLeaderRequest(Entity<Unit>* unit) { leaderRequests.push_back(unit); }
 	uint GetMaxSize() { return 8u; }
 	uint GetNpcCount();
 	Vec2 GetShare();
@@ -124,7 +123,6 @@ private:
 
 	//------------------
 	// temporary - not saved
-	vector<Entity<Unit>*> leaderRequests;
 	vector<int> potHave;
 	// team shares
 	vector<TeamShareItem> teamShares;

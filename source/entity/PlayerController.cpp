@@ -132,7 +132,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		// inventory
 		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
-		if(HavePerk(Perk::Get("alchemist_apprentice")))
+		if(HavePerk(Perk::Get("alchemistApprentice")))
 			Stock::Get("alchemist_apprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
 		unit->RecalculateWeight();
@@ -224,11 +224,10 @@ void PlayerController::Train(SkillId skill, float points)
 		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
 		if(!isLocal)
 		{
-			NetChangePlayer& c2 = Add1(playerInfo->changes);
-			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.id = (int)ChangedStatType::SKILL;
-			c2.a = s;
-			c2.count = value;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::STAT_CHANGED);
+			c.id = (int)ChangedStatType::SKILL;
+			c.a = s;
+			c.count = value;
 		}
 	}
 }
@@ -270,11 +269,10 @@ void PlayerController::Train(AttributeId attrib, float points)
 		gameGui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
 		if(!isLocal)
 		{
-			NetChangePlayer& c2 = Add1(playerInfo->changes);
-			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.id = (int)ChangedStatType::ATTRIBUTE;
-			c2.a = a;
-			c2.count = value;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::STAT_CHANGED);
+			c.id = (int)ChangedStatType::ATTRIBUTE;
+			c.a = a;
+			c.count = value;
 		}
 	}
 }
@@ -319,29 +317,25 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	{
 		if(unit->hp != prevHp)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_HP);
 			c.unit = unit;
 		}
 
 		if(unit->mp != prevMp)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_MP;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_MP);
 			c.unit = unit;
 		}
 
 		if(unit->stamina != prevStamina)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_STAMINA;
+			NetChange& c = Net::PushChange(NetChange::UPDATE_STAMINA);
 			c.unit = unit;
 		}
 
 		if(!isLocal)
 		{
-			NetChangePlayer& c = Add1(playerInfo->changes);
-			c.type = NetChangePlayer::ON_REST;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::ON_REST);
 			c.count = days;
 		}
 	}
@@ -1067,11 +1061,10 @@ void PlayerController::Train(bool isSkill, int id, TrainMode mode)
 
 		if(!IsLocal())
 		{
-			NetChangePlayer& c2 = Add1(playerInfo->changes);
-			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.id = int(isSkill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
-			c2.a = id;
-			c2.count = value;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::STAT_CHANGED);
+			c.id = int(isSkill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c.a = id;
+			c.count = value;
 		}
 	}
 	else
@@ -1328,8 +1321,7 @@ bool PlayerController::AddAbility(Ability* ability)
 	{
 		if(!IsLocal())
 		{
-			NetChangePlayer& c = Add1(playerInfo->changes);
-			c.type = NetChangePlayer::ADD_ABILITY;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::ADD_ABILITY);
 			c.ability = ability;
 		}
 		else
@@ -1362,8 +1354,7 @@ bool PlayerController::RemoveAbility(Ability* ability)
 							shortcut.type = Shortcut::TYPE_NONE;
 							if(Net::IsClient())
 							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::SET_SHORTCUT;
+								NetChange& c = Net::PushChange(NetChange::SET_SHORTCUT);
 								c.id = index;
 							}
 						}
@@ -1372,8 +1363,7 @@ bool PlayerController::RemoveAbility(Ability* ability)
 				}
 				else
 				{
-					NetChangePlayer& c = Add1(playerInfo->changes);
-					c.type = NetChangePlayer::REMOVE_ABILITY;
+					NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::REMOVE_ABILITY);
 					c.ability = ability;
 				}
 			}
@@ -1587,8 +1577,7 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog, Quest* ques
 
 	if(!isLocal)
 	{
-		NetChangePlayer& c = Add1(playerInfo->changes);
-		c.type = NetChangePlayer::START_DIALOG;
+		NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::START_DIALOG);
 		c.id = talker->id;
 	}
 
@@ -1628,8 +1617,7 @@ bool PlayerController::AddPerk(Perk* perk, int value)
 	tp.Apply(ctx);
 	if(Net::IsServer() && !IsLocal())
 	{
-		NetChangePlayer& c = Add1(playerInfo->changes);
-		c.type = NetChangePlayer::ADD_PERK;
+		NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::ADD_PERK);
 		c.id = perk->hash;
 		c.count = value;
 	}
@@ -1651,8 +1639,7 @@ bool PlayerController::RemovePerk(Perk* perk, int value)
 			tpCopy.Remove(ctx);
 			if(Net::IsServer() && !IsLocal())
 			{
-				NetChangePlayer& c = Add1(playerInfo->changes);
-				c.type = NetChangePlayer::REMOVE_PERK;
+				NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::REMOVE_PERK);
 				c.id = perk->hash;
 				c.count = value;
 			}
@@ -1755,8 +1742,7 @@ void PlayerController::Yell()
 		game->PlayAttachedSound(*unit, sound, Unit::ALERT_SOUND_DIST);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UNIT_SOUND;
+			NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 			c.unit = unit;
 			c.id = SOUND_SEE_ENEMY;
 		}
@@ -1793,8 +1779,7 @@ void PlayerController::SetShortcut(int index, Shortcut::Type type, int value)
 	shortcuts[index].value = value;
 	if(Net::IsClient())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SET_SHORTCUT;
+		NetChange& c = Net::PushChange(NetChange::SET_SHORTCUT);
 		c.id = index;
 	}
 }
@@ -1914,8 +1899,7 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USABLE;
+			NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 			c.unit = &u;
 			c.id = u.usable->id;
 			c.count = USE_USABLE_START;
@@ -1923,8 +1907,7 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 	}
 	else
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::USE_USABLE;
+		NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 		c.id = data.beforePlayerPtr.usable->id;
 		c.count = USE_USABLE_START;
 
@@ -1968,7 +1951,7 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 		unit->action = A_CAST;
 		unit->animationState = AS_CAST_ANIMATION;
 		unit->act.cast.ability = ability;
-		unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 		if(isLocal)
 		{
 			unit->targetPos = data.abilityPoint;
@@ -2053,16 +2036,14 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 	{
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PLAYER_ABILITY;
+			NetChange& c = Net::PushChange(NetChange::PLAYER_ABILITY);
 			c.unit = unit;
 			c.ability = ability;
 			c.extraFloat = unit->meshInst->groups[1].speed;
 		}
 		else if(!fromServer)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::PLAYER_ABILITY;
+			NetChange& c = Net::PushChange(NetChange::PLAYER_ABILITY);
 			c.unit = data.abilityTarget;
 			c.pos = data.abilityPoint;
 			c.ability = ability;
@@ -2100,8 +2081,7 @@ bool PlayerController::AddRecipe(Recipe* recipe)
 			messenger->Post(Msg::LearnRecipe);
 		else
 		{
-			NetChangePlayer& c = Add1(playerInfo->changes);
-			c.type = NetChangePlayer::ADD_RECIPE;
+			NetChangePlayer& c = playerInfo->PushChange(NetChangePlayer::ADD_RECIPE);
 			c.recipe = recipe;
 		}
 	}
@@ -2320,8 +2300,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 			alwaysRun = !alwaysRun;
 			if(Net::IsClient())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ALWAYS_RUN;
+				NetChange& c = Net::PushChange(NetChange::CHANGE_ALWAYS_RUN);
 				c.id = (alwaysRun ? 1 : 0);
 			}
 		}
@@ -2495,7 +2474,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					u.pos += dir;
 					moved = true;
 				}
-				else if(gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+				else if(gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u))
 					moved = true;
 
 				if(moved)
@@ -2819,8 +2798,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 				else
 				{
 					// send message to server about looting
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::LOOT_UNIT;
+					NetChange& c = Net::PushChange(NetChange::LOOT_UNIT);
 					c.id = u2->id;
 					action = PlayerAction::LootUnit;
 					actionUnit = u2;
@@ -2846,8 +2824,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 				else
 				{
 					// send message to server about starting dialog
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TALK;
+					NetChange& c = Net::PushChange(NetChange::TALK);
 					c.id = u2->id;
 					action = PlayerAction::Talk;
 					actionUnit = u2;
@@ -2870,8 +2847,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 			else
 			{
 				// send message to server about looting chest
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_CHEST;
+				NetChange& c = Net::PushChange(NetChange::USE_CHEST);
 				c.id = data.beforePlayerPtr.chest->id;
 				action = PlayerAction::LootChest;
 				actionChest = data.beforePlayerPtr.chest;
@@ -2943,11 +2919,12 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::PICKUP_ITEM;
+						NetChange& c = Net::PushChange(NetChange::PICKUP_ITEM);
 						c.unit = unit;
 						c.count = (upAnim ? 1 : 0);
 					}
+
+					locPart.RemoveGroundItem(groundItem, false);
 
 					ScriptEvent event(EVENT_PICKUP);
 					event.onPickup.unit = unit;
@@ -2955,12 +2932,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					event.onPickup.item = groundItem->item;
 					gameLevel->location->FireEvent(event);
 
-					locPart.RemoveGroundItem(groundItem);
+					delete groundItem;
 				}
 				else
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::PICKUP_ITEM;
+					NetChange& c = Net::PushChange(NetChange::PICKUP_ITEM);
 					c.id = groundItem->id;
 				}
 			}
@@ -2990,8 +2966,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_Attack;
 							c.f[1] = speed;
@@ -3008,8 +2983,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_Cancel;
 							c.f[1] = 1.f;
@@ -3037,8 +3011,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_PrepareAttack;
 							c.f[1] = speed;
@@ -3062,8 +3035,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = unit;
 						c.id = AID_Cancel;
 						c.f[1] = 1.f;
@@ -3082,8 +3054,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_Bash;
 							c.f[1] = speed;
@@ -3130,8 +3101,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
+								NetChange& c = Net::PushChange(NetChange::ATTACK);
 								c.unit = unit;
 								c.id = AID_RunningAttack;
 								c.f[1] = speed;
@@ -3156,8 +3126,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
+								NetChange& c = Net::PushChange(NetChange::ATTACK);
 								c.unit = unit;
 								c.id = AID_PrepareAttack;
 								c.f[1] = speed;
@@ -3189,8 +3158,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = unit;
 						c.id = AID_Block;
 						c.f[1] = blendMax;
@@ -3210,8 +3178,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						u.animationState = AS_SHOOT_CAN;
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_Shoot;
 							c.f[1] = 1.f;
@@ -3225,8 +3192,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						gameLevel->FreeBowInstance(u.bowInstance);
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ATTACK;
+							NetChange& c = Net::PushChange(NetChange::ATTACK);
 							c.unit = unit;
 							c.id = AID_Cancel;
 							c.f[1] = 1.f;
@@ -3344,8 +3310,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::IDLE;
+					NetChange& c = Net::PushChange(NetChange::IDLE);
 					c.unit = unit;
 					c.id = id;
 				}
@@ -3440,18 +3405,16 @@ void PlayerController::ReadBook(int index)
 		{
 			unit->action = A_USE_ITEM;
 			unit->usedItem = slot.item;
-			unit->meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
+				NetChange& c = Net::PushChange(NetChange::USE_ITEM);
 				c.unit = unit;
 			}
 		}
 		else
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_ITEM;
+			NetChange& c = Net::PushChange(NetChange::USE_ITEM);
 			c.id = index;
 			unit->action = A_PREPARE;
 		}
@@ -3495,8 +3458,7 @@ void PlayerController::ReadBook(int index)
 				}
 				else
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_ITEM;
+					NetChange& c = Net::PushChange(NetChange::USE_ITEM);
 					c.id = index;
 					unit->action = A_PREPARE;
 					useItemSent = true;
@@ -3510,8 +3472,7 @@ void PlayerController::ReadBook(int index)
 				questMgr->CheckItemEventHandler(unit, &book);
 			else if(!useItemSent)
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_ITEM;
+				NetChange& c = Net::PushChange(NetChange::USE_ITEM);
 				c.id = index;
 			}
 			gameGui->book->Show(&book);

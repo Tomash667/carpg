@@ -12,7 +12,7 @@ Quest::LoadResult Quest_Artifacts::Load(GameReader& f)
 //=================================================================================================
 void Quest_Artifacts::GetConversionData(ConversionData& data)
 {
-	data.id = "global_init";
+	data.id = "globalInit";
 	data.Add("artifactsLoc", targetLoc ? targetLoc->index : -1);
 	data.Add("done", done);
 }

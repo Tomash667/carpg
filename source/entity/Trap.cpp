@@ -42,7 +42,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						trigger = true;
 						break;
@@ -63,8 +63,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -95,8 +94,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -112,7 +110,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(!unit->IsAlive())
 						continue;
-					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+					if(CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						bool found = false;
 						for(Unit* unit2 : *hitted)
@@ -194,7 +192,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						reactivate = false;
 						break;
@@ -217,8 +215,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				state = 0;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -236,7 +233,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						trigger = true;
 						break;
@@ -294,8 +291,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SHOOT_ARROW;
+						NetChange& c = Net::PushChange(NetChange::SHOOT_ARROW);
 						c << bullet->id
 							<< -1 // owner
 							<< bullet->startPos
@@ -305,8 +301,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 							<< bullet->yspeed
 							<< 0; // ability
 
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::TRIGGER_TRAP;
+						NetChange& c2 = Net::PushChange(NetChange::TRIGGER_TRAP);
 						c2.id = id;
 					}
 				}
@@ -328,7 +323,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				for(Unit* unit : locPart.units)
 				{
 					if(!IsSet(unit->data->flags, F_SLIGHT)
-						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 					{
 						empty = false;
 						break;
@@ -351,8 +346,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				state = 0;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -368,7 +362,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 			{
 				if(unit->IsStanding()
 					&& (!owner || owner->IsEnemy(*unit))
-					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), pos.x, pos.z, base->rw, base->h))
+					&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetRadius(), pos.x, pos.z, base->rw, base->h))
 				{
 					trigger = true;
 					break;
@@ -388,8 +382,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					soundMgr->PlaySound3d(fireball->soundHit, pos, fireball->soundHitDist);
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::SPELL_SOUND;
+						NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 						c.extraId = 1;
 						c.ability = fireball;
 						c.pos = pos;
@@ -398,8 +391,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_TRAP;
+					NetChange& c = Net::PushChange(NetChange::REMOVE_TRAP);
 					c.id = id;
 				}
 
@@ -419,7 +411,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 				{
 					if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 						&& (!owner || owner->IsEnemy(*unit))
-						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+						&& CircleToCircle(pos.x, pos.z, base->rw, unit->pos.x, unit->pos.z, unit->GetRadius()))
 					{
 						trigger = true;
 						break;
@@ -440,8 +432,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRIGGER_TRAP;
+					NetChange& c = Net::PushChange(NetChange::TRIGGER_TRAP);
 					c.id = id;
 				}
 			}
@@ -459,7 +450,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 					{
 						if(unit->IsStanding()
 							&& (!owner || owner->IsEnemy(*unit))
-							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
+							&& CircleToCircle(pos.x, pos.z, base->rw * 1.5f, unit->pos.x, unit->pos.z, unit->GetRadius()))
 						{
 							const float dist = Vec3::Distance(pos, unit->pos);
 							if(dist < bestDist)

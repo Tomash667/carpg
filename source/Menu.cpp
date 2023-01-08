@@ -130,9 +130,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	Net::SetMode(Net::Mode::Singleplayer);
 	hardcoreMode = hardcoreOption;
 
-	UnitData& ud = *clas->player;
-
-	Unit* u = gameLevel->CreateUnit(ud, -1, false);
+	Unit* u = gameLevel->CreateUnit(*clas->player, -1, false);
 	u->locPart = nullptr;
 	u->ApplyHumanData(hd);
 	team->members.clear();
@@ -1133,6 +1131,8 @@ void Game::UpdateClientTransfer(float dt)
 					Info("NM_TRANSFER: Level started.");
 					gameState = GS_LEVEL;
 					gameLevel->ready = true;
+					if(gameLevel->location->state != LS_HIDDEN)
+						gameLevel->location->state = LS_VISITED;
 					gameGui->loadScreen->visible = false;
 					gameGui->mainMenu->visible = false;
 					gameGui->levelGui->visible = true;
@@ -1278,71 +1278,12 @@ void Game::UpdateServerTransfer(float dt)
 
 	if(netState == NetState::Server_Starting)
 	{
-		if(!net->mpLoad)
-		{
-			gameGui->infoBox->Show(txGeneratingWorld);
-
-			// send info about generating world
-			if(net->activePlayers > 1)
-			{
-				byte b[] = { ID_STATE, 0 };
-				net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			}
-
-			// do it
-			ClearGameVars(true);
-			team->freeRecruits = 3 - net->activePlayers;
-			if(team->freeRecruits < 0)
-				team->freeRecruits = 0;
-			fallbackType = FALLBACK::NONE;
-			fallbackTimer = -0.5f;
-			gameGui->mainMenu->visible = false;
-			gameGui->loadScreen->visible = true;
-			net->prepareWorld = true;
-			GenerateWorld();
-			questMgr->InitQuests();
-			world->StartInLocation();
-			net->prepareWorld = false;
-			gameRes->LoadCommonMusic();
-		}
-
-		netState = NetState::Server_Initialized;
-	}
-	else if(netState == NetState::Server_Initialized)
-	{
-		// prepare world data if there is any players
-		if(net->activePlayers > 1)
-		{
-			gameGui->infoBox->Show(txSendingWorld);
-
-			// send info about preparing world data
-			byte b[] = { ID_STATE, 1 };
-			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-
-			// prepare & send world data
-			BitStreamWriter f;
-			net->WriteWorldData(f);
-			net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
-			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
-			netState = NetState::Server_WaitForPlayersToLoadWorld;
-			netTimer = mpTimeout;
-			for(PlayerInfo& info : net->players)
-			{
-				if(info.id != team->myId)
-					info.ready = false;
-				else
-					info.ready = true;
-			}
-			gameGui->infoBox->Show(txWaitingForPlayers);
-		}
-		else
-			netState = NetState::Server_EnterLocation;
-
-		vector<Unit*> prevTeam;
-
 		// create team
+		vector<Unit*> prevTeam;
 		if(net->mpLoad)
 			prevTeam = team->members.ptrs;
+		else
+			ClearGameVars(true);
 		team->members.clear();
 		team->activeMembers.clear();
 		gameLevel->ready = false;
@@ -1427,8 +1368,7 @@ void Game::UpdateServerTransfer(float dt)
 				else
 				{
 					// too many team members, kick ai
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HERO_LEAVE;
+					NetChange& c = Net::PushChange(NetChange::HERO_LEAVE);
 					c.unit = unit;
 
 					gameGui->mpBox->Add(Format(txMpNPCLeft, unit->hero->name.c_str()));
@@ -1475,6 +1415,60 @@ void Game::UpdateServerTransfer(float dt)
 			team->leader = net->GetMe().u;
 		}
 
+		if(!net->mpLoad)
+		{
+			gameGui->infoBox->Show(txGeneratingWorld);
+
+			// send info about generating world
+			if(net->activePlayers > 1)
+			{
+				byte b[] = { ID_STATE, 0 };
+				net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			}
+
+			// do it
+			team->freeRecruits = 3 - net->activePlayers;
+			if(team->freeRecruits < 0)
+				team->freeRecruits = 0;
+			fallbackType = FALLBACK::NONE;
+			fallbackTimer = -0.5f;
+			gameGui->mainMenu->visible = false;
+			gameGui->loadScreen->visible = true;
+			net->prepareWorld = true;
+			GenerateWorld();
+			questMgr->InitQuests();
+			world->StartInLocation();
+			net->prepareWorld = false;
+			gameRes->LoadCommonMusic();
+		}
+
+		netState = NetState::Server_Initialized;
+	}
+	else if(netState == NetState::Server_Initialized)
+	{
+		// prepare world data if there is any players
+		if(net->activePlayers > 1)
+		{
+			gameGui->infoBox->Show(txSendingWorld);
+
+			// send info about preparing world data
+			byte b[] = { ID_STATE, 1 };
+			net->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+
+			// prepare & send world data
+			BitStreamWriter f;
+			net->WriteWorldData(f);
+			net->SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
+			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
+			netState = NetState::Server_WaitForPlayersToLoadWorld;
+			netTimer = mpTimeout;
+			for(PlayerInfo& info : net->players)
+				info.ready = (info.id == team->myId);
+			gameGui->infoBox->Show(txWaitingForPlayers);
+		}
+		else
+			netState = NetState::Server_EnterLocation;
+
 		// send info
 		if(net->activePlayers > 1)
 		{
@@ -1496,6 +1490,7 @@ void Game::UpdateServerTransfer(float dt)
 				break;
 			}
 		}
+
 		netTimer -= dt;
 		if(!ok && netTimer <= 0.f)
 		{
@@ -1513,6 +1508,7 @@ void Game::UpdateServerTransfer(float dt)
 					anyoneRemoved = true;
 				}
 			}
+
 			ok = true;
 			if(anyoneRemoved)
 			{
@@ -1524,6 +1520,7 @@ void Game::UpdateServerTransfer(float dt)
 				}
 			}
 		}
+
 		if(ok)
 		{
 			Info("NM_TRANSFER_SERVER: All players ready.");

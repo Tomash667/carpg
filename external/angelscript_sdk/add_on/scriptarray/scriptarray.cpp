@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h> // sprintf
 #include <string>
+#include <algorithm> // std::sort
 
 #include "scriptarray.h"
 
@@ -998,7 +999,7 @@ void CScriptArray::Destruct(SArrayBuffer *buf, asUINT start, asUINT end)
 
 
 // internal
-bool CScriptArray::Less(const void *a, const void *b, bool asc, asIScriptContext *ctx, SArrayCache *cache)
+bool CScriptArray::Less(const void *a, const void *b, bool asc)
 {
 	if( !asc )
 	{
@@ -1025,42 +1026,6 @@ bool CScriptArray::Less(const void *a, const void *b, bool asc, asIScriptContext
 			case asTYPEID_DOUBLE: return COMPARE(double);
 			default: return COMPARE(signed int); // All enums fall in this case
 			#undef COMPARE
-		}
-	}
-	else
-	{
-		int r = 0;
-
-		if( subTypeId & asTYPEID_OBJHANDLE )
-		{
-			// Allow sort to work even if the array contains null handles
-			if( *(void**)a == 0 ) return true;
-			if( *(void**)b == 0 ) return false;
-		}
-
-		// Execute object opCmp
-		if( cache && cache->cmpFunc )
-		{
-			// TODO: Add proper error handling
-			r = ctx->Prepare(cache->cmpFunc); assert(r >= 0);
-
-			if( subTypeId & asTYPEID_OBJHANDLE )
-			{
-				r = ctx->SetObject(*((void**)a)); assert(r >= 0);
-				r = ctx->SetArgObject(0, *((void**)b)); assert(r >= 0);
-			}
-			else
-			{
-				r = ctx->SetObject((void*)a); assert(r >= 0);
-				r = ctx->SetArgObject(0, (void*)b); assert(r >= 0);
-			}
-
-			r = ctx->Execute();
-
-			if( r == asEXECUTION_FINISHED )
-			{
-				return (int)ctx->GetReturnDWord() < 0;
-			}
 		}
 	}
 
@@ -1367,6 +1332,19 @@ void CScriptArray::Copy(void *dst, void *src)
 
 
 // internal
+// Swap two elements
+// Even in arrays of objects the objects are allocated on 
+// the heap and the array stores the pointers to the objects.
+void CScriptArray::Swap(void* a, void* b)
+{
+	asBYTE tmp[16];
+	Copy(tmp, a);
+	Copy(a, b);
+	Copy(b, tmp);
+}
+
+
+// internal
 // Return pointer to array item (object handle or primitive value)
 void *CScriptArray::GetArrayItemPointer(int index)
 {
@@ -1475,12 +1453,11 @@ void CScriptArray::Sort(asUINT startAt, asUINT count, bool asc)
 		return;
 	}
 
-	asBYTE tmp[16];
-	asIScriptContext *cmpContext = 0;
-	bool isNested = false;
-
 	if( subTypeId & ~asTYPEID_MASK_SEQNBR )
 	{
+		asIScriptContext *cmpContext = 0;
+		bool isNested = false;
+
 		// Try to reuse the active context
 		cmpContext = asGetActiveContext();
 		if( cmpContext )
@@ -1491,38 +1468,83 @@ void CScriptArray::Sort(asUINT startAt, asUINT count, bool asc)
 				cmpContext = 0;
 		}
 		if( cmpContext == 0 )
-		{
 			cmpContext = objType->GetEngine()->RequestContext();
+
+		// Do the sorting
+		struct {
+			bool               asc;
+			asIScriptContext  *cmpContext;
+			asIScriptFunction *cmpFunc;
+			bool operator()(void *a, void *b) const
+			{
+				if( !asc )
+				{
+					// Swap items
+					void *TEMP = a;
+					a = b;
+					b = TEMP;
+				}
+				
+				int r = 0;
+
+				// Allow sort to work even if the array contains null handles
+				if( a == 0 ) return true;
+				if( b == 0 ) return false;
+
+				// Execute object opCmp
+				if( cmpFunc )
+				{
+					// TODO: Add proper error handling
+					r = cmpContext->Prepare(cmpFunc); assert(r >= 0);
+					r = cmpContext->SetObject(a); assert(r >= 0);
+					r = cmpContext->SetArgObject(0, b); assert(r >= 0);
+					r = cmpContext->Execute();
+
+					if( r == asEXECUTION_FINISHED )
+					{
+						return (int)cmpContext->GetReturnDWord() < 0;
+					}
+				}				
+
+				return false;
+			}
+		} customLess = {asc, cmpContext, cache ? cache->cmpFunc : 0};
+		std::sort((void**)GetArrayItemPointer(start), (void**)GetArrayItemPointer(end), customLess);
+		
+		// Clean up
+		if( cmpContext )
+		{
+			if( isNested )
+			{
+				asEContextState state = cmpContext->GetState();
+				cmpContext->PopState();
+				if( state == asEXECUTION_ABORTED )
+					cmpContext->Abort();
+			}
+			else
+				objType->GetEngine()->ReturnContext(cmpContext);
 		}
 	}
-
-	// Insertion sort
-	for( int i = start + 1; i < end; i++ )
+	else
 	{
-		Copy(tmp, GetArrayItemPointer(i));
-
-		int j = i - 1;
-
-		while( j >= start && Less(GetDataPointer(tmp), At(j), asc, cmpContext, cache) )
+		// TODO: Use std::sort for primitive types too
+		
+		// Insertion sort
+		asBYTE tmp[16];
+		for( int i = start + 1; i < end; i++ )
 		{
-			Copy(GetArrayItemPointer(j + 1), GetArrayItemPointer(j));
-			j--;
-		}
+			Copy(tmp, GetArrayItemPointer(i));
 
-		Copy(GetArrayItemPointer(j + 1), tmp);
-	}
+			int j = i - 1;
 
-	if( cmpContext )
-	{
-		if( isNested )
-		{
-			asEContextState state = cmpContext->GetState();
-			cmpContext->PopState();
-			if( state == asEXECUTION_ABORTED )
-				cmpContext->Abort();
+			while( j >= start && Less(GetDataPointer(tmp), At(j), asc) )
+			{
+				Copy(GetArrayItemPointer(j + 1), GetArrayItemPointer(j));
+				j--;
+			}
+
+			Copy(GetArrayItemPointer(j + 1), tmp);
 		}
-		else
-			objType->GetEngine()->ReturnContext(cmpContext);
 	}
 }
 
@@ -1550,7 +1572,6 @@ void CScriptArray::Sort(asIScriptFunction *func, asUINT startAt, asUINT count)
 		return;
 	}
 
-	asBYTE tmp[16];
 	asIScriptContext *cmpContext = 0;
 	bool isNested = false;
 
@@ -1566,31 +1587,31 @@ void CScriptArray::Sort(asIScriptFunction *func, asUINT startAt, asUINT count)
 	if (cmpContext == 0)
 		cmpContext = objType->GetEngine()->RequestContext();
 
-	// Insertion sort
-	for (asUINT i = start + 1; i < end; i++)
+	// TODO: Security issue: If the array is accessed from the callback while the sort is going on the result may be unpredictable
+	//       For example, the callback resizes the array in the middle of the sort
+	//       Possible solution: set a lock flag on the array, and prohibit modifications while the lock flag is set
+
+	// Bubble sort
+	// TODO: optimize: Use an efficient sort algorithm
+	for (asUINT i = start; i+1 < end; i++)
 	{
-		Copy(tmp, GetArrayItemPointer(i));
-
-		asUINT j = i - 1;
-
-		while (j != 0xFFFFFFFF && j >= start )
+		asUINT best = i;
+		for (asUINT j = i + 1; j < end; j++)
 		{
 			cmpContext->Prepare(func);
-			cmpContext->SetArgAddress(0, GetDataPointer(tmp));
-			cmpContext->SetArgAddress(1, At(j));
+			cmpContext->SetArgAddress(0, At(j));
+			cmpContext->SetArgAddress(1, At(best));
 			int r = cmpContext->Execute();
 			if (r != asEXECUTION_FINISHED)
 				break;
 			if (*(bool*)(cmpContext->GetAddressOfReturnValue()))
-			{
-				Copy(GetArrayItemPointer(j + 1), GetArrayItemPointer(j));
-				j--;
-			}
-			else
-				break;
+				best = j;
 		}
 
-		Copy(GetArrayItemPointer(j + 1), tmp);
+		// With Swap we guarantee that the array always sees all references
+		// if the GC calls the EnumReferences in the middle of the sorting
+		if( best != i )
+			Swap(GetArrayItemPointer(i), GetArrayItemPointer(best));
 	}
 
 	if (cmpContext)
@@ -2161,8 +2182,9 @@ static void RegisterScriptArray_Generic(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("array<T>", "int findByRef(uint startAt, const T&in if_handle_then_const value) const", asFUNCTION(ScriptArrayFindByRef2_Generic), asCALL_GENERIC); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("array<T>", "bool opEquals(const array<T>&in) const", asFUNCTION(ScriptArrayEquals_Generic), asCALL_GENERIC); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("array<T>", "bool isEmpty() const", asFUNCTION(ScriptArrayIsEmpty_Generic), asCALL_GENERIC); assert( r >= 0 );
-	r = engine->RegisterFuncdef("bool array<T>::less(const T&in a, const T&in b)");
+	r = engine->RegisterFuncdef("bool array<T>::less(const T&in if_handle_then_const a, const T&in if_handle_then_const b)");
 	r = engine->RegisterObjectMethod("array<T>", "void sort(const less &in, uint startAt = 0, uint count = uint(-1))", asFUNCTION(ScriptArraySortCallback_Generic), asCALL_GENERIC); assert(r >= 0);
+
 #if AS_USE_STLNAMES != 1 && AS_USE_ACCESSORS == 1
 	r = engine->RegisterObjectMethod("array<T>", "uint get_length() const property", asFUNCTION(ScriptArrayLength_Generic), asCALL_GENERIC); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("array<T>", "void set_length(uint) property", asFUNCTION(ScriptArrayResize_Generic), asCALL_GENERIC); assert( r >= 0 );

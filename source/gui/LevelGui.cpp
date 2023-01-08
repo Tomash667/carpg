@@ -17,6 +17,7 @@
 #include "GameStats.h"
 #include "GroundItem.h"
 #include "Inventory.h"
+#include "ItemHelper.h"
 #include "Journal.h"
 #include "Language.h"
 #include "Level.h"
@@ -29,6 +30,7 @@
 #include "TeamPanel.h"
 
 #include <Engine.h>
+#include <GetNumberDialog.h>
 #include <ResourceManager.h>
 
 //-----------------------------------------------------------------------------
@@ -108,6 +110,9 @@ void LevelGui::LoadLanguage()
 	txHealthPotionDesc = s.Get("healthPotionDesc");
 	txManaPotionDesc = s.Get("manaPotionDesc");
 	txSkipCutscene = s.Get("skipCutscene");
+	txRestPick = s.Get("restPick");
+	txDay = s.Get("day");
+	txDays = s.Get("days");
 	BuffInfo::LoadText();
 }
 
@@ -142,8 +147,9 @@ void LevelGui::LoadData()
 	tRanged = resMgr->Load<Texture>("bow-arrow.png");
 	tHealthPotion = resMgr->Load<Texture>("health-potion.png");
 	tManaPotion = resMgr->Load<Texture>("mana-potion.png");
-	tEmerytura = resMgr->Load<Texture>("emerytura.jpg");
+	tRetiring = resMgr->Load<Texture>("emerytura.jpg");
 	tEquipped = resMgr->Load<Texture>("equipped.png");
+	tChoice = resMgr->Load<Texture>("choice.png");
 	tDialog = resMgr->Load<Texture>("dialog.png");
 	tShortcutAction = resMgr->Load<Texture>("shortcut_action.png");
 	tRip = resMgr->Load<Texture>("rip.jpg");
@@ -247,7 +253,7 @@ void LevelGui::DrawFront()
 		{
 			Unit& u = *it.unit;
 			Vec3 textPos = u.visualPos;
-			textPos.y += u.GetUnitHeight();
+			textPos.y += u.GetHeight();
 			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
 			if(u.refs != 1)
 				str += Format(" x%u", u.refs);
@@ -363,7 +369,7 @@ void LevelGui::DrawFront()
 				}
 			}
 			if(!dontDraw)
-				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos());
+				DrawUnitInfo(u->GetName(), *u, u->GetTextPos());
 		}
 		break;
 	case BP_CHEST:
@@ -433,7 +439,7 @@ void LevelGui::DrawFront()
 					rImg.Top() = r.Top();
 				else if(rImg.Bottom() > r.Bottom())
 					rImg.Bottom() = r.Bottom();
-				gui->DrawSpriteRect(tEquipped, rImg, 0xAAFFFFFF);
+				gui->DrawSpriteRect(tChoice, rImg, 0xAAFFFFFF);
 			}
 
 			// text
@@ -443,14 +449,18 @@ void LevelGui::DrawFront()
 				s += game->dialogContext.choices[i].msg;
 				s += '\n';
 			}
-			Rect r2 = { r.Left() + 2, r.Top() - off, r.Right() - 2, r.Bottom() - off };
+			Rect r2 = { r.Left() + 5, r.Top() - off, r.Right() - 5, r.Bottom() - off };
 			gui->DrawText(GameGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game->dialogContext.dialogText)
+		{
+			r.Left() += 5;
+			r.Right() -= 5;
 			gui->DrawText(GameGui::font, game->dialogContext.dialogText, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		}
 	}
 
 	// health bar
@@ -560,7 +570,7 @@ void LevelGui::DrawFront()
 			}
 			else if(shortcut.item->IsStackable())
 			{
-				count = pc.unit->CountItem(shortcut.item);
+				count = pc.unit->GetItemCount(shortcut.item);
 				enabled = (count > 0);
 			}
 			else
@@ -673,6 +683,7 @@ void LevelGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
+
 			const Vec2 pos(float(gui->wndSize.x) - sidebar * offset, float(spos.y - i * offset));
 			const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
 			gui->DrawSprite2(t, mat, nullptr, nullptr, Color::White);
@@ -781,8 +792,8 @@ void LevelGui::DrawEndOfGameScreen()
 	gui->DrawSpriteFull(tBlack, color);
 
 	// image
-	Int2 spritePos = Center(tEmerytura->GetSize());
-	gui->DrawSprite(tEmerytura, spritePos, color);
+	Int2 spritePos = Center(tRetiring->GetSize());
+	gui->DrawSprite(tRetiring, spritePos, color);
 
 	// text
 	cstring text = Format(txGameTimeout, game->pc->kills, gameStats->totalKills - game->pc->kills);
@@ -2008,7 +2019,7 @@ void LevelGui::AddUnitView(Unit* unit)
 		if(view.unit == unit)
 		{
 			view.valid = true;
-			view.lastPos = unit->GetUnitTextPos();
+			view.lastPos = unit->GetTextPos();
 			return;
 		}
 	}
@@ -2017,7 +2028,7 @@ void LevelGui::AddUnitView(Unit* unit)
 	uv.valid = true;
 	uv.unit = unit;
 	uv.time = 0.f;
-	uv.lastPos = unit->GetUnitTextPos();
+	uv.lastPos = unit->GetTextPos();
 }
 
 //=================================================================================================
@@ -2219,4 +2230,25 @@ void LevelGui::SetBoss(Unit* boss, bool instant)
 		if(instant)
 			boss = nullptr;
 	}
+}
+
+//=================================================================================================
+void LevelGui::ShowRestDialog()
+{
+	counter = 1;
+	GetNumberDialogParams params(counter, 1, 60);
+	params.parent = this;
+	params.event = [this](int result)
+	{
+		const int days = result == BUTTON_OK ? counter : -1;
+		if(Net::IsLocal())
+			game->dialogContext.OnPickRestDays(days);
+		else
+		{
+			NetChange& c = Net::PushChange(NetChange::PICK_REST);
+			c.id = days;
+		}
+	};
+	params.getText = [this] { return Format(txRestPick, counter, counter == 1 ? txDay : txDays, ItemHelper::GetRestCost(counter)); };
+	GetNumberDialog::Show(params);
 }

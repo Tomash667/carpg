@@ -16,7 +16,7 @@ Quest::LoadResult Quest_BanditsCollectToll::Load(GameReader& f)
 //=================================================================================================
 void Quest_BanditsCollectToll::GetConversionData(ConversionData& data)
 {
-	data.id = "bandits_collect_toll";
+	data.id = "banditsCollectToll";
 	data.Add("startLoc", startLoc->index);
 	data.Add("otherLoc", otherLoc);
 	data.Add("enc", enc);

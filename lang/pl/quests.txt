@@ -30,7 +30,7 @@ code {
 }
 
 //=============================================================================
-quest deliver_letter {
+quest deliverLetter {
 	dialog start {
 		0 "Szukam kogoú kto dostarczy ten list do $(endLoc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") $(endLoc.name). Jesteú zainteresowany?"
 		1 "Tak"
@@ -77,7 +77,7 @@ quest deliver_letter {
 }
 
 //=============================================================================
-quest deliver_resources {
+quest deliverResources {
 	dialog start {
 		0 "Mam do dostarczenia skrzynkÍ z zasobami do $(targetLoc.name). Normalnie wys≥a≥ bym jednego z moich ludzi ale skoro juø tu jesteú..."
 		1 "Jest to doúÊ pilne. $(targetLoc.name) potrzebuje tych zasobÛw w ciπgu 15 dni. Jesteú zainteresowany?"
@@ -114,7 +114,7 @@ quest deliver_resources {
 }
 
 //=============================================================================
-quest bandits_collect_toll {
+quest banditsCollectToll {
 	dialog start {
 		0 "Na drodze pomiÍdzy $(startLoc.name) a $(otherLoc.name) koczujπ bandyci. Pobierajπ op≥atÍ i okradajπ kupcÛw."
 		1 "Masz czas aby siÍ nimi zajπÊ?"
@@ -156,7 +156,7 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
-quest camp_near_city {
+quest campNearCity {
 	dialog start {
 		0 "Wyobraøasz to sobie?! $(group.name.Upper()) $(group.female ? \"za\\xB3o\\xBFy\\xB3y\" : \"za\\xB3o\\xBFyli\") obÛz tuø ko≥o $(startLoc.IsVillage() ? \"naszej wioski\" : \"naszego miasta\")!"
 		1 "Chyba chcπ zaatakowaÊ $(startLoc.IsVillage() ? \"wiosk\\xEA\" : \"miasto\")! Musimy coú z tym zrobiÊ!"
@@ -186,7 +186,7 @@ quest camp_near_city {
 }
 
 //=============================================================================
-quest kill_animals {
+quest killAnimals {
 	dialog start {
 		0 "Szukam kogoú kto zajmie siÍ jednπ z okolicznych lokalizacji w ktÛre zagnieüdzi≥o siÍ sporo stworzeÒ."
 		1 "Jesteú zainteresowany?"
@@ -214,7 +214,7 @@ quest kill_animals {
 }
 
 //=============================================================================
-quest find_artifact {
+quest findArtifact {
 	dialog start {
 		0 "PoszukujÍ pewnego artefaktu znanego jako $(item.name)."
 		1 "Czy moøesz mi go dostarczyÊ?"
@@ -243,7 +243,7 @@ quest find_artifact {
 }
 
 //=============================================================================
-quest lost_artifact {
+quest lostArtifact {
 	dialog start {
 		0 "Znalaz≥em $(item.name) ale niestety go zgubi≥em w drodze powrotnej."
 		1 "Czy moøesz go dla mnie odnaleüÊ?"
@@ -272,7 +272,7 @@ quest lost_artifact {
 }
 
 //=============================================================================
-quest stolen_artifact {
+quest stolenArtifact {
 	dialog start {
 		0 "$(Upper1(group.name)) $(group.female ? \"ukrad\\xB3y\" : \"ukradli\") mi $(item.name)."
 		1 "Czy moøesz go dla mnie odzyskaÊ?"
@@ -301,7 +301,7 @@ quest stolen_artifact {
 }
 
 //=============================================================================
-quest alchemist_apprentice {
+quest alchemistApprentice {
 	dialog alchemist {
 		0 "Witaj. Jesteú tu w sprawie zadania?"
 		1 "Zadanie"
@@ -416,7 +416,7 @@ quest main {
 		1 "Zaraza? Nic o tym nie wiem..."
 		2 "Pewnie chcia≥eú porozmawiaÊ z $(cleric.realName)?"
 		3 "Zazwyczaj moøna go tu znaleüÊ ale aktualnie wyruszy≥ na badania do $(dungeon.name) na $(World::GetDirName(Level::location, dungeon)) stπd."
-		4 "Mam nadzieje øe nic mu nie jest, od kilku dni go niewidzia≥em."
+		4 "Mam nadzieje øe nic mu nie jest, od kilku dni go nie widzia≥em."
 	}
 	
 	dialog cleric {
@@ -449,7 +449,7 @@ quest main {
 		26 "Oddaj dziwne zio≥a"
 		27 "Nigdy nie widzia≥em takich dziwnych ziÛ≥. Wyglπdajπ jak skrystalizowane. PoúlÍ po jakiegoú doúwiadczonego alchemika øeby je zbada≥."
 		28 "Przekaø informacje"
-		29 "WiÍc mÛwisz øe ten starzec straci≥ pamieÊ? Mam nadzieje øe to nie jest kolejny objaw choroby. W wolnym czasie pÛjdÍ z nim porozmawiaÊ, moøe uda mi siÍ przywrÛciÊ mu pamiÍÊ."
+		29 "WiÍc mÛwisz øe ten starzec straci≥ pamiÍÊ? Mam nadzieje øe to nie jest kolejny objaw choroby. W wolnym czasie pÛjdÍ z nim porozmawiaÊ, moøe uda mi siÍ przywrÛciÊ mu pamiÍÊ."
 		30 "(To koniec g≥Ûwnej fabu≥y na tπ wersjÍ. SprÛbuj w miÍdzyczasie ukoÒczyÊ wszystkie unikalne zadania)"
 	}
 	
@@ -475,7 +475,7 @@ quest main {
 }
 
 //=============================================================================
-quest side_cleric {
+quest sideCleric {
 	dialog end {
 		0 "Oddaj ksiÍgÍ"
 		1 "Zdoby≥eú tπ ksiÍgÍ?"
@@ -492,7 +492,7 @@ quest side_cleric {
 }
 
 //=============================================================================
-quest dire_wolf {
+quest direWolf {
 	dialog hunter {
 		0 "Zadanie"
 		1 "Chcesz udowodniÊ øe jesteú jednym z nas?"
@@ -511,19 +511,20 @@ quest dire_wolf {
 }
 
 //=============================================================================
-quest main_village1 {
+quest mainVillage1 {
 	texts {
 		0 "èrÛd≥o zarazy w $(village.name)"
 		1 "RozpoczÍto dnia $date$."
 		2 "Kleryk $(cleric.realName) zleci≥ mi znalezienie ürÛd≥a zarazy. Jednym z miejsc ktÛre muszÍ sprawdziÊ jest $(village.name)."
 		3 "Dotar≥em na miejsce. Wioska wyglπda na opuszczonπ. MuszÍ sprawdziÊ w karczmie i domu so≥tysa, moøe tam ktoú jest."
-		4 "Znalaz≥em dziennik miejscowego so≥tysa. Wynika z niego øe wszyscy po prostu znikneli w ciπgu kilku dniach. Powinienem wrÛciÊ z tymi informacjami do $(cleric.realName)."
+		4 "Znalaz≥em dziennik miejscowego so≥tysa. Wynika z niego øe wszyscy po prostu zniknÍli w ciπgu kilku dniach. Powinienem wrÛciÊ z tymi informacjami do $(cleric.realName)."
 		5 "Odda≥em dziennik $(cleric.realName) i dosta≥em za to nagrodÍ. Zadanie wykonane!"
+		6 "Wszyscy mieszkaÒcy $(village.name) gdzieú zniknÍli..."
 	}
 }
 
 //=============================================================================
-quest main_village2 {
+quest mainVillage2 {
 	texts {
 		0 "èrÛd≥o zarazy w $(village.name)"
 		1 "RozpoczÍto dnia $date$."
@@ -533,11 +534,12 @@ quest main_village2 {
 		5 "Znalaz≥em jakiú dziwny kryszta≥ przy ciele so≥tysa. Moøe to on odpowiada za tπ zarazÍ?"
 		6 "Zrobi≥em tu wszystko co mog≥em. Czas wracaÊ do $(cleric.realName)."
 		7 "Odda≥em dziwny kryszta≥ $(cleric.realName) i dosta≥em za to nagrodÍ. Zadanie wykonane!"
+		8 "Zaraza zaatakowa≥a w $(village.name). Nikt nie przeøy≥..."
 	}
 }
 
 //=============================================================================
-quest main_village3 {
+quest mainVillage3 {
 	dialog villager {
 		0 "DziÍki za ratunek. WynoszÍ siÍ stπd!"
 	}
@@ -558,11 +560,12 @@ quest main_village3 {
 		6 "Znalaz≥em jakieú dziwne zio≥a. Czy to one wywo≥a≥y tÍ zarazÍ?"
 		7 "Zrobi≥em tu wszystko co mog≥em. Czas wracaÊ do $(cleric.realName)."
 		8 "Odda≥em dziwne zio≥a $(cleric.realName) i dosta≥em za to nagrodÍ. Zadanie wykonane!"
+		9 "W $(village.name) zaraøeni mieszkaÒcy walczyli z pozosta≥ymi mieszkaÒcami. Na szczÍúcie sytuacjÍ uda≥o siÍ opanowaÊ. Przynajmniej tak s≥ysza≥em..."
 	}
 }
 
 //=============================================================================
-quest main_village4 {
+quest mainVillage4 {
 	dialog oldman {
 		0 "Witaj m≥odzieÒcze."
 		1 "DziÍkuje za ratunek, nasza barykada by zbyt d≥ugo nie wytrzyma≥a."
@@ -588,5 +591,6 @@ quest main_village4 {
 		7 "Starzec twierdzi øe straci≥ pamiÍÊ i poprosi≥ øebym go zaprowadzi≥ do dowolnej wioski lub miasta."
 		8 "Doprowadzi≥em starca do $(Level::location.name). PodziÍkowa≥ mi i ruszy≥ w stronÍ karczmy. Czas wracaÊ do $(cleric.realName)."
 		9 "Przekaza≥em informacje $(cleric.realName) i dosta≥em za to nagrodÍ. Zadanie wykonane!"
+		10 "Zaraza zaatakowa≥a w $(village.name). Nikt nie przeøy≥..."
 	}
 }

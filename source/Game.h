@@ -111,6 +111,7 @@ public:
 	void SetTitle(cstring mode, bool initial = false);
 	void CreateRenderTargets();
 	void ReportError(int id, cstring text, bool once = false);
+	void CrashCallback();
 
 	// initialization & loading
 	void PreconfigureGame();
@@ -295,6 +296,7 @@ public:
 	//-----------------------------------------------------------------
 	GAME_STATE gameState, prevGameState;
 	PlayerController* pc;
+	string savePath;
 	bool testing, endOfGame, deathSolo, cutscene, inLoad;
 	int deathScreen;
 	float deathFade, gameSpeed;
@@ -408,9 +410,9 @@ public:
 	cstring txPvpRefuse, txWin, txWinHardcore, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
 	cstring txRumor[29], txRumorDrunk[7];
 	cstring txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2], txAllCampDiscovered[2],
-		txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
-		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined, txCantLearnAbility, txSpell, txAbility,
-		txCantLearnSkill;
+		txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNearLocHunters, txNoNews[2],
+		txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints, txTeamTooBig, txHeroJoined, txCantLearnAbility, txSpell,
+		txAbility, txCantLearnSkill;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
 		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal;

@@ -153,12 +153,25 @@ void WorldMapGui::Draw()
 	{
 		if(!*it)
 			continue;
+
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
+
+		int alpha;
+		if(loc.state == LS_KNOWN)
+		{
+			if(world->currentLocation == &loc)
+				alpha = 192;
+			else
+				alpha = 128;
+		}
+		else
+			alpha = 255;
+
 		const Vec2 pos(WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
 		const Matrix mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &pos);
-		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? Color::Alpha(128) : Color::White);
+		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, Color::Alpha(alpha));
 	}
 
 	// encounter locations
@@ -603,20 +616,26 @@ void WorldMapGui::Event(GuiEvent e)
 			comboSearch.ClearItems();
 			if(str.length() < 3)
 				break;
-			int count = 0;
+
+			LocalVector<Location*> matchingLocations;
 			for(Location* loc : world->GetLocations())
 			{
 				if(!loc || loc->state == LS_HIDDEN || loc->state == LS_UNKNOWN)
 					continue;
 				if(StringContainsStringI(loc->name.c_str(), str.c_str()))
-				{
-					LocationElement* le = LocationElement::Get();
-					le->loc = loc;
-					comboSearch.AddItem(le);
-					++count;
-					if(count == 5)
-						break;
-				}
+					matchingLocations.push_back(loc);
+			}
+
+			std::sort(matchingLocations.begin(), matchingLocations.end(), [](Location* loc1, Location* loc2) -> bool
+			{
+				return strcmp(loc1->name.c_str(), loc2->name.c_str()) < 0;
+			});
+
+			for(uint i = 0; i < min(5u, matchingLocations.size()); ++i)
+			{
+				LocationElement* le = LocationElement::Get();
+				le->loc = matchingLocations[i];
+				comboSearch.AddItem(le);
 			}
 		}
 		break;
@@ -754,8 +773,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ENCOUNTER;
+		NetChange& c = Net::PushChange(NetChange::ENCOUNTER);
 		c.str = StringPool.Get();
 		*c.str = text;
 

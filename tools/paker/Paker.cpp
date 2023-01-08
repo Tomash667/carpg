@@ -9,8 +9,6 @@
 
 #include "BlobProxy.h"
 
-bool nozip, check_entry, copy_pdb, recreate;
-
 enum EntryType
 {
 	ET_File,
@@ -24,7 +22,19 @@ struct Entry
 	EntryType type;
 	string input, output;
 };
+
+struct PakEntry
+{
+	string path, move;
+	uint crc, size;
+	bool found;
+};
+
 vector<Entry> entries;
+std::map<cstring, PakEntry*, CstringComparer> pakEntries;
+string prevVer;
+string pakDir; // "out/0.4"
+bool nozip, checkEntry, copyPdb, recreate;
 
 bool FillEntry()
 {
@@ -71,25 +81,6 @@ bool FillEntry()
 	return true;
 }
 
-struct PakEntry
-{
-	string path;
-	uint crc;
-	DWORD size;
-	bool found;
-};
-struct str_cmp
-{
-	inline bool operator() (cstring a, cstring b) const
-	{
-		return strcmp(a, b) > 0;
-	}
-};
-std::map<cstring, PakEntry*, str_cmp> pak_entries;
-string prevVer;
-
-string pak_dir; // "out/0.4"
-
 // input: bin/dlls/dll.dll
 // output: pak/0.2.11/./dll.dll
 bool PakFile(cstring input, cstring output, cstring path)
@@ -102,9 +93,9 @@ bool PakFile(cstring input, cstring output, cstring path)
 	}
 	uint size = file.GetSize();
 
-	cstring name = output + pak_dir.length();
+	cstring name = output + pakDir.length();
 
-	if(!check_entry)
+	if(!checkEntry)
 	{
 		if(path)
 			io::CreateDirectories(path);
@@ -115,14 +106,29 @@ bool PakFile(cstring input, cstring output, cstring path)
 		pe->size = size;
 		pe->crc = Crc::Calculate(file);
 
-		pak_entries[pe->path.c_str()] = pe;
+		pakEntries[pe->path.c_str()] = pe;
 	}
 	else
 	{
-		std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.find(name);
+		auto it = pakEntries.find(name);
 		bool ok = true;
-		if(it == pak_entries.end())
-			printf("Added '%s'.\n", input);
+		if(it == pakEntries.end())
+		{
+			uint crc = Crc::Calculate(file);
+			it = std::find_if(pakEntries.begin(), pakEntries.end(), [=](const pair<cstring, PakEntry*>& e)
+			{
+				return e.second->size == size && e.second->crc == crc;
+			});
+
+			if(it == pakEntries.end())
+				printf("Added '%s'.\n", input);
+			else
+			{
+				printf("Moved '%s' -> '%s'.\n", it->second->path.c_str(), input);
+				ok = false;
+				it->second->move = input;
+			}
+		}
 		else
 		{
 			PakEntry& e = *it->second;
@@ -138,6 +144,7 @@ bool PakFile(cstring input, cstring output, cstring path)
 			else
 				printf("Modified '%s'.\n", input);
 		}
+
 		if(ok)
 		{
 			if(path)
@@ -198,7 +205,7 @@ void SaveEntries(cstring ver)
 {
 	std::ofstream o("db.txt");
 	o << Format("version \"%s\"\n", ver);
-	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
+	for(auto it = pakEntries.begin(), end = pakEntries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
 		o << Format("\"%s\" %u %u\n", e.path.c_str(), e.crc, e.size);
@@ -207,9 +214,9 @@ void SaveEntries(cstring ver)
 
 void DeleteEntries()
 {
-	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
+	for(auto it = pakEntries.begin(), end = pakEntries.end(); it != end; ++it)
 		delete it->second;
-	pak_entries.clear();
+	pakEntries.clear();
 }
 
 void RunCommand(cstring file, cstring parameters, cstring directory)
@@ -234,21 +241,21 @@ bool CreatePak(char* pakname)
 		return true;
 	}
 
-	check_entry = false;
-	pak_dir = Format("out/%s", pakname);
-	printf("Creating pak %s.\n", pak_dir.c_str());
+	checkEntry = false;
+	pakDir = Format("out/%s", pakname);
+	printf("Creating pak %s.\n", pakDir.c_str());
 
-	if(io::DirectoryExists(pak_dir.c_str()))
-		io::DeleteDirectory(pak_dir.c_str());
+	if(io::DirectoryExists(pakDir.c_str()))
+		io::DeleteDirectory(pakDir.c_str());
 	DeleteEntries();
-	CreateDirectory(pak_dir.c_str(), NULL);
+	CreateDirectory(pakDir.c_str(), NULL);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		Entry& e = *it;
 		if(e.type == ET_File)
 		{
-			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
+			cstring output = Format("%s/%s", pakDir.c_str(), e.output.c_str());
 			strcpy_s(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
@@ -258,13 +265,13 @@ bool CreatePak(char* pakname)
 		}
 		else if(e.type == ET_Dir)
 		{
-			string output = Format("%s/%s/", pak_dir.c_str(), e.output.c_str());
+			string output = Format("%s/%s/", pakDir.c_str(), e.output.c_str());
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
 		}
 		else if(e.type == ET_Pdb)
 		{
-			if(!copy_pdb)
+			if(!copyPdb)
 			{
 				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
 				{
@@ -274,17 +281,17 @@ bool CreatePak(char* pakname)
 			}
 		}
 		else
-			CreateDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()), NULL);
+			CreateDirectory(Format("%s/%s", pakDir.c_str(), e.input.c_str()), NULL);
 	}
 
-	copy_pdb = true;
+	copyPdb = true;
 	printf("Saving database.\n");
 	SaveEntries(pakname);
 
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		RunCommand("7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str());
+		RunCommand("7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pakDir.c_str());
 	}
 	return true;
 }
@@ -333,20 +340,20 @@ bool CreatePatch(char* pakname, bool blob)
 		return true;
 	}
 
-	check_entry = true;
-	pak_dir = Format("out/patch_%s", pakname);
-	printf("Creating patch %s.\n", pak_dir.c_str());
+	checkEntry = true;
+	pakDir = Format("out/patch_%s", pakname);
+	printf("Creating patch %s.\n", pakDir.c_str());
 
-	if(io::DirectoryExists(pak_dir.c_str()))
-		io::DeleteDirectory(pak_dir.c_str());
-	CreateDirectory(pak_dir.c_str(), NULL);
+	if(io::DirectoryExists(pakDir.c_str()))
+		io::DeleteDirectory(pakDir.c_str());
+	CreateDirectory(pakDir.c_str(), NULL);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		Entry& e = *it;
 		if(e.type == ET_File)
 		{
-			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
+			cstring output = Format("%s/%s", pakDir.c_str(), e.output.c_str());
 			strcpy_s(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
@@ -356,14 +363,14 @@ bool CreatePatch(char* pakname, bool blob)
 		}
 		else if(e.type == ET_Dir)
 		{
-			string output = Format("%s/%s/", pak_dir.c_str(), e.output.c_str());
+			string output = Format("%s/%s/", pakDir.c_str(), e.output.c_str());
 			CreateDirectory(output.c_str(), NULL);
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
 		}
 		else if(e.type == ET_Pdb)
 		{
-			if(!copy_pdb)
+			if(!copyPdb)
 			{
 				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
 				{
@@ -373,32 +380,56 @@ bool CreatePatch(char* pakname, bool blob)
 			}
 		}
 		else
-			CreateDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()), NULL);
+			CreateDirectory(Format("%s/%s", pakDir.c_str(), e.input.c_str()), NULL);
 	}
 
-	// create list of missing files
-	copy_pdb = true;
-	printf("Checking deleted files.\n");
-	vector<PakEntry*> missing;
-	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
+	// check if install script is required
+	copyPdb = true;
+	bool needInstall = false, errors = false;
+	for(auto it = pakEntries.begin(), end = pakEntries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
-		if(!e.found)
+		if(e.found && !e.move.empty())
+		{
+			// TODO
+			errors = true;
+			printf("ERROR: File '%s' duplicate found.\n", e.path.c_str());
+		}
+		else if(!e.move.empty())
+			needInstall = true;
+		else if(!e.found)
 		{
 			printf("Deleted file '%s'.\n", e.path.c_str());
-			missing.push_back(&e);
+			needInstall = true;
 		}
 	}
-	if(!missing.empty())
+	if(errors)
+		exit(1);
+
+	// create install script
+	if(needInstall)
 	{
-		CreateDirectory(Format("%s/install", pak_dir.c_str()), NULL);
-		std::ofstream o(Format("%s/install/%s.txt", pak_dir.c_str(), pakname));
-		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
+		CreateDirectory(Format("%s/install", pakDir.c_str()), NULL);
+		std::ofstream o(Format("%s/install/%s.txt", pakDir.c_str(), pakname));
+		for(auto it = pakEntries.begin(), end = pakEntries.end(); it != end; ++it)
 		{
-			cstring entry = (*it)->path.c_str();
-			if(entry[0] == '/')
-				++entry;
-			o << Format("remove \"%s\"\n", entry);
+			PakEntry& entry = *it->second;
+			if(entry.found || entry.move.empty())
+				continue;
+
+			cstring path = entry.path.c_str();
+			if(path[0] == '/')
+				++path;
+
+			if(entry.move.empty())
+				o << Format("remove \"%s\"\n", path);
+			else
+			{
+				cstring path2 = entry.move.c_str();
+				if(path2[0] == '/')
+					++path2;
+				o << Format("move \"%s\" \"%s\"\n", path, path2);
+			}
 		}
 	}
 
@@ -407,9 +438,9 @@ bool CreatePatch(char* pakname, bool blob)
 	{
 		Entry& e = *it;
 		if(e.type == ET_Dir)
-			RemoveDirectory(Format("%s/%s", pak_dir.c_str(), e.output.c_str()));
+			RemoveDirectory(Format("%s/%s", pakDir.c_str(), e.output.c_str()));
 		else
-			RemoveDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()));
+			RemoveDirectory(Format("%s/%s", pakDir.c_str(), e.input.c_str()));
 	}
 
 	// compress
@@ -418,7 +449,7 @@ bool CreatePatch(char* pakname, bool blob)
 		if(blob)
 		{
 			printf("Compressing patch (blob).\n");
-			RunCommand("pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pak_dir.c_str()), nullptr);
+			RunCommand("pak.exe", Format("-path -o out/CaRpg_patch_%s.pak %s", pakname, pakDir.c_str()), nullptr);
 
 			cstring path = Format("out/CaRpg_patch_%s.pak", pakname);
 			uint crc = Crc::Calculate(path);
@@ -431,7 +462,7 @@ bool CreatePatch(char* pakname, bool blob)
 		else
 		{
 			printf("Compressing patch (zip).\n");
-			RunCommand("7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str());
+			RunCommand("7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pakDir.c_str());
 		}
 	}
 
@@ -468,7 +499,7 @@ bool LoadEntries()
 			t.Next();
 			e->size = t.MustGetInt();
 			e->found = false;
-			pak_entries[e->path.c_str()] = e;
+			pakEntries[e->path.c_str()] = e;
 		}
 	}
 	catch(Tokenizer::Exception& ex)

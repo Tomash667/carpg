@@ -175,7 +175,7 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		if(unit.player->HavePerk(Perk::Get("asocial")))
 			persuasion -= 20;
 		if(unit.player->action == PlayerAction::Trade
-			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemist_apprentice")))
+			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemistApprentice")))
 			persuasion += 20;
 	}
 
@@ -338,4 +338,31 @@ int ItemHelper::CalculateReward(int level, const Int2& levelRange, const Int2& p
 	level = levelRange.Clamp(level);
 	float t = float(level - levelRange.x) / float(levelRange.y - levelRange.x);
 	return priceRange.Lerp(t);
+}
+
+//=================================================================================================
+int ItemHelper::GetRestCost(int days)
+{
+	assert(InRange(days, 1, 60));
+
+	const pair<int, int> prices[] = {
+		{ 1, 5 },
+		{ 5, 20 },
+		{ 10, 35 },
+		{ 30, 100 },
+		{ 60, 200 }
+	};
+
+	for(uint i = 0; i < countof(prices); ++i)
+	{
+		if(prices[i].first == days)
+			return prices[i].second;
+		else if(prices[i].first > days)
+		{
+			float t = float(days - prices[i - 1].first) / (prices[i].first - prices[i - 1].first);
+			return Lerp(prices[i - 1].second, prices[i].second, t);
+		}
+	}
+
+	return prices[countof(prices) - 1].second;
 }

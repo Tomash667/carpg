@@ -129,6 +129,9 @@
     <ClCompile Include="..\..\source\as_callfunc_xenon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\as_callfunc_arm64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\angelscript.h">
@@ -262,6 +265,12 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="..\..\source\as_callfunc_arm_vita.S">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\source\as_callfunc_arm64_gcc.S">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\source\as_callfunc_arm64_msvc.asm">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

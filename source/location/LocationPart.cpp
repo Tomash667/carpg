@@ -152,231 +152,70 @@ void LocationPart::Save(GameWriter& f)
 }
 
 //=================================================================================================
-void LocationPart::Load(GameReader& f, old::LoadCompatibility compatibility)
+void LocationPart::Load(GameReader& f)
 {
 	if(f.isLocal && !lvlPart)
 		lvlPart = new LevelPart(this);
 
-	switch(compatibility)
+	units.resize(f.Read<uint>());
+	for(Unit*& unit : units)
 	{
-	case old::LoadCompatibility::None:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			traps.resize(f.Read<uint>());
-			for(Trap*& trap : traps)
-			{
-				trap = new Trap;
-				trap->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideBuilding:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideLocationLevel:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			doors.resize(f.Read<uint>());
-			for(Door*& door : doors)
-			{
-				door = new Door;
-				door->Load(f);
-			}
-
-			groundItems.resize(f.Read<int>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-
-			lights.resize(f.Read<uint>());
-			for(GameLight& light : lights)
-				light.Load(f);
-		}
-		break;
-	case old::LoadCompatibility::InsideLocationLevelTraps:
-		{
-			traps.resize(f.Read<uint>());
-			for(Trap*& trap : traps)
-			{
-				trap = new Trap;
-				trap->Load(f);
-			}
-		}
-		break;
-	case old::LoadCompatibility::OutsideLocation:
-		{
-			units.resize(f.Read<uint>());
-			for(Unit*& unit : units)
-			{
-				unit = new Unit;
-				unit->Load(f);
-				unit->locPart = this;
-			}
-
-			objects.resize(f.Read<uint>());
-			for(Object*& object : objects)
-			{
-				object = new Object;
-				object->Load(f);
-			}
-
-			chests.resize(f.Read<uint>());
-			for(Chest*& chest : chests)
-			{
-				chest = new Chest;
-				chest->Load(f);
-			}
-
-			groundItems.resize(f.Read<uint>());
-			for(GroundItem*& groundItem : groundItems)
-			{
-				groundItem = new GroundItem;
-				groundItem->Load(f);
-			}
-
-			usables.resize(f.Read<uint>());
-			for(Usable*& usable : usables)
-			{
-				usable = new Usable;
-				usable->Load(f);
-			}
-
-			bloods.resize(f.Read<uint>());
-			for(Blood& blood : bloods)
-				blood.Load(f);
-		}
-		break;
+		unit = new Unit;
+		unit->Load(f);
+		unit->locPart = this;
 	}
 
-	if(lvlPart && Any(compatibility, old::LoadCompatibility::None, old::LoadCompatibility::InsideBuilding))
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
+	{
+		object = new Object;
+		object->Load(f);
+	}
+
+	usables.resize(f.Read<uint>());
+	for(Usable*& usable : usables)
+	{
+		usable = new Usable;
+		usable->Load(f);
+	}
+
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
+	{
+		door = new Door;
+		door->Load(f);
+	}
+
+	chests.resize(f.Read<uint>());
+	for(Chest*& chest : chests)
+	{
+		chest = new Chest;
+		chest->Load(f);
+	}
+
+	groundItems.resize(f.Read<uint>());
+	for(GroundItem*& groundItem : groundItems)
+	{
+		groundItem = new GroundItem;
+		groundItem->Load(f);
+	}
+
+	traps.resize(f.Read<uint>());
+	for(Trap*& trap : traps)
+	{
+		trap = new Trap;
+		trap->Load(f);
+	}
+
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
+
+	lights.resize(f.Read<uint>());
+	for(GameLight& light : lights)
+		light.Load(f);
+
+	if(lvlPart)
 		lvlPart->Load(f);
 }
 
@@ -698,8 +537,7 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_ITEM;
+			NetChange& c = Net::PushChange(NetChange::SPAWN_ITEM);
 			c.item = groundItem;
 		}
 	}
@@ -742,7 +580,7 @@ void LocationPart::RemoveGroundItem(int questId)
 }
 
 //=================================================================================================
-void LocationPart::RemoveGroundItem(GroundItem* groundItem)
+void LocationPart::RemoveGroundItem(GroundItem* groundItem, bool del)
 {
 	assert(groundItem);
 
@@ -756,14 +594,15 @@ void LocationPart::RemoveGroundItem(GroundItem* groundItem)
 
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::REMOVE_ITEM;
+			NetChange& c = Net::PushChange(NetChange::REMOVE_ITEM);
 			c.id = groundItem->id;
 		}
 	}
 
 	RemoveElement(groundItems, groundItem);
-	delete groundItem;
+
+	if(del)
+		delete groundItem;
 }
 
 //=================================================================================================
@@ -969,8 +808,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		soundMgr->PlaySound3d(ability.soundHit, pos, ability.soundHitDist);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPELL_SOUND;
+			NetChange& c = Net::PushChange(NetChange::SPELL_SOUND);
 			c.extraId = 1;
 			c.ability = &ability;
 			c.pos = pos;
@@ -1125,8 +963,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_OBJECT;
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
 					c.id = -1;
 					c.pos = hitpoint;
 				}
@@ -1161,8 +998,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::HIT_OBJECT;
+					NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
 					c.id = usable->id;
 					c.pos = hitpoint;
 				}
@@ -1173,8 +1009,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::DESTROY_USABLE;
+						NetChange& c = Net::PushChange(NetChange::DESTROY_USABLE);
 						c.id = usable->id;
 					}
 
@@ -1207,8 +1042,7 @@ Explo* LocationPart::CreateExplo(Ability* ability, const Vec3& pos)
 
 	if(Net::IsServer())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CREATE_EXPLOSION;
+		NetChange& c = Net::PushChange(NetChange::CREATE_EXPLOSION);
 		c.ability = ability;
 		c.pos = explo->pos;
 	}

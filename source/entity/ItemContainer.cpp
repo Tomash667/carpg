@@ -9,7 +9,7 @@
 void ItemContainer::Save(GameWriter& f)
 {
 	f << items.size();
-	for(auto& slot : items)
+	for(ItemSlot& slot : items)
 	{
 		assert(slot.item);
 		f << slot.item->id;
@@ -31,7 +31,7 @@ void ItemContainer::Load(GameReader& f)
 		return;
 
 	items.resize(count);
-	for(auto& slot : items)
+	for(ItemSlot& slot : items)
 	{
 		const string& itemId = f.ReadString1();
 		f >> slot.count;

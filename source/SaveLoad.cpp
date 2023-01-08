@@ -307,6 +307,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	try
 	{
 		inLoad = true;
+		savePath = filename;
 		LoadGame(f);
 		inLoad = false;
 	}
@@ -845,15 +846,6 @@ void Game::LoadGame(GameReader& f)
 	{
 		LocationGenerator* locGen = locGenFactory->Get(gameLevel->location);
 		locGen->OnLoad();
-
-		if(LOAD_VERSION < V_0_11)
-		{
-			gameLevel->localPart->lvlPart->Load(f);
-
-			f >> readId;
-			if(readId != checkId++)
-				throw "Failed to read level data.";
-		}
 
 		RemoveUnusedAiAndCheck();
 	}

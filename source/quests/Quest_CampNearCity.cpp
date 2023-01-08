@@ -18,7 +18,7 @@ Quest::LoadResult Quest_CampNearCity::Load(GameReader& f)
 //=================================================================================================
 void Quest_CampNearCity::GetConversionData(ConversionData& data)
 {
-	data.id = "camp_near_city";
+	data.id = "campNearCity";
 	data.Add("startLoc", startLoc);
 	data.Add("targetLoc", targetLoc);
 	data.Add("startTime", startTime);

@@ -1,17 +1,37 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.20 (???):
+Version 0.21 (???):
+! cannot load saves from version 0.10 or older
++ updated libraries: AngelScript 2.35.1, DirectXMath 3.18
+
+--------------------------------------------------------------------------------
+Version 0.20 (2023-01-07):
 ! cannot load saves from version 0.9 or older
 + continued storyline with 4 subquests
-+ converted quests "kill animals", "dire wolf" to script
 + destroyable barricade
++ can pick exact value how long to rest in inn
++ better npc targeting for spell casting aroud corners
 + improvements to raise spell
++ alchemy panel improvements, potions created from team ingredients are now team items
++ converted quests "kill animals", "dire wolf" to script
++ adding loading save file to crash report
 + update libraries: Bullet Physics 3.2.4, Curl 7.86, DirectXMath 3.17b, FMod 2.02.11, JSON for Modern C++ 3.11.2, zlib 1.2.13
 - inconsistency in quest "kill animals" between dialog and received gold
 - adding notest on second page didn't work
 - missing hit effect for client training targets
 - missing hit effect for npc training targets
+- bugged news text after completing bandits collect toll quest
+- better search box for locations
+- npc couldn't cast heal on himself inside building
+- wrong drunk idle texts inside inn
+- incompatibility in world map between client and server
+- quest "kill animals" could pick already cleared location and there would be no enemies
+- couldn't finish quest "herbs for the alchemist" [Zielu]
+- when asking about nearby locations npc don't say that hunters camp is empty [Zielu]
+- broken save when exited to menu and started new game
+- in multiplayer starting with hunter didn't revealed where the camp is [Zielu]
+- no animation when npc talk that he don't have potions in combat [Zielu]
 
 --------------------------------------------------------------------------------
 Version 0.19 (2022-12-09):

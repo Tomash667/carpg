@@ -119,8 +119,7 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 		else
 		{
 			// send info about training
-			NetChangePlayer& c = Add1(ctx.pc->playerInfo->changes);
-			c.type = NetChangePlayer::TRAIN;
+			NetChangePlayer& c = ctx.pc->playerInfo->PushChange(NetChangePlayer::TRAIN);
 			c.id = 2;
 			c.count = 0;
 		}
@@ -524,10 +523,7 @@ void Quest_Tournament::Update(float dt)
 								game->fallbackTimer = -1.f;
 							}
 							else
-							{
-								NetChangePlayer& c = Add1(p.first->player->playerInfo->changes);
-								c.type = NetChangePlayer::ENTER_ARENA;
-							}
+								p.first->player->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 						}
 
 						p.second->busy = Unit::Busy_No;
@@ -542,10 +538,7 @@ void Quest_Tournament::Update(float dt)
 								game->fallbackTimer = -1.f;
 							}
 							else
-							{
-								NetChangePlayer& c = Add1(p.second->player->playerInfo->changes);
-								c.type = NetChangePlayer::ENTER_ARENA;
-							}
+								p.second->player->playerInfo->PushChange(NetChangePlayer::ENTER_ARENA);
 						}
 					}
 					pairs.pop_back();
@@ -780,8 +773,7 @@ void Quest_Tournament::Talk(cstring text)
 	gameGui->levelGui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK_POS;
+		NetChange& c = Net::PushChange(NetChange::TALK_POS);
 		c.pos = pos;
 		c.str = StringPool.Get();
 		*c.str = text;

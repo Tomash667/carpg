@@ -19,16 +19,16 @@ std::map<int, Perk*> Perk::hashPerks;
 	switch(perk)
 	{
 	case Perk::BadBack:
-		id = "bad_back";
+		id = "badBack";
 		break;
 	case Perk::ChronicDisease:
-		id = "chronic_disease";
+		id = "chronicDisease";
 		break;
 	case Perk::Sluggish:
 		id = "sluggish";
 		break;
 	case Perk::SlowLearner:
-		id = "slow_learner";
+		id = "slowLearner";
 		break;
 	case Perk::Asocial:
 		id = "asocial";
@@ -43,16 +43,16 @@ std::map<int, Perk*> Perk::hashPerks;
 		id = "skilled";
 		break;
 	case Perk::SkillFocus:
-		id = "skill_focus";
+		id = "skillFocus";
 		break;
 	case Perk::AlchemistApprentice:
-		id = "alchemist_apprentice";
+		id = "alchemistApprentice";
 		break;
 	case Perk::Wealthy:
 		id = "wealthy";
 		break;
 	case Perk::VeryWealthy:
-		id = "very_wealthy";
+		id = "veryWealthy";
 		break;
 	case Perk::FamilyHeirloom:
 		id = "heirloom";
@@ -61,7 +61,7 @@ std::map<int, Perk*> Perk::hashPerks;
 		id = "leader";
 		break;
 	case Perk::StrongBack:
-		id = "strong_back";
+		id = "strongBack";
 		break;
 	case Perk::Aggressive:
 		id = "aggressive";
@@ -76,28 +76,28 @@ std::map<int, Perk*> Perk::hashPerks;
 		id = "tough";
 		break;
 	case Perk::HardSkin:
-		id = "hard_skin";
+		id = "hardSkin";
 		break;
 	case Perk::Adaptation:
 		id = "adaptation";
 		break;
 	case Perk::PerfectHealth:
-		id = "perfect_health";
+		id = "perfectHealth";
 		break;
 	case Perk::Energetic:
 		id = "energetic";
 		break;
 	case Perk::StrongAura:
-		id = "strong_aura";
+		id = "strongAura";
 		break;
 	case Perk::ManaHarmony:
-		id = "mana_harmony";
+		id = "manaHarmony";
 		break;
 	case Perk::MagicAdept:
-		id = "magic_adept";
+		id = "magicAdept";
 		break;
 	case Perk::TravelingMerchant:
-		id = "traveling_merchant";
+		id = "travelingMerchant";
 		break;
 	default:
 		return nullptr;

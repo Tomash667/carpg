@@ -2925,7 +2925,7 @@ other q_magowie_kula2 {
 }
 
 other q_orkowie_klucz {
-	weight 1
+	weight 0.1
 	value 0
 	tex "rusty-key.png"
 	flags {notShop notRandom important}
@@ -2991,7 +2991,7 @@ other q_infected_organ {
 	weight 0.3
 	value 0
 	tex "infectedOrgan.png"
-	flags {notShop notRandom}
+	flags {notShop notRandom meatSound}
 }
 
 other q_yellow_crystal {

@@ -215,7 +215,8 @@ void ItemLoader::InitTokenizer()
 		{ "wand", ITEM_WAND },
 		{ "ingredient", ITEM_INGREDIENT },
 		{ "singleUse", ITEM_SINGLE_USE },
-		{ "notTeam", ITEM_NOT_TEAM }
+		{ "notTeam", ITEM_NOT_TEAM },
+		{ "meatSound", ITEM_MEAT_SOUND }
 		});
 
 	t.AddKeywords(G_ARMOR_TYPE, {

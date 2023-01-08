@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
 // NEGATIVE STARTING PERKS
 //------------------------------------------------------------------------------
-perk bad_back {
+perk badBack {
 	flags {start flaw}
 	required {
-		noPerk strong_back
+		noPerk strongBack
 		canMod str
 	}
 	effect {
@@ -12,10 +12,10 @@ perk bad_back {
 		str -5
 	}
 }
-perk chronic_disease {
+perk chronicDisease {
 	flags {start flaw}
 	required {
-		noPerk perfect_health
+		noPerk perfectHealth
 		canMod end
 	}
 	effect {
@@ -34,7 +34,7 @@ perk sluggish {
 		dex -5
 	}
 }
-perk slow_learner {
+perk slowLearner {
 	flags {start flaw}
 	required {
 		noPerk skilled
@@ -60,7 +60,7 @@ perk poor {
 	flags {start flaw}
 	required {
 		noPerk wealthy
-		noPerk very_wealthy
+		noPerk veryWealthy
 		noPerk heirloom
 	}
 	effect {
@@ -81,19 +81,19 @@ perk talent {
 perk skilled {
 	flags start
 	required {
-		noPerk slow_learner
+		noPerk slowLearner
 	}
 	effect {
 		skillPoint 3
 	}
 }
-perk skill_focus {
+perk skillFocus {
 	flags start
 	effect {
 		pickedSkill 5
 	}
 }
-perk alchemist_apprentice {
+perk alchemistApprentice {
 	flags {start history}
 	effect {
 		alchemy 10
@@ -105,13 +105,13 @@ perk wealthy {
 	flags start
 	required {
 		noPerk poor
-		noPerk very_wealthy
+		noPerk veryWealthy
 	}
 	effect {
 		gold 2500
 	}
 }
-perk very_wealthy {
+perk veryWealthy {
 	parent wealthy
 	flags start
 	required {
@@ -141,7 +141,7 @@ perk leader {
 		// npcs gain exp faster
 	}
 }
-perk traveling_merchant {
+perk travelingMerchant {
 	flags {start history}
 	required {
 		persuasion 0
@@ -155,11 +155,11 @@ perk traveling_merchant {
 //------------------------------------------------------------------------------
 // NORMAL
 //------------------------------------------------------------------------------
-perk strong_back {
+perk strongBack {
 	cost 2
 	required {
 		str 60
-		noPerk bad_back
+		noPerk badBack
 	}
 	effect {
 		carry 1.25
@@ -169,7 +169,7 @@ perk aggressive {
 	cost 2
 	required {
 		str 60
-		noPerk bad_back
+		noPerk badBack
 	}
 	effect {
 		meleeAttack 10
@@ -204,7 +204,7 @@ perk tough {
 		health 100
 	}
 }
-perk hard_skin {
+perk hardSkin {
 	cost 2
 	required {
 		end 60
@@ -222,11 +222,11 @@ perk adaptation {
 		poisonResistance 0.5
 	}
 }
-perk perfect_health {
+perk perfectHealth {
 	cost 5
 	required {
 		end 90
-		noPerk chronic_disease
+		noPerk chronicDisease
 	}
 	effect {
 		regeneration 5
@@ -242,7 +242,7 @@ perk energetic {
 		stamina 100
 	}
 }
-perk strong_aura {
+perk strongAura {
 	cost 2
 	required {
 		wis 60
@@ -251,7 +251,7 @@ perk strong_aura {
 		mana 100
 	}
 }
-perk mana_harmony {
+perk manaHarmony {
 	cost 5
 	required {
 		wis 90
@@ -260,7 +260,7 @@ perk mana_harmony {
 		manaRegeneration 1
 	}
 }
-perk magic_adept {
+perk magicAdept {
 	cost 2
 	required {
 		int 60
@@ -269,3 +269,21 @@ perk magic_adept {
 		magicPower 5
 	}
 }
+
+//------------------------------------------------------------------------------
+// ALIASES
+//------------------------------------------------------------------------------
+// pre V_DEV
+alias badBack bad_back
+alias chronicDisease chronic_disease
+alias slowLearner slow_learner
+alias skillFocus skill_focus
+alias alchemistApprentice alchemist_apprentice
+alias veryWealthy very_wealthy
+alias travelingMerchant traveling_merchant
+alias strongBack strong_back
+alias hardSkin hard_skin
+alias perfectHealth perfect_health
+alias strongAura strong_aura
+alias manaHarmony mana_harmony
+alias magicAdept magic_adept

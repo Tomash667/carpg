@@ -81,6 +81,13 @@ void Journal::Draw()
 	Rect r = { globalPos.x, globalPos.y, globalPos.x + size.x, globalPos.y + size.y };
 	gui->DrawSpriteRect(tBook, r);
 
+	// regions
+	if(IsDebug() && input->Down(Key::B))
+	{
+		gui->DrawRect(Color::Red, rect);
+		gui->DrawRect(Color::Red, rect2);
+	}
+
 	// buttons
 	for(int i = 0; i < Max; ++i)
 	{
@@ -602,8 +609,7 @@ void Journal::AddRumor(cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ADD_RUMOR;
+		NetChange& c = Net::PushChange(NetChange::ADD_RUMOR);
 		c.id = rumors.size();
 	}
 

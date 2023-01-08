@@ -16,7 +16,7 @@ code {
 }
 
 //=============================================================================
-quest deliver_letter {
+quest deliverLetter {
 	dialog start {
 		0 "I'm looking for someone who will deliver this letter to $(endLoc.IsVillage() ? \"soltys\" : \"mayor\") of $(endLoc.name). Are you interested in it?"
 		1 "Yes"
@@ -63,7 +63,7 @@ quest deliver_letter {
 }
 
 //=============================================================================
-quest deliver_resources {
+quest deliverResources {
 	dialog start {
 		0 "I have to deliver a box of resource to $(targetLoc.name). Normally, I would send one of my people, but since you're already here..."
 		1 "This is quite urgent. $(targetLoc.name) needs these resources within 15 days. Are you interested in?"
@@ -100,7 +100,7 @@ quest deliver_resources {
 }
 
 //=============================================================================
-quest bandits_collect_toll {
+quest banditsCollectToll {
 	dialog start {
 		0 "On the road between $(startLoc.name) and $(otherLoc.name) camped bandits. They charge a fee and are robbing merchants."
 		1 "You have time to take care of them?"
@@ -142,7 +142,7 @@ quest bandits_collect_toll {
 }
 
 //=============================================================================
-quest camp_near_city {
+quest campNearCity {
 	dialog start {
 		0 "Can you imagine that?! $(group.name.Upper()) created camp just near our $(startLoc.IsVillage() ? \"village\" : \"city\")!"
 		1 "I think they want to attack the $(startLoc.IsVillage() ? \"village\" : \"city\")! We have to do something about it!"
@@ -172,7 +172,7 @@ quest camp_near_city {
 }
 
 //=============================================================================
-quest kill_animals {
+quest killAnimals {
 	dialog start {
 		0 "I'm looking for someone who will take up one of the nearby locations which prevailed in many creatures."
 		1 "Are you interested?"
@@ -200,7 +200,7 @@ quest kill_animals {
 }
 
 //=============================================================================
-quest find_artifact {
+quest findArtifact {
 	dialog start {
 		0 "I'm looking for a certain artifact known as the $(item.name)."
 		1 "Can you deliver it to me?"
@@ -229,7 +229,7 @@ quest find_artifact {
 }
 
 //=============================================================================
-quest lost_artifact {
+quest lostArtifact {
 	dialog start {
 		0 "I found $(item.name) but unfortunately, I lost it on the way back."
 		1 "Can you find it?"
@@ -258,7 +258,7 @@ quest lost_artifact {
 }
 
 //=============================================================================
-quest stolen_artifact {
+quest stolenArtifact {
 	dialog start {
 		0 "$(Upper1(group.name)) has stolen my $(item.name)."
 		1 "Can you retrieve it?"
@@ -287,7 +287,7 @@ quest stolen_artifact {
 }
 
 //=============================================================================
-quest alchemist_apprentice {
+quest alchemistApprentice {
 	dialog alchemist {
 		0 "Welcome. Are you here for the task?"
 		1 "Task"
@@ -461,7 +461,7 @@ quest main {
 }
 
 //=============================================================================
-quest side_cleric {
+quest sideCleric {
 	dialog end {
 		0 "Give the book"
 		1 "Did you get that book?"
@@ -478,7 +478,7 @@ quest side_cleric {
 }
 
 //=============================================================================
-quest dire_wolf {
+quest direWolf {
 	dialog hunter {
 		0 "Quest"
 		1 "Do you want to prove that you are one of us?"
@@ -492,12 +492,12 @@ quest dire_wolf {
 		1 "Received from the leader of hunters at $date$"
 		2 "I must go to $(forest.name) and kill the dire wolf that terrorizes the surrounding villages."
 		3 "I killed the dire wolf, I can go back to the hunter's camp and collect my reward."
-		4 "I recived the reward. Quest done!"
+		4 "I received the reward. Quest done!"
 	}
 }
 
 //=============================================================================
-quest main_village1 {
+quest mainVillage1 {
 	texts {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
@@ -505,11 +505,12 @@ quest main_village1 {
 		3 "I got there. The village looks abandoned. I have to check in the tavern and the soltys's house, maybe there's someone there."
 		4 "I found the diary of the local soltys. It shows that they all just disappeared within a few days. I should return this information to $(cleric.realName)."
 		5 "I returned the diary to $(cleric.realName) and got rewarded for it. Quest done!"
+		6 "All the residents of $(village.name) have disappeared somewhere..."
 	}
 }
 
 //=============================================================================
-quest main_village2 {
+quest mainVillage2 {
 	texts {
 		0 "Source of the plague in $(village.name)"
 		1 "Started at $date$."
@@ -519,11 +520,12 @@ quest main_village2 {
 		5 "I found some strange crystal on the soltys's body. Maybe it is responsible for this plague?"
 		6 "I did all I could. Time to go back to $(cleric.realName)."
 		7 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		8 "The plague has hit $(village.name). Nobody survived..."
 	}
 }
 
 //=============================================================================
-quest main_village3 {
+quest mainVillage3 {
 	dialog villager {
 		0 "Thanks for the rescue. I'm getting out of here!"
 	}
@@ -544,26 +546,12 @@ quest main_village3 {
 		6 "I found some strange herbs. Did they cause the plague?"
 		7 "I did all I could. Time to go back to $(cleric.realName)."
 		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
+		9 "In $(village.name), infected residents fought with other residents. Fortunately, the situation was brought under control. At least that's what I heard..."
 	}
 }
 
 //=============================================================================
-quest main_village4 {
-	texts {
-		0 "Source of the plague in $(village.name)"
-		1 "Started at $date$."
-		2 "Cleric $(cleric.realName) asked me to find the source of the plague. One of the places I need to check is $(village.name)."
-		3 "After reaching the village, I saw a fight. I must quickly help the villagers who have not yet fallen ill to repel the attack. I also need to find some information on the source of the plague."
-		4 "One of the villagers hid in the inn. He said that one of the first infected was an alchemist. Maybe I can find some proof on him."
-		5 "The infected villagers are dead, now I have to look for some evidence. Maybe I'll find something in the inn or the soltys's house."
-		6 "I found some strange herbs. Did they cause the plague?"
-		7 "I did all I could. Time to go back to $(cleric.realName)."
-		8 "I returned the weird crystal to $(cleric.realName) and got rewarded for it. Quest done!"
-	}
-}
-
-//=============================================================================
-quest main_village4 {
+quest mainVillage4 {
 	dialog oldman {
 		0 "Hello young man."
 		1 "Thank you for the rescue, our barricade wouldn't last long."
@@ -589,5 +577,6 @@ quest main_village4 {
 		7 "The old man claims he has lost his memory and asked me to take him to any village or town."
 		8 "I led the old man to $(Level::location.name). He thanked me and headed towards the inn. Time to go back to $(cleric.realName)."
 		9 "I passed $(cleric.realName) information and got rewarded for it. Quest done!"
+		10 "The plague has hit $(village.name). Nobody survived..."
 	}
 }

@@ -57,8 +57,7 @@ void Room::Load(GameReader& f)
 	for(Room*& room : connected)
 		room = reinterpret_cast<Room*>(f.Read<int>());
 	f >> target;
-	if(LOAD_VERSION >= V_0_11)
-		f >> group;
+	f >> group;
 }
 
 //=================================================================================================
@@ -117,8 +116,7 @@ void RoomGroup::Save(GameWriter& f)
 //=================================================================================================
 void RoomGroup::Load(GameReader& f)
 {
-	if(LOAD_VERSION >= V_0_11)
-		f >> connections;
+	f >> connections;
 	f >> rooms;
 	f >> target;
 }

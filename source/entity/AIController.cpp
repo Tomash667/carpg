@@ -281,26 +281,8 @@ void AIController::LoadIdleAction(GameReader& f, StateData::IdleState& idle, boo
 			int partId;
 			f >> partId;
 			f >> idle.region.pos;
-			if(LOAD_VERSION >= V_0_11)
-			{
-				f >> idle.region.exit;
-				idle.region.locPart = gameLevel->GetLocationPartById(partId);
-			}
-			else
-			{
-				if(partId == LocationPart::OLD_EXIT_ID)
-				{
-					idle.region.exit = true;
-					idle.region.locPart = gameLevel->GetLocationPartById(LocationPart::OUTSIDE_ID);
-				}
-				else
-				{
-					idle.region.exit = false;
-					idle.region.locPart = gameLevel->GetLocationPartById(partId);
-					if(!idle.region.locPart)
-						idle.region.locPart = gameLevel->localPart;
-				}
-			}
+			f >> idle.region.exit;
+			idle.region.locPart = gameLevel->GetLocationPartById(partId);
 		}
 		break;
 	default:
@@ -324,7 +306,10 @@ bool AIController::CheckPotion(bool inCombat)
 			if(index == -1)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-					unit->Talk(RandomString(game->txAiNoHpPot));
+				{
+					const int playAnim = (inCombat ? 0 : -1);
+					unit->Talk(RandomString(game->txAiNoHpPot), playAnim);
+				}
 				havePotion = HavePotion::No;
 				return false;
 			}
@@ -351,7 +336,10 @@ bool AIController::CheckPotion(bool inCombat)
 				if(index == -1)
 				{
 					if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-						unit->Talk(RandomString(game->txAiNoMpPot));
+					{
+						const int playAnim = (inCombat ? 0 : -1);
+						unit->Talk(RandomString(game->txAiNoMpPot), playAnim);
+					}
 					haveMpPotion = HavePotion::No;
 					return false;
 				}
@@ -414,24 +402,25 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(gameLevel->cityCtx && locTimer <= 0.f && !game->dontWander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(!gameLevel->cityCtx
+		|| locTimer > 0.f
+		|| game->dontWander
+		|| !IsSet(unit->data->flags, F_AI_WANDERS)
+		|| unit->busy != Unit::Busy_No
+		|| unit->GetOrder() == ORDER_WAIT)
+		return false;
+
+	if(unit->IsHero())
 	{
-		if(unit->busy != Unit::Busy_No)
+		if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
 			return false;
-		if(unit->IsHero())
-		{
-			if(unit->hero->teamMember && unit->GetOrder() != ORDER_WANDER)
-				return false;
-			else if(questMgr->questTournament->IsGenerated())
-				return false;
-			else
-				return true;
-		}
-		else if(unit->locPart->partType == LocationPart::Type::Outside)
-			return true;
+		else if(questMgr->questTournament->IsGenerated())
+			return false;
 		else
-			return false;
+			return true;
 	}
+	else if(unit->locPart->partType == LocationPart::Type::Outside)
+		return true;
 	else
 		return false;
 }
@@ -455,7 +444,7 @@ Vec3 AIController::PredictTargetPos(const Unit& target, float bulletSpeed) const
 		return target.GetCenter();
 
 	Vec3 pos = target.pos + ((b + std::sqrt(delta)) / (2 * a)) * Vec3(vel.x, 0, vel.z);
-	pos.y += target.GetUnitHeight() / 2;
+	pos.y += target.GetHeight() / 2;
 	return pos;
 }
 
@@ -468,8 +457,7 @@ void AIController::Shout()
 	game->PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
@@ -510,8 +498,7 @@ void AIController::HitReaction(const Vec3& pos)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
+		NetChange& c = Net::PushChange(NetChange::UNIT_SOUND);
 		c.unit = unit;
 		c.id = SOUND_SEE_ENEMY;
 	}
@@ -596,8 +583,7 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ATTACK;
+		NetChange& c = Net::PushChange(NetChange::ATTACK);
 		c.unit = unit;
 		c.id = (doPowerAttack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 		c.f[1] = speed;

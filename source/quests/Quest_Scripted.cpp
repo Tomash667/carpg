@@ -230,7 +230,7 @@ Quest::LoadResult Quest_Scripted::Load(GameReader& f)
 	f >> timeoutDays;
 	isNew = true;
 
-	// fix for not initializing category for 'side_cleric' quest
+	// fix for not initializing category for 'sideCleric' quest
 	if(LOAD_VERSION <= V_0_17)
 		category = scheme->category;
 
@@ -602,9 +602,8 @@ bool Quest_Scripted::PostRun()
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(Net::changes);
+			NetChange& c = Net::PushChange(NetChange::UPDATE_QUEST);
 			c.id = id;
-			c.type = NetChange::UPDATE_QUEST;
 			c.count = journalChanges;
 		}
 	}

@@ -231,8 +231,7 @@ void Game::UpdateAi(float dt)
 				u.meshInst->Deactivate(1);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ATTACK;
+					NetChange& c = Net::PushChange(NetChange::ATTACK);
 					c.unit = &u;
 					c.id = AID_Cancel;
 					c.f[1] = 1.f;
@@ -309,7 +308,12 @@ void Game::UpdateAi(float dt)
 								if(&target == &u)
 									prio *= 1.5f;
 								if(!target.IsAlive())
-									prio /= 10;
+								{
+									if(Any(ai.state, AIController::Fighting, AIController::Dodge, AIController::Block, AIController::Wait))
+										continue; // don't waste time healing "dead" allies
+									else
+										prio *= 10;
+								}
 								prio -= dist * 10;
 								if(prio > bestPrio)
 								{
@@ -425,8 +429,7 @@ void Game::UpdateAi(float dt)
 					u.meshInst->Deactivate(1);
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = &u;
 						c.id = AID_Cancel;
 						c.f[1] = 1.f;
@@ -618,6 +621,7 @@ void Game::UpdateAi(float dt)
 					moveType = MovePoint;
 					targetPos = u.order->pos;
 					lookAt = LookAtWalk;
+					tryPhase = true;
 					switch(u.order->moveType)
 					{
 					default:
@@ -714,7 +718,7 @@ void Game::UpdateAi(float dt)
 					useIdle = false;
 					if(Usable* usable = u.order->usable)
 					{
-						if(Vec3::Distance2d(u.pos, usable->pos) < u.GetUnitRadius() * 2 + 0.25f)
+						if(Vec3::Distance2d(u.pos, usable->pos) < u.GetRadius() * 2 + 0.25f)
 						{
 							u.TakeWeapon(W_ONE_HANDED);
 							if(u.GetStaminap() >= 0.25f)
@@ -801,6 +805,7 @@ void Game::UpdateAi(float dt)
 								what = Rand() % 3;
 							else
 								what = Rand() % 2 + 1;
+
 							switch(what)
 							{
 							case 0: // drink
@@ -834,18 +839,10 @@ void Game::UpdateAi(float dt)
 								what = Rand() % 2;
 							else
 								what = 1;
-							switch(what)
-							{
-							case 0: // drink
-								u.ConsumeItem(ItemList::GetItem("drink")->ToConsumable());
-								ai.timer = Random(10.f, 15.f);
-								break;
-							case 1: // eat
-								u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
-								ai.timer = Random(10.f, 15.f);
-								break;
-							}
+
+							u.ConsumeItem(ItemList::GetItem(what == 0 ? "drink" : "normal_food")->ToConsumable());
 							ai.st.idle.action = AIController::Idle_Use;
+							ai.timer = Random(10.f, 15.f);
 						}
 						else
 						{
@@ -1018,6 +1015,7 @@ void Game::UpdateAi(float dt)
 											ai.timer = Random(15.f, 35.f);
 											ai.st.idle.action = AIController::Idle_TrainBow;
 											ai.st.idle.obj.pos = o.pos;
+											ai.st.idle.obj.pos.y += 1.27f; // TODO: not hardcoded center
 											ai.st.idle.obj.rot = o.rot.y;
 											ai.st.idle.obj.ptr = &o;
 										}
@@ -1098,7 +1096,6 @@ void Game::UpdateAi(float dt)
 									ai.timer = Random(3.f, 6.f);
 									if(ai.st.idle.usable->base == stool && Rand() % 3 == 0)
 										ai.st.idle.action = AIController::Idle_WalkUseEat;
-									uses.clear();
 									break;
 								}
 							}
@@ -1112,8 +1109,7 @@ void Game::UpdateAi(float dt)
 								u.animation = ANI_IDLE;
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::IDLE;
+									NetChange& c = Net::PushChange(NetChange::IDLE);
 									c.unit = &u;
 									c.id = id;
 								}
@@ -1205,7 +1201,7 @@ void Game::UpdateAi(float dt)
 							else if(!gameLevel->location->outside)
 							{
 								InsideLocation* inside = static_cast<InsideLocation*>(gameLevel->location);
-								if(!inside->GetLevelData().IsValidWalkPos(ai.st.idle.pos, u.GetUnitRadius()))
+								if(!inside->GetLevelData().IsValidWalkPos(ai.st.idle.pos, u.GetRadius()))
 								{
 									ai.timer = Random(2.f, 4.f);
 									ai.st.idle.action = AIController::Idle_None;
@@ -1240,7 +1236,7 @@ void Game::UpdateAi(float dt)
 						}
 						break;
 					case AIController::Idle_Move:
-						if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetUnitRadius() * 2)
+						if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetRadius() * 2)
 						{
 							if(ai.cityWander)
 							{
@@ -1314,8 +1310,7 @@ void Game::UpdateAi(float dt)
 
 									if(Net::IsOnline())
 									{
-										NetChange& c = Add1(Net::changes);
-										c.type = NetChange::TALK;
+										NetChange& c = Net::PushChange(NetChange::TALK);
 										c.unit = &u;
 										c.str = StringPool.Get();
 										*c.str = msg;
@@ -1432,8 +1427,7 @@ void Game::UpdateAi(float dt)
 										}
 										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(Net::changes);
-											c.type = NetChange::USE_USABLE;
+											NetChange& c = Net::PushChange(NetChange::USE_USABLE);
 											c.unit = &u;
 											c.id = use.id;
 											c.count = (readPapers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
@@ -1464,7 +1458,7 @@ void Game::UpdateAi(float dt)
 					case AIController::Idle_Use:
 						break;
 					case AIController::Idle_TrainCombat:
-						if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetUnitRadius() * 2 + 0.25f)
+						if(Vec3::Distance2d(u.pos, ai.st.idle.pos) < u.GetRadius() * 2 + 0.25f)
 						{
 							u.TakeWeapon(W_ONE_HANDED);
 							if(u.GetStaminap() >= 0.25f)
@@ -1485,17 +1479,16 @@ void Game::UpdateAi(float dt)
 						{
 							Vec3 pt = ai.st.idle.obj.pos;
 							pt -= Vec3(sin(ai.st.idle.obj.rot) * 5, 0, cos(ai.st.idle.obj.rot) * 5);
-							if(Vec3::Distance2d(u.pos, pt) < u.GetUnitRadius() * 2)
+							if(Vec3::Distance2d(u.pos, pt) < u.GetRadius() * 2)
 							{
 								u.TakeWeapon(W_BOW);
 								float dir = Vec3::LookAtAngle(u.pos, ai.st.idle.obj.pos);
 								if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weaponTaken == W_BOW && ai.nextAttack <= 0.f
 									&& u.GetStaminap() >= 0.25f && u.frozen == FROZEN::NO
-									&& gameLevel->CanShootAtLocation2(u, ai.st.idle.obj.ptr, ai.st.idle.obj.pos))
+									&& u.CanShootAtLocation(ai.st.idle.obj.ptr, ai.st.idle.obj.pos, false))
 								{
 									// bow shooting
 									u.targetPos = ai.st.idle.obj.pos;
-									u.targetPos.y += 1.27f;
 									u.DoRangedAttack(false);
 								}
 								lookAt = LookAtPoint;
@@ -1513,7 +1506,7 @@ void Game::UpdateAi(float dt)
 						break;
 					case AIController::Idle_MoveRegion:
 					case AIController::Idle_RunRegion:
-						if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetUnitRadius() * 2)
+						if(Vec3::Distance2d(u.pos, ai.st.idle.region.pos) < u.GetRadius() * 2)
 						{
 							if(gameLevel->cityCtx && !IsSet(gameLevel->cityCtx->flags, City::HaveExit) && u.locPart == ai.st.idle.region.locPart
 								&& ai.st.idle.region.locPart->partType == LocationPart::Type::Outside && !ai.st.idle.region.exit)
@@ -1696,7 +1689,7 @@ void Game::UpdateAi(float dt)
 							if(enemyDist < ability.range
 								// can't cast drain blood on bloodless units
 								&& !(ability.effect == Ability::Drain && IsSet(enemy->data->flags2, F2_BLOODLESS))
-								&& gameLevel->CanShootAtLocation(u, *enemy, enemy->pos)
+								&& u.CanShootAtUnit(*enemy, enemy->pos, true)
 								&& (ability.type != Ability::Charge || AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, enemy->pos)) < 0.1f))
 							{
 								ai.cooldown[i] = ability.cooldown.Random();
@@ -1713,10 +1706,10 @@ void Game::UpdateAi(float dt)
 								if(ability.animation.empty())
 								{
 									if(u.meshInst->mesh->head.nGroups == 2)
-										u.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+										u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 									else
 									{
-										u.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+										u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 0);
 										u.animation = ANI_PLAY;
 									}
 								}
@@ -1728,8 +1721,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CAST_SPELL;
+									NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 									c.unit = &u;
 									c.ability = &ability;
 								}
@@ -1747,6 +1739,7 @@ void Game::UpdateAi(float dt)
 					lookAt = LookAtTarget;
 					targetPos = enemy->pos;
 				}
+
 				if(u.action == A_CAST)
 				{
 					// spellshot
@@ -1774,8 +1767,7 @@ void Game::UpdateAi(float dt)
 					{
 						// shooting possibility check
 						lookPos = ai.PredictTargetPos(*enemy, u.GetArrowSpeed());
-
-						if(gameLevel->CanShootAtLocation(u, *enemy, enemy->pos))
+						if(u.CanShootAtUnit(*enemy, lookPos, false))
 						{
 							// bowshot
 							u.DoRangedAttack(false);
@@ -1860,8 +1852,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ATTACK;
+									NetChange& c = Net::PushChange(NetChange::ATTACK);
 									c.unit = &u;
 									c.id = AID_Block;
 									c.f[1] = speed;
@@ -1955,7 +1946,7 @@ void Game::UpdateAi(float dt)
 							ai.timer = u.IsFollower() ? Random(1.f, 2.f) : Random(15.f, 30.f);
 							ai.state = AIController::SearchEnemy;
 							ai.st.search.room = room->connected[Rand() % room->connected.size()];
-							ai.targetLastPos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
+							ai.targetLastPos = ai.st.search.room->GetRandomPos(u.GetRadius());
 						}
 						else
 						{
@@ -2022,7 +2013,7 @@ void Game::UpdateAi(float dt)
 					if(!room) // pre V_0_13
 						room = lvl.GetNearestRoom(u.pos);
 					ai.st.search.room = room->connected[Rand() % room->connected.size()];
-					ai.targetLastPos = ai.st.search.room->GetRandomPos(u.GetUnitRadius());
+					ai.targetLastPos = ai.st.search.room->GetRandomPos(u.GetRadius());
 				}
 			}
 			break;
@@ -2264,8 +2255,7 @@ void Game::UpdateAi(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
+								NetChange& c = Net::PushChange(NetChange::ATTACK);
 								c.unit = &u;
 								c.id = AID_Bash;
 								c.f[1] = speed;
@@ -2286,8 +2276,7 @@ void Game::UpdateAi(float dt)
 					ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
+						NetChange& c = Net::PushChange(NetChange::ATTACK);
 						c.unit = &u;
 						c.id = AID_Cancel;
 						c.f[1] = 1.f;
@@ -2409,10 +2398,10 @@ void Game::UpdateAi(float dt)
 					if(ability.animation.empty())
 					{
 						if(u.meshInst->mesh->head.nGroups == 2)
-							u.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 						else
 						{
-							u.meshInst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 0);
 							u.animation = ANI_PLAY;
 						}
 					}
@@ -2424,8 +2413,7 @@ void Game::UpdateAi(float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CAST_SPELL;
+						NetChange& c = Net::PushChange(NetChange::CAST_SPELL);
 						c.unit = &u;
 						c.ability = &ability;
 					}
@@ -2587,7 +2575,7 @@ void Game::UpdateAi(float dt)
 
 			if(moveType == KeepDistanceCheck)
 			{
-				if(u.action == A_TAKE_WEAPON || gameLevel->CanShootAtLocation(u, *enemy, targetPos))
+				if(u.action == A_TAKE_WEAPON || u.CanShootAtUnit(*enemy, targetPos, IsSet(u.data->flags, F_MAGE)))
 				{
 					if(enemyDist < 8.f)
 						move = -1;
@@ -2597,7 +2585,10 @@ void Game::UpdateAi(float dt)
 						move = 0;
 				}
 				else
+				{
+					moveType = MovePoint;
 					move = 1;
+				}
 			}
 			else if(moveType == MoveAway)
 				move = -1;
@@ -2652,12 +2643,12 @@ void Game::UpdateAi(float dt)
 				if(moveType == KeepDistanceCheck)
 				{
 					u.pos += dir;
-					if(u.action != A_TAKE_WEAPON && !gameLevel->CanShootAtLocation(u, *enemy, targetPos))
+					if(u.action != A_TAKE_WEAPON && !u.CanShootAtUnit(*enemy, targetPos, IsSet(u.data->flags, F_MAGE)))
 						move = 0;
 					u.pos = u.prevPos;
 				}
 
-				if(move != 0 && gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
+				if(move != 0 && gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small))
 				{
 					u.Moved();
 					if(!small && u.animation != ANI_PLAY)
@@ -2862,7 +2853,7 @@ void Game::UpdateAi(float dt)
 					if(moveType == KeepDistanceCheck)
 					{
 						u.pos += dir;
-						if(!gameLevel->CanShootAtLocation(u, *enemy, targetPos))
+						if(!u.CanShootAtUnit(*enemy, targetPos, IsSet(u.data->flags, F_MAGE)))
 							move = 0;
 						u.pos = u.prevPos;
 					}
@@ -2870,7 +2861,7 @@ void Game::UpdateAi(float dt)
 					if(move != 0)
 					{
 						int moveState = 0;
-						if(gameLevel->CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
+						if(gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small))
 							moveState = 1;
 						else if(tryPhase && u.hero->phase)
 						{
