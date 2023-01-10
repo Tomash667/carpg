@@ -25,7 +25,6 @@ vector<BookScheme*> BookScheme::bookSchemes;
 vector<Book*> Book::books;
 vector<StartItem> StartItem::startItems;
 std::map<const Item*, Item*> betterItems;
-std::unordered_map<int, Recipe*> ContentItem<Recipe>::items;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -537,7 +536,8 @@ Recipe* Recipe::ForwardGet(const string& id)
 		recipe->id = id;
 		recipe->hash = hash;
 		recipe->defined = false;
-		items[hash] = recipe;
+		hashes[hash] = recipe;
+		items.push_back(recipe);
 	}
 	else if(recipe->id != id)
 		throw Format("Recipe hash collision '%s' and '%s' (%d).", id.c_str(), recipe->id.c_str(), hash);

@@ -19,7 +19,7 @@
 void CampGenerator::InitOnce()
 {
 	objs[CAMPFIRE] = BaseObject::Get("campfire");
-	objs[CAMPFIRE_OFF] = BaseObject::Get("campfire_off");
+	objs[CAMPFIRE_OFF] = BaseObject::Get("campfireOff");
 	objs[TENT] = BaseObject::Get("tent");
 	objs[BEDDING] = BaseObject::Get("bedding");
 	objs[BENCH] = BaseObject::Get("bench");
@@ -27,14 +27,14 @@ void CampGenerator::InitOnce()
 	objs[BARRELS] = BaseObject::Get("barrels");
 	objs[BOX] = BaseObject::Get("box");
 	objs[BOXES] = BaseObject::Get("boxes");
-	objs[BOW_TARGET] = BaseObject::Get("bow_target");
+	objs[BOW_TARGET] = BaseObject::Get("bowTarget");
 	objs[CHEST] = BaseObject::Get("chest");
 	objs[TORCH] = BaseObject::Get("torch");
-	objs[TORCH_OFF] = BaseObject::Get("torch_off");
-	objs[TANNING_RACK] = BaseObject::Get("tanning_rack");
+	objs[TORCH_OFF] = BaseObject::Get("torchOff");
+	objs[TANNING_RACK] = BaseObject::Get("tanningRack");
 	objs[HAY] = BaseObject::Get("hay");
 	objs[FIREWOOD] = BaseObject::Get("firewood");
-	objs[MELEE_TARGET] = BaseObject::Get("melee_target");
+	objs[MELEE_TARGET] = BaseObject::Get("meleeTarget");
 	objs[ANVIL] = BaseObject::Get("anvil");
 	objs[CAULDRON] = BaseObject::Get("cauldron");
 }

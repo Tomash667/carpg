@@ -56,7 +56,7 @@ void MoonwellGenerator::GenerateObjects()
 	terrain->SetY(pos);
 	pos.y -= 0.2f;
 	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("moonwell"), pos, 0.f);
-	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("moonwell_phy"), pos, 0.f);
+	gameLevel->SpawnObjectEntity(locPart, BaseObject::Get("moonwellPhy"), pos, 0.f);
 
 	TerrainTile* tiles = ((OutsideLocation*)gameLevel->location)->tiles;
 

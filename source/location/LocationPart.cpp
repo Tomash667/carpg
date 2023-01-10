@@ -932,11 +932,11 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 		}
 	}
 
-	// collisions with melee_target
+	// collisions with meleeTarget
 	b.e = Vec3(0.6f, 2.f, 0.6f);
 	for(Object* obj : objects)
 	{
-		if(obj->base && obj->base->id == "melee_target")
+		if(obj->base && obj->base->id == "meleeTarget")
 		{
 			b.c = obj->pos;
 			b.c.y += 1.f;

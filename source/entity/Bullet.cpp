@@ -366,7 +366,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 			if(owner && owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
 			{
 				Object* obj = static_cast<Object*>(callback.target->getUserPointer());
-				if(obj && obj->base && obj->base->id == "bow_target")
+				if(obj && obj->base && obj->base->id == "bowTarget")
 				{
 					if(questMgr->questTutorial->inTutorial)
 						questMgr->questTutorial->HandleBulletCollision();

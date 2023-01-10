@@ -30,7 +30,7 @@ OutsideObject OutsideLocationGenerator::trees2[] = {
 	"tree", nullptr, Vec2(4,8),
 	"tree2", nullptr, Vec2(4,8),
 	"tree3", nullptr, Vec2(4,8),
-	"withered_tree", nullptr, Vec2(1,4)
+	"witheredTree", nullptr, Vec2(1,4)
 };
 const uint OutsideLocationGenerator::nTrees2 = countof(trees2);
 

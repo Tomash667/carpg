@@ -36,7 +36,7 @@ void Quest_Secret::LoadLanguage()
 //=================================================================================================
 void Quest_Secret::Init()
 {
-	state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
+	state = (BaseObject::Get("tomashuHouse")->mesh ? SECRET_NONE : SECRET_OFF);
 	GetNote().desc.clear();
 	where = -1;
 	where2 = -1;
@@ -58,7 +58,7 @@ void Quest_Secret::Load(GameReader& f)
 	f >> GetNote().desc;
 	f >> where;
 	f >> where2;
-	if(state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
+	if(state > SECRET_NONE && !BaseObject::Get("tomashuHouse")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 }
 

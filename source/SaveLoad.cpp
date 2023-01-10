@@ -856,7 +856,7 @@ void Game::LoadGame(GameReader& f)
 	// set ai bow targets
 	if(!aiBowTargets.empty())
 	{
-		BaseObject* bowTarget = BaseObject::Get("bow_target");
+		BaseObject* bowTarget = BaseObject::Get("bowTarget");
 		for(vector<AIController*>::iterator it = aiBowTargets.begin(), end = aiBowTargets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;

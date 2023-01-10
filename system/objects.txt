@@ -13,7 +13,7 @@ object barrels {
 	flags nearWall
 }
 
-object big_barrel {
+object bigBarrel {
 	mesh "beczka2.qmsh"
 	flags { nearWall blocksCamera }
 }
@@ -41,7 +41,7 @@ object wagon {
 	flags { multiplePhysics }
 }
 
-object bow_target {
+object bowTarget {
 	mesh "tarcza_strzelnicza.qmsh"
 	flags { nearWall physicsPtr }
 }
@@ -54,13 +54,13 @@ object torch {
 	flags { nearWall light important }
 }
 
-object torch_off {
+object torchOff {
 	mesh "pochodnia.qmsh"
 	cylinder { 0.0675 2.18 }
 	flags nearWall
 }
 
-object tanning_rack {
+object tanningRack {
 	mesh "tanning_rack.qmsh"
 	flags nearWall
 }
@@ -70,7 +70,7 @@ object altar {
 	flags { nearWall blocksCamera }
 }
 
-object bloody_altar {
+object bloodyAltar {
 	mesh "krwawy_oltarz.qmsh"
 	centerY 0.782
 	flags { nearWall important bloodEffect blocksCamera }
@@ -146,7 +146,7 @@ object painting8 {
 	flags { nearWall noPhysics high onWall }
 }
 
-object painting_elf {
+object paintingElf {
 	mesh "painting_elf.qmsh"
 	flags { nearWall noPhysics high onWall }
 }
@@ -158,7 +158,7 @@ object campfire {
 	flags { tmpPhysics light campfireEffect }
 }
 
-object campfire_off {
+object campfireOff {
 	mesh "ognisko2.qmsh"
 	cylinder { 1.0735 0.43 }
 	flags tmpPhysics
@@ -170,19 +170,13 @@ object chest {
 	flags { nearWall isChest }
 }
 
-// removed in V_0_14
-object chest_r {
-	mesh "chest.qmsh"
-	flags isChest
-}
-
-object chest_silver {
+object chestSilver {
 	mesh "chest2.qmsh"
 	extraDist 0.2
 	flags isChest
 }
 
-object melee_target {
+object meleeTarget {
 	mesh "manekin.qmsh"
 	cylinder { 0.27 1.85 }
 	flags physicsPtr
@@ -193,7 +187,7 @@ object emblem {
 	flags { nearWall noPhysics onWall }
 }
 
-object emblem_t {
+object tomashuEmblem {
 	mesh "emblemat_t.qmsh"
 	flags { nearWall noPhysics onWall }
 }
@@ -203,12 +197,7 @@ object gobelin {
 	flags { nearWall noPhysics onWall }
 }
 
-object table_and_chairs {
-	cylinder { 3 0.6 }
-	flags tableSpawner
-}
-
-object tablechairs {
+object tableAndChairs {
 	cylinder { 3 0.6 }
 	flags tableSpawner
 }
@@ -218,7 +207,7 @@ object grave {
 	flags nearWall
 }
 
-object tombstone_1 {
+object tombstone1 {
 	mesh "nagrobek.qmsh"
 }
 
@@ -280,7 +269,7 @@ object plant {
 	flags { noPhysics noCulling }
 }
 
-object plant_pot {
+object plantPot {
 	mesh "doniczka.qmsh"
 	cylinder { 0.257 0.05 }
 	flags noCulling
@@ -291,13 +280,13 @@ object desk {
 	flags noCulling
 }
 
-object withered_tree {
+object witheredTree {
 	mesh "drzewo_uschniete.qmsh"
 	cylinder { 0.58 6 }
 	flags { scaleable blocksCamera }
 }
 
-object tartak {
+object sawmill {
 	mesh "tartak.qmsh"
 	flags building
 }
@@ -307,7 +296,7 @@ object portal {
 	flags doublePhysics
 }
 
-object magic_thing {
+object magicThing {
 	mesh "magiczne_cos.qmsh"
 	cylinder { 0.561 0.844 }
 	centerY 0.844
@@ -320,12 +309,12 @@ object moonwell {
 	flags waterEffect
 }
 
-object moonwell_phy {
+object moonwellPhy {
 	mesh "moonwell_phy.qmsh"
 	flags { doublePhysics rotatePhysics }
 }
 
-object tomashu_dom {
+object tomashuHouse {
 	mesh "tomashu_dom.qmsh"
 	flags building
 }
@@ -340,22 +329,22 @@ object bania {
 	cylinder { 1 1 }
 }
 
-object painting_x1 {
+object paintingX1 {
 	mesh "obraz_x1.qmsh"
 	flags { nearWall noPhysics high onWall }
 }
 
-object painting_x2 {
+object paintingX2 {
 	mesh "obraz_x2.qmsh"
 	flags { nearWall noPhysics high onWall }
 }
 
-object painting_x3 {
+object paintingX3 {
 	mesh "obraz_x3.qmsh"
 	flags { nearWall noPhysics high onWall }
 }
 
-object painting_x4 {
+object paintingX4 {
 	mesh "obraz_x4.qmsh"
 	flags { nearWall noPhysics high onWall }
 }
@@ -370,39 +359,39 @@ object obelisk {
 	flags blocksCamera
 }
 
-object tombstone_x1 {
+object tombstoneX1 {
 	mesh "nagrobek_x1.qmsh"
 }
 
-object tombstone_x2 {
+object tombstoneX2 {
 	mesh "nagrobek_x2.qmsh"
 }
 
-object tombstone_x3 {
+object tombstoneX3 {
 	mesh "nagrobek_x3.qmsh"
 }
 
-object tombstone_x4 {
+object tombstoneX4 {
 	mesh "nagrobek_x4.qmsh"
 }
 
-object tombstone_x5 {
+object tombstoneX5 {
 	mesh "nagrobek_x5.qmsh"
 }
 
-object tombstone_x6 {
+object tombstoneX6 {
 	mesh "nagrobek_x6.qmsh"
 }
 
-object tombstone_x7 {
+object tombstoneX7 {
 	mesh "nagrobek_x7.qmsh"
 }
 
-object tombstone_x8 {
+object tombstoneX8 {
 	mesh "nagrobek_x8.qmsh"
 }
 
-object tombstone_x9 {
+object tombstoneX9 {
 	mesh "nagrobek_x9.qmsh"
 }
 
@@ -425,15 +414,11 @@ object grate {
 	mesh "kraty.qmsh"
 }
 
-object to_remove {
-	mesh "snopek.qmsh"
-}
-
 object boxes2 {
 	mesh "pudla.qmsh"
 }
 
-object barrel_broken {
+object barrelBroken {
 	mesh "beczka_rozbita.qmsh"
 	cylinder { 0.38 1.083 }
 }
@@ -482,11 +467,11 @@ object corn {
 	flags { noPhysics preload noCulling }
 }
 
-object book_holder {
+object bookHolder {
 	mesh "book_holder.qmsh"
 }
 
-object vault_door {
+object vaultDoor {
 	mesh "vault_door.qmsh"
 	flags blocksCamera
 }
@@ -510,25 +495,25 @@ group painting {
 		2 painting6
 		1 painting7
 		1 painting8
-		3 painting_x1
-		3 painting_x2
-		3 painting_x3
-		3 painting_x4
-		2 painting_elf
+		3 paintingX1
+		3 paintingX2
+		3 paintingX3
+		3 paintingX4
+		2 paintingElf
 	}
 }
 
 group tombstone {
-	tombstone_1
-	tombstone_x1
-	tombstone_x2
-	tombstone_x3
-	tombstone_x4
-	tombstone_x5
-	tombstone_x6
-	tombstone_x7
-	tombstone_x8
-	tombstone_x9
+	tombstone1
+	tombstoneX1
+	tombstoneX2
+	tombstoneX3
+	tombstoneX4
+	tombstoneX5
+	tombstoneX6
+	tombstoneX7
+	tombstoneX8
+	tombstoneX9
 }
 
 group random {
@@ -560,7 +545,7 @@ usable bench {
 	limitRot 3
 }
 
-usable bench_dir : bench {
+usable benchDir : bench {
 	limitRot 2
 }
 
@@ -581,7 +566,7 @@ usable cauldron {
 	limitRot 0
 }
 
-usable iron_vein {
+usable ironVein {
 	mesh "iron_ore.qmsh"
 	requiredItem pickaxe
 	animation "wydobywa"
@@ -590,7 +575,7 @@ usable iron_vein {
 	limitRot 4
 }
 
-usable gold_vein {
+usable goldVein {
 	mesh "gold_ore.qmsh"
 	requiredItem pickaxe
 	animation "wydobywa"
@@ -625,3 +610,47 @@ usable barricade {
 	flags {blocksCamera destroyable physicsPtr}
 	sound "thud.wav"
 }
+
+//==============================================================================
+// ALIASES
+//==============================================================================
+// pre V_DEV
+alias bigBarrel big_barrel
+alias bowTarget bow_target
+alias torchOff torch_off
+alias tanningRack tanning_rack
+alias bloodyAltar bloody_altar
+alias paintingElf painting_elf
+alias campfireOff campfire_off
+alias chest chest_r
+alias chestSilver chest_silver
+alias meleeTarget melee_target
+alias tomashuEmblem emblem_t
+alias tableAndChairs table_and_chairs
+alias tableAndChairs tablechairs
+alias tombstone1 tombstone_1
+alias plantPot plant_pot
+alias witheredTree withered_tree
+alias sawmill tartak
+alias magicThing magic_thing
+alias moonwellPhy moonwell_phy
+alias tomashuHouse tomashu_dom
+alias paintingX1 painting_x1
+alias paintingX2 painting_x2
+alias paintingX3 painting_x3
+alias paintingX4 painting_x4
+alias tombstoneX1 tombstone_x1
+alias tombstoneX2 tombstone_x2
+alias tombstoneX3 tombstone_x3
+alias tombstoneX4 tombstone_x4
+alias tombstoneX5 tombstone_x5
+alias tombstoneX6 tombstone_x6
+alias tombstoneX7 tombstone_x7
+alias tombstoneX8 tombstone_x8
+alias tombstoneX9 tombstone_x9
+alias barrelBroken barrel_broken
+alias bookHolder book_holder
+alias vaultDoor vault_door
+alias benchDir bench_dir
+alias ironVein iron_vein
+alias goldVein gold_vein

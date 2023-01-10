@@ -339,9 +339,8 @@ void ItemLoader::Finalize()
 	Item::gold = Item::Get("gold");
 
 	// check if all recipes are defined
-	for(std::pair<const int, Recipe*>& p : Recipe::items)
+	for(Recipe* recipe : Recipe::items)
 	{
-		Recipe* recipe = p.second;
 		if(!recipe->defined)
 			LoadError("Missing declared recipe '%s'.", recipe->id.c_str());
 	}
@@ -1330,7 +1329,10 @@ void ItemLoader::ParseRecipe(const string& id)
 	else if(recipe->ingredients.empty())
 		LoadError("No ingredients.");
 	else if(!existingRecipe)
-		Recipe::items[hash] = recipe.Pin();
+	{
+		Recipe::hashes[hash] = recipe.Get();
+		Recipe::items.push_back(recipe.Pin());
+	}
 }
 
 //=================================================================================================
@@ -1484,9 +1486,8 @@ void ItemLoader::CalculateCrc()
 		crc.Update(scheme->regions);
 	}
 
-	for(auto& element : Recipe::items)
+	for(Recipe* recipe : Recipe::items)
 	{
-		Recipe* recipe = element.second;
 		if(!recipe->defined)
 			continue;
 		crc.Update(recipe->id);

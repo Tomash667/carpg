@@ -21,6 +21,7 @@ private:
 	void ParseObjectProperty(ObjectProperty prop, BaseObject* obj);
 	void ParseUsable(const string& id);
 	void ParseGroup(const string& id);
+	void ParseAlias(const string& id);
 	void CalculateCrc();
 	void UpdateObjectGroupCrc(Crc& crc, ObjectGroup::EntryList& list);
 };

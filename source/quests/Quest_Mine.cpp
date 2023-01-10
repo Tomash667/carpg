@@ -838,8 +838,8 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	// generate veins
 	if(generateVeins)
 	{
-		auto ironVein = BaseUsable::Get("iron_vein"),
-			goldVein = BaseUsable::Get("gold_vein");
+		BaseUsable* ironVein = BaseUsable::Get("ironVein"),
+			*goldVein = BaseUsable::Get("goldVein");
 
 		// remove old veins
 		if(mineState3 != State3::None)

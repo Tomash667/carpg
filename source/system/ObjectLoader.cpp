@@ -23,7 +23,8 @@ enum Top
 {
 	T_OBJECT,
 	T_USABLE,
-	T_GROUP
+	T_GROUP,
+	T_ALIAS
 };
 
 enum ObjectProperty
@@ -57,6 +58,7 @@ void ObjectLoader::Cleanup()
 {
 	DeleteElements(BaseObject::items);
 	DeleteElements(ObjectGroup::items);
+	DeleteElements(BaseUsable::usables);
 	DeleteElements(variantObjects);
 }
 
@@ -66,7 +68,8 @@ void ObjectLoader::InitTokenizer()
 	t.AddKeywords(G_TOP, {
 		{ "object", T_OBJECT },
 		{ "usable", T_USABLE },
-		{ "group", T_GROUP }
+		{ "group", T_GROUP },
+		{ "alias", T_ALIAS }
 		});
 
 	t.AddKeywords(G_OBJECT_PROPERTY, {
@@ -125,15 +128,18 @@ void ObjectLoader::InitTokenizer()
 //=================================================================================================
 void ObjectLoader::LoadEntity(int top, const string& id)
 {
-	int hash = Hash(id);
-	ObjectGroup* group;
-	BaseObject* existingObj = BaseObject::TryGet(hash, &group);
-	if(existingObj)
+	if(top != T_ALIAS)
 	{
-		if((group && group->id != id) || existingObj->id != id)
-			t.Throw("Id hash collision.");
-		else
-			t.Throw("Id must be unique.");
+		int hash = Hash(id);
+		ObjectGroup* group = nullptr;
+		BaseObject* existingObj = BaseObject::TryGet(hash, &group);
+		if(existingObj)
+		{
+			if((group && group->id != id) || existingObj->id != id)
+				t.Throw("Id hash collision.");
+			else
+				t.Throw("Id must be unique.");
+		}
 	}
 
 	switch(top)
@@ -147,6 +153,9 @@ void ObjectLoader::LoadEntity(int top, const string& id)
 	case T_GROUP:
 		ParseGroup(id);
 		break;
+	case T_ALIAS:
+		ParseAlias(id);
+		break;
 	}
 }
 
@@ -156,7 +165,7 @@ void ObjectLoader::Finalize()
 	CalculateCrc();
 
 	Info("Loaded objects (%u), usables (%u) - crc %p.",
-		BaseObject::items.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
+		BaseObject::items.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
 }
 
 //=================================================================================================
@@ -190,7 +199,8 @@ void ObjectLoader::ParseObject(const string& id)
 	}
 
 	BaseObject* o = obj.Pin();
-	BaseObject::items[o->hash] = o;
+	BaseObject::hashes[o->hash] = o;
+	BaseObject::items.push_back(o);
 }
 
 //=================================================================================================
@@ -363,7 +373,7 @@ void ObjectLoader::ParseUsable(const string& id)
 	use->flags |= OBJ_USABLE;
 
 	BaseUsable* u = use.Pin();
-	BaseObject::items[u->hash] = u;
+	BaseObject::hashes[u->hash] = u;
 	BaseUsable::usables.push_back(u);
 }
 
@@ -441,7 +451,27 @@ void ObjectLoader::ParseGroup(const string& id)
 		t.Throw("Empty group.");
 
 	ObjectGroup* g = group.Pin();
-	ObjectGroup::items[g->hash] = g;
+	ObjectGroup::hashes[g->hash] = g;
+	ObjectGroup::items.push_back(g);
+}
+
+//=================================================================================================
+void ObjectLoader::ParseAlias(const string& id)
+{
+	ObjectGroup* group = nullptr;
+	BaseObject* obj = BaseObject::TryGet(id, &group);
+	if(!obj)
+		t.Throw("Missing object '%s'.", id.c_str());
+	if(group)
+		t.Throw("Can't create alias for group '%s'.", id.c_str()); // YAGNI
+	t.Next();
+
+	const string& aliasId = t.MustGetItemKeyword();
+	int hash = Hash(aliasId);
+	if(BaseObject::TryGet(hash))
+		t.Throw("Alias or object already exists.");
+
+	BaseObject::hashes[hash] = obj;
 }
 
 //=================================================================================================
@@ -449,9 +479,9 @@ void ObjectLoader::CalculateCrc()
 {
 	Crc crc;
 
-	for(pair<const int, BaseObject*>& p : BaseObject::items)
+	for(BaseObject* pObj : BaseObject::items)
 	{
-		BaseObject& obj = *p.second;
+		BaseObject& obj = *pObj;
 		crc.Update(obj.id);
 		if(obj.mesh)
 			crc.Update(obj.mesh->filename);
@@ -484,10 +514,10 @@ void ObjectLoader::CalculateCrc()
 		}
 	}
 
-	for(pair<const int, ObjectGroup*>& p : ObjectGroup::items)
+	for(ObjectGroup* group : ObjectGroup::items)
 	{
-		crc.Update(p.second->id);
-		UpdateObjectGroupCrc(crc, p.second->list);
+		crc.Update(group->id);
+		UpdateObjectGroupCrc(crc, group->list);
 	}
 
 	content.crc[(int)Content::Id::Objects] = crc.Get();

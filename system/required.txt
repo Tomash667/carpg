@@ -345,32 +345,32 @@ buildingScript villageDestroyed {
 // some objects are required by building too (not listed here)
 //------------------------------------------------------------------------------
 // Ai
-object melee_target
-object bow_target
-object bloody_altar
+object meleeTarget
+object bowTarget
+object bloodyAltar
 usable stool
 usable chair
 usable throne
-usable iron_vein
-usable gold_vein
+usable ironVein
+usable goldVein
 // CampGenerator
 object barrel
 object barrels
 object box
 object boxes
-object bow_target
+object bowTarget
 object torch
-object torch_off
-object tanning_rack
+object torchOff
+object tanningRack
 object hay
 object firewood
 object bench
 object chest
-object melee_target
+object meleeTarget
 object anvil
 object cauldron
 object campfire
-object campfire_off
+object campfireOff
 object tent
 object bedding
 // CaveGenerator
@@ -380,8 +380,6 @@ object stalagmite2
 object plant2
 object mushrooms
 object rock
-usable iron_vein
-usable gold_vein
 // Chest pre V_0_16
 object chest
 // CityGenerator
@@ -421,15 +419,15 @@ object chest
 usable stool
 // MoonwellGenerator
 object moonwell
-object moonwell_phy
+object moonwellPhy
 // NetClient
 object altar
-object bloody_altar
+object bloodyAltar
 // OutsideLocationGenerator
 object tree
 object tree2
 object tree3
-object withered_tree
+object witheredTree
 object grass
 object plant
 object rock
@@ -439,7 +437,7 @@ object obelisk
 usable throne
 // Quest_Evil
 object altar
-object bloody_altar
+object bloodyAltar
 object portal
 // Quest_Goblins
 usable throne
@@ -449,8 +447,8 @@ object rock
 object plant2
 object mushrooms
 object portal
-usable iron_vein
-usable gold_vein
+usable ironVein
+usable goldVein
 // Quest_Orcs
 usable throne
 // Quest_Sawmill
@@ -459,25 +457,25 @@ object barrels
 object box
 object boxes
 object torch
-object torch_off
+object torchOff
 object firewood
-object tartak
+object sawmill
 // Quest_Secret
-object tomashu_dom
+object tomashuHouse
 // SaveLoad
-object bow_target
+object bowTarget
 // SecretLocationGenerator
-object tomashu_dom
+object tomashuHouse
 object portal
 // TutorialLocationGenerator
 object chest
-object melee_target
-object bow_target
+object meleeTarget
+object bowTarget
 // World
 object campfire
-object campfire_off
+object campfireOff
 object torch
-object torch_off
+object torchOff
 
 //------------------------------------------------------------------------------
 // Quest lists

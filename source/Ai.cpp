@@ -112,11 +112,11 @@ void Game::UpdateAi(float dt)
 {
 	static vector<Unit*> closeEnemies;
 
-	auto stool = BaseUsable::Get("stool"),
-		chair = BaseUsable::Get("chair"),
-		throne = BaseUsable::Get("throne"),
-		ironVein = BaseUsable::Get("iron_vein"),
-		goldVein = BaseUsable::Get("gold_vein");
+	BaseUsable* stool = BaseUsable::Get("stool"),
+		*chair = BaseUsable::Get("chair"),
+		*throne = BaseUsable::Get("throne"),
+		*ironVein = BaseUsable::Get("ironVein"),
+		*goldVein = BaseUsable::Get("goldVein");
 	Quest_Tournament* tournament = questMgr->questTournament;
 
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
@@ -759,7 +759,7 @@ void Game::UpdateAi(float dt)
 					else if(IsSet(u.data->flags2, F2_XAR))
 					{
 						// search for altar
-						BaseObject* baseObj = BaseObject::Get("bloody_altar");
+						BaseObject* baseObj = BaseObject::Get("bloodyAltar");
 						Object* obj = locPart.FindObject(baseObj);
 
 						if(obj)
@@ -991,8 +991,8 @@ void Game::UpdateAi(float dt)
 								if(IsSet(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 								{
 									static vector<Object*> trainTargets;
-									BaseObject* meleeTarget = BaseObject::Get("melee_target"),
-										*bowTarget = BaseObject::Get("bow_target");
+									BaseObject* meleeTarget = BaseObject::Get("meleeTarget"),
+										*bowTarget = BaseObject::Get("bowTarget");
 
 									for(vector<Object*>::iterator it2 = locPart.objects.begin(), end2 = locPart.objects.end(); it2 != end2; ++it2)
 									{

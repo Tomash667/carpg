@@ -6,7 +6,7 @@ room bedroom {
 		wardrobe 2 3
 		chest 1 2
 		shelves 1 2
-		table_and_chairs 0 1
+		tableAndChairs 0 1
 	}
 }
 
@@ -42,8 +42,8 @@ room library {
 		torch
 		wardrobe 1 2
 		bookshelf 3 5
-		book_holder 0 1
-		table_and_chairs 1 2
+		bookHolder 0 1
+		tableAndChairs 1 2
 		gobelin 0 1
 		painting 0 2
 	}
@@ -52,7 +52,7 @@ room library {
 room magic {
 	objects {
 		torch
-		magic_thing {
+		magicThing {
 			flags inMiddle
 		}
 		wardrobe 1 2
@@ -83,7 +83,7 @@ room saferoom {
 		box 3 5
 		boxes 1 2
 		chest 1 2
-		table_and_chairs 0 1
+		tableAndChairs 0 1
 		gobelin 0 1
 	}
 }
@@ -92,7 +92,7 @@ room beerStoreroom {
 	flags repeat
 	objects {
 		torch
-		big_barrel 1 3
+		bigBarrel 1 3
 		barrel 1 5
 		barrels 1 4
 	}
@@ -111,9 +111,9 @@ room shrine {
 room meetingRoom {
 	objects {
 		torch
-		table_and_chairs 1 2
+		tableAndChairs 1 2
 		barrel 1 3
-		bench_dir 1 3
+		benchDir 1 3
 		painting 1 2
 		gobelin 0 1
 	}
@@ -122,8 +122,8 @@ room meetingRoom {
 room trainingRoom {
 	objects {
 		torch
-		melee_target 1 3
-		bow_target 1 3
+		meleeTarget 1 3
+		bowTarget 1 3
 		box 2 4
 		boxes 1 2
 		chest 1 2
@@ -133,10 +133,10 @@ room trainingRoom {
 room craftingRoom {
 	objects {
 		torch
-		tanning_rack 1 2
+		tanningRack 1 2
 		anvil
 		cauldron
-		table_and_chairs 0 1
+		tableAndChairs 0 1
 		box 2 4
 		boxes 1 2
 		chest 1 2
@@ -149,7 +149,7 @@ room kitchen {
 		torch
 		campfire
 		firewood 3 5
-		table_and_chairs 0 1
+		tableAndChairs 0 1
 		barrels 1 3
 		chest 0 1
 		shelves 1 2
@@ -201,7 +201,7 @@ room cryptTreasure {
 	flags treasure
 	objects {
 		torch
-		chest_silver {
+		chestSilver {
 			flags {inMiddle required}
 		}
 		chest 1 2
@@ -216,7 +216,7 @@ room cryptTreasure {
 room labyrinthTreasure {
 	flags treasure
 	objects {
-		chest_silver {
+		chestSilver {
 			flags {inMiddle required}
 		}
 		chest 1 2
@@ -250,14 +250,14 @@ room portal {
 			flags {inMiddle required}
 		}
 		torch
-		emblem_t 2 3
+		tomashuEmblem 2 3
 	}
 }
 
 room cryptLibrary {
 	flags treasure
 	objects {
-		book_holder {
+		bookHolder {
 			pos {0 0 0}
 			rot 0
 			flags required

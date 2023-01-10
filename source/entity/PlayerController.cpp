@@ -154,9 +154,8 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		int skill = unit->GetBase(SkillId::ALCHEMY);
 		if(skill > 0)
 		{
-			for(pair<const int, Recipe*>& p : Recipe::items)
+			for(Recipe* recipe : Recipe::items)
 			{
-				Recipe* recipe = p.second;
 				if(recipe->autolearn && skill >= recipe->skill)
 					AddRecipe(recipe);
 			}
@@ -600,9 +599,8 @@ void PlayerController::Load(GameReader& f)
 		int skill = unit->GetBase(SkillId::ALCHEMY);
 		if(skill >= 1)
 		{
-			for(pair<const int, Recipe*>& p : Recipe::items)
+			for(Recipe* recipe : Recipe::items)
 			{
-				Recipe* recipe = p.second;
 				if(recipe->autolearn && skill >= recipe->skill)
 					AddRecipe(recipe);
 			}

@@ -656,7 +656,7 @@ Static methods:
 * GroundItem@ FindNearestItem(Item@, const Vec3& in pos) - finds nearest item.
 * GroundItem@ SpawnItem(Item@, const Vec3& in pos) - spawn item at position.
 * GroundItem@ SpawnItem(LocationPart@, Item@) - spawn item inside building.
-* GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "book_holder").
+* GroundItem@ SpawnItem(Item@, Object@) - spawn item on object (require "spawn_pos" mesh attachment point - example object "bookHolder").
 * GroundItem@ SpawnItemInsideAnyRoom(Item@) - spawn item in random room on floor.
 * void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
 * Vec3 FindSpawnPos(Room@, Unit@) - return position for unit spawn/warp in room.

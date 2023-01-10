@@ -2881,9 +2881,9 @@ void World::AbadonLocation(Location* loc)
 		if(loc != currentLocation)
 		{
 			BaseObject* campfire = BaseObject::Get("campfire"),
-				*campfireOff = BaseObject::Get("campfire_off"),
+				*campfireOff = BaseObject::Get("campfireOff"),
 				*torch = BaseObject::Get("torch"),
-				*torchOff = BaseObject::Get("torch_off");
+				*torchOff = BaseObject::Get("torchOff");
 			for(Object* obj : camp->objects)
 			{
 				if(obj->base == campfire)

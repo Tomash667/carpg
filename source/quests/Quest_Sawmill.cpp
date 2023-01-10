@@ -180,7 +180,7 @@ cstring sawmillObjs[] = {
 	"box",
 	"boxes",
 	"torch",
-	"torch_off",
+	"torchOff",
 	"firewood"
 };
 const uint nSawmillObjs = countof(sawmillObjs);
@@ -252,7 +252,7 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 		// building
 		Vec3 spawnPt;
 		float rot = PI / 2 * (Rand() % 4);
-		gameLevel->SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, height, 128), rot, 1.f, 0, &spawnPt);
+		gameLevel->SpawnObjectEntity(outside, BaseObject::Get("sawmill"), Vec3(128, height, 128), rot, 1.f, 0, &spawnPt);
 
 		// arthur
 		Unit* u = gameLevel->SpawnUnitNearLocation(outside, spawnPt, ud, nullptr, -2);

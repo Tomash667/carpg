@@ -234,7 +234,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// restore old altar
 			targetLoc->activeQuest = nullptr;
 			targetLoc->dontClean = false;
-			BaseObject* baseObj = BaseObject::Get("bloody_altar");
+			BaseObject* baseObj = BaseObject::Get("bloodyAltar");
 			Object* obj = gameLevel->localPart->FindObject(baseObj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
@@ -524,7 +524,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	assert(obj);
 
 	// change object type
-	obj->base = BaseObject::Get("bloody_altar");
+	obj->base = BaseObject::Get("bloodyAltar");
 	obj->mesh = obj->base->mesh;
 
 	// add particles
@@ -638,7 +638,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 	assert(u);
 
 	// find blood altar
-	Object* o = locPart.FindObject(BaseObject::Get("bloody_altar"));
+	Object* o = locPart.FindObject(BaseObject::Get("bloodyAltar"));
 	assert(o);
 
 	if(u && o)

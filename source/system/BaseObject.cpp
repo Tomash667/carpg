@@ -1,10 +1,6 @@
 #include "Pch.h"
 #include "BaseObject.h"
 
-//-----------------------------------------------------------------------------
-std::unordered_map<int, BaseObject*> ContentItem<BaseObject>::items;
-std::unordered_map<int, ObjectGroup*> ContentItem<ObjectGroup>::items;
-
 //=================================================================================================
 BaseObject* ObjectGroup::EntryList::GetRandom()
 {

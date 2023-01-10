@@ -2086,7 +2086,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 			if(game->gameState == GS_LEVEL)
 			{
 				// change object
-				BaseObject* baseObj = BaseObject::Get("bloody_altar");
+				BaseObject* baseObj = BaseObject::Get("bloodyAltar");
 				Object* obj = gameLevel->localPart->FindObject(baseObj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;

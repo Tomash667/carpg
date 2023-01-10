@@ -131,7 +131,7 @@ quest globalInit
 			else if(Level::location is vault)
 			{
 				e.onEnter.location.RemoveEventHandler(quest);
-				BaseObject@ obj = BaseObject::Get("vault_door");
+				BaseObject@ obj = BaseObject::Get("vaultDoor");
 				SpawnPoint point;
 				if(Level::FindPlaceNearWall(obj, point))
 				{
@@ -2324,7 +2324,7 @@ quest main
 					{
 						Item@ book = Item::Get("book_q_cleric");
 						Room@ room = Level::GetRoom(ROOM_TREASURY);
-						Object@ obj = Level::FindObject(room, BaseObject::Get("book_holder"));
+						Object@ obj = Level::FindObject(room, BaseObject::Get("bookHolder"));
 						Level::SpawnItem(book, obj);
 						e.onEnter.location.RemoveEventHandler(quest, EVENT_ENTER);
 					}

@@ -4463,9 +4463,8 @@ void Unit::ApplyStat(SkillId s)
 		if(IsPlayer())
 		{
 			int skill = GetBase(SkillId::ALCHEMY);
-			for(pair<const int, Recipe*>& p : Recipe::items)
+			for(Recipe* recipe : Recipe::items)
 			{
-				Recipe* recipe = p.second;
 				if(recipe->autolearn && skill >= recipe->skill)
 					player->AddRecipe(recipe);
 			}

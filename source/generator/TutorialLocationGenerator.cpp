@@ -230,7 +230,7 @@ void TutorialLocationGenerator::OnEnter()
 						break;
 					case 2:
 						quest.dummy = Vec3(2.f * x + 1, 0, 2.f * y + 1);
-						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("melee_target"), quest.dummy, PI / 2);
+						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("meleeTarget"), quest.dummy, PI / 2);
 						break;
 					case 3:
 						{
@@ -252,7 +252,7 @@ void TutorialLocationGenerator::OnEnter()
 						}
 						break;
 					case 5:
-						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("bow_target"), Vec3(2.f * x + 1, 0, 2.f * y + 1), -PI / 2);
+						gameLevel->SpawnObjectEntity(lvl, BaseObject::Get("bowTarget"), Vec3(2.f * x + 1, 0, 2.f * y + 1), -PI / 2);
 						break;
 					case 6:
 						{

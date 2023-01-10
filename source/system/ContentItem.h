@@ -7,19 +7,22 @@
 template<typename T>
 struct ContentItem
 {
+	ContentItem() : hash(0) {}
+
 	int hash;
 	string id;
 
-	ContentItem() : hash(0) {}
+	inline static vector<T*> items;
+	inline static std::unordered_map<int, T*> hashes;
 
-	static std::unordered_map<int, T*> items;
 	static T* TryGet(int hash)
 	{
-		auto it = items.find(hash);
-		if(it != items.end())
+		auto it = hashes.find(hash);
+		if(it != hashes.end())
 			return it->second;
 		return nullptr;
 	}
+
 	static T* Get(int hash)
 	{
 		T* item = T::TryGet(hash);
@@ -27,10 +30,12 @@ struct ContentItem
 			return item;
 		throw Format("Missing %s hash %d.", T::typeName, hash);
 	}
+
 	static T* TryGet(Cstring id)
 	{
 		return T::TryGet(Hash(id));
 	}
+
 	static T* Get(Cstring id)
 	{
 		T* item = T::TryGet(Hash(id));
@@ -38,6 +43,7 @@ struct ContentItem
 			return item;
 		throw Format("Missing %s '%s'.", T::typeName, id);
 	}
+
 	static T* GetS(const string& id)
 	{
 		T* item = T::TryGet(id);
