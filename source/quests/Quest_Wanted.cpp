@@ -1,73 +1,6 @@
 #include "Pch.h"
 #include "Quest_Wanted.h"
 
-#include "City.h"
-#include "DialogContext.h"
-#include "Journal.h"
-#include "LocationContext.h"
-#include "NameHelper.h"
-#include "QuestManager.h"
-#include "Team.h"
-#include "World.h"
-
-//=================================================================================================
-bool Quest_Wanted::OnTimeout(TimeoutType ttype)
-{
-	if(targetUnit)
-	{
-		if(state == Quest::Failed)
-			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
-		if(!targetUnit->hero->teamMember)
-		{
-			// not a team member, remove
-			ForLocation(inLocation)->RemoveUnit(targetUnit);
-		}
-		else
-			targetUnit->eventHandler = nullptr;
-		targetUnit = nullptr;
-	}
-
-	OnUpdate(questMgr->txQuest[267]);
-
-	return true;
-}
-
-//=================================================================================================
-void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit)
-{
-	switch(eventType)
-	{
-	case UnitEventHandler::SPAWN:
-		unit->hero->name = unitName;
-		targetLoc->activeQuest = nullptr;
-		targetUnit = unit;
-		inLocation = world->GetCurrentLocationIndex();
-		break;
-	case UnitEventHandler::DIE:
-		if(!unit->hero->teamMember)
-		{
-			SetProgress(Progress::Killed);
-			targetUnit = nullptr;
-		}
-		break;
-	/*case UnitEventHandler::RECRUIT:
-		// target recruited, add note to journal
-		if(prog != Progress::Recruited)
-			SetProgress(Progress::Recruited);
-		break;
-	case UnitEventHandler::KICK:
-		// kicked from team, can be killed now, don't dissapear
-		unit->temporary = false;
-		inLocation = world->GetCurrentLocationIndex();
-		break;*/
-	case UnitEventHandler::LEAVE:
-		if(state == Quest::Failed)
-			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
-		targetUnit = nullptr;
-		break;
-	}
-}
-
 //=================================================================================================
 Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 {
@@ -87,23 +20,18 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 	f >> targetUnit;
 	f >> inLocation;
 
-	if(!done)
-	{
-		unitToSpawn = crazy ? clas->crazy : clas->hero;
-		unitDontAttack = true;
-		unitEventHandler = this;
-		sendSpawnEvent = true;
-		unitSpawnLevel = level;
-	}
+	return LoadResult::Convert;
+}
 
-	if(prog >= Progress::Started)
-	{
-		Item::Get("wanted_letter")->CreateCopy(letter);
-		letter.id = "$wanted_letter";
-		letter.name = questMgr->txQuest[258];
-		letter.questId = id;
-		letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());
-	}
-
-	return LoadResult::Ok;
+//=================================================================================================
+void Quest_Wanted::GetConversionData(ConversionData& data)
+{
+	data.id = "wanted";
+	data.Add("startLoc", startLoc);
+	data.Add("targetLoc", targetLoc);
+	data.Add("startTime", startTime);
+	data.Add("level", level);
+	data.Add("crazy", crazy);
+	data.Add("unitName", unitName);
+	data.Add("clas", clas);
 }

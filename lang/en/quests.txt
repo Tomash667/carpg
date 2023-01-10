@@ -217,6 +217,7 @@ quest wanted {
 		1 "Here is you reward, $(Str(level * 100)) gold pieces."
 		2 "You could not kill the $(unitName)? That's bad."
 		3 "He probably holed up somewhere for good..."
+		4 "I should put you in jail along with $(unitName). You were supposed to kill him, not recruit him!"
 	}
 	
 	dialog wanted {
@@ -226,7 +227,7 @@ quest wanted {
 			"Then I have to kill you!"
 			"You won't rat me out to the guards? You would?!"
 			"I'll kill you just like the others!"
-			"You'll pay for it with you live!"
+			"You will pay for it with your life!"
 		}
 	}
 	
@@ -239,6 +240,8 @@ quest wanted {
 		5 "I got reward for killing $(unitName). Quest done!"
 		6 "The time that I had to complete this quest passed."
 		7 "Before I had time to kill $(unitName) he has hidden somewhere."
+		8 "$(unitName) joined my team. I don't know if I want to finish this quest."
+		9 "The captain guard was not pleased when he noticed that $(unitName) had joined my team."
 	}
 }
 

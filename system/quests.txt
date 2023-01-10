@@ -1060,7 +1060,7 @@ quest killAnimals
 
 //=============================================================================
 // WANTED - random captain quest
-//  There is wanted hero in one of cities, killing him will get reward.
+// There is wanted hero in one of cities, killing him will get reward.
 //=============================================================================
 quest wanted
 {
@@ -1104,15 +1104,19 @@ quest wanted
 		else if questProgress == P_WANTED_ON_TIMEOUT
 		{
 			setQuestProgress P_WANTED_TIMEOUT
-			talk 2
-			talk 3
+			if script "!(targetUnit is null) && targetUnit.IsTeamMember()"
+				talk 4
+			else
+			{
+				talk 2
+				talk 3
+			}
 		}
 		end
 	}
 	
 	dialog wanted
 	{
-		if script "!target.IsTeamMember()"
 		if haveQuestItem
 		{
 			choice 0
@@ -1130,7 +1134,6 @@ quest wanted
 		Location@ targetLoc;
 		Unit@ targetUnit;
 		Class@ clas;
-		Item@ letter;
 		string unitName;
 		bool crazy;
 
@@ -1153,7 +1156,7 @@ quest wanted
 					targetLoc.AddEventHandler(quest, EVENT_ENTER);
 					
 					// add letter
-					@letter = Item::Get("wanted_letter").QuestCopy(quest, "", TEXT(3));
+					Item@ letter = Item::Get("wanted_letter").QuestCopy(quest, "", TEXT(3));
 					pc.unit.AddTeamItem(letter);
 					
 					target.AddDialog(quest, "captain");
@@ -1165,11 +1168,16 @@ quest wanted
 				}
 				break;
 			case P_WANTED_TIMEOUT:
-				quest.AddEntry(TEXT(7));
+				if(!(targetUnit is null) && targetUnit.IsTeamMember())
+					quest.AddEntry(TEXT(7));
+				else
+					quest.AddEntry(TEXT(9));
 				quest.SetFailed();
 				break;
 			case P_WANTED_KILLED:
-				//state = Quest::Started; // if recruited that will change it to in progress
+				targetUnit.RemoveEventHandler(quest);
+				targetUnit.RemoveDialog(quest);
+				@targetUnit = null;
 				quest.AddEntry(TEXT(4));
 				break;
 			case P_WANTED_FINISHED:
@@ -1178,30 +1186,9 @@ quest wanted
 				quest.SetCompleted();
 				break;
 			case P_WANTED_RECRUITED:
+				quest.AddEntry(TEXT(8));
 				break;
 			}
-			
-			/*
-	case Progress::Timeout:
-		{
-			state = Quest::Failed;
-			static_cast<City*>(startLoc)->questCaptain = CityQuestState::Failed;
-
-			if(targetLoc->activeQuest == this)
-				targetLoc->activeQuest = nullptr;
-
-			OnUpdate(Format(questMgr->txQuest[261], unitName.c_str()));
-
-			done = false;
-		}
-		break;
-	case Progress::Recruited:
-		{
-			state = Quest::Failed;
-			OnUpdate(Format(questMgr->txQuest[266], targetUnit->GetName()));
-		}
-		break;
-	}*/
 		}
 
 		void OnEvent(Event@ e)
@@ -1222,9 +1209,22 @@ quest wanted
 				break;
 			case EVENT_DIE:
 				progress = P_WANTED_KILLED;
+				break;
+			case EVENT_RECRUIT:
 				targetUnit.RemoveEventHandler(quest);
 				targetUnit.RemoveDialog(quest);
-				targetUnit = null;
+				targetUnit.AddEventHandler(quest, EVENT_KICK);
+				quest.AddEntry(TEXT(8));
+				break;
+			case EVENT_KICK:
+				targetUnit.RemoveEventHandler(quest);
+				targetUnit.AddEventHandler(EVENT_DIE);
+				targetUnit.AddEventHandler(EVENT_LEAVE);
+				targetUnit.AddDialog(quest, "wanted");
+				targetUnit.OrderLeave();
+				break;
+			case EVENT_LEAVE:
+				@targetUnit = null;
 				break;
 			case EVENT_TIMEOUT:
 				if(progress == P_WANTED_STARTED)
@@ -1234,10 +1234,11 @@ quest wanted
 						// remove handler if not spawned
 						targetLoc.RemoveEventHandler(quest);
 					}
-					else
+					else if(!targetUnit.IsTeamMember())
 					{
+						// remove unit if spawned
 						targetLoc.RemoveUnit(targetUnit); // spr: usunięcie jednostki powinno usunąć eventy z questa
-						targetUnit = null;
+						@targetUnit = null;
 					}
 					progress = P_WANTED_ON_TIMEOUT;
 				}

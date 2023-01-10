@@ -1129,6 +1129,7 @@ void ScriptManager::RegisterGame()
 	AddVarType(Var::Type::String, "string", true);
 	AddVarType(Var::Type::Unit, "Unit", true);
 	AddVarType(Var::Type::UnitGroup, "UnitGroup", true);
+	AddVarType(Var::Type::Class, "Class", true);
 }
 
 void ScriptManager::RunScript(cstring code)

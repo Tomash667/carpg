@@ -22,10 +22,10 @@ public:
 	void Start() override {}
 	GameDialog* GetDialog(int type2) override { return nullptr; }
 	void SetProgress(int prog2) override {}
-	bool OnTimeout(TimeoutType ttype) override;
-	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit) override {}
 	LoadResult Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestId() override { return id; }
+	void GetConversionData(ConversionData& data) override;
 
 private:
 	int level, inLocation;

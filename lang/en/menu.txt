@@ -906,7 +906,7 @@ quest262 = ""
 quest263 = ""
 quest264 = " and "
 quest265 = "Retrieve parcel"
-quest266 = "%s joined my team. I don't know if I want to finish this quest."
+quest266 = ""
 quest267 = "The time that I had to complete this quest passed."
 
 [ItemStats]

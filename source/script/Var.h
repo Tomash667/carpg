@@ -20,7 +20,8 @@ struct Var
 		String,
 		Unit,
 		UnitGroup,
-		Array
+		Array,
+		Class
 	};
 	Type type;
 	union
@@ -28,6 +29,7 @@ struct Var
 		bool _bool;
 		int _int;
 		float _float;
+		string* str;
 		Int2 int2;
 		Vec2 vec2;
 		Vec3 vec3;
@@ -41,7 +43,12 @@ struct Var
 	};
 	bool registered;
 
-	Var() {}
+	Var() : type(Type::None) {}
+	~Var()
+	{
+		if(type == Type::String)
+			StringPool.Free(str);
+	}
 
 	bool IsNone() const
 	{
@@ -77,40 +84,14 @@ struct Var
 		return type == var->type && _int == var->_int;
 	}
 
-	void SetNone()
-	{
-		type = Type::None;
-	}
-	Var* SetBool(bool value)
-	{
-		type = Type::Bool;
-		_bool = value;
-		return this;
-	}
-	Var* SetInt(int value)
-	{
-		type = Type::Int;
-		_int = value;
-		return this;
-	}
-	Var* SetFloat(float value)
-	{
-		type = Type::Float;
-		_float = value;
-		return this;
-	}
+	void SetNone();
+	Var* SetBool(bool value);
+	Var* SetInt(int value);
+	Var* SetFloat(float value);
+	Var* SetString(const string& str);
 	Var* SetGeneric(void* ptr, int type);
-	Var* SetVar(Var* var)
-	{
-		type = var->type;
-		_int = var->_int;
-		return this;
-	}
-	void SetPtr(void* ptr, Type type)
-	{
-		this->type = type;
-		this->ptr = ptr;
-	}
+	Var* SetVar(Var* var);
+	void SetPtr(void* ptr, Type type);
 
 	bool GetBool() const
 	{

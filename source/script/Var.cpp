@@ -19,12 +19,100 @@ bool Var::IsGeneric(void* ptr, int type)
 }
 
 //=================================================================================================
+void Var::SetNone()
+{
+	if(type == Type::String)
+		StringPool.Free(str);
+	type = Type::None;
+}
+
+//=================================================================================================
+Var* Var::SetBool(bool value)
+{
+	if(type == Type::String)
+		StringPool.Free(str);
+	type = Type::Bool;
+	_bool = value;
+	return this;
+}
+
+//=================================================================================================
+Var* Var::SetInt(int value)
+{
+	if(type == Type::String)
+		StringPool.Free(str);
+	type = Type::Int;
+	_int = value;
+	return this;
+}
+
+//=================================================================================================
+Var* Var::SetFloat(float value)
+{
+	if(type == Type::String)
+		StringPool.Free(str);
+	type = Type::Float;
+	_float = value;
+	return this;
+}
+
+//=================================================================================================
+Var* Var::SetString(const string& str)
+{
+	if(type == Type::String)
+		*this->str = str;
+	else
+	{
+		type = Type::String;
+		this->str = StringPool.Get(str);
+	}
+	return this;
+}
+
+//=================================================================================================
 Var* Var::SetGeneric(void* ptr, int type)
 {
+	if(this->type == Type::String)
+		StringPool.Free(str);
 	// TODO: check if this is known type
 	this->type = scriptMgr->GetVarType(type);
 	this->ptr = ptr;
 	return this;
+}
+
+//=================================================================================================
+Var* Var::SetVar(Var * var)
+{
+	if(type == var->type)
+	{
+		if(type == Type::String)
+			*str = *var->str;
+		else
+			_int = var->_int;
+	}
+	else
+	{
+		if(type == Type::String)
+		{
+			StringPool.Free(str);
+			_int = var->_int;
+		}
+		else if(var->type == Type::String)
+			str = StringPool.Get(*var->str);
+		else
+			_int = var->_int;
+		type = var->type;
+	}
+	return this;
+}
+
+//=================================================================================================
+void Var::SetPtr(void* ptr, Type type)
+{
+	if(this->type == Type::String)
+		StringPool.Free(str);
+	this->type = type;
+	this->ptr = ptr;
 }
 
 //=================================================================================================
@@ -127,6 +215,7 @@ void Vars::Save(GameWriter& f)
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Array:
+		case Var::Type::Class:
 			assert(0); // TODO
 			break;
 		}
@@ -223,6 +312,7 @@ void Vars::Load(GameReader& f)
 		case Var::Type::Unit:
 		case Var::Type::UnitGroup:
 		case Var::Type::Array:
+		case Var::Type::Class:
 			assert(0); // TODO
 			break;
 		}

@@ -215,6 +215,15 @@ void Quest_Scripted::SaveVar(GameWriter& f, Var::Type varType, void* ptr)
 			}
 		}
 		break;
+	case Var::Type::Class:
+		{
+			Class* clas = *(Class**)ptr;
+			if(clas)
+				f << clas->id;
+			else
+				f.Write0();
+		}
+		break;
 	}
 }
 
@@ -392,6 +401,15 @@ void Quest_Scripted::LoadVar(GameReader& f, Var::Type varType, void* ptr)
 				LoadVar(f, varType, buf);
 				buf += elementSize;
 			}
+		}
+		break;
+	case Var::Type::Class:
+		{
+			const string& id = f.ReadString1();
+			if(!id.empty())
+				*(Class**)ptr = Class::TryGet(id);
+			else
+				*(Class**)ptr = nullptr;
 		}
 		break;
 	}

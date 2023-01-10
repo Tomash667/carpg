@@ -231,6 +231,7 @@ quest wanted {
 		1 "Oto twoje $(Str(level * 100)) sztuk z³ota."
 		2 "Nie uda³o ci siê zabiæ $(unitName)? To Ÿle."
 		3 "Teraz ju¿ pewnie siê gdzieœ zaszy³ na dobre..."
+		4 "Powinienem cie zamkn¹æ w wiêzieniu razem z $(unitName). Mia³eœ go zabiæ a nie zrekrutowaæ!"
 	}
 	
 	dialog wanted {
@@ -253,6 +254,8 @@ quest wanted {
 		5 "Otrzyma³em nagrodê za zabicie $(unitName). Zadanie wykonane!"
 		6 "Czas jaki mia³em na wykonanie tego zadania min¹³."
 		7 "Nie zd¹¿y³em na czas zabiæ $(unitName) i gdzieœ siê zaszy³."
+		8 "$(unitName) do³¹czy³ do mojej dru¿yny. Nie wiem czy chcê wykonaæ to zadanie."
+		9 "Kapitan stra¿y nie by³ zadowolony gdy zauwa¿y³ ¿e $(unitName) do³¹czy³ do mojej dru¿yny."
 	}
 }
 
