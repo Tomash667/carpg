@@ -230,7 +230,7 @@ namespace UnitHelper
 		{
 			const float p = unit.data->frames->t[F_CAST];
 			meshInst->SetMesh(mesh);
-			meshInst->SetAnimation(anim, 0.5f);
+			meshInst->SetAnimation(anim, p);
 			cache.matCast = point->mat * meshInst->matBones[point->bone];
 			cache.castAvailable = true;
 		}

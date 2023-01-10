@@ -48,36 +48,41 @@ bool DownloadFile(const string& path, const string& filename, uint crc)
 			printf("Existing file %s have invalid crc, redownloading.\n", filename.c_str());
 	}
 
-	FileWriter f(filename);
-	if(!f)
+	if(StartsWith(path.c_str(), "file://"))
+		CopyFileA(path.c_str() + 7, filename.c_str(), true);
+	else
 	{
-		printf("ERROR: Failed to create file %s.\n", filename.c_str());
-		return false;
-	}
+		FileWriter f(filename);
+		if(!f)
+		{
+			printf("ERROR: Failed to create file %s.\n", filename.c_str());
+			return false;
+		}
 
-	printf("Downloading file %s: 0%%", filename.c_str());
+		printf("Downloading file %s: 0%%", filename.c_str());
 
-	MyProgress prog{ filename, 0 };
-	CURL* curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, path.c_str());
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFileCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &f);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, UpdateProgress);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &prog);
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+		MyProgress prog{ filename, 0 };
+		CURL* curl = curl_easy_init();
+		curl_easy_setopt(curl, CURLOPT_URL, path.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFileCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &f);
+		curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, UpdateProgress);
+		curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &prog);
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
 
-	CURLcode res = curl_easy_perform(curl);
-	f.Close();
+		CURLcode res = curl_easy_perform(curl);
+		f.Close();
 
-	if(res != CURLE_OK)
-	{
-		printf("\nERROR: Download failed.\n");
+		if(res != CURLE_OK)
+		{
+			printf("\nERROR: Download failed.\n");
+			curl_easy_cleanup(curl);
+			return false;
+		}
+
+		printf("\rDownloading file %s: 100%%\n", filename.c_str());
 		curl_easy_cleanup(curl);
-		return false;
 	}
-
-	printf("\rDownloading file %s: 100%%\n", filename.c_str());
-	curl_easy_cleanup(curl);
 
 	uint fileCrc = Crc::Calculate(filename);
 	if(fileCrc != crc)
