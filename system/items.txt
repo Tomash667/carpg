@@ -3851,7 +3851,7 @@ startItems {
 		10 dagger_short
 		20 dagger_sword
 		30 dagger_rapier
-		* dagger_assassin
+		* dagger_cutlass
 	}
 	longBlade {
 		0 sword_wooden
@@ -3871,8 +3871,8 @@ startItems {
 		0 blunt_club
 		10 blunt_mace
 		20 blunt_orcish
-		30 blunt_morningstar
-		* blunt_dwarven
+		30 blunt_barbed
+		* blunt_morningstar
 	}
 	bow {
 		5 bow_short
@@ -3883,9 +3883,9 @@ startItems {
 	shield {
 		5 shield_plank
 		10 shield_wood
-		20 shield_iron
-		30 shield_steel
-		* shield_mithril
+		20 shield_kite
+		30 shield_iron
+		* shield_steel
 	}
 	lightArmor {
 		0 al_padded
@@ -3931,26 +3931,34 @@ betterItems {
 	dagger_knife dagger_short
 	dagger_short dagger_sword
 	dagger_sword dagger_rapier
-	dagger_rapier dagger_assassin
+	dagger_rapier dagger_cutlass
+	dagger_cutlass dagger_assassin
 	dagger_assassin dagger_sword_a
+	
 	sword_wooden sword_long
 	sword_long sword_scimitar
 	sword_scimitar sword_orcish
 	sword_orcish sword_serrated
-	sword_serrated sword_adamantine
+	sword_serrated sword_mercenary
+	sword_mercenary sword_adamantine
+	
 	axe_rusted axe_small
 	axe_small axe_battle
 	axe_battle axe_orcish
 	axe_orcish axe_crystal
-	axe_crystal axe_giant
+	axe_crystal axe_dwarf
+	axe_dwarf axe_giant
+	
 	blunt_club blunt_mace
 	blunt_mace blunt_orcish
-	blunt_orcish blunt_morningstar
+	blunt_orcish blunt_barbed
+	blunt_barbed blunt_morningstar
 	blunt_morningstar blunt_dwarven
 	blunt_dwarven blunt_adamantine
 	blacksmith_hammer blunt_orcish
 	pickaxe blunt_orcish
 	frying_pan blunt_orcish
+	
 	wand_novice wand_adept
 	wand_adept wand_expert
 	wand_expert wand_master
@@ -3961,10 +3969,12 @@ betterItems {
 	bow_elven bow_dragonbone
 
 	shield_plank shield_wood
-	shield_wood shield_iron
+	shield_wood shield_kite
+	shield_kite shield_iron
 	shield_iron shield_steel
 	shield_steel shield_mithril
-	shield_mithril shield_adamantine
+	shield_mithril shield_spiked
+	shield_spiked shield_adamantine
 
 	al_padded al_leather
 	al_padded_hq al_leather
@@ -4019,6 +4029,7 @@ betterItems {
 	al_clothes2b al_leather
 	al_clothes3 al_leather
 	al_clothes3b al_leather
+	al_old_robe al_leather
 }
 
 //------------------------------------------------------------------------------
