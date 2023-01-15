@@ -25,6 +25,7 @@
 #include "LocationGeneratorFactory.h"
 #include "LocationHelper.h"
 #include "MultiInsideLocation.h"
+#include "Navmesh.h"
 #include "ParticleEffect.h"
 #include "Pathfinding.h"
 #include "PhysicCallbacks.h"
@@ -50,6 +51,7 @@
 #include <ResourceManager.h>
 #include <Scene.h>
 #include <scriptarray/scriptarray.h>
+#include <SimpleMesh.h>
 #include <SoundManager.h>
 #include <Texture.h>
 #include <Terrain.h>
@@ -702,7 +704,7 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 		locPart.objects.push_back(o);
 
 		const GameDirection dir = RotToDir(rot);
-		ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, rot, dir, pos, nullptr, nullptr, false, outPoint);
+		ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, rot, dir, pos, nullptr, nullptr, 0, outPoint);
 
 		return o;
 	}
@@ -1034,7 +1036,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 
 //=================================================================================================
 void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* insideMesh, float rot, GameDirection dir,
-	const Vec3& shift, Building* building, CityBuilding* cityBuilding, bool recreate, Vec3* outPoint)
+	const Vec3& shift, Building* building, CityBuilding* cityBuilding, int flags, Vec3* outPoint)
 {
 	if(mesh->attachPoints.empty())
 	{
@@ -1079,7 +1081,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		}
 		else if(c == 'd')
 		{
-			if(!recreate)
+			if(!IsSet(flags, PBOF_RECREATE))
 			{
 				assert(!isInside);
 				details.push_back(&pt);
@@ -1105,7 +1107,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		case 'o': // object
 		case 'r': // rotated object
 		case 'l': // random rotation (90* angle) object
-			if(!recreate)
+			if(!IsSet(flags, PBOF_RECREATE))
 			{
 				cstring name;
 				int variant = -1;
@@ -1151,73 +1153,80 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			{
 				bool isWall = (token == "circle");
 
-				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
-				cobj.type = CollisionObject::SPHERE;
-				cobj.radius = pt.size.x;
-				cobj.pos = pos;
-				cobj.owner = nullptr;
-				cobj.camCollider = isWall;
+				CollisionObject& c = Add1(locPart.lvlPart->colliders);
+				c.type = CollisionObject::SPHERE;
+				c.radius = pt.size.x;
+				c.pos = pos;
+				c.owner = nullptr;
+				c.camCollider = isWall;
 
-				if(locPart.partType == LocationPart::Type::Outside)
+				if(!IsSet(flags, PBOF_CUSTOM_PHYSICS))
 				{
-					terrain->SetY(pos);
-					pos.y += 2.f;
-				}
+					if(locPart.partType == LocationPart::Type::Outside)
+					{
+						terrain->SetY(pos);
+						pos.y += 2.f;
+					}
 
-				btCylinderShape* shape = new btCylinderShape(btVector3(pt.size.x, 4.f, pt.size.z));
-				shapes.push_back(shape);
-				btCollisionObject* co = new btCollisionObject;
-				co->setCollisionShape(shape);
-				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
-				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phyWorld->addCollisionObject(co, group);
+					btCylinderShape* shape = new btCylinderShape(btVector3(pt.size.x, 4.f, pt.size.z));
+					shapes.push_back(shape);
+					btCollisionObject* cobj = new btCollisionObject;
+					cobj->setCollisionShape(shape);
+					int group = (isWall ? CG_BUILDING : CG_COLLIDER);
+					cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+					cobj->getWorldTransform().setOrigin(ToVector3(pos));
+					phyWorld->addCollisionObject(cobj, group);
+				}
 			}
 			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
 			{
 				bool isWall = (token == "square" || token == "squarevn");
 				bool blockCamera = (token == "square");
 
-				CollisionObject& cobj = Add1(locPart.lvlPart->colliders);
-				cobj.type = CollisionObject::RECTANGLE;
-				cobj.pos = pos;
-				cobj.w = pt.size.x;
-				cobj.h = pt.size.z;
-				cobj.owner = nullptr;
-				cobj.camCollider = blockCamera;
-
-				btBoxShape* shape;
-				if(token != "squarevp")
-				{
-					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
-					if(locPart.partType == LocationPart::Type::Outside)
-					{
-						terrain->SetY(pos);
-						pos.y += 8.f;
-					}
-					else
-						pos.y = 0.f;
-				}
+				CollisionObject& c = Add1(locPart.lvlPart->colliders);
+				c.pos = pos;
+				c.w = pt.size.x;
+				c.h = pt.size.z;
+				c.owner = nullptr;
+				c.camCollider = blockCamera;
+				if(dir == GDIR_DOWN)
+					c.type = CollisionObject::RECTANGLE;
 				else
 				{
-					shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
-					if(locPart.partType == LocationPart::Type::Outside)
-						pos.y += terrain->GetH(pos);
+					c.type = CollisionObject::RECTANGLE_ROT;
+					c.rot = rot;
+					c.radius = sqrt(c.w * c.w + c.h * c.h);
 				}
-				shapes.push_back(shape);
-				btCollisionObject* co = new btCollisionObject;
-				co->setCollisionShape(shape);
-				int group = (isWall ? CG_BUILDING : CG_COLLIDER);
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
-				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phyWorld->addCollisionObject(co, group);
 
-				if(dir != GDIR_DOWN)
+				if(!IsSet(flags, PBOF_CUSTOM_PHYSICS))
 				{
-					cobj.type = CollisionObject::RECTANGLE_ROT;
-					cobj.rot = rot;
-					cobj.radius = sqrt(cobj.w * cobj.w + cobj.h * cobj.h);
-					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+					btBoxShape* shape;
+					if(token != "squarevp")
+					{
+						shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
+						if(locPart.partType == LocationPart::Type::Outside)
+						{
+							terrain->SetY(pos);
+							pos.y += 8.f;
+						}
+						else
+							pos.y = 0.f;
+					}
+					else
+					{
+						shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+						if(locPart.partType == LocationPart::Type::Outside)
+							pos.y += terrain->GetH(pos);
+					}
+					shapes.push_back(shape);
+					btCollisionObject* cobj = new btCollisionObject;
+					cobj->setCollisionShape(shape);
+					int group = (isWall ? CG_BUILDING : CG_COLLIDER);
+					cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+					cobj->getWorldTransform().setOrigin(ToVector3(pos));
+					if(dir != GDIR_DOWN)
+						cobj->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+					phyWorld->addCollisionObject(cobj, group);
 				}
 			}
 			else if(token == "squarevpa")
@@ -1226,15 +1235,14 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				if(locPart.partType == LocationPart::Type::Outside)
 					pos.y += terrain->GetH(pos);
 				shapes.push_back(shape);
-				btCollisionObject* co = new btCollisionObject;
-				co->setCollisionShape(shape);
+				btCollisionObject* cobj = new btCollisionObject;
+				cobj->setCollisionShape(shape);
 				int group = CG_COLLIDER;
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
-				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phyWorld->addCollisionObject(co, group);
-
+				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				cobj->getWorldTransform().setOrigin(ToVector3(pos));
 				if(dir != GDIR_DOWN)
-					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+					cobj->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+				phyWorld->addCollisionObject(cobj, group);
 			}
 			else if(token == "squarecam")
 			{
@@ -1243,13 +1251,13 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 				shapes.push_back(shape);
-				btCollisionObject* co = new btCollisionObject;
-				co->setCollisionShape(shape);
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
-				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phyWorld->addCollisionObject(co, CG_CAMERA_COLLIDER);
+				btCollisionObject* cobj = new btCollisionObject;
+				cobj->setCollisionShape(shape);
+				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
+				cobj->getWorldTransform().setOrigin(ToVector3(pos));
+				phyWorld->addCollisionObject(cobj, CG_CAMERA_COLLIDER);
 				if(dir != GDIR_DOWN)
-					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+					cobj->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 
 				float w = pt.size.x, h = pt.size.z;
 				if(dir == GDIR_LEFT || dir == GDIR_RIGHT)
@@ -1272,11 +1280,14 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 				assert(0);
 			break;
 		case 's': // zone
-			if(!recreate)
+			if(!IsSet(flags, PBOF_RECREATE))
 			{
 				if(token == "enter")
 				{
 					assert(!inside);
+
+					if(IsSet(building->flags, Building::OPTIONAL_INSIDE))
+						break;
 
 					inside = new InsideBuilding((int)city->insideBuildings.size());
 					inside->lvlPart = new LevelPart(inside);
@@ -1419,7 +1430,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'c': // unit
-			if(!recreate && city->citizens > 0)
+			if(!IsSet(flags, PBOF_RECREATE) && city->citizens > 0)
 			{
 				UnitData* ud = UnitData::TryGet(token.c_str());
 				assert(ud);
@@ -1470,21 +1481,21 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		}
 	}
 
-	if(isInside)
+	if(isInside && !IsSet(flags, PBOF_CUSTOM_PHYSICS))
 	{
 		// floor
-		btCollisionObject* co = new btCollisionObject;
-		co->setCollisionShape(shapeFloor);
-		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
-		co->getWorldTransform().setOrigin(ToVector3(shift));
-		phyWorld->addCollisionObject(co, CG_COLLIDER);
+		btCollisionObject* cobj = new btCollisionObject;
+		cobj->setCollisionShape(shapeFloor);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+		cobj->getWorldTransform().setOrigin(ToVector3(shift));
+		phyWorld->addCollisionObject(cobj, CG_COLLIDER);
 
 		// ceiling
-		co = new btCollisionObject;
-		co->setCollisionShape(shapeFloor);
-		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
-		co->getWorldTransform().setOrigin(ToVector3(shift + Vec3(0, 4, 0)));
-		phyWorld->addCollisionObject(co, CG_COLLIDER);
+		cobj = new btCollisionObject;
+		cobj->setCollisionShape(shapeFloor);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+		cobj->getWorldTransform().setOrigin(ToVector3(shift + Vec3(0, 4, 0)));
+		phyWorld->addCollisionObject(cobj, CG_COLLIDER);
 	}
 
 	if(!details.empty() && !isInside)
@@ -1559,7 +1570,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 		details.clear();
 	}
 
-	if(!recreate)
+	if(!IsSet(flags, PBOF_RECREATE))
 	{
 		if(isInside || inside)
 			assert(haveExit && haveSpawn);
@@ -1601,7 +1612,7 @@ void Level::RecreateObjects(bool spawnParticles)
 			{
 				const float rot = obj.rot.y;
 				const GameDirection dir = RotToDir(rot);
-				ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, true);
+				ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, PBOF_RECREATE);
 			}
 			else
 				SpawnObjectExtras(locPart, baseObj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
@@ -1983,14 +1994,8 @@ Unit* Level::CreateUnitWithAI(LocationPart& locPart, UnitData& unit, int level, 
 
 	if(pos)
 	{
-		if(locPart.partType == LocationPart::Type::Outside)
-		{
-			Vec3 pt = *pos;
-			gameLevel->terrain->SetY(pt);
-			u->pos = pt;
-		}
-		else
-			u->pos = *pos;
+		u->pos = *pos;
+		u->Moved(true);
 		u->UpdatePhysics();
 		u->visualPos = u->pos;
 	}
@@ -4468,14 +4473,12 @@ bool Level::CanShootAtLocation(const Vec3& from, const Vec3& to) const
 	tTo.setIdentity();
 	tTo.setOrigin(ToVector3(to));
 
-	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk = [](btCollisionObject* cobj, bool first)
+	ConvexCallback callback([](const btCollisionObject* cobj, btCollisionWorld::LocalConvexResult* result)
 	{
 		return LT_COLLIDE;
-	};
+	}, nullptr, false);
 
-	ConvexCallback callback(clbk, nullptr, false);
-
-	phyWorld->convexSweepTest((btConvexShape*)shapeTestSphere, tFrom, tTo, callback);
+	phyWorld->convexSweepTest(static_cast<btConvexShape*>(shapeTestSphere), tFrom, tTo, callback);
 
 	return !callback.hasHit();
 }
@@ -4502,8 +4505,8 @@ bool Level::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoi
 }
 
 //=================================================================================================
-bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
-	vector<float>* tList, bool useClbk2, float* endT)
+bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, ConvexCallback::Callback clbk, float& t, vector<float>* tList, bool useClbk2,
+	float* endT)
 {
 	assert(shape->isConvex());
 
@@ -4514,8 +4517,7 @@ bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir,
 	tTo.setOrigin(ToVector3(dir) + tFrom.getOrigin());
 
 	ConvexCallback callback(clbk, tList, useClbk2);
-
-	phyWorld->convexSweepTest((btConvexShape*)shape, tFrom, tTo, callback);
+	phyWorld->convexSweepTest(static_cast<btConvexShape*>(shape), tFrom, tTo, callback);
 
 	bool hasHit = (callback.closest <= 1.f);
 	t = min(callback.closest, 1.f);
@@ -5049,4 +5051,112 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 		c.extraFloats[0] = bounds.x;
 		c.extraFloats[1] = bounds.y;
 	}
+}
+
+//=================================================================================================
+void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
+{
+	City* city = cityCtx;
+	Building* building = cityBuilding->building;
+	building->mesh->EnsureIsLoaded();
+
+	const Vec3 shift(float(cityBuilding->pt.x + building->shift[cityBuilding->dir].x) * 2,
+		0.f, float(cityBuilding->pt.y + building->shift[cityBuilding->dir].y) * 2);
+	const Matrix mat = Matrix::RotationY(cityBuilding->GetRot()) * Matrix::Translation(shift);
+	InsideBuilding* inside = new InsideBuilding((int)city->insideBuildings.size());
+	inside->lvlPart = new LevelPart(inside);
+	inside->levelShift = city->insideOffset;
+	inside->offset = Vec2(512.f * city->insideOffset.x + 256.f, 512.f * city->insideOffset.y + 256.f);
+	if(city->insideOffset.x > city->insideOffset.y)
+	{
+		--city->insideOffset.x;
+		++city->insideOffset.y;
+	}
+	else
+	{
+		city->insideOffset.x += 2;
+		city->insideOffset.y = 0;
+	}
+	inside->mine = Int2(inside->levelShift.x * 256, inside->levelShift.y * 256);
+	inside->maxe = inside->mine + Int2(256, 256);
+	Mesh::Point* point = building->mesh->FindPoint("o_s_enter");
+	Vec3 pos = Vec3::TransformZero(point->mat * mat);
+	float w, h;
+	if(cityBuilding->dir == GDIR_DOWN || cityBuilding->dir == GDIR_UP)
+	{
+		w = point->size.x;
+		h = point->size.z;
+	}
+	else
+	{
+		w = point->size.z;
+		h = point->size.x;
+	}
+	inside->enterRegion.v1.x = pos.x - w;
+	inside->enterRegion.v1.y = pos.z - h;
+	inside->enterRegion.v2.x = pos.x + w;
+	inside->enterRegion.v2.y = pos.z + h;
+	inside->enterY = terrain->GetH(pos.x, pos.z) + 0.1f;
+	inside->building = building;
+	inside->outsideRot = cityBuilding->GetRot();
+	inside->top = -1.f;
+	inside->xsphereRadius = -1.f;
+	inside->insideSpawn = inside->offset.XZ(0);
+	point = building->mesh->FindPoint("o_s_spawn");
+	pos = Vec3::TransformZero(point->mat * mat);
+	pos.y = terrain->GetH(pos.x, pos.z);
+	inside->outsideSpawn = pos;
+	inside->exitRegion = Box2d(inside->offset.x - 1, inside->offset.y - 6, inside->offset.x + 1, inside->offset.y - 4);
+	city->insideBuildings.push_back(inside);
+	locParts.push_back(*inside);
+
+	Scene* scene = inside->lvlPart->scene;
+	scene->clearColor = Color::White;
+	scene->fogRange = Vec2(40, 80);
+	scene->fogColor = Color(0.9f, 0.85f, 0.8f);
+	scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
+	scene->useLightDir = false;
+	inside->lvlPart->drawRange = 80.f;
+
+	Mesh* insideMesh = building->insideMesh;
+	insideMesh->EnsureIsLoaded();
+
+	Object* o = new Object;
+	o->base = nullptr;
+	o->mesh = insideMesh;
+	o->pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
+	o->rot = Vec3(0, 0, 0);
+	o->scale = 1.f;
+	o->requireSplit = true;
+	inside->objects.push_back(o);
+
+	ProcessBuildingObjects(*inside, city, inside, insideMesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr, PBOF_CUSTOM_PHYSICS);
+
+	// navmesh
+	inside->navmesh = new Navmesh;
+	inside->navmesh->Init(building, inside->offset);
+
+	// building physics
+	if(!building->shapePhysics)
+	{
+		building->vdPhysics->EnsureIsLoaded();
+		building->shapePhysics = physics->CreateTrimeshShape(building->vdPhysics);
+	}
+	btCollisionObject* cobj = new btCollisionObject;
+	cobj->setCollisionShape(building->shapePhysics);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	cobj->getWorldTransform().setOrigin(ToVector3(o->pos));
+	phyWorld->addCollisionObject(cobj, CG_BUILDING);
+
+	// building floor
+	if(!building->shapeFloor)
+	{
+		building->vdFloor->EnsureIsLoaded();
+		building->shapeFloor = physics->CreateTrimeshShape(building->vdFloor);
+	}
+	cobj = new btCollisionObject;
+	cobj->setCollisionShape(building->shapeFloor);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
+	cobj->getWorldTransform().setOrigin(ToVector3(o->pos));
+	phyWorld->addCollisionObject(cobj, CG_TERRAIN);
 }

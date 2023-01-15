@@ -39,6 +39,17 @@ InsideBuilding* CityBuilding::GetInsideBuilding()
 }
 
 //=================================================================================================
+bool CityBuilding::HaveInside()
+{
+	if(!building->insideMesh)
+		return false;
+	else if(IsSet(building->flags, Building::OPTIONAL_INSIDE))
+		return GetInsideBuilding() != nullptr;
+	else
+		return true;
+}
+
+//=================================================================================================
 float CityBuilding::GetRot()
 {
 	return DirToRot(dir);
@@ -64,4 +75,13 @@ void CityBuilding::SetCanEnter(bool value)
 			c.count = value ? 1 : 0;
 		}
 	}
+}
+
+//=================================================================================================
+void CityBuilding::CreateInside()
+{
+	if(HaveInside() || !building->insideMesh)
+		return;
+
+	gameLevel->CreateInsideBuilding(this);
 }

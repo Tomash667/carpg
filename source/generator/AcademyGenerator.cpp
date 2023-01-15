@@ -186,8 +186,9 @@ void AcademyGenerator::SpawnBuilding(bool first)
 		outside->objects.push_back(o);
 	}
 
+	const int flags = (first ? 0 : Level::PBOF_RECREATE);
 	gameLevel->ProcessBuildingObjects(*outside, nullptr, nullptr, building->mesh, nullptr, 0.f, GDIR_DOWN,
-		pos, building, nullptr, !first);
+		pos, building, nullptr, flags);
 }
 
 //=================================================================================================

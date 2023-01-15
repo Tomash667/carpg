@@ -12,6 +12,7 @@
 #include "InsideLocation.h"
 #include "Level.h"
 #include "LevelPart.h"
+#include "Navmesh.h"
 #include "Pathfinding.h"
 #include "PhysicCallbacks.h"
 #include "Portal.h"
@@ -1307,28 +1308,33 @@ void Game::PrepareAreaPath()
 			float t;
 			Vec3 dir(sin(rot) * ability->range, 0, cos(rot) * ability->range);
 			bool ignoreUnits = IsSet(ability->flags, Ability::IgnoreUnits);
-			gameLevel->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignoreUnits](btCollisionObject* obj, bool)
-			{
-				int flags = obj->getCollisionFlags();
-				if(IsSet(flags, CG_TERRAIN))
-					return LT_IGNORE;
-				if(IsSet(flags, CG_UNIT))
+			gameLevel->LineTest(pc->unit->cobj->getCollisionShape(), from, dir,
+				[this, ignoreUnits](const btCollisionObject* obj, btCollisionWorld::LocalConvexResult* result)
 				{
-					Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
-					if(ignoreUnits || unit == pc->unit || !unit->IsStanding())
+					int flags = obj->getCollisionFlags();
+					if(IsSet(flags, CG_TERRAIN))
 						return LT_IGNORE;
-				}
-				return LT_COLLIDE;
-			}, t);
+					if(IsSet(flags, CG_UNIT))
+					{
+						Unit* unit = reinterpret_cast<Unit*>(obj->getUserPointer());
+						if(ignoreUnits || unit == pc->unit || !unit->IsStanding())
+							return LT_IGNORE;
+					}
+					return LT_COLLIDE;
+				}, t);
 
 			float len = ability->range * t;
 
-			if(gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside)
+			if(gameLevel->location->outside
+				&& (pc->unit->locPart->partType == LocationPart::Type::Outside || static_cast<InsideBuilding*>(pc->unit->locPart)->navmesh))
 			{
 				// build line on terrain
 				area.points.clear();
 				area.faces.clear();
 
+				Navmesh* navmesh = nullptr;
+				if(pc->unit->locPart->partType == LocationPart::Type::Building)
+					navmesh = static_cast<InsideBuilding*>(pc->unit->locPart)->navmesh;
 				Vec3 activePos = pc->unit->pos;
 				Vec3 step = dir * t / (float)steps;
 				Vec3 unitOffset(pc->unit->pos.x, 0, pc->unit->pos.z);
@@ -1337,7 +1343,16 @@ void Game::PrepareAreaPath()
 				Matrix mat = Matrix::RotationY(rot);
 				for(int i = 0; i < steps; ++i)
 				{
-					float currentH = gameLevel->terrain->GetH(activePos) + h;
+					float currentH;
+					if(navmesh)
+					{
+						currentH = 0.f;
+						navmesh->GetHeight(activePos.XZ(), currentH);
+					}
+					else
+						currentH = gameLevel->terrain->GetH(activePos);
+
+					currentH += h;
 					area.points.push_back(Vec3::Transform(Vec3(-ability->width, currentH, activeStep), mat) + unitOffset);
 					area.points.push_back(Vec3::Transform(Vec3(+ability->width, currentH, activeStep), mat) + unitOffset);
 
@@ -1390,13 +1405,10 @@ void Game::PrepareAreaPath()
 			drawBatch.areas2.push_back(area);
 
 			const float radius = ability->width / 2;
+			Vec3 from = pc->data.abilityPoint;
 			Vec3 dir = pc->data.abilityPoint - pc->unit->pos;
-			dir.y = 0;
 			float dist = dir.Length();
 			dir.Normalize();
-
-			Vec3 from = pc->data.abilityPoint;
-			from.y = 0;
 
 			bool ok = false;
 			for(int i = 0; i < 20; ++i)
@@ -1492,39 +1504,6 @@ void Game::PrepareAreaPath()
 }
 
 //=================================================================================================
-void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot)
-{
-	const float h = 0.06f;
-	const int circlePoints = 10;
-
-	area.points.resize(circlePoints + 1);
-	area.points[0] = Vec3(0, h, 0 + range);
-	float angle = 0;
-	for(int i = 0; i < circlePoints; ++i)
-	{
-		area.points[i + 1] = Vec3(sin(angle) * radius, h, cos(angle) * radius + range);
-		angle += (PI * 2) / circlePoints;
-	}
-
-	bool outside = (gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside);
-	Matrix mat = Matrix::RotationY(rot);
-	for(int i = 0; i < circlePoints + 1; ++i)
-	{
-		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
-		if(outside)
-			area.points[i].y = gameLevel->terrain->GetH(area.points[i]) + h;
-	}
-
-	area.faces.clear();
-	for(int i = 0; i < circlePoints; ++i)
-	{
-		area.faces.push_back(0);
-		area.faces.push_back(i + 1);
-		area.faces.push_back((i + 2) == (circlePoints + 1) ? 1 : (i + 2));
-	}
-}
-
-//=================================================================================================
 void Game::PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius)
 {
 	const float h = 0.06f;
@@ -1539,11 +1518,58 @@ void Game::PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius)
 		angle += (PI * 2) / circlePoints;
 	}
 
-	bool outside = (gameLevel->location->outside && pc->unit->locPart->partType == LocationPart::Type::Outside);
-	if(outside)
+	if(gameLevel->location->outside)
 	{
-		for(int i = 0; i < circlePoints + 1; ++i)
-			area.points[i].y = gameLevel->terrain->GetH(area.points[i]) + h;
+		if(pc->unit->locPart->partType == LocationPart::Type::Outside)
+		{
+			for(Vec3& pt : area.points)
+				pt.y = gameLevel->terrain->GetH(pt) + h;
+		}
+		else if(Navmesh* navmesh = static_cast<InsideBuilding*>(pc->unit->locPart)->navmesh)
+		{
+			bool allOk = true;
+			for(Vec3& pt : area.points)
+			{
+				if(navmesh->GetHeight(pt.XZ(), pt.y))
+					pt.y += h;
+				else
+				{
+					pt.y = -1000.f;
+					allOk = false;
+				}
+			}
+
+			if(!allOk)
+			{
+				float avg = 0;
+				int count = 0;
+				for(Vec3& pt : area.points)
+				{
+					if(pt.y != -1000.f)
+					{
+						avg += pt.y;
+						++count;
+					}
+				}
+
+				avg /= count;
+				for(Vec3& pt : area.points)
+				{
+					if(pt.y == -1000.f)
+						pt.y = avg;
+				}
+			}
+		}
+		else
+		{
+			for(Vec3& pt : area.points)
+				pt.y = h;
+		}
+	}
+	else
+	{
+		for(Vec3& pt : area.points)
+			pt.y = h;
 	}
 
 	area.faces.clear();
@@ -1739,7 +1765,10 @@ void Game::DrawScene()
 
 	// debug nodes
 	if(!drawBatch.debugNodes.empty())
+	{
+		basicShader->PrepareForShapes(*drawBatch.camera);
 		basicShader->DrawDebugNodes(drawBatch.debugNodes);
+	}
 	if(pathfinding->IsDebugDraw())
 	{
 		basicShader->Prepare(gameLevel->camera);

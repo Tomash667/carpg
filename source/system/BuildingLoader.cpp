@@ -16,7 +16,9 @@ enum Group
 	G_BUILDING_FLAGS,
 	G_SIDE,
 	G_SCRIPT,
-	G_SCRIPT2
+	G_SCRIPT2,
+	G_INSIDE,
+	G_NAVMESH
 };
 
 enum Top
@@ -35,7 +37,8 @@ enum BuildingKeyword
 	BK_SCHEME,
 	BK_GROUP,
 	BK_UNIT,
-	BK_SHIFT
+	BK_SHIFT,
+	BK_INSIDE
 };
 
 enum Side
@@ -68,6 +71,20 @@ enum ScriptKeyword2
 	SK2_OFF,
 	SK2_START,
 	SK2_END
+};
+
+enum InsideKeyword
+{
+	IK_MESH,
+	IK_PHYSICS,
+	IK_FLOOR,
+	IK_NAVMESH
+};
+
+enum NavmeshKeyword
+{
+	NK_BOX,
+	NK_HEIGHT
 };
 
 struct Var
@@ -113,7 +130,8 @@ void BuildingLoader::InitTokenizer()
 		{ "scheme", BK_SCHEME },
 		{ "group", BK_GROUP },
 		{ "unit", BK_UNIT },
-		{ "shift", BK_SHIFT }
+		{ "shift", BK_SHIFT },
+		{ "inside", BK_INSIDE }
 		});
 
 	t.AddKeywords(G_BUILDING_FLAGS, {
@@ -152,6 +170,18 @@ void BuildingLoader::InitTokenizer()
 		{ "off", SK2_OFF },
 		{ "start", SK2_START },
 		{ "end", SK2_END }
+		});
+
+	t.AddKeywords(G_INSIDE, {
+		{ "mesh", IK_MESH },
+		{ "physics", IK_PHYSICS },
+		{ "floor", IK_FLOOR },
+		{ "navmesh", IK_NAVMESH }
+		});
+
+	t.AddKeywords(G_NAVMESH, {
+		{ "box", NK_BOX },
+		{ "height", NK_HEIGHT }
 		});
 }
 
@@ -201,7 +231,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		auto prop = (BuildingKeyword)t.MustGetKeywordId(G_BUILDING);
+		BuildingKeyword prop = (BuildingKeyword)t.MustGetKeywordId(G_BUILDING);
 		t.Next();
 
 		switch(prop)
@@ -307,39 +337,98 @@ void BuildingLoader::ParseBuilding(const string& id)
 			}
 			break;
 		case BK_SHIFT:
+			t.AssertSymbol('{');
+			t.Next();
+			if(t.IsKeywordGroup(G_SIDE))
 			{
-				t.AssertSymbol('{');
-				t.Next();
-				if(t.IsKeywordGroup(G_SIDE))
+				do
 				{
-					do
-					{
-						Side side = (Side)t.MustGetKeywordId(G_SIDE);
-						t.Next();
-						t.Parse(building->shift[(int)side]);
-					}
-					while(t.IsKeywordGroup(G_SIDE));
-				}
-				else if(t.IsInt())
-				{
-					int shiftX = t.GetInt();
+					Side side = (Side)t.MustGetKeywordId(G_SIDE);
 					t.Next();
-					int shiftY = t.MustGetInt();
-					t.Next();
-					for(int i = 0; i < 4; ++i)
-					{
-						building->shift[i].x = shiftX;
-						building->shift[i].y = shiftY;
-					}
+					t.Parse(building->shift[(int)side]);
 				}
-				else
-				{
-					int group = G_SIDE;
-					t.StartUnexpected().Add(tokenizer::T_KEYWORD_GROUP, &group).Add(tokenizer::T_INT).Throw();
-				}
-				t.AssertSymbol('}');
-				t.Next();
+				while(t.IsKeywordGroup(G_SIDE));
 			}
+			else if(t.IsInt())
+			{
+				int shiftX = t.GetInt();
+				t.Next();
+				int shiftY = t.MustGetInt();
+				t.Next();
+				for(int i = 0; i < 4; ++i)
+				{
+					building->shift[i].x = shiftX;
+					building->shift[i].y = shiftY;
+				}
+			}
+			else
+			{
+				int group = G_SIDE;
+				t.StartUnexpected().Add(tokenizer::T_KEYWORD_GROUP, &group).Add(tokenizer::T_INT).Throw();
+			}
+			t.AssertSymbol('}');
+			t.Next();
+			break;
+		case BK_INSIDE:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				InsideKeyword prop = (InsideKeyword)t.MustGetKeywordId(G_INSIDE);
+				t.Next();
+				switch(prop)
+				{
+				case IK_MESH:
+					{
+						const string& meshId = t.MustGetString();
+						building->insideMesh = resMgr->TryGet<Mesh>(meshId);
+						if(!building->insideMesh)
+							LoadError("Missing mesh '%s'.", meshId.c_str());
+						t.Next();
+					}
+					break;
+				case IK_PHYSICS:
+					{
+						const string& meshId = t.MustGetString();
+						building->vdPhysics = resMgr->TryGet<VertexData>(meshId);
+						if(!building->vdPhysics)
+							LoadError("Missing physics '%s'.", meshId.c_str());
+						t.Next();
+					}
+					break;
+				case IK_FLOOR:
+					{
+						const string& meshId = t.MustGetString();
+						building->vdFloor = resMgr->TryGet<VertexData>(meshId);
+						if(!building->vdFloor)
+							LoadError("Missing physics '%s'.", meshId.c_str());
+						t.Next();
+					}
+					break;
+				case IK_NAVMESH:
+					t.AssertSymbol('{');
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						t.AssertSymbol('{');
+						t.Next();
+						Building::Region& region = Add1(building->navmesh);
+						while(!t.IsSymbol('}'))
+						{
+							NavmeshKeyword prop = (NavmeshKeyword)t.MustGetKeywordId(G_NAVMESH);
+							t.Next();
+							if(prop == NK_BOX)
+								t.Parse(region.box);
+							else
+								t.Parse(region.height);
+						}
+						t.Next();
+					}
+					t.Next();
+					break;
+				}
+			}
+			t.Next();
 			break;
 		}
 	}
@@ -349,6 +438,8 @@ void BuildingLoader::ParseBuilding(const string& id)
 	if(building->scheme.empty())
 		t.Throw("Building '%s' is missing scheme.", building->id.c_str());
 
+	if(building->vdPhysics)
+		building->flags |= Building::OPTIONAL_INSIDE;
 	if(building->group)
 		building->group->buildings.push_back(building.Get());
 	Building::buildings.push_back(building.Pin());

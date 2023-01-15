@@ -690,6 +690,9 @@
     <ClCompile Include="entity\ParticleEffect.cpp">
       <Filter>entity</Filter>
     </ClCompile>
+    <ClCompile Include="entity\Navmesh.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -1359,6 +1362,9 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="entity\ParticleEffect.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Navmesh.h">
       <Filter>entity</Filter>
     </ClInclude>
   </ItemGroup>

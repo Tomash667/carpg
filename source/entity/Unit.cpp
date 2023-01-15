@@ -23,6 +23,7 @@
 #include "Level.h"
 #include "LevelGui.h"
 #include "LevelPart.h"
+#include "Navmesh.h"
 #include "OffscreenLocation.h"
 #include "ParticleEffect.h"
 #include "PlayerInfo.h"
@@ -7007,13 +7008,14 @@ void Unit::Update(float dt)
 						center.y = 0;
 						center.Normalize();
 						center *= dt;
-						gameLevel->LineTest(cobj->getCollisionShape(), GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
-						{
-							int flags = obj->getCollisionFlags();
-							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
-								return LT_IGNORE;
-							return LT_COLLIDE;
-						}, t);
+						gameLevel->LineTest(cobj->getCollisionShape(), GetPhysicsPos(), center,
+							[&](const btCollisionObject* obj, btCollisionWorld::LocalConvexResult* result)
+							{
+								int flags = obj->getCollisionFlags();
+								if(IsSet(flags, CG_TERRAIN | CG_UNIT))
+									return LT_IGNORE;
+								return LT_COLLIDE;
+							}, t);
 						if(t == 1.f)
 						{
 							pos += center;
@@ -7920,7 +7922,7 @@ void Unit::Update(float dt)
 			if(!IsSet(act.dash.ability->flags, Ability::IgnoreUnits))
 			{
 				// dash
-				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool)
+				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](const btCollisionObject* obj, btCollisionWorld::LocalConvexResult* result)
 				{
 					int flags = obj->getCollisionFlags();
 					if(IsSet(flags, CG_TERRAIN))
@@ -7939,10 +7941,10 @@ void Unit::Update(float dt)
 				// bull charge, do line test and find targets
 				static vector<Unit*> targets;
 				targets.clear();
-				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
+				gameLevel->LineTest(cobj->getCollisionShape(), from, dir, [&](const btCollisionObject* obj, btCollisionWorld::LocalConvexResult* result)
 				{
 					int flags = obj->getCollisionFlags();
-					if(first)
+					if(!result)
 					{
 						if(IsSet(flags, CG_TERRAIN))
 							return LT_IGNORE;
@@ -8009,7 +8011,7 @@ void Unit::Update(float dt)
 						else
 							moveForward = false;
 
-						auto unitClbk = [unit](btCollisionObject* obj, bool)
+						ConvexCallback::Callback unitClbk = [unit](const btCollisionObject* obj, btCollisionWorld::LocalConvexResult* result)
 						{
 							int flags = obj->getCollisionFlags();
 							if(IsSet(flags, CG_TERRAIN | CG_UNIT))
@@ -8248,13 +8250,15 @@ void Unit::Moved(bool warped, bool dash)
 		}
 		else
 		{
+			InsideBuilding& building = *static_cast<InsideBuilding*>(locPart);
+
+			if(building.navmesh)
+				building.navmesh->GetHeight(pos.XZ(), pos.y);
+
 			if(warped)
 				return;
 
-			// jest w budynku
 			// sprawdŸ czy nie wszed³ na wyjœcie (tylko gracz mo¿e opuszczaæ budynek, na razie)
-			InsideBuilding& building = *static_cast<InsideBuilding*>(locPart);
-
 			if(IsPlayer() && building.exitRegion.IsInside(pos) && player->WantExitLevel() && frozen == FROZEN::NO && !dash)
 			{
 				if(Net::IsLocal())
@@ -9035,18 +9039,16 @@ bool Unit::CanShootAtLocation(const void* ptr, const Vec3& targetPos, bool cast)
 	tTo.setIdentity();
 	tTo.setOrigin(ToVector3(targetPos));
 
-	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk = [=](btCollisionObject* cobj, bool first)
+	ConvexCallback callback([=](const btCollisionObject* cobj, btCollisionWorld::LocalConvexResult* result)
 	{
 		void* userPtr = cobj->getUserPointer();
 		if(userPtr == this || userPtr == ptr)
 			return LT_IGNORE;
 		else
 			return LT_COLLIDE;
-	};
+	}, nullptr, false);
 
-	ConvexCallback callback(clbk, nullptr, false);
-
-	phyWorld->convexSweepTest((btConvexShape*)gameLevel->shapeTestSphere, tFrom, tTo, callback);
+	phyWorld->convexSweepTest(static_cast<btConvexShape*>(gameLevel->shapeTestSphere), tFrom, tTo, callback);
 
 	return !callback.hasHit();
 }

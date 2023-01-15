@@ -13,7 +13,9 @@ struct CityBuilding
 	bool GetCanEnter();
 	Box GetEntryArea();
 	InsideBuilding* GetInsideBuilding();
+	bool HaveInside();
 	float GetRot();
 	Vec3 GetUnitPos();
 	void SetCanEnter(bool value);
+	void CreateInside();
 };

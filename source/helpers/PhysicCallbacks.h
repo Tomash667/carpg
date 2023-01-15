@@ -4,6 +4,14 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
+enum LineTestResult
+{
+	LT_IGNORE,
+	LT_COLLIDE,
+	LT_END
+};
+
+//-----------------------------------------------------------------------------
 struct RaytestWithIgnoredCallback : public btCollisionWorld::RayResultCallback
 {
 	RaytestWithIgnoredCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), hit(false), fraction(1.01f)
@@ -178,21 +186,22 @@ struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 //-----------------------------------------------------------------------------
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
-	ConvexCallback(delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* tList, bool useClbk2) : clbk(clbk), tList(tList), useClbk2(useClbk2),
-		end(false), endT(1.f), closest(1.1f)
+	typedef delegate<LineTestResult(const btCollisionObject*, btCollisionWorld::LocalConvexResult*)> Callback;
+
+	ConvexCallback(Callback clbk, vector<float>* tList, bool useClbk2) : clbk(clbk), useClbk2(useClbk2), tList(nullptr), end(false), endT(1.f), closest(1.1f)
 	{
 	}
 
 	bool needsCollision(btBroadphaseProxy* proxy0) const override
 	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, true) == LT_COLLIDE;
+		return clbk(reinterpret_cast<btCollisionObject*>(proxy0->m_clientObject), nullptr) == LT_COLLIDE;
 	}
 
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
 		if(useClbk2)
 		{
-			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, false);
+			auto result = clbk(convexResult.m_hitCollisionObject, &convexResult);
 			if(result == LT_IGNORE)
 				return m_closestHitFraction;
 			else if(result == LT_END)
@@ -221,7 +230,7 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 		return closest <= 1.f;
 	}
 
-	delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
+	Callback clbk;
 	vector<float>* tList;
 	float endT, closest;
 	bool useClbk2, end;

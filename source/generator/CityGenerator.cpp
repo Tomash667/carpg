@@ -2932,13 +2932,13 @@ void CityGenerator::RespawnBuildingPhysics()
 	{
 		Building* b = it->building;
 		gameLevel->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->dir), it->dir,
-			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, true);
+			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, Level::PBOF_RECREATE);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city->insideBuildings.begin(), end = city->insideBuildings.end(); it != end; ++it)
 	{
 		gameLevel->ProcessBuildingObjects(**it, city, *it, (*it)->building->insideMesh, nullptr, 0.f, GDIR_DOWN,
-			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, true);
+			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, Level::PBOF_RECREATE);
 	}
 }
 

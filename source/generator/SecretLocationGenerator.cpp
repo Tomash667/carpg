@@ -91,7 +91,7 @@ void SecretLocationGenerator::GenerateObjects()
 	BaseObject* o = BaseObject::Get("tomashuHouse");
 	pos.y += 0.05f;
 	gameLevel->SpawnObjectEntity(locPart, o, pos, 0);
-	gameLevel->ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr, false);
+	gameLevel->ProcessBuildingObjects(locPart, nullptr, nullptr, o->mesh, nullptr, 0.f, GDIR_DOWN, Vec3(0, 0, 0), nullptr, nullptr);
 
 	pos.z = 64.f;
 	terrain->SetY(pos);

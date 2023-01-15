@@ -749,7 +749,7 @@ void Pathfinding::Draw(BasicShader* shader)
 
 	for(vector<pair<Vec2, int>>::iterator it = testPf.begin(), end = testPf.end(); it != end; ++it)
 	{
-		Vec3 v[4] = {
+		array<Vec3, 4> v {
 			Vec3(it->first.x, 0.1f, it->first.y + SS),
 			Vec3(it->first.x + SS, 0.1f, it->first.y + SS),
 			Vec3(it->first.x, 0.1f, it->first.y),

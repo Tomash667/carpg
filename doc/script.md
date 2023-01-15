@@ -314,6 +314,10 @@ Properties:
 * float rot - readonly, building rotation.
 * bool canEnter - can player enter this building, only some buildings allow to change this (inn/hall).
 
+Methods:
+
+* void CreateInside() - create buildings inside for building with optional insides.
+
 ### Encounter type
 Special encounter on world map.
 

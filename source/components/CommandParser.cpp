@@ -964,7 +964,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			}
 
 			bool inside = true;
-			if((t.Next() && t.IsItem("front")) || !cityBuilding->building->insideMesh)
+			if((t.Next() && t.IsItem("front")) || !cityBuilding->HaveInside())
 				inside = false;
 			else
 				gameLevel->cityCtx->FindInsideBuilding(cityBuilding->building, &index);

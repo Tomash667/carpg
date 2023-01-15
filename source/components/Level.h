@@ -6,6 +6,7 @@
 #include "GameCamera.h"
 #include "GameCommon.h"
 #include "Collision.h"
+#include "PhysicCallbacks.h"
 
 //-----------------------------------------------------------------------------
 enum EnterFrom
@@ -87,8 +88,13 @@ public:
 		SOE_DONT_CREATE_LIGHT = 1 << 2
 	};
 	void SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3& pos, float rot, void* userPtr, float scale = 1.f, int flags = 0);
+	enum ProcessBuildingObjectFlags
+	{
+		PBOF_RECREATE = 1 << 0,
+		PBOF_CUSTOM_PHYSICS = 1 << 1
+	};
 	void ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* insideMesh, float rot, GameDirection dir,
-		const Vec3& shift, Building* building, CityBuilding* cityBuilding, bool recreate = false, Vec3* outPoint = nullptr);
+		const Vec3& shift, Building* building, CityBuilding* cityBuilding, int flags = 0, Vec3* outPoint = nullptr);
 	void RecreateObjects(bool spawnParticles = true);
 	ObjectEntity SpawnObjectNearLocation(LocationPart& locPart, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
@@ -195,8 +201,8 @@ public:
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit, bool checkDist = true);
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
-		vector<float>* tList = nullptr, bool useClbk2 = false, float* endT = nullptr);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, ConvexCallback::Callback clbk, float& t, vector<float>* tList = nullptr,
+		bool useClbk2 = false, float* endT = nullptr);
 	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool useClbk2 = false);
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* isSmall = nullptr);
 	void SpawnUnitEffect(Unit& unit);
@@ -226,6 +232,7 @@ public:
 	void EndBossFight();
 	// ---
 	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
+	void CreateInsideBuilding(CityBuilding* cityBuilding);
 
 	Location* location; // same as world->currentLocation
 	int locationIndex; // same as world->currentLocationIndex

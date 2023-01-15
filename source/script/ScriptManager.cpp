@@ -698,7 +698,8 @@ void ScriptManager::RegisterGame()
 		.Method("float get_rot() property", asMETHOD(CityBuilding, GetRot))
 		.Method("Vec3 get_unitPos() property", asMETHOD(CityBuilding, GetUnitPos))
 		.Method("bool get_canEnter() property", asMETHOD(CityBuilding, GetCanEnter))
-		.Method("void set_canEnter(bool) property", asMETHOD(CityBuilding, SetCanEnter));
+		.Method("void set_canEnter(bool) property", asMETHOD(CityBuilding, SetCanEnter))
+		.Method("void CreateInside()", asMETHOD(CityBuilding, CreateInside));
 
 	AddType("Quest")
 		.Member("const QUEST_STATE state", offsetof(Quest_Scripted, state))

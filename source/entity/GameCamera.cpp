@@ -418,9 +418,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		}
 
 		// floor
-		const Plane floor(0, 1, 0, 0);
-		if(RayToPlane(pos, dir, floor, &t) && t < minT && t > 0.f)
-			minT = t;
+		if(!building.navmesh)
+		{
+			const Plane floor(0, 1, 0, 0);
+			if(RayToPlane(pos, dir, floor, &t) && t < minT && t > 0.f)
+				minT = t;
+		}
 
 		// xsphere
 		if(building.xsphereRadius > 0.f)

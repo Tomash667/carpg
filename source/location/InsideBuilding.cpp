@@ -8,9 +8,16 @@
 #include "GameCommon.h"
 #include "GroundItem.h"
 #include "Level.h"
+#include "Navmesh.h"
 #include "Object.h"
 
 #include <ParticleSystem.h>
+
+//=================================================================================================
+InsideBuilding::~InsideBuilding()
+{
+	delete navmesh;
+}
 
 //=================================================================================================
 void InsideBuilding::Save(GameWriter& f)
@@ -101,7 +108,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	}
 	offset = Vec2(512.f * levelShift.x + 256.f, 512.f * levelShift.y + 256.f);
 	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->insideMesh, nullptr, 0.f, GDIR_DOWN,
-		Vec3(offset.x, 0, offset.y), building, nullptr, true);
+		Vec3(offset.x, 0, offset.y), building, nullptr, Level::PBOF_RECREATE);
 
 	return true;
 }

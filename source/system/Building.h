@@ -20,20 +20,30 @@ struct Building
 		HAVE_NAME = 1 << 2,
 		LIST = 1 << 3,
 		FAVOR_DIST = 1 << 4,
-		NO_PATH = 1 << 5
+		NO_PATH = 1 << 5,
+		OPTIONAL_INSIDE = 1 << 6
+	};
+
+	struct Region
+	{
+		Box2d box;
+		array<float, 4> height;
 	};
 
 	string id, name;
 	Int2 size, shift[4];
 	vector<TileScheme> scheme;
+	vector<Region> navmesh;
 	int flags;
 	BuildingGroup* group;
 	Mesh* mesh, *insideMesh;
+	VertexData* vdPhysics, *vdFloor;
+	btCollisionShape* shapePhysics, *shapeFloor;
 	UnitData* unit;
 	ResourceState state;
 
-	Building() : size(0, 0), shift{Int2::Zero, Int2::Zero, Int2::Zero, Int2::Zero}, flags(0), mesh(nullptr), insideMesh(nullptr), group(nullptr),
-		unit(nullptr), state(ResourceState::NotLoaded) {}
+	Building() : size(0, 0), shift{Int2::Zero, Int2::Zero, Int2::Zero, Int2::Zero}, flags(0), mesh(nullptr), insideMesh(nullptr), vdPhysics(nullptr),
+		vdFloor(nullptr), shapePhysics(nullptr), shapeFloor(nullptr), group(nullptr), unit(nullptr), state(ResourceState::NotLoaded) {}
 
 	static vector<Building*> buildings;
 	static std::map<string, Building*> aliases;

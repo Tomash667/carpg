@@ -145,6 +145,7 @@ struct LocationEventHandler;
 struct LocationTexturePack;
 struct MapSettings;
 struct Music;
+struct Navmesh;
 struct NetChange;
 struct NetChangePlayer;
 struct News;
