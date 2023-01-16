@@ -3105,6 +3105,18 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				}
 			}
 			break;
+		// create inside building
+		case NetChange::CREATE_INSIDE_BUILDING:
+			{
+				uint index = f.Read<uint>();
+				if(!f)
+					Error("Update client: Broken CREATE_INSIDE_BUILDING.");
+				else if(!gameLevel->cityCtx || index >= gameLevel->cityCtx->buildings.size())
+					Error("Update client: CREATE_INSIDE_BUILDING, invalid building '%u'.", index);
+				else
+					gameLevel->CreateInsideBuilding(&gameLevel->cityCtx->buildings[index]);
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);

@@ -3065,6 +3065,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
 		case NetChange::DESTROY_USABLE:
+		case NetChange::CREATE_INSIDE_BUILDING:
 			f << c.id;
 			break;
 		case NetChange::TALK:

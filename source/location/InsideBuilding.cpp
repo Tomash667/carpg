@@ -37,6 +37,7 @@ void InsideBuilding::Save(GameWriter& f)
 	f << region2;
 	f << enterY;
 	f << canEnter;
+	f << (navmesh != nullptr);
 
 	LocationPart::Save(f);
 }
@@ -60,6 +61,14 @@ void InsideBuilding::Load(GameReader& f)
 	f >> enterY;
 	if(LOAD_VERSION >= V_0_20)
 		f >> canEnter;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		if(f.Read<bool>())
+		{
+			navmesh = new Navmesh;
+			navmesh->Init(building, offset);
+		}
+	}
 
 	LocationPart::Load(f);
 }
@@ -78,6 +87,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 	f << xsphereRadius;
 	f << enterY;
 	f << canEnter;
+	f << (navmesh != nullptr);
 }
 
 //=================================================================================================
@@ -95,6 +105,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	f >> xsphereRadius;
 	f >> enterY;
 	f >> canEnter;
+	bool haveNavmesh = f.Read<bool>();
 	if(!f)
 	{
 		Error("Broken packet for inside building.");
@@ -107,8 +118,16 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		return false;
 	}
 	offset = Vec2(512.f * levelShift.x + 256.f, 512.f * levelShift.y + 256.f);
+	int flags = Level::PBOF_RECREATE;
+	if(haveNavmesh)
+		flags |= Level::PBOF_CUSTOM_PHYSICS;
 	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->insideMesh, nullptr, 0.f, GDIR_DOWN,
-		Vec3(offset.x, 0, offset.y), building, nullptr, Level::PBOF_RECREATE);
+		Vec3(offset.x, 0, offset.y), building, nullptr, flags);
+	if(haveNavmesh)
+	{
+		navmesh = new Navmesh;
+		navmesh->Init(building, offset);
+	}
 
 	return true;
 }

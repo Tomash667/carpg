@@ -160,6 +160,7 @@ void City::Write(BitStreamWriter& f)
 {
 	OutsideLocation::Write(f);
 
+	f << insideOffset;
 	f.WriteCasted<byte>(flags);
 	f.WriteCasted<byte>(entryPoints.size());
 	for(EntryPoint& entryPoint : entryPoints)
@@ -184,6 +185,8 @@ bool City::Read(BitStreamReader& f)
 {
 	if(!OutsideLocation::Read(f))
 		return false;
+
+	f >> insideOffset;
 
 	// entry points
 	const int ENTRY_POINT_MIN_SIZE = 20;

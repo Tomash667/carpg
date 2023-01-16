@@ -5060,6 +5060,9 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	Building* building = cityBuilding->building;
 	building->mesh->EnsureIsLoaded();
 
+	if(!building->insideMesh || cityBuilding->GetInsideBuilding() != nullptr)
+		return;
+
 	const Vec3 shift(float(cityBuilding->pt.x + building->shift[cityBuilding->dir].x) * 2,
 		0.f, float(cityBuilding->pt.y + building->shift[cityBuilding->dir].y) * 2);
 	const Matrix mat = Matrix::RotationY(cityBuilding->GetRot()) * Matrix::Translation(shift);
@@ -5099,7 +5102,7 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	inside->enterY = terrain->GetH(pos.x, pos.z) + 0.1f;
 	inside->building = building;
 	inside->outsideRot = cityBuilding->GetRot();
-	inside->top = -1.f;
+	inside->top = 999.f;
 	inside->xsphereRadius = -1.f;
 	inside->insideSpawn = inside->offset.XZ(0);
 	point = building->mesh->FindPoint("o_s_spawn");
@@ -5159,4 +5162,10 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
 	cobj->getWorldTransform().setOrigin(ToVector3(o->pos));
 	phyWorld->addCollisionObject(cobj, CG_TERRAIN);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Net::PushChange(NetChange::CREATE_INSIDE_BUILDING);
+		c.id = GetIndex(city->buildings, [=](const CityBuilding& b) { return &b == cityBuilding; });
+	}
 }
