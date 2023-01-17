@@ -16,7 +16,7 @@ dialog blacksmith
 		talk 3
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 4
 		{
@@ -58,7 +58,7 @@ dialog merchant
 		talk 3
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 4
 		{
@@ -145,7 +145,7 @@ dialog alchemist
 		talk 6
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 7
 		{
@@ -238,7 +238,7 @@ dialog mayor
 		talk 9
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 10
 		{
@@ -274,7 +274,7 @@ dialog citizen
 			special "gossip"
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 4
 		{
@@ -408,7 +408,7 @@ dialog trainer
 		talk 23
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 24
 		{
@@ -542,7 +542,7 @@ dialog guard_captain
 		talk 13
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 14
 		{
@@ -662,7 +662,7 @@ dialog innkeeper
 		special "gossip"
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 27
 		{
@@ -927,7 +927,7 @@ dialog arena_master
 		talk 59
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 60
 		{
@@ -1097,7 +1097,7 @@ dialog hero
 		}
 		if once
 			talk 29
-		if haveQuestItem notActive "$wanted_letter"
+		if haveQuestItem notActive "$wantedPoster"
 		{
 			choice 30
 			{
@@ -1414,7 +1414,7 @@ dialog crazy
 		}
 		if once
 			talk 30
-		if haveQuestItem notActive "$wanted_letter"
+		if haveQuestItem notActive "$wantedPoster"
 		{
 			choice 31
 			{
@@ -1518,7 +1518,7 @@ dialog crazy
 				end
 			}
 		}
-		if haveItem q_szaleni_kamien
+		if haveItem qCraziesStone
 		{
 			choice 47
 			{
@@ -2182,7 +2182,7 @@ dialog foodseller
 		talk 3
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 4
 		{
@@ -2251,7 +2251,7 @@ dialog q_bandits_master
 	}
 	if questProgress 3
 	{
-		if haveItem q_bandyci_list
+		if haveItem qBanditsLetter
 		{
 			talk 22
 			choice 23
@@ -2271,7 +2271,7 @@ dialog q_bandits_master
 	if questProgress 4
 	{
 		talk 28
-		if haveItem q_bandyci_list
+		if haveItem qBanditsLetter
 		{
 			choice 29
 			{
@@ -2282,7 +2282,7 @@ dialog q_bandits_master
 		choice 30
 		{
 			talk 31
-			if haveItem q_bandyci_paczka
+			if haveItem qBanditsParcel
 			{
 				setQuestProgress 3
 				talk 32
@@ -2360,7 +2360,7 @@ dialog q_bandits_encounter
 	setQuestProgress 4
 	talk 0
 	talk 1
-	if haveItem q_bandyci_paczka
+	if haveItem qBanditsParcel
 	{
 		choice 2
 		{
@@ -2634,7 +2634,7 @@ dialog q_evil_cleric
 	}
 	if questProgress between 5 and 9
 	{
-		if haveItem q_zlo_ksiega
+		if haveItem qEvilBook
 		{
 			talk 24
 			setQuestProgress 10
@@ -2822,7 +2822,7 @@ dialog q_goblins_nobleman
 	}
 	if questProgress 5
 	{
-		if haveItem q_gobliny_luk
+		if haveItem qGoblinsBow
 		{
 			talk 29
 			choice 30
@@ -2985,7 +2985,7 @@ dialog q_mages_scholar
 	if questProgress 1
 	{
 		talk 10
-		if haveItem q_magowie_kula
+		if haveItem qMagesBall
 		{
 			choice 11
 			{
@@ -3170,7 +3170,7 @@ dialog q_mages2_mage
 	if questProgress between 6 and 8
 	{
 		talk 23
-		if haveItem q_magowie_potion
+		if haveItem qMagesPotion
 		{
 			choice 24
 			{
@@ -4234,7 +4234,7 @@ dialog mage_seller
 		talk 3
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 4
 		{
@@ -4279,7 +4279,7 @@ dialog cleric_seller
 		talk 8
 		restart
 	}
-	if haveItem q_szaleni_kamien
+	if haveItem qCraziesStone
 	{
 		choice 9
 		{

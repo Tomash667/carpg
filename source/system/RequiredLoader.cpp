@@ -344,7 +344,7 @@ void RequiredLoader::CheckBaseItems()
 		haveMediumArmor = 0,
 		haveHeavyArmor = 0,
 		haveMageArmor = 0;
-	const ItemList& lis = ItemList::Get("base_items");
+	const ItemList& lis = ItemList::Get("baseItems");
 
 	for(const ItemList::Entry& e : lis.items)
 	{

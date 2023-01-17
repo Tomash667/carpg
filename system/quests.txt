@@ -143,7 +143,7 @@ quest globalInit
 						if(unit !is null)
 						{
 							if(i == 0)
-								unit.AddItem(Item::Get("crypt_note"));
+								unit.AddItem(Item::Get("cryptNote"));
 							unit.Kill();
 						}
 					}
@@ -466,7 +466,7 @@ quest deliverResources
 			{
 			case P_DELIVER_STARTED:
 				{
-					Item@ item = Item::Get("q_resources");
+					Item@ item = Item::Get("qResources");
 					@item = item.QuestCopy(quest, TEXT(0));
 					pc.unit.AddTeamItem(item);
 					targetLoc.AddEventHandler(quest, EVENT_ENTER);
@@ -1828,7 +1828,7 @@ quest alchemistApprentice
 		{
 			@city = World::GetRandomSettlementWithBuilding("alchemist");
 			city.AddEventHandler(quest, EVENT_ENTER);
-			@herb = Item::Get("alchemist_herb");
+			@herb = Item::Get("alchemistHerb");
 			quest.AddRumor(TEXT(11));
 			DevInfo(Format("Quest 'Alchemist apprentice' - {0}.", city.name));
 			alive = true;
@@ -2146,7 +2146,7 @@ quest main
 			talk 14
 			talk 15
 		case P_MAIN_CLERIC_GO_TO_VILLAGES
-			if script "pc.unit.HaveItem(Item::Get(\"book_q_journal\")) && Quest::Find(\"mainVillage1\").progress == P_MAIN_V1_READ"
+			if script "pc.unit.HaveItem(Item::Get(\"qSoltysJournal\")) && Quest::Find(\"mainVillage1\").progress == P_MAIN_V1_READ"
 			{
 				choice 19
 				{
@@ -2157,7 +2157,7 @@ quest main
 					restart
 				}
 			}
-			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_crystal\")) && Quest::Find(\"mainVillage2\").progress == P_MAIN_V2_CLEARED_PICKED"
+			if script "pc.unit.HaveItem(Item::Get(\"qYellowCrystal\")) && Quest::Find(\"mainVillage2\").progress == P_MAIN_V2_CLEARED_PICKED"
 			{
 				choice 22
 				{
@@ -2168,7 +2168,7 @@ quest main
 					restart
 				}
 			}
-			if script "pc.unit.HaveItem(Item::Get(\"q_yellow_herbs\")) && Quest::Find(\"mainVillage3\").progress == P_MAIN_V3_CLEARED_PICKED"
+			if script "pc.unit.HaveItem(Item::Get(\"qYellowHerbs\")) && Quest::Find(\"mainVillage3\").progress == P_MAIN_V3_CLEARED_PICKED"
 			{
 				choice 26
 				{
@@ -2190,12 +2190,12 @@ quest main
 					restart
 				}
 			}
-			if haveItem q_infected_organ
+			if haveItem qInfectedOrgan
 			{
 				choice 24
 				{
 					doOnce
-					script "int count = pc.unit.RemoveItem(Item::Get(\"q_infected_organ\"), 0); Team::AddExp(count * 100);"
+					script "int count = pc.unit.RemoveItem(Item::Get(\"qInfectedOrgan\"), 0); Team::AddExp(count * 100);"
 					talk 25
 					restart
 				}
@@ -2322,7 +2322,7 @@ quest main
 					}
 					else
 					{
-						Item@ book = Item::Get("book_q_cleric");
+						Item@ book = Item::Get("qClericBook");
 						Room@ room = Level::GetRoom(ROOM_TREASURY);
 						Object@ obj = Level::FindObject(room, BaseObject::Get("bookHolder"));
 						Level::SpawnItem(book, obj);
@@ -2548,7 +2548,7 @@ quest sideCleric
 	}
 
 	dialog end {
-		if haveItem book_q_cleric
+		if haveItem qClericBook
 			choice 0
 			{
 				talk 1
@@ -2577,7 +2577,7 @@ quest sideCleric
 			switch(progress)
 			{
 			case P_CLERIC_START:
-				@book = Item::Get("book_q_cleric");
+				@book = Item::Get("qClericBook");
 				@dungeon = Level::location;
 				quest.SetStarted(TEXT(0));
 				quest.AddEntry(TEXT(1));
@@ -2789,19 +2789,19 @@ quest mainVillage1
 					village.RemoveEventHandler(quest, EVENT_ENTER);
 					quest.AddEntry(TEXT(3));
 					LocationPart@ part = village.GetBuildingLocationPart("hall");
-					Item@ item = Item::Get("book_q_journal");
+					Item@ item = Item::Get("qSoltysJournal");
 					Level::SpawnItem(part, item);
 					Quest::AddItemEventHandler(quest, item);
 				}
 				break;
 			case P_MAIN_V1_READ:
-				Quest::RemoveItemEventHandler(quest, Item::Get("book_q_journal"));
+				Quest::RemoveItemEventHandler(quest, Item::Get("qSoltysJournal"));
 				quest.AddEntry(TEXT(4));
 				break;
 			case P_MAIN_V1_DONE:
 				quest.AddEntry(TEXT(5));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("book_q_journal"));
+				pc.unit.RemoveItem(Item::Get("qSoltysJournal"));
 				Team::AddReward(1000, 3000);
 				World::AddNews(TEXT(6));
 				break;
@@ -2892,7 +2892,7 @@ quest mainVillage2
 			case P_MAIN_V2_DONE:
 				quest.AddEntry(TEXT(7));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("q_yellow_crystal"));
+				pc.unit.RemoveItem(Item::Get("qYellowCrystal"));
 				Team::AddReward(5000, 15000);
 				World::AddNews(TEXT(8));
 				break;
@@ -2913,7 +2913,7 @@ quest mainVillage2
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.onPickup.item.id == "q_yellow_crystal")
+				if(e.onPickup.item.id == "qYellowCrystal")
 				{
 					if(progress == P_MAIN_V2_ENTER)
 						progress = P_MAIN_V2_PICKED;
@@ -3035,7 +3035,7 @@ quest mainVillage3
 			case P_MAIN_V3_DONE:
 				quest.AddEntry(TEXT(8));
 				quest.SetCompleted();
-				pc.unit.RemoveItem(Item::Get("q_yellow_herbs"));
+				pc.unit.RemoveItem(Item::Get("qYellowHerbs"));
 				Team::AddReward(5000, 15000);
 				World::AddNews(TEXT(9));
 				break;
@@ -3056,7 +3056,7 @@ quest mainVillage3
 			}
 			else if(e.event == EVENT_PICKUP)
 			{
-				if(e.onPickup.item.id == "q_yellow_herbs")
+				if(e.onPickup.item.id == "qYellowHerbs")
 				{
 					if(progress == P_MAIN_V3_ENTER)
 						progress = P_MAIN_V3_PICKED;

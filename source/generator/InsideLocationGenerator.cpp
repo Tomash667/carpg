@@ -215,7 +215,7 @@ void InsideLocationGenerator::OnEnter()
 		else
 		{
 			// dodaj kartkê (overkill sprawdzania!)
-			const Item* item = Item::Get("sekret_kartka2");
+			const Item* item = Item::Get("qSecretNote2");
 			assert(item);
 			Room& room = *GetLevelData().rooms[0];
 			Chest* chest = lvl.FindChestInRoom(room);

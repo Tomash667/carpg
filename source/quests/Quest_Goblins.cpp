@@ -60,7 +60,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 //=================================================================================================
 bool TeamHaveOldBow()
 {
-	return team->HaveQuestItem(Item::Get("q_gobliny_luk"));
+	return team->HaveQuestItem(Item::Get("qGoblinsBow"));
 }
 
 //=================================================================================================
@@ -130,7 +130,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			targetLoc->activeQuest = this;
 			targetLoc->st = 7;
 			spawnItem = Quest_Event::Item_OnGround;
-			itemToGive[0] = Item::Get("q_gobliny_luk");
+			itemToGive[0] = Item::Get("qGoblinsBow");
 			// add journal entry
 			msgs.push_back(Format(questMgr->txQuest[217], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(questMgr->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
@@ -152,7 +152,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		break;
 	case Progress::BowStolen:
 		{
-			team->RemoveQuestItem(Item::Get("q_gobliny_luk"));
+			team->RemoveQuestItem(Item::Get("qGoblinsBow"));
 			OnUpdate(questMgr->txQuest[220]);
 			world->RemoveEncounter(enc);
 			enc = -1;
@@ -181,7 +181,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawnItem = Quest_Event::Item_GiveSpawned;
 			unitToSpawn = UnitGroup::Get("goblins")->GetLeader(11);
 			unitSpawnLevel = -3;
-			itemToGive[0] = Item::Get("q_gobliny_luk");
+			itemToGive[0] = Item::Get("qGoblinsBow");
 			atLevel = targetLoc->GetLastLevel();
 			OnUpdate(Format(questMgr->txQuest[223], targetLoc->name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			goblinsState = State::MessengerTalked;
@@ -190,7 +190,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::GivenBow:
 		{
 			state = Quest::Completed;
-			const Item* item = Item::Get("q_gobliny_luk");
+			const Item* item = Item::Get("qGoblinsBow");
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			DialogContext::current->talker->AddItem(item, 1, true);
 			team->AddReward(500, 2500);
@@ -324,14 +324,14 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 		if(prog == Progress::Started)
 		{
 			spawnItem = Quest_Event::Item_OnGround;
-			itemToGive[0] = Item::Get("q_gobliny_luk");
+			itemToGive[0] = Item::Get("qGoblinsBow");
 		}
 		else if(prog == Progress::InfoAboutGoblinBase)
 		{
 			spawnItem = Quest_Event::Item_GiveSpawned;
 			unitToSpawn = UnitGroup::Get("goblins")->GetLeader(11);
 			unitSpawnLevel = -3;
-			itemToGive[0] = Item::Get("q_gobliny_luk");
+			itemToGive[0] = Item::Get("qGoblinsBow");
 		}
 		else if(prog == Progress::TalkedWithInnkeeper)
 		{

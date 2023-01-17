@@ -30,7 +30,7 @@ void Quest_Crazies::Start()
 	craziesState = State::None;
 	days = 0;
 	checkStone = false;
-	stone = Item::Get("q_szaleni_kamien");
+	stone = Item::Get("qCraziesStone");
 }
 
 //=================================================================================================
@@ -117,7 +117,7 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	stone = Item::Get("q_szaleni_kamien");
+	stone = Item::Get("qCraziesStone");
 
 	f >> craziesState;
 	f >> days;

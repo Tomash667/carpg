@@ -115,7 +115,7 @@ bool Quest_Contest::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "contest_reward") == 0)
 	{
 		winner = nullptr;
-		ctx.pc->unit->AddItem2(ItemList::GetItem("contest_reward"), 1u, 0u);
+		ctx.pc->unit->AddItem2(ItemList::GetItem("contestReward"), 1u, 0u);
 	}
 	else
 		assert(0);

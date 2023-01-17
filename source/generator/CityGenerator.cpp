@@ -2775,8 +2775,8 @@ void CityGenerator::GeneratePickableItems()
 
 	// alcohol in inn
 	InsideBuilding& inn = *city->FindInn();
-	Stock* stockTable = Stock::Get("inn_on_table");
-	Stock* stockShelve = Stock::Get("inn_on_shelve");
+	Stock* stockTable = Stock::Get("innOnTable");
+	Stock* stockShelve = Stock::Get("innOnShelve");
 	for(vector<Object*>::iterator it = inn.objects.begin(), end = inn.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
@@ -2793,7 +2793,7 @@ void CityGenerator::GeneratePickableItems()
 		Object* foundObj = city->FindNearestObject(shelves, food->walkPt);
 		if(foundObj)
 		{
-			Stock* stock = Stock::Get("foodseller_shelve");
+			Stock* stock = Stock::Get("foodsellerShelve");
 			gameLevel->PickableItemsFromStock(*city, *foundObj, *stock);
 		}
 	}
@@ -2805,7 +2805,7 @@ void CityGenerator::GeneratePickableItems()
 		Object* foundObj = city->FindNearestObject(shelves, alch->walkPt);
 		if(foundObj)
 		{
-			Stock* stock = Stock::Get("alchemist_shelve");
+			Stock* stock = Stock::Get("alchemistShelve");
 			gameLevel->PickableItemsFromStock(*city, *foundObj, *stock);
 		}
 	}

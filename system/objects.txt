@@ -551,7 +551,7 @@ usable benchDir : bench {
 
 usable anvil {
 	mesh "kowadlo.qmsh"
-	requiredItem blacksmith_hammer
+	requiredItem blacksmithHammer
 	animation "kowalstwo"
 	animationSound { "blacksmith.mp3" 0.333 }
 	flags slowStaminaRestore

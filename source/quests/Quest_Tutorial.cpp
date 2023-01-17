@@ -44,7 +44,7 @@ void Quest_Tutorial::Start()
 
 	// inventory
 	game->pc->unit->ClearInventory();
-	game->pc->unit->EquipItem(Item::Get("al_clothes"));
+	game->pc->unit->EquipItem(Item::Get("clothes"));
 	game->pc->unit->gold = 10;
 	gameGui->journal->GetNotes().push_back(txTutNote);
 

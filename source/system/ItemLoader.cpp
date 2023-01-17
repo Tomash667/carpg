@@ -141,7 +141,8 @@ void ItemLoader::InitTokenizer()
 		{ "startItems", IT_START_ITEMS },
 		{ "betterItems", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS },
-		{ "recipe", IT_RECIPE }
+		{ "recipe", IT_RECIPE },
+		{ "recipeAlias", IT_RECIPE_ALIAS }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -329,6 +330,9 @@ void ItemLoader::LoadEntity(int top, const string& id)
 		break;
 	case IT_ALIAS:
 		ParseAlias(id);
+		break;
+	case IT_RECIPE_ALIAS:
+		ParseRecipeAlias(id);
 		break;
 	}
 }
@@ -1349,6 +1353,23 @@ void ItemLoader::ParseAlias(const string& id)
 		t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 
 	itemAliases[alias] = item;
+}
+
+//=================================================================================================
+void ItemLoader::ParseRecipeAlias(const string& id)
+{
+	Recipe* recipe = Recipe::TryGet(id);
+	if(!recipe)
+		t.Throw("Missing recipe '%s'.", id.c_str());
+	t.Next();
+
+	const string& alias = t.MustGetItemKeyword();
+	const int hash = Hash(alias);
+	Recipe* recipe2 = Recipe::TryGet(hash);
+	if(recipe2)
+		t.Throw("Can't create recipe alias '%s', already exists.", alias.c_str());
+
+	Recipe::hashes[hash] = recipe;
 }
 
 //=================================================================================================

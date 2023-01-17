@@ -95,7 +95,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			atLevel = tl.GetLastLevel();
 			dungeonLevels = atLevel + 1;
 			wholeLocationEventHandler = true;
-			itemToGive[0] = Item::Get("q_orkowie_klucz");
+			itemToGive[0] = Item::Get("qOrcsKey");
 			spawnItem = Quest_Event::Item_GiveSpawned2;
 			unitToSpawn = UnitData::Get("q_orkowie_gorush");
 			unitSpawnRoom = RoomTarget::Prison;
@@ -200,7 +200,7 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 
 	if(!done)
 	{
-		itemToGive[0] = Item::Get("q_orkowie_klucz");
+		itemToGive[0] = Item::Get("qOrcsKey");
 		spawnItem = Quest_Event::Item_GiveSpawned2;
 		unitToSpawn = UnitData::Get("q_orkowie_gorush");
 		unitToSpawn2 = UnitGroup::Get("orcs")->GetLeader(10);

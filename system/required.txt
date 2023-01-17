@@ -8,94 +8,96 @@
 item gold
 // CaveGenerator
 item mushroom
-item heal_crystal
-item magic_crystal
+item healCrystal
+item magicCrystal
 // DungeonGenerator
-item golden_cup
+item goldenCup
 item plate
 item cup
 // InsideLocationGenerator
-item sekret_kartka2
+item qSecretNote2
+// Menu
+item bookAdventurer
 // OutsideLocationGenerator
-item green_herb
-item healing_herb
-item mana_herb
+item greenHerb
+item healingHerb
+item manaHerb
 // Quest_Bandits
-item q_bandyci_paczka
-item q_bandyci_list
+item qBanditsParcel
+item qBanditsLetter
 // Quest_Contest
 item beer
 item vodka
 item spirit
 // Quest_Crazies
-item q_szaleni_kamien
+item qCraziesStone
 // Quest_DeliverParcel
 item parcel
 // Quest_Evil
-item q_zlo_ksiega
+item qEvilBook
 // Quest_Goblins
-item q_gobliny_luk
+item qGoblinsBow
 // Quest_Mages
-item q_magowie_kula
+item qMagesBall
 item beer
 item vodka
-item q_magowie_potion
+item qMagesPotion
 // Quest_Mine
-item key_kopalnia
-item al_angelskin
+item qMineKey
+item angelskinArmor
 // Quest_Orcs
-item q_orkowie_klucz
+item qOrcsKey
 // Quest_RetrievePackage
 item parcel
 // Quest_Secret
-item sword_forbidden
-item sekret_kartka
+item forbiddenSword
+item qSecretNote
 // Quest_Tournament
-item p_hp
-item p_hp2
-item p_hp3
+item potionHealth
+item potionHealth2
+item potionHealth3
 // Quest_Tutorial
-item al_clothes
+item clothes
 // Quest_Wanted
-item wanted_letter
+item wantedPoster
 // TutorialLocationGenerator
-item sword_long
-item shield_wood
-item al_leather
-item bow_short
-item p_hp
+item longSword
+item woodenShield
+item leatherArmor
+item shortBow
+item potionHealth
 
 //------------------------------------------------------------------------------
 // Required item lists
 //------------------------------------------------------------------------------
-list base_items
-list normal_food
-list orc_food
+list baseItems
+list normalFood
+list orcFood
 list drink
-list leveled short_blade
-list leveled long_blade
+list leveled shortBlade
+list leveled longBlade
 list leveled axe
 list leveled blunt
-list leveled light_armor
-list leveled medium_armor
-list leveled heavy_armor
+list leveled lightArmor
+list leveled mediumArmor
+list leveled heavyArmor
 list leveled amulets
 list leveled rings
-list ancient_armory_armors
+list ancientArmoryArmors
 list books
-list rare_books
+list rareBooks
 list recipes
-list contest_reward
+list contestReward
 list treasure
 
 //------------------------------------------------------------------------------
 // Required item stock
 //------------------------------------------------------------------------------
-stock alchemist_apprentice
-stock inn_on_table
-stock inn_on_shelve
-stock foodseller_shelve
-stock alchemist_shelve
+stock alchemistApprentice
+stock innOnTable
+stock innOnShelve
+stock foodsellerShelve
+stock alchemistShelve
 
 //------------------------------------------------------------------------------
 // Required units

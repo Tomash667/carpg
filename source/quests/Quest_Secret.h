@@ -33,7 +33,7 @@ public:
 	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool CheckMoonStone(GroundItem* item, Unit& unit);
-	static Item& GetNote() { return *Item::Get("sekret_kartka"); }
+	static Item& GetNote() { return *Item::Get("qSecretNote"); }
 	void UpdateFight();
 
 	SecretState state;

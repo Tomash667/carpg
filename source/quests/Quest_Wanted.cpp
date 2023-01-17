@@ -67,8 +67,8 @@ void Quest_Wanted::SetProgress(int prog2)
 			}
 
 			// add letter
-			Item::Get("wanted_letter")->CreateCopy(letter);
-			letter.id = "$wanted_letter";
+			Item::Get("wantedPoster")->CreateCopy(letter);
+			letter.id = "$wantedPoster";
 			letter.name = questMgr->txQuest[258];
 			letter.questId = id;
 			letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());
@@ -257,8 +257,8 @@ Quest::LoadResult Quest_Wanted::Load(GameReader& f)
 
 	if(prog >= Progress::Started)
 	{
-		Item::Get("wanted_letter")->CreateCopy(letter);
-		letter.id = "$wanted_letter";
+		Item::Get("wantedPoster")->CreateCopy(letter);
+		letter.id = "$wantedPoster";
 		letter.name = questMgr->txQuest[258];
 		letter.questId = id;
 		letter.desc = Format(questMgr->txQuest[259], level * 100, unitName.c_str());

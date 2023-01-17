@@ -968,7 +968,7 @@ void Team::BuyTeamItems()
 		}
 
 		// buy items
-		const ItemList& lis = ItemList::Get("base_items");
+		const ItemList& lis = ItemList::Get("baseItems");
 		const float* priorities = unit.stats->priorities;
 		toBuy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)

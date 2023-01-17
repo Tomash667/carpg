@@ -503,7 +503,7 @@ const Item* Book::GetRandom()
 		if(Rand() % 3 == 0)
 			listName = "recipes";
 		else
-			listName = "rare_books";
+			listName = "rareBooks";
 	}
 	else
 		listName = "books";

@@ -17,7 +17,7 @@ namespace UnitHelper
 	inline void EnsureList(const ItemList*& lis)
 	{
 		if(!lis)
-			lis = &ItemList::Get("base_items");
+			lis = &ItemList::Get("baseItems");
 	}
 
 	const Item* GetBaseWeapon(const Unit& unit, const ItemList* lis)

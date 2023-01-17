@@ -629,9 +629,9 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct() && master->busy == Unit::Busy_No)
 				{
 					// give healing potions
-					static const Consumable* p1 = (Consumable*)Item::Get("p_hp");
-					static const Consumable* p2 = (Consumable*)Item::Get("p_hp2");
-					static const Consumable* p3 = (Consumable*)Item::Get("p_hp3");
+					static const Consumable* p1 = (Consumable*)Item::Get("potionHealth");
+					static const Consumable* p2 = (Consumable*)Item::Get("potionHealth2");
+					static const Consumable* p3 = (Consumable*)Item::Get("potionHealth3");
 					static const float p1Power = p1->GetEffectPower(EffectId::Heal);
 					static const float p2Power = p2->GetEffectPower(EffectId::Heal);
 					static const float p3Power = p3->GetEffectPower(EffectId::Heal);

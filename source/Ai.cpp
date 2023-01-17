@@ -813,7 +813,7 @@ void Game::UpdateAi(float dt)
 								ai.timer = Random(10.f, 15.f);
 								break;
 							case 1: // eat
-								u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
+								u.ConsumeItem(ItemList::GetItem("normalFood")->ToConsumable());
 								ai.timer = Random(10.f, 15.f);
 								break;
 							case 2: // stop sitting
@@ -840,7 +840,7 @@ void Game::UpdateAi(float dt)
 							else
 								what = 1;
 
-							u.ConsumeItem(ItemList::GetItem(what == 0 ? "drink" : "normal_food")->ToConsumable());
+							u.ConsumeItem(ItemList::GetItem(what == 0 ? "drink" : "normalFood")->ToConsumable());
 							ai.st.idle.action = AIController::Idle_Use;
 							ai.timer = Random(10.f, 15.f);
 						}
@@ -1211,7 +1211,7 @@ void Game::UpdateAi(float dt)
 						case AI_EAT:
 							ai.timer = Random(3.f, 5.f);
 							ai.st.idle.action = AIController::Idle_None;
-							u.ConsumeItem(ItemList::GetItem(IsSet(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food")->ToConsumable());
+							u.ConsumeItem(ItemList::GetItem(IsSet(u.data->flags3, F3_ORC_FOOD) ? "orcFood" : "normalFood")->ToConsumable());
 							break;
 						default:
 							assert(0);

@@ -88,7 +88,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::Talked:
 		if(prog == Progress::FoundBandits)
 		{
-			const Item* item = Item::Get("q_bandyci_paczka");
+			const Item* item = Item::Get("qBanditsParcel");
 			if(!DialogContext::current->pc->unit->HaveItem(item))
 				DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			Location& other = *world->GetLocation(otherLoc);
@@ -111,7 +111,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnStart(questMgr->txQuest[153]);
 			questMgr->RemoveQuestRumor(id);
 
-			const Item* item = Item::Get("q_bandyci_paczka");
+			const Item* item = Item::Get("qBanditsParcel");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			Location* other = world->GetRandomSettlement(startLoc);
 			otherLoc = other->index;
@@ -137,7 +137,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		{
 			if(getLetter || Rand() % 3 != 0)
 			{
-				const Item* item = Item::Get("q_bandyci_list");
+				const Item* item = Item::Get("qBanditsLetter");
 				gameRes->PreloadItem(item);
 				DialogContext::current->talker->AddItem(item, 1, true);
 			}
@@ -160,7 +160,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(questMgr->txQuest[158]);
 			campLoc = targetLoc->index;
 			locationEventHandler = this;
-			DialogContext::current->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
+			DialogContext::current->pc->unit->RemoveItem(Item::Get("qBanditsLetter"), 1);
 			team->AddExp(5000);
 		}
 		break;
@@ -255,7 +255,7 @@ bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "bandyci_daj_paczke") == 0)
 	{
-		const Item* item = Item::Get("q_bandyci_paczka");
+		const Item* item = Item::Get("qBanditsParcel");
 		ctx.talker->AddItem(item, 1, true);
 		team->RemoveQuestItem(item);
 	}

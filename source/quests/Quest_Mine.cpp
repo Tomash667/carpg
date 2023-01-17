@@ -209,7 +209,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::TalkedWithMiner:
 		{
 			OnUpdate(questMgr->txQuest[147]);
-			const Item* item = Item::Get("key_kopalnia");
+			const Item* item = Item::Get("qMineKey");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
@@ -338,9 +338,9 @@ void Quest_Mine::InitSub()
 	if(sub.done)
 		return;
 
-	ItemList& lis = ItemList::Get("ancient_armory_armors");
+	ItemList& lis = ItemList::Get("ancientArmoryArmors");
 	lis.Get(3, sub.itemToGive);
-	sub.itemToGive[3] = Item::Get("al_angelskin");
+	sub.itemToGive[3] = Item::Get("angelskinArmor");
 	sub.spawnItem = Quest_Event::Item_InChest;
 	sub.targetLoc = dungeonLoc == -2 ? nullptr : world->GetLocation(dungeonLoc);
 	sub.atLevel = 0;

@@ -386,7 +386,7 @@ void UnitLoader::InitTokenizer()
 		{ "strength", (int)AttributeId::STR },
 		{ "endurance", (int)AttributeId::END },
 		{ "dexterity", (int)AttributeId::DEX },
-		{ "inteligence", (int)AttributeId::INT },
+		{ "intelligence", (int)AttributeId::INT },
 		{ "wisdom", (int)AttributeId::WIS },
 		{ "charisma", (int)AttributeId::CHA }
 		});

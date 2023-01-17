@@ -28,33 +28,33 @@ class cleric {
 	}
 	potions {
 		level 17 {
-			p_hp3 1
-			p_mp3 1
-			p_hp2 5
-			p_mp2 3
-			p_hp 6
-			p_mp 6
+			potionHealth3 1
+			potionMana3 1
+			potionHealth2 5
+			potionMana2 3
+			potionHealth 6
+			potionMana 6
 		}
 		level 13 {
-			p_hp2 3
-			p_mp2 2
-			p_hp 6
-			p_mp 5
+			potionHealth2 3
+			potionMana2 2
+			potionHealth 6
+			potionMana 5
 		}
 		level 9 {
-			p_hp2 2
-			p_mp2 1
-			p_hp 5
-			p_mp 4
+			potionHealth2 2
+			potionMana2 1
+			potionHealth 5
+			potionMana 4
 		}
 		level 6 {
-			p_hp2 1
-			p_hp 4
-			p_mp 4
+			potionHealth2 1
+			potionHealth 4
+			potionMana 4
 		}
 		level 0 {
-			p_hp 4
-			p_mp 2
+			potionHealth 4
+			potionMana 2
 		}
 	}
 }
@@ -82,26 +82,26 @@ class hunter {
 	}
 	potions {
 		level 17 {
-			p_hp3 4
-			p_hp2 5
-			p_hp 6
+			potionHealth3 4
+			potionHealth2 5
+			potionHealth 6
 		}
 		level 13 {
-			p_hp3 2
-			p_hp2 4
-			p_hp 6
+			potionHealth3 2
+			potionHealth2 4
+			potionHealth 6
 		}
 		level 9 {
-			p_hp3 1
-			p_hp2 3
-			p_hp 6
+			potionHealth3 1
+			potionHealth2 3
+			potionHealth 6
 		}
 		level 6 {
-			p_hp2 2
-			p_hp 5
+			potionHealth2 2
+			potionHealth 5
 		}
 		level 0 {
-			p_hp 5
+			potionHealth 5
 		}
 	}
 }
@@ -128,33 +128,33 @@ class mage {
 	}
 	potions {
 		level 17 {
-			p_hp3 1
-			p_mp3 1
-			p_hp2 5
-			p_mp2 3
-			p_hp 6
-			p_mp 6
+			potionHealth3 1
+			potionMana3 1
+			potionHealth2 5
+			potionMana2 3
+			potionHealth 6
+			potionMana 6
 		}
 		level 13 {
-			p_hp2 3
-			p_mp2 2
-			p_hp 6
-			p_mp 5
+			potionHealth2 3
+			potionMana2 2
+			potionHealth 6
+			potionMana 5
 		}
 		level 9 {
-			p_hp2 2
-			p_mp2 1
-			p_hp 5
-			p_mp 4
+			potionHealth2 2
+			potionMana2 1
+			potionHealth 5
+			potionMana 4
 		}
 		level 6 {
-			p_hp2 1
-			p_hp 4
-			p_mp 4
+			potionHealth2 1
+			potionHealth 4
+			potionMana 4
 		}
 		level 0 {
-			p_hp 4
-			p_mp 2
+			potionHealth 4
+			potionMana 2
 		}
 	}
 }
@@ -185,26 +185,26 @@ class rogue {
 	}
 	potions {
 		level 17 {
-			p_hp3 4
-			p_hp2 5
-			p_hp 6
+			potionHealth3 4
+			potionHealth2 5
+			potionHealth 6
 		}
 		level 13 {
-			p_hp3 2
-			p_hp2 4
-			p_hp 6
+			potionHealth3 2
+			potionHealth2 4
+			potionHealth 6
 		}
 		level 9 {
-			p_hp3 1
-			p_hp2 3
-			p_hp 6
+			potionHealth3 1
+			potionHealth2 3
+			potionHealth 6
 		}
 		level 6 {
-			p_hp2 2
-			p_hp 5
+			potionHealth2 2
+			potionHealth 5
 		}
 		level 0 {
-			p_hp 5
+			potionHealth 5
 		}
 	}
 }
@@ -227,26 +227,26 @@ class warrior {
 	}
 	potions {
 		level 17 {
-			p_hp3 4
-			p_hp2 5
-			p_hp 6
+			potionHealth3 4
+			potionHealth2 5
+			potionHealth 6
 		}
 		level 13 {
-			p_hp3 2
-			p_hp2 4
-			p_hp 6
+			potionHealth3 2
+			potionHealth2 4
+			potionHealth 6
 		}
 		level 9 {
-			p_hp3 1
-			p_hp2 3
-			p_hp 6
+			potionHealth3 1
+			potionHealth2 3
+			potionHealth 6
 		}
 		level 6 {
-			p_hp2 2
-			p_hp 5
+			potionHealth2 2
+			potionHealth 5
 		}
 		level 0 {
-			p_hp 5
+			potionHealth 5
 		}
 	}
 }

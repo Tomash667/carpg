@@ -152,7 +152,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	if(questMgr->questTutorial->finishedTutorial)
 	{
-		u->AddItem(Item::Get("book_adventurer"), 1u, false);
+		u->AddItem(Item::Get("bookAdventurer"), 1u, false);
 		questMgr->questTutorial->finishedTutorial = false;
 	}
 

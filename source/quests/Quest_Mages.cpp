@@ -52,7 +52,7 @@ void Quest_Mages::SetProgress(int prog2)
 			targetLoc->SetKnown();
 
 			atLevel = targetLoc->GetLastLevel();
-			itemToGive[0] = Item::Get("q_magowie_kula");
+			itemToGive[0] = Item::Get("qMagesBall");
 			spawnItem = Quest_Event::Item_InTreasure;
 
 			msgs.push_back(Format(questMgr->txQuest[166], startLoc->name.c_str(), world->GetDate()));
@@ -63,7 +63,7 @@ void Quest_Mages::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			const Item* item = Item::Get("q_magowie_kula");
+			const Item* item = Item::Get("qMagesBall");
 			DialogContext::current->talker->AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			questMgr->questMages2->scholar = DialogContext::current->talker;
@@ -140,7 +140,7 @@ Quest::LoadResult Quest_Mages::Load(GameReader& f)
 
 	if(!done)
 	{
-		itemToGive[0] = Item::Get("q_magowie_kula");
+		itemToGive[0] = Item::Get("qMagesBall");
 		spawnItem = Quest_Event::Item_InTreasure;
 	}
 
@@ -256,14 +256,14 @@ void Quest_Mages2::SetProgress(int prog2)
 		{
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(questMgr->txQuest[180]);
-			const Item* item = Item::Get("q_magowie_potion");
+			const Item* item = Item::Get("qMagesPotion");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 0u);
 			DialogContext::current->pc->unit->ModGold(-150);
 		}
 		break;
 	case Progress::MageDrinkPotion:
 		{
-			const Item* mikstura = Item::Get("q_magowie_potion");
+			const Item* mikstura = Item::Get("qMagesPotion");
 			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());

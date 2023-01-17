@@ -22,5 +22,6 @@ private:
 	void ParseBetterItems();
 	void ParseRecipe(const string& id);
 	void ParseAlias(const string& id);
+	void ParseRecipeAlias(const string& id);
 	void CalculateCrc();
 };

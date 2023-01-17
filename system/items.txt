@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 // WEAPONS
 //------------------------------------------------------------------------------
-weapon dagger_knife {
+weapon knife {
 	weight 0.2
 	value 2
 	mesh "knife.qmsh"
@@ -14,7 +14,7 @@ weapon dagger_knife {
 	dmgType pierce
 }
 
-weapon dagger_short {
+weapon dagger {
 	weight 0.6
 	value 10
 	mesh "sztylet.qmsh"
@@ -25,7 +25,7 @@ weapon dagger_short {
 	dmgType pierce
 }
 
-weapon dagger_sword {
+weapon shortSword {
 	weight 0.9
 	value 100
 	mesh "short_sword.qmsh"
@@ -36,7 +36,7 @@ weapon dagger_sword {
 	dmgType pierce
 }
 
-weapon dagger_rapier {
+weapon rapier {
 	weight 0.9
 	value 250
 	mesh "rapier.qmsh"
@@ -47,7 +47,7 @@ weapon dagger_rapier {
 	dmgType pierce
 }
 
-weapon dagger_cutlass {
+weapon cutlass {
 	weight 1
 	value 1000
 	mesh "cutlass.qmsh"
@@ -59,7 +59,7 @@ weapon dagger_cutlass {
 	flags hq
 }
 
-weapon dagger_assassin {
+weapon assassinDagger {
 	weight 0.6
 	value 3000
 	mesh "sztylet_zabojcy.qmsh"
@@ -74,7 +74,7 @@ weapon dagger_assassin {
 	}
 }
 
-weapon dagger_sword_a {
+weapon shortAdamantineSword {
 	weight 1
 	value 7500
 	mesh "adam_kmiecz.qmsh"
@@ -86,7 +86,7 @@ weapon dagger_sword_a {
 	flags magical
 }
 
-weapon dagger_spinesheath {
+weapon spinesheathDagger {
 	weight 0.5
 	value 25000
 	mesh "grzbietokluj.qmsh"
@@ -101,7 +101,7 @@ weapon dagger_spinesheath {
 	}
 }
 
-weapon sword_wooden {
+weapon woodenSword {
 	weight 1
 	value 2
 	mesh "sword_wood.qmsh"
@@ -112,7 +112,7 @@ weapon sword_wooden {
 	dmgType blunt
 }
 
-weapon sword_long {
+weapon longSword {
 	weight 1.8
 	value 20
 	mesh "sword.qmsh"
@@ -123,7 +123,7 @@ weapon sword_long {
 	dmgType slash
 }
 
-weapon sword_scimitar {
+weapon scimitar {
 	weight 1.8
 	value 100
 	mesh "sejmitar.qmsh"
@@ -134,7 +134,7 @@ weapon sword_scimitar {
 	dmgType slash
 }
 
-weapon sword_orcish {
+weapon orcSword {
 	weight 2.2
 	value 200
 	mesh "orc_sword.qmsh"
@@ -145,7 +145,7 @@ weapon sword_orcish {
 	dmgType slash
 }
 
-weapon sword_serrated {
+weapon serratedSword {
 	weight 2
 	value 1200
 	mesh "zabkowany_miecz.qmsh"
@@ -157,7 +157,7 @@ weapon sword_serrated {
 	flags hq
 }
 
-weapon sword_mercenary {
+weapon mercenarySword {
 	weight 2.5
 	value 3000
 	mesh "naraphim_sword.qmsh"
@@ -169,7 +169,7 @@ weapon sword_mercenary {
 	flags hq
 }
 
-weapon sword_adamantine {
+weapon adamantineSword {
 	weight 2
 	value 7500
 	mesh "adam_miecz.qmsh"
@@ -181,7 +181,7 @@ weapon sword_adamantine {
 	flags magical
 }
 
-weapon sword_semur {
+weapon semurScimitar {
 	weight 1.8
 	value 30000
 	aiValue 500
@@ -197,7 +197,7 @@ weapon sword_semur {
 	}
 }
 
-weapon sword_forbidden {
+weapon forbiddenSword {
 	weight 2
 	value 500000
 	mesh "sny.qmsh"
@@ -212,7 +212,7 @@ weapon sword_forbidden {
 	}
 }
 
-weapon axe_rusted {
+weapon rustedHatchet {
 	weight 1.2
 	value 10
 	mesh "axe_rusted.qmsh"
@@ -223,7 +223,7 @@ weapon axe_rusted {
 	dmgType slash
 }
 
-weapon axe_small {
+weapon hatchet {
 	weight 1.3
 	value 15
 	mesh "hatchet.qmsh"
@@ -234,7 +234,7 @@ weapon axe_small {
 	dmgType slash
 }
 
-weapon axe_battle {
+weapon battleAxe {
 	weight 2.7
 	value 80
 	mesh "battle_axe.qmsh"
@@ -245,7 +245,7 @@ weapon axe_battle {
 	dmgType slash
 }
 
-weapon axe_orcish {
+weapon orcAxe {
 	weight 3
 	value 220
 	mesh "orc_axe.qmsh"
@@ -256,7 +256,7 @@ weapon axe_orcish {
 	dmgType slash
 }
 
-weapon axe_crystal {
+weapon crystalAxe {
 	weight 3.5
 	value 1500
 	mesh "crystal_axe.qmsh"
@@ -268,7 +268,7 @@ weapon axe_crystal {
 	flags hq
 }
 
-weapon axe_dwarf {
+weapon dwarfAxe {
 	weight 2.8
 	value 4000
 	mesh "axe_dwarf.qmsh"
@@ -280,7 +280,7 @@ weapon axe_dwarf {
 	flags hq
 }
 
-weapon axe_giant {
+weapon giantAxe {
 	weight 3.5
 	value 9000
 	mesh "giant_axe.qmsh"
@@ -292,7 +292,7 @@ weapon axe_giant {
 	flags magical
 }
 
-weapon axe_ripper {
+weapon ripperAxe {
 	weight 3.5
 	value 40000
 	mesh "rozpruwacz.qmsh"
@@ -304,7 +304,7 @@ weapon axe_ripper {
 	flags {notShop notRandom unique}
 }
 
-weapon blunt_club {
+weapon club {
 	weight 1.3
 	value 2
 	mesh "maczuga.qmsh"
@@ -315,7 +315,7 @@ weapon blunt_club {
 	dmgType blunt
 }
 
-weapon blunt_mace {
+weapon mace {
 	weight 3.6
 	value 12
 	mesh "buzdygan.qmsh"
@@ -326,7 +326,7 @@ weapon blunt_mace {
 	dmgType blunt
 }
 
-weapon blunt_orcish {
+weapon orcHammer {
 	weight 4
 	value 75
 	mesh "orc_hammer.qmsh"
@@ -337,7 +337,7 @@ weapon blunt_orcish {
 	dmgType blunt
 }
 
-weapon blunt_orcish_shaman {
+weapon shamanOrcHammer {
 	weight 2
 	value 50
 	aiValue 150
@@ -353,7 +353,7 @@ weapon blunt_orcish_shaman {
 	}
 }
 
-weapon blunt_barbed {
+weapon barbedCudgel {
 	weight 2
 	value 180
 	mesh "barbed_cudgel.qmsh"
@@ -364,7 +364,7 @@ weapon blunt_barbed {
 	dmgType {blunt pierce}
 }
 
-weapon blunt_morningstar {
+weapon morningstar {
 	weight 2.7
 	value 800
 	mesh "morgensztern.qmsh"
@@ -376,7 +376,7 @@ weapon blunt_morningstar {
 	flags hq
 }
 
-weapon blunt_dwarven {
+weapon dwarfHammer {
 	weight 4.4
 	value 2500
 	mesh "krasnoludzki_mlot.qmsh"
@@ -388,7 +388,7 @@ weapon blunt_dwarven {
 	flags hq
 }
 
-weapon blunt_ogre {
+weapon ogreClub {
 	weight 20
 	value 150
 	mesh "ogre_club.qmsh"
@@ -400,7 +400,7 @@ weapon blunt_ogre {
 	flags notShop
 }
 
-weapon blunt_adamantine {
+weapon adamantineMace {
 	weight 4
 	value 6000
 	mesh "adam_buzdygan.qmsh"
@@ -412,7 +412,7 @@ weapon blunt_adamantine {
 	flags magical
 }
 
-weapon blunt_skullsmasher {
+weapon skullsmasherMace {
 	weight 5
 	value 20000
 	mesh "rozlupywacz.qmsh"
@@ -424,7 +424,7 @@ weapon blunt_skullsmasher {
 	flags {notShop notRandom unique}
 }
 
-weapon blacksmith_hammer {
+weapon blacksmithHammer {
 	weight 3
 	value 40
 	mesh "mlot_kowala.qmsh"
@@ -446,7 +446,7 @@ weapon pickaxe {
 	dmgType blunt
 }
 
-weapon frying_pan {
+weapon fryingPan {
 	weight 1.5
 	value 25
 	mesh "frying_pan.qmsh"
@@ -457,7 +457,7 @@ weapon frying_pan {
 	dmgType blunt
 }
 
-weapon wand_novice {
+weapon noviceWand {
 	weight 0.6
 	value 75
 	aiValue 100
@@ -473,7 +473,7 @@ weapon wand_novice {
 	}
 }
 
-weapon wand_adept {
+weapon adeptWand {
 	weight 0.6
 	value 200
 	aiValue 200
@@ -489,7 +489,7 @@ weapon wand_adept {
 	}
 }
 
-weapon wand_expert {
+weapon expertWand {
 	weight 0.6
 	value 1250
 	aiValue 300
@@ -505,7 +505,7 @@ weapon wand_expert {
 	}
 }
 
-weapon wand_master {
+weapon masterWand {
 	weight 0.6
 	value 6500
 	aiValue 400
@@ -524,7 +524,7 @@ weapon wand_master {
 //------------------------------------------------------------------------------
 // BOWS
 //------------------------------------------------------------------------------
-bow bow_short {
+bow shortBow {
 	weight 0.9
 	value 30
 	mesh "luk_krotki.qmsh"
@@ -533,7 +533,7 @@ bow bow_short {
 	reqStr 25
 }
 
-bow bow_long {
+bow longBow {
 	weight 1.3
 	value 75
 	mesh "luk_dlugi.qmsh"
@@ -542,7 +542,7 @@ bow bow_long {
 	reqStr 35
 }
 
-bow bow_composite {
+bow compositeBow {
 	weight 1.3
 	value 500
 	mesh "luk_kompozytowy.qmsh"
@@ -551,7 +551,7 @@ bow bow_composite {
 	reqStr 40
 }
 
-bow bow_elven {
+bow elvenBow {
 	weight 1.1
 	value 3000
 	mesh "luk_elfi.qmsh"
@@ -561,7 +561,7 @@ bow bow_elven {
 	flags hq
 }
 
-bow bow_dragonbone {
+bow dragonBow {
 	weight 1.5
 	value 8000
 	mesh "luk_smoczy.qmsh"
@@ -571,7 +571,7 @@ bow bow_dragonbone {
 	flags magical
 }
 
-bow bow_angel {
+bow angelBow {
 	weight 0.9
 	value 30000
 	mesh "luk_anielski.qmsh"
@@ -584,7 +584,7 @@ bow bow_angel {
 	}
 }
 
-bow q_gobliny_luk {
+bow qGoblinsBow {
 	weight 1.3
 	value 100
 	mesh "luk_stary.qmsh"
@@ -597,7 +597,7 @@ bow q_gobliny_luk {
 //------------------------------------------------------------------------------
 // SHIELDS
 //------------------------------------------------------------------------------
-shield shield_plank {
+shield plankShield {
 	weight 1.5
 	value 5
 	mesh "shield_plank.qmsh"
@@ -606,7 +606,7 @@ shield shield_plank {
 	material wood
 }
 
-shield shield_wood {
+shield woodenShield {
 	weight 2
 	value 25
 	mesh "drewniana_tarcza.qmsh"
@@ -615,7 +615,7 @@ shield shield_wood {
 	material wood
 }
 
-shield shield_kite {
+shield kiteShield {
 	weight 3
 	value 100
 	mesh "kite_shield.qmsh"
@@ -624,7 +624,7 @@ shield shield_kite {
 	material wood
 }
 
-shield shield_iron {
+shield ironShield {
 	weight 2.5
 	value 250
 	mesh "iron_shield.qmsh"
@@ -633,7 +633,7 @@ shield shield_iron {
 	material metal
 }
 
-shield shield_steel {
+shield steelShield {
 	weight 4
 	value 1000
 	mesh "kite_shield_steel.qmsh"
@@ -642,7 +642,7 @@ shield shield_steel {
 	material metal
 }
 
-shield shield_mithril {
+shield mithrilShield {
 	weight 1.2
 	value 3000
 	mesh "mith_shield.qmsh"
@@ -652,7 +652,7 @@ shield shield_mithril {
 	flags hq
 }
 
-shield shield_spiked {
+shield spikedShield {
 	weight 5
 	value 4000
 	mesh "spiked_shield.qmsh"
@@ -663,7 +663,7 @@ shield shield_spiked {
 	flags hq
 }
 
-shield shield_adamantine {
+shield adamantineShield {
 	weight 4.5
 	value 7500
 	mesh "adam_shield.qmsh"
@@ -676,7 +676,7 @@ shield shield_adamantine {
 	}
 }
 
-shield shield_wall {
+shield wallShield {
 	weight 10
 	value 25000
 	mesh "shield_wall.qmsh"
@@ -690,7 +690,7 @@ shield shield_wall {
 	}
 }
 
-shield shield_death {
+shield deathShield {
 	weight 4.5
 	value 25000
 	mesh "shield_death.qmsh"
@@ -707,7 +707,7 @@ shield shield_death {
 //------------------------------------------------------------------------------
 // ARMORS
 //------------------------------------------------------------------------------
-armor al_padded {
+armor paddedArmor {
 	weight 4.5
 	value 10
 	mesh "padded_armor.qmsh"
@@ -719,7 +719,7 @@ armor al_padded {
 	mobility 90
 }
 
-armor al_padded_hq {
+armor paddedArmorHq {
 	weight 4.5
 	value 20
 	mesh "padded_armor.qmsh"
@@ -732,7 +732,7 @@ armor al_padded_hq {
 	flags hq
 }
 
-armor al_padded_m {
+armor paddedArmorM {
 	weight 4
 	value 75
 	mesh "padded_armor.qmsh"
@@ -745,7 +745,7 @@ armor al_padded_m {
 	flags magical
 }
 
-armor al_leather {
+armor leatherArmor {
 	weight 7
 	value 15
 	mesh "leather_armor.qmsh"
@@ -757,7 +757,7 @@ armor al_leather {
 	mobility 85
 }
 
-armor al_leather_hq {
+armor leatherArmorHq {
 	weight 7
 	value 30
 	mesh "leather_armor.qmsh"
@@ -770,7 +770,7 @@ armor al_leather_hq {
 	flags hq
 }
 
-armor al_leather_m {
+armor leatherArmorM {
 	weight 6
 	value 120
 	mesh "leather_armor.qmsh"
@@ -783,7 +783,7 @@ armor al_leather_m {
 	flags magical
 }
 
-armor al_dragonskin {
+armor dragonskinArmor {
 	weight 8
 	value 15000
 	mesh "dragonskin.qmsh"
@@ -799,7 +799,7 @@ armor al_dragonskin {
 	}
 }
 
-armor al_studded {
+armor studdedArmor {
 	weight 9
 	value 100
 	mesh "studded_armor.qmsh"
@@ -811,7 +811,7 @@ armor al_studded {
 	mobility 80
 }
 
-armor al_studded_hq {
+armor studdedArmorHq {
 	weight 9
 	value 150
 	mesh "studded_armor.qmsh"
@@ -824,7 +824,7 @@ armor al_studded_hq {
 	flags hq
 }
 
-armor al_studded_m {
+armor studdedArmorM {
 	weight 8
 	value 500
 	mesh "studded_armor.qmsh"
@@ -837,7 +837,7 @@ armor al_studded_m {
 	flags magical
 }
 
-armor al_shadow {
+armor shadowArmor {
 	weight 7
 	value 12000
 	mesh "studded_armor.qmsh"
@@ -853,7 +853,7 @@ armor al_shadow {
 	}
 }
 
-armor al_chain_shirt {
+armor chainShirt {
 	weight 11.5
 	value 1000
 	mesh "chain_shirt.qmsh"
@@ -865,7 +865,7 @@ armor al_chain_shirt {
 	mobility 75
 }
 
-armor al_chain_shirt_hq {
+armor chainShirtHq {
 	weight 11.5
 	value 1500
 	mesh "chain_shirt.qmsh"
@@ -878,7 +878,7 @@ armor al_chain_shirt_hq {
 	flags hq
 }
 
-armor al_chain_shirt_m {
+armor chainShirtM {
 	weight 10
 	value 3000
 	mesh "chain_shirt.qmsh"
@@ -891,7 +891,7 @@ armor al_chain_shirt_m {
 	flags magical
 }
 
-armor al_chain_shirt_mith {
+armor mithrilChainShirt {
 	weight 5.5
 	value 5000
 	mesh "chain_shirt.qmsh"
@@ -905,7 +905,7 @@ armor al_chain_shirt_mith {
 	flags magical
 }
 
-armor al_angelskin {
+armor angelskinArmor {
 	weight 3
 	value 25000
 	mesh "angelskin.qmsh"
@@ -922,7 +922,7 @@ armor al_angelskin {
 	}
 }
 
-armor am_hide {
+armor hideArmor {
 	weight 11.5
 	value 10
 	mesh "hide_armor.qmsh"
@@ -934,7 +934,7 @@ armor am_hide {
 	mobility 75
 }
 
-armor am_hide_hq {
+armor hideArmorHq {
 	weight 11.5
 	value 15
 	mesh "hide_armor.qmsh"
@@ -947,7 +947,7 @@ armor am_hide_hq {
 	flags hq
 }
 
-armor am_hide_m {
+armor hideArmorM {
 	weight 10
 	value 50
 	mesh "hide_armor.qmsh"
@@ -960,7 +960,7 @@ armor am_hide_m {
 	flags magical
 }
 
-armor am_troll_hide {
+armor trollHideArmor {
 	weight 12.5
 	value 2000
 	mesh "hide_armor.qmsh"
@@ -977,7 +977,7 @@ armor am_troll_hide {
 	}
 }
 
-armor am_chainmail {
+armor chainmail {
 	weight 18
 	value 50
 	mesh "chainmail.qmsh"
@@ -989,7 +989,7 @@ armor am_chainmail {
 	mobility 60
 }
 
-armor am_chainmail_hq {
+armor chainmailHq {
 	weight 18
 	value 150
 	mesh "chainmail.qmsh"
@@ -1002,7 +1002,7 @@ armor am_chainmail_hq {
 	flags hq
 }
 
-armor am_chainmail_m {
+armor chainmailM {
 	weight 16
 	value 250
 	mesh "chainmail.qmsh"
@@ -1015,7 +1015,7 @@ armor am_chainmail_m {
 	flags magical
 }
 
-armor am_chainmail_mith {
+armor mithrilChainmail {
 	weight 9
 	value 250
 	mesh "chainmail.qmsh"
@@ -1029,7 +1029,7 @@ armor am_chainmail_mith {
 	flags magical
 }
 
-armor am_scale {
+armor scaleArmor {
 	weight 15
 	value 100
 	mesh "scale_armor.qmsh"
@@ -1041,7 +1041,7 @@ armor am_scale {
 	mobility 60
 }
 
-armor am_scale_hq {
+armor scaleArmorHq {
 	weight 15
 	value 250
 	mesh "scale_armor.qmsh"
@@ -1054,7 +1054,7 @@ armor am_scale_hq {
 	flags hq
 }
 
-armor am_scale_m {
+armor scaleArmorM {
 	weight 13.5
 	value 500
 	mesh "scale_armor.qmsh"
@@ -1067,7 +1067,7 @@ armor am_scale_m {
 	flags magical
 }
 
-armor am_dragonscale {
+armor dragonscaleArmor {
 	weight 16.5
 	value 15000
 	mesh "scale_armor.qmsh"
@@ -1084,7 +1084,7 @@ armor am_dragonscale {
 	}
 }
 
-armor am_breastplate {
+armor breastplate {
 	weight 13.5
 	value 1000
 	mesh "breastplate.qmsh"
@@ -1096,7 +1096,7 @@ armor am_breastplate {
 	mobility 70
 }
 
-armor am_breastplate_hq {
+armor breastplateHq {
 	weight 13.5
 	value 1500
 	mesh "breastplate.qmsh"
@@ -1109,7 +1109,7 @@ armor am_breastplate_hq {
 	flags hq
 }
 
-armor am_breastplate_m {
+armor breastplateM {
 	weight 12
 	value 3000
 	mesh "breastplate.qmsh"
@@ -1122,7 +1122,7 @@ armor am_breastplate_m {
 	flags magical
 }
 
-armor am_breastplate_mith {
+armor mithrilBreastplate {
 	weight 6.5
 	value 5000
 	mesh "breastplate.qmsh"
@@ -1136,7 +1136,7 @@ armor am_breastplate_mith {
 	flags magical
 }
 
-armor am_breastplate_adam {
+armor adamantineBreastplate {
 	weight 16
 	value 10000
 	mesh "breastplate.qmsh"
@@ -1153,7 +1153,7 @@ armor am_breastplate_adam {
 	}
 }
 
-armor am_gladiator {
+armor gladiatorArmor {
 	weight 13.5
 	value 25000
 	mesh "gladiator_armor.qmsh"
@@ -1170,7 +1170,7 @@ armor am_gladiator {
 	}
 }
 
-armor ah_splint_rusted {
+armor rustedSplitArmor {
 	weight 18
 	value 75
 	mesh "splint_armor.qmsh"
@@ -1183,7 +1183,7 @@ armor ah_splint_rusted {
 	mobility 50
 }
 
-armor ah_splint {
+armor splintArmor {
 	weight 18
 	value 150
 	mesh "splint_armor.qmsh"
@@ -1195,7 +1195,7 @@ armor ah_splint {
 	mobility 50
 }
 
-armor ah_splint_hq {
+armor splintArmorHq {
 	weight 18
 	value 225
 	mesh "splint_armor.qmsh"
@@ -1208,7 +1208,7 @@ armor ah_splint_hq {
 	flags hq
 }
 
-armor ah_splint_m {
+armor splintArmorM {
 	weight 16
 	value 600
 	mesh "splint_armor.qmsh"
@@ -1221,7 +1221,7 @@ armor ah_splint_m {
 	flags magical
 }
 
-armor ah_splint_mith {
+armor mithrilSplintArmor {
 	weight 9
 	value 1200
 	mesh "splint_armor.qmsh"
@@ -1235,7 +1235,7 @@ armor ah_splint_mith {
 	flags magical
 }
 
-armor ah_antimage {
+armor antimageArmor {
 	weight 20
 	value 18000
 	mesh "splint_armor.qmsh"
@@ -1251,7 +1251,7 @@ armor ah_antimage {
 	}
 }
 
-armor ah_plate {
+armor plateArmor {
 	weight 25
 	value 1500
 	mesh "plate_armor.qmsh"
@@ -1263,7 +1263,7 @@ armor ah_plate {
 	mobility 40
 }
 
-armor ah_plate_hq {
+armor plateArmorHq {
 	weight 25
 	value 2000
 	mesh "plate_armor.qmsh"
@@ -1276,7 +1276,7 @@ armor ah_plate_hq {
 	flags hq
 }
 
-armor ah_plate_m {
+armor plateArmorM {
 	weight 25
 	value 4000
 	mesh "plate_armor.qmsh"
@@ -1289,7 +1289,7 @@ armor ah_plate_m {
 	flags magical
 }
 
-armor ah_plate_mith {
+armor mithrilPlateArmor {
 	weight 12.5
 	value 6500
 	mesh "plate_armor.qmsh"
@@ -1303,7 +1303,7 @@ armor ah_plate_mith {
 	flags magical
 }
 
-armor ah_plate_adam {
+armor adamantinePlateArmor {
 	weight 30
 	value 12000
 	mesh "plate_armor.qmsh"
@@ -1320,7 +1320,7 @@ armor ah_plate_adam {
 	}
 }
 
-armor ah_black_armor {
+armor blackArmor {
 	weight 30
 	value 30000
 	mesh "plate_armor.qmsh"
@@ -1337,7 +1337,7 @@ armor ah_black_armor {
 	}
 }
 
-armor ah_crystal {
+armor crystalArmor {
 	weight 35
 	value 6000
 	mesh "crystal_armor.qmsh"
@@ -1350,7 +1350,7 @@ armor ah_crystal {
 	flags hq
 }
 
-armor ah_crystal_m {
+armor crystalArmorM {
 	weight 35
 	value 16000
 	mesh "crystal_armor.qmsh"
@@ -1366,7 +1366,7 @@ armor ah_crystal_m {
 	}
 }
 
-armor ah_blood_crystal {
+armor bloodCrystalArmor {
 	weight 35
 	value 24000
 	mesh "crystal_armor.qmsh"
@@ -1382,7 +1382,7 @@ armor ah_blood_crystal {
 	}
 }
 
-armor al_blacksmith {
+armor blacksmithClothes {
 	weight 2
 	value 50
 	mesh "blacksmith_clothes.qmsh"
@@ -1395,7 +1395,7 @@ armor al_blacksmith {
 	flags notBlacksmith
 }
 
-armor al_innkeeper {
+armor innkeeperClothes {
 	weight 1.5
 	value 50
 	mesh "innkeeper_clothes.qmsh"
@@ -1408,7 +1408,7 @@ armor al_innkeeper {
 	flags notBlacksmith
 }
 
-armor al_goblin {
+armor goblinArmor {
 	weight 4
 	value 10
 	mesh "goblin_armor.qmsh"
@@ -1421,7 +1421,7 @@ armor al_goblin {
 	flags notShop
 }
 
-armor al_orc {
+armor orcLeatherArmor {
 	weight 9
 	value 15
 	mesh "orc_armor.qmsh"
@@ -1434,7 +1434,7 @@ armor al_orc {
 	flags notShop
 }
 
-armor al_orc_shaman {
+armor orcShamanArmor {
 	weight 9
 	value 100
 	aiValue 50
@@ -1451,7 +1451,7 @@ armor al_orc_shaman {
 	}
 }
 
-armor am_orc {
+armor orcChainmail {
 	weight 22
 	value 50
 	mesh "orc_chainmail.qmsh"
@@ -1464,7 +1464,7 @@ armor am_orc {
 	flags notShop
 }
 
-armor al_mage {
+armor noviceRobe {
 	weight 1.5
 	value 50
 	aiValue 100
@@ -1478,7 +1478,7 @@ armor al_mage {
 	flags {notShop mage magical}
 }
 
-armor al_mage2 {
+armor mageRobe {
 	weight 1.5
 	value 150
 	aiValue 200
@@ -1499,7 +1499,7 @@ armor al_mage2 {
 	}
 }
 
-armor al_mage3 {
+armor battleMageRobe {
 	weight 1.5
 	value 1000
 	aiValue 300
@@ -1520,7 +1520,7 @@ armor al_mage3 {
 	}
 }
 
-armor al_mage4 {
+armor archmageRobe {
 	weight 1.5
 	value 3500
 	aiValue 400
@@ -1541,7 +1541,7 @@ armor al_mage4 {
 	}
 }
 
-armor al_necromancer {
+armor necromancerRobe {
 	weight 2
 	value 100
 	aiValue 250
@@ -1559,7 +1559,7 @@ armor al_necromancer {
 	}
 }
 
-armor al_clothes {
+armor clothes {
 	weight 1
 	value 5
 	mesh "clothes.qmsh"
@@ -1572,7 +1572,7 @@ armor al_clothes {
 	flags notBlacksmith
 }
 
-armor al_clothes2 {
+armor clothes2 {
 	weight 1
 	value 15
 	mesh "clothes2.qmsh"
@@ -1585,7 +1585,7 @@ armor al_clothes2 {
 	flags notBlacksmith
 }
 
-armor al_clothes2b {
+armor clothes2b {
 	weight 1
 	value 15
 	mesh "clothes2.qmsh"
@@ -1599,7 +1599,7 @@ armor al_clothes2b {
 	flags notBlacksmith
 }
 
-armor al_clothes3 {
+armor clothes3 {
 	weight 1
 	value 100
 	mesh "clothes3.qmsh"
@@ -1612,7 +1612,7 @@ armor al_clothes3 {
 	flags {notBlacksmith hq}
 }
 
-armor al_clothes3b {
+armor clothes3b {
 	weight 1
 	value 100
 	mesh "clothes3.qmsh"
@@ -1626,7 +1626,7 @@ armor al_clothes3b {
 	flags {notBlacksmith hq}
 }
 
-armor al_old_robe {
+armor oldRobe {
 	weight 1.5
 	value 5
 	mesh "robe.qmsh"
@@ -1643,31 +1643,31 @@ armor al_old_robe {
 //------------------------------------------------------------------------------
 // AMULETS
 //------------------------------------------------------------------------------
-amulet a_silver {
+amulet amuletSilver {
 	weight 0.1
 	value 75
 	tex "amulet_silver.png"
 }
 
-amulet a_gold {
+amulet amuletGold {
 	weight 0.1
 	value 150
 	tex "amulet_golden.png"
 }
 
-amulet a_ruby {
+amulet amuletRuby {
 	weight 0.1
 	value 300
 	tex "amulet_ruby.png"
 }
 
-amulet a_diamond {
+amulet amuletDiamond {
 	weight 0.1
 	value 600
 	tex "amulet_diamond.png"
 }
 
-amulet a_food : a_silver {
+amulet amuletGourmet : amuletSilver {
 	value 750
 	aiValue 90
 	flags magical
@@ -1676,7 +1676,7 @@ amulet a_food : a_silver {
 	}
 }
 
-amulet a_sprinter : a_silver {
+amulet amuletSprinter : amuletSilver {
 	value 750
 	aiValue 90
 	flags magical
@@ -1686,7 +1686,7 @@ amulet a_sprinter : a_silver {
 	tag dex
 }
 
-amulet a_mage : a_gold {
+amulet amuletMage : amuletGold {
 	value 1500
 	aiValue 120
 	flags magical
@@ -1696,7 +1696,7 @@ amulet a_mage : a_gold {
 	tag mage
 }
 
-amulet a_defense : a_gold {
+amulet amuletDefense : amuletGold {
 	value 1500
 	aiValue 120
 	flags magical
@@ -1706,7 +1706,7 @@ amulet a_defense : a_gold {
 	tag def
 }
 
-amulet a_stamina : a_gold {
+amulet amuletStamina : amuletGold {
 	value 1500
 	aiValue 120
 	flags magical
@@ -1717,7 +1717,7 @@ amulet a_stamina : a_gold {
 	tag stamina
 }
 
-amulet a_mana : a_gold {
+amulet amuletMana : amuletGold {
 	value 1500
 	aiValue 120
 	flags magical
@@ -1728,7 +1728,7 @@ amulet a_mana : a_gold {
 	tag mana
 }
 
-amulet a_warrior : a_ruby {
+amulet amuletWarrior : amuletRuby {
 	value 3000
 	aiValue 150
 	flags magical
@@ -1740,7 +1740,7 @@ amulet a_warrior : a_ruby {
 	tag {melee str}
 }
 
-amulet a_archer : a_ruby {
+amulet amuletArcher : amuletRuby {
 	value 3000
 	aiValue 150
 	flags magical
@@ -1752,7 +1752,7 @@ amulet a_archer : a_ruby {
 	tag {ranged dex}
 }
 
-amulet a_antimagic : a_ruby {
+amulet amuletAntimagic : amuletRuby {
 	value 3000
 	aiValue 180
 	flags magical
@@ -1762,7 +1762,7 @@ amulet a_antimagic : a_ruby {
 	tag def
 }
 
-amulet a_health : a_diamond {
+amulet amuletHealth : amuletDiamond {
 	value 6000
 	aiValue 180
 	flags magical
@@ -1778,25 +1778,25 @@ amulet a_health : a_diamond {
 //------------------------------------------------------------------------------
 // RINGS
 //------------------------------------------------------------------------------
-ring r_silver {
+ring ringSilver {
 	weight 0.1
 	value 25
 	tex "ring_silver.png"
 }
 
-ring r_gold {
+ring ringGold {
 	weight 0.1
 	value 50
 	tex "ring_gold.png"
 }
 
-ring r_emerald {
+ring ringEmerald {
 	weight 0.1
 	value 150
 	tex "ring_emerald.png"
 }
 
-ring r_str : r_gold {
+ring ringStrength : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1806,7 +1806,7 @@ ring r_str : r_gold {
 	tag str
 }
 
-ring r_end : r_gold {
+ring ringEndurance : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1816,7 +1816,7 @@ ring r_end : r_gold {
 	tag def
 }
 
-ring r_dex : r_gold {
+ring ringDexterity : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1826,7 +1826,7 @@ ring r_dex : r_gold {
 	tag dex
 }
 
-ring r_int : r_gold {
+ring ringIntelligence : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1836,7 +1836,7 @@ ring r_int : r_gold {
 	tag mage
 }
 
-ring r_wis : r_gold {
+ring ringWisdom : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1845,7 +1845,7 @@ ring r_wis : r_gold {
 	}
 }
 
-ring r_cha : r_gold {
+ring ringCharisma : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1855,7 +1855,7 @@ ring r_cha : r_gold {
 	tag cleric
 }
 
-ring r_hp : r_gold {
+ring ringHealth : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1865,7 +1865,7 @@ ring r_hp : r_gold {
 	tag def
 }
 
-ring r_stamina : r_gold {
+ring ringStamina : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1875,7 +1875,7 @@ ring r_stamina : r_gold {
 	tag stamina
 }
 
-ring r_def : r_gold {
+ring ringDefense : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1885,7 +1885,7 @@ ring r_def : r_gold {
 	tag def
 }
 
-ring r_attack : r_gold {
+ring ringAttack : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1895,7 +1895,7 @@ ring r_attack : r_gold {
 	tag melee
 }
 
-ring r_ranged_attack : r_gold {
+ring ringRangedAttack : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1905,7 +1905,7 @@ ring r_ranged_attack : r_gold {
 	tag ranged
 }
 
-ring r_mage : r_gold {
+ring ringMage : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1915,7 +1915,7 @@ ring r_mage : r_gold {
 	tag mage
 }
 
-ring r_one_handed_weapon : r_gold {
+ring ringOneHandedWeapon : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1925,7 +1925,7 @@ ring r_one_handed_weapon : r_gold {
 	tag melee
 }
 
-ring r_short_blade : r_gold {
+ring ringShortBlade : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1935,7 +1935,7 @@ ring r_short_blade : r_gold {
 	tag melee
 }
 
-ring r_long_blade : r_gold {
+ring ringLongBlade : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1945,7 +1945,7 @@ ring r_long_blade : r_gold {
 	tag melee
 }
 
-ring r_axe : r_gold {
+ring ringAxe : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1955,7 +1955,7 @@ ring r_axe : r_gold {
 	tag melee
 }
 
-ring r_blunt : r_gold {
+ring ringBlunt : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1965,7 +1965,7 @@ ring r_blunt : r_gold {
 	tag melee
 }
 
-ring r_bow : r_gold {
+ring ringBow : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1975,7 +1975,7 @@ ring r_bow : r_gold {
 	tag ranged
 }
 
-ring r_shield : r_gold {
+ring ringShield : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1985,7 +1985,7 @@ ring r_shield : r_gold {
 	tag def
 }
 
-ring r_light_armor : r_gold {
+ring ringLightArmor : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -1995,7 +1995,7 @@ ring r_light_armor : r_gold {
 	tag def
 }
 
-ring r_medium_armor : r_gold {
+ring ringMediumArmor : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2005,7 +2005,7 @@ ring r_medium_armor : r_gold {
 	tag def
 }
 
-ring r_heavy_armor : r_gold {
+ring ringHeavyArmor : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2015,7 +2015,7 @@ ring r_heavy_armor : r_gold {
 	tag def
 }
 
-ring r_persuasion : r_gold {
+ring ringPersuasion : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2024,7 +2024,7 @@ ring r_persuasion : r_gold {
 	}
 }
 
-ring r_carry : r_gold {
+ring ringCarry : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2033,7 +2033,7 @@ ring r_carry : r_gold {
 	}
 }
 
-ring r_gods_magic : r_gold {
+ring ringGodsMagic : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2043,7 +2043,7 @@ ring r_gods_magic : r_gold {
 	tag cleric
 }
 
-ring r_concentration : r_gold {
+ring ringConcentration : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2053,7 +2053,7 @@ ring r_concentration : r_gold {
 	tag mana
 }
 
-ring r_mystic_magic : r_gold {
+ring ringMysticMagic : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2063,7 +2063,7 @@ ring r_mystic_magic : r_gold {
 	tag mage
 }
 
-ring r_mana : r_gold {
+ring ringMana : ringGold {
 	value 500
 	aiValue 80
 	flags magical
@@ -2073,7 +2073,7 @@ ring r_mana : r_gold {
 	tag mana
 }
 
-ring r_str2 : r_emerald {
+ring ringStrength2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2083,7 +2083,7 @@ ring r_str2 : r_emerald {
 	tag str
 }
 
-ring r_end2 : r_emerald {
+ring ringEndurance2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2093,7 +2093,7 @@ ring r_end2 : r_emerald {
 	tag def
 }
 
-ring r_dex2 : r_emerald {
+ring ringDexterity2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2103,7 +2103,7 @@ ring r_dex2 : r_emerald {
 	tag dex
 }
 
-ring r_int2 : r_emerald {
+ring ringIntelligence2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2113,7 +2113,7 @@ ring r_int2 : r_emerald {
 	tag mage
 }
 
-ring r_wis2 : r_emerald {
+ring ringWisdom2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2122,7 +2122,7 @@ ring r_wis2 : r_emerald {
 	}
 }
 
-ring r_cha2 : r_emerald {
+ring ringCharisma2 : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2132,7 +2132,7 @@ ring r_cha2 : r_emerald {
 	tag cleric
 }
 
-ring r_regeneration : r_emerald {
+ring ringRegeneration : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2142,7 +2142,7 @@ ring r_regeneration : r_emerald {
 	tag def
 }
 
-ring r_assassin : r_emerald {
+ring ringAssassin : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2152,7 +2152,7 @@ ring r_assassin : r_emerald {
 	tag melee
 }
 
-ring r_poison_resistance : r_emerald {
+ring ringPoisonResistance : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2162,7 +2162,7 @@ ring r_poison_resistance : r_emerald {
 	tag def
 }
 
-ring r_mana_regen : r_emerald {
+ring ringManaRegeneration : ringEmerald {
 	value 1500
 	aiValue 110
 	flags magical
@@ -2175,7 +2175,7 @@ ring r_mana_regen : r_emerald {
 //------------------------------------------------------------------------------
 // CONSUMABLES
 //------------------------------------------------------------------------------
-consumable p_nreg {
+consumable potionNatural {
 	weight 0.2
 	value 10
 	mesh "natural_pot.qmsh"
@@ -2187,7 +2187,7 @@ consumable p_nreg {
 	}
 }
 
-consumable p_nreg2 {
+consumable potionNatural2 {
 	weight 0.2
 	value 100
 	mesh "natural_pot2.qmsh"
@@ -2199,7 +2199,7 @@ consumable p_nreg2 {
 	}
 }
 
-consumable p_hp {
+consumable potionHealth {
 	weight 0.1
 	value 25
 	mesh "hp_pot.qmsh"
@@ -2210,7 +2210,7 @@ consumable p_hp {
 	}
 }
 
-consumable p_hp2 {
+consumable potionHealth2 {
 	weight 0.1
 	value 100
 	mesh "hp_pot2.qmsh"
@@ -2221,7 +2221,7 @@ consumable p_hp2 {
 	}
 }
 
-consumable p_hp3 {
+consumable potionHealth3 {
 	weight 0.1
 	value 400
 	mesh "hp_pot3.qmsh"
@@ -2232,7 +2232,7 @@ consumable p_hp3 {
 	}
 }
 
-consumable p_mp {
+consumable potionMana {
 	weight 0.1
 	value 25
 	mesh "mp_pot.qmsh"
@@ -2243,7 +2243,7 @@ consumable p_mp {
 	}
 }
 
-consumable p_mp2 {
+consumable potionMana2 {
 	weight 0.1
 	value 100
 	mesh "mp_pot2.qmsh"
@@ -2254,7 +2254,7 @@ consumable p_mp2 {
 	}
 }
 
-consumable p_mp3 {
+consumable potionMana3 {
 	weight 0.1
 	value 400
 	mesh "mp_pot3.qmsh"
@@ -2265,7 +2265,7 @@ consumable p_mp3 {
 	}
 }
 
-consumable p_reg {
+consumable potionRegeneration {
 	weight 0.1
 	value 250
 	mesh "misc_pot.qmsh"
@@ -2277,7 +2277,7 @@ consumable p_reg {
 	}
 }
 
-consumable p_antidote {
+consumable potionAntidote {
 	weight 0.1
 	value 50
 	mesh "antidote.qmsh"
@@ -2290,7 +2290,7 @@ consumable p_antidote {
 	}
 }
 
-consumable p_antimagic {
+consumable potionAntimagic {
 	weight 0.2
 	value 200
 	mesh "misc_pot.qmsh"
@@ -2302,7 +2302,7 @@ consumable p_antimagic {
 	}
 }
 
-consumable p_str {
+consumable potionStrength {
 	weight 0.4
 	value 500
 	mesh "gray_potion.qmsh"
@@ -2313,7 +2313,7 @@ consumable p_str {
 	}
 }
 
-consumable p_end {
+consumable potionEndurance {
 	weight 0.4
 	value 500
 	mesh "gray_potion.qmsh"
@@ -2324,7 +2324,7 @@ consumable p_end {
 	}
 }
 
-consumable p_dex {
+consumable potionDexterity {
 	weight 0.4
 	value 500
 	mesh "gray_potion.qmsh"
@@ -2335,7 +2335,7 @@ consumable p_dex {
 	}
 }
 
-consumable q_magowie_potion {
+consumable qMagesPotion {
 	weight 0.1
 	value 150
 	mesh "antidote.qmsh"
@@ -2355,7 +2355,7 @@ consumable water {
 	}
 }
 
-consumable spring_water {
+consumable springWater {
 	weight 0.4
 	value 10
 	mesh "water.qmsh"
@@ -2427,7 +2427,7 @@ consumable meat {
 	}
 }
 
-consumable raw_meat {
+consumable rawMeat {
 	weight 0.5
 	value 5
 	mesh "surowe_mieso.qmsh"
@@ -2451,7 +2451,7 @@ consumable sausage {
 	}
 }
 
-consumable fish_meat {
+consumable fishMeat {
 	weight 0.5
 	value 7
 	mesh "fish_meat.qmsh"
@@ -2571,7 +2571,7 @@ consumable muffin {
 	}
 }
 
-consumable healing_herb {
+consumable healingHerb {
 	weight 0.2
 	value 10
 	mesh "healing_herb.qmsh"
@@ -2582,7 +2582,7 @@ consumable healing_herb {
 	}
 }
 
-consumable mana_herb {
+consumable manaHerb {
 	weight 0.2
 	value 10
 	mesh "mana_herb.qmsh"
@@ -2593,7 +2593,7 @@ consumable mana_herb {
 	}
 }
 
-consumable green_herb {
+consumable greenHerb {
 	weight 0.2
 	value 50
 	mesh "green_herb.qmsh"
@@ -2604,7 +2604,7 @@ consumable green_herb {
 	}
 }
 
-consumable alchemist_herb {
+consumable alchemistHerb {
 	weight 0.2
 	value 25
 	mesh "woddruff_herb.qmsh"
@@ -2647,7 +2647,7 @@ other krystal {
 	flags {notShop crystalSound}
 }
 
-other golden_bar {
+other goldenBar {
 	weight 6
 	value 600
 	mesh "golden_bar.qmsh"
@@ -2655,7 +2655,7 @@ other golden_bar {
 	flags groundMesh
 }
 
-other golden_cup {
+other goldenCup {
 	weight 0.5
 	value 300
 	mesh "golden_cup.qmsh"
@@ -2684,37 +2684,37 @@ other plate {
 	flags groundMesh
 }
 
-other wolf_pelt {
+other wolfPelt {
 	weight 2.5
 	value 50
 	tex "wolf_pelt.png"
 }
 
-other worg_pelt {
+other worgPelt {
 	weight 2.5
 	value 100
 	tex "worg_pelt.png"
 }
 
-other dire_wolf_pelt {
+other direWolfPelt {
 	weight 5
 	value 2000
 	tex "dire_wolf_pelt.png"
 }
 
-other bear_pelt {
+other bearPelt {
 	weight 4
 	value 150
 	tex "bear_pelt.png"
 }
 
-other black_bear_pelt {
+other blackBearPelt {
 	weight 4
 	value 200
 	tex "black_bear_pelt.png"
 }
 
-other heal_crystal {
+other healCrystal {
 	weight 0.5
 	value 25
 	mesh "heal_crystal.qmsh"
@@ -2722,7 +2722,7 @@ other heal_crystal {
 	flags {groundMesh ingredient}
 }
 
-other magic_crystal {
+other magicCrystal {
 	weight 0.5
 	value 25
 	mesh "magic_crystal.qmsh"
@@ -2738,7 +2738,7 @@ other tallow {
 	flags {groundMesh ingredient}
 }
 
-other troll_blood {
+other trollBlood {
 	weight 0.1
 	value 50
 	mesh "vial.qmsh"
@@ -2749,210 +2749,203 @@ other troll_blood {
 //------------------------------------------------------------------------------
 // QUEST ITEMS
 //------------------------------------------------------------------------------
-other a_amulet {
+other ancientAmulet {
 	weight 0.1
 	value 100
 	tex "a_amulet.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_amulet2 {
+other ancientAmulet2 {
 	weight 0.1
 	value 100
 	tex "a_amulet2.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_amulet3 {
+other ancientAmulet3 {
 	weight 0.1
 	value 100
 	tex "a_amulet3.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_brosza {
+other ancientBrooch {
 	weight 0.1
 	value 100
 	tex "a_brosza.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_butelka {
+other ancientFlask {
 	weight 0.5
 	value 50
 	tex "a_butelka.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_cos {
+other ancientArtifact {
 	weight 0.5
 	value 50
 	tex "a_cos.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_czaszka {
+other ancientSkull {
 	weight 1
 	value 50
 	tex "a_czaszka.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_figurka {
+other ancientFigurine {
 	weight 0.2
 	value 100
 	tex "a_figurka.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_figurka2 {
+other ancientFigurine2 {
 	weight 0.2
 	value 100
 	tex "a_figurka2.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_figurka3 {
+other ancientFigurine3 {
 	weight 0.2
 	value 100
 	tex "a_figurka3.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_ksiega {
+other ancientBook {
 	weight 0.5
 	value 50
 	tex "a_ksiega.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_maska {
+other ancientMask {
 	weight 0.5
 	value 100
 	tex "a_maska.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_maska2 {
+other ancientMask2 {
 	weight 0.5
 	value 100
 	tex "a_maska2.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_misa {
+other ancientBowl {
 	weight 0.5
 	value 50
 	tex "a_misa.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_moneta {
+other ancientCoin {
 	weight 0.1
 	value 50
 	tex "a_moneta.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_pierscien {
+other ancientRing {
 	weight 0.1
 	value 100
 	tex "a_pierscien.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_pierscien2 {
+other ancientRing2 {
 	weight 0.1
 	value 100
 	tex "a_pierscien2.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_pierscien3 {
+other ancientRing3 {
 	weight 0.1
 	value 100
 	tex "a_pierscien3.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_talizman {
+other ancientTalisman {
 	weight 0.1
 	value 75
 	tex "a_talizman.png"
 	flags {quest notShop notRandom important}
 }
 
-other a_talizman2 {
+other ancientTalisman2 {
 	weight 0.1
 	value 75
 	tex "a_talizman2.png"
 	flags {quest notShop notRandom important}
 }
 
-other key_kopalnia {
+other qMineKey {
 	weight 0.1
 	value 0
 	tex "old-key.png"
 	flags {notShop notRandom important}
 }
 
-other q_bandyci_paczka {
+other qBanditsParcel {
 	weight 5
 	value 0
 	tex "paczka.png"
 	flags {notShop notRandom important dontDrop}
 }
 
-other q_bandyci_list {
+other qBanditsLetter {
 	weight 0.1
 	value 0
 	tex "list.png"
 	flags {notShop notRandom important}
 }
 
-other q_magowie_kula {
+other qMagesBall {
 	weight 1
 	value 0
 	tex "magic_sphere.png"
 	flags {notShop notRandom important}
 }
 
-other q_magowie_kula2 {
+other qMagesBall2 {
 	weight 1
 	value 5000
 	tex "magic_sphere.png"
 	flags {notShop notRandom}
 }
 
-other q_orkowie_klucz {
+other qOrcsKey {
 	weight 0.1
 	value 0
 	tex "rusty-key.png"
 	flags {notShop notRandom important}
 }
 
-other key_lunar {
-	weight 0.1
-	value 100
-	tex "moon_key.png"
-	flags {notShop notRandom important}
-}
-
-other q_szaleni_kamien {
+other qCraziesStone {
 	weight 5
 	value 0
 	tex "kamien2.png"
 	flags {notShop notRandom important notTeam}
 }
 
-other sekret_kartka {
+other qSecretNote {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
 	flags {notShop notRandom}
 }
 
-other sekret_kartka2 {
+other qSecretNote2 {
 	weight 0.1
 	value 0
 	tex "piece_of_paper.png"
@@ -2973,28 +2966,28 @@ other parcel {
 	flags {quest notShop notRandom important dontDrop}
 }
 
-other wanted_letter {
+other wantedPoster {
 	weight 0.1
 	value 0
 	tex "wanted.png"
 	flags {quest notShop notRandom}
 }
 
-other q_resources {
+other qResources {
 	weight 10
 	value 0
 	mesh "resources_box.qmsh"
 	flags {quest notShop notRandom important dontDrop groundMesh}
 }
 
-other q_infected_organ {
+other qInfectedOrgan {
 	weight 0.3
 	value 0
 	tex "infectedOrgan.png"
 	flags {notShop notRandom meatSound}
 }
 
-other q_yellow_crystal {
+other qYellowCrystal {
 	weight 0.1
 	value 100
 	tex "yellowCrystal.png"
@@ -3002,7 +2995,7 @@ other q_yellow_crystal {
 	flags {notShop notRandom crystalSound}
 }
 
-other q_yellow_herbs {
+other qYellowHerbs {
 	weight 0.1
 	value 100
 	tex "yellowHerbs.png"
@@ -3034,7 +3027,7 @@ bookScheme page {
 	next {407 536}
 }
 
-book book_history {
+book bookHistory {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
@@ -3042,7 +3035,7 @@ book book_history {
 	flags groundMesh
 }
 
-book book_orcs {
+book bookOrcs {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
@@ -3050,7 +3043,7 @@ book book_orcs {
 	flags groundMesh
 }
 
-book book_undead {
+book bookUndead {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
@@ -3058,7 +3051,7 @@ book book_undead {
 	flags groundMesh
 }
 
-book book_behind_the_wall {
+book bookBehindTheWall {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
@@ -3066,7 +3059,7 @@ book book_behind_the_wall {
 	flags groundMesh
 }
 
-book book_adventurer {
+book bookAdventurer {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
@@ -3074,7 +3067,7 @@ book book_adventurer {
 	flags groundMesh
 }
 
-book book_ld {
+book bookLucidDream {
 	weight 0.2
 	value 100
 	mesh "book.qmsh"
@@ -3082,7 +3075,7 @@ book book_ld {
 	flags {notShop notRandom groundMesh}
 }
 
-book book_runic {
+book bookRunic {
 	weight 0.2
 	value 100
 	mesh "book.qmsh"
@@ -3091,7 +3084,7 @@ book book_runic {
 	runic 1
 }
 
-book q_zlo_ksiega {
+book qEvilBook {
 	weight 1
 	value 100
 	tex "summoning.png"
@@ -3100,7 +3093,7 @@ book q_zlo_ksiega {
 	runic 1
 }
 
-book magic_scroll {
+book magicScroll {
 	weight 0.1
 	value 100
 	mesh "scroll.qmsh"
@@ -3108,7 +3101,7 @@ book magic_scroll {
 	flags {notShop notRandom magicScroll magical}
 }
 
-book book_q_cleric {
+book qClericBook {
 	weight 1
 	value 100
 	mesh "book.qmsh"
@@ -3117,7 +3110,7 @@ book book_q_cleric {
 	runic 1
 }
 
-book book_q_journal {
+book qSoltysJournal {
 	weight 0.2
 	value 0
 	mesh "book.qmsh"
@@ -3125,7 +3118,7 @@ book book_q_journal {
 	flags {notShop notRandom groundMesh important}
 }
 
-book crypt_note {
+book cryptNote {
 	weight 0.1
 	value 0
 	scheme page
@@ -3133,44 +3126,44 @@ book crypt_note {
 	flags {notShop notRandom}
 }
 
-book recipe_antidote {
+book recipeAntidote {
 	weight 0.1
 	value 200
 	mesh "recipe.qmsh"
 	scheme page
-	recipes p_antidote
+	recipes potionAntidote
 	type recipe
 	flags singleUse
 }
 
-book recipe_reg {
+book recipeRegeneration {
 	weight 0.1
 	value 500
 	mesh "recipe.qmsh"
 	scheme page
-	recipes p_reg
+	recipes potionRegeneration
 	type recipe
 	flags singleUse
 }
 
-book recipe_antimagic {
+book recipeAntimagic {
 	weight 0.1
 	value 1000
 	mesh "recipe.qmsh"
 	scheme page
-	recipes p_antimagic
+	recipes potionAntimagic
 	type recipe
 	flags singleUse
 }
 
-book recipe_book_nreg {
+book recipeBookNatural {
 	weight 1
 	value 250
 	mesh "book.qmsh"
 	scheme book
 	recipes {
-		p_nreg
-		p_nreg2
+		potionNatural
+		potionNatural2
 	}
 	type recipe
 	flags {groundMesh hq}
@@ -3192,21 +3185,21 @@ gold gold {
 // buy items from this list if they have empty slot
 // should contain single item of each type(weapon, mage weapon, bow, shield,
 // armor, mage armor)
-list base_items {
-	dagger_knife
-	sword_wooden
-	axe_rusted
-	blunt_club
-	wand_novice
-	bow_short
-	shield_plank
-	al_mage
-	al_padded
-	am_hide
-	ah_splint_rusted
+list baseItems {
+	knife
+	woodenSword
+	rustedHatchet
+	club
+	noviceWand
+	shortBow
+	plankShield
+	noviceRobe
+	paddedArmor
+	hideArmor
+	rustedSplitArmor
 }
 
-list normal_food {
+list normalFood {
 	bread
 	meat
 	apple
@@ -3214,30 +3207,30 @@ list normal_food {
 	honeycomb
 	rice
 	sausage
-	fish_meat
+	fishMeat
 	soup
 	stew
 	muffin
 }
 
-list orc_food {
+list orcFood {
 	bread
 	meat
-	raw_meat
+	rawMeat
 	mushroom
 	fish
 }
 
-list food_and_drink {
+list foodAndDrink {
 	bread
 	meat
 	apple
 	cheese
 	honeycomb
 	rice
-	raw_meat
+	rawMeat
 	sausage
-	fish_meat
+	fishMeat
 	soup
 	stew
 	muffin
@@ -3253,277 +3246,277 @@ list drink priority {
 	vodka
 }
 
-list ancient_armory_armors {
-	al_dragonskin
-	al_chain_shirt_mith
-	am_chainmail_mith
-	am_breastplate_mith
-	am_breastplate_adam
-	ah_splint_mith
-	ah_plate_mith
-	ah_plate_adam
-	ah_crystal
-	ah_crystal_m
+list ancientArmoryArmors {
+	dragonskinArmor
+	mithrilChainShirt
+	mithrilChainmail
+	mithrilBreastplate
+	adamantineBreastplate
+	mithrilSplintArmor
+	mithrilPlateArmor
+	adamantinePlateArmor
+	crystalArmor
+	crystalArmorM
 }
 
-list contest_reward {
-	p_str
-	p_end
-	p_dex
+list contestReward {
+	potionStrength
+	potionEndurance
+	potionDexterity
 }
 
 list treasure {
 	emerald
 	ruby
 	diamond
-	golden_bar
-	golden_cup
+	goldenBar
+	goldenCup
 }
 
 list books {
-	book_history
-	book_orcs
-	book_undead
-	book_adventurer
-	book_behind_the_wall
+	bookHistory
+	bookOrcs
+	bookUndead
+	bookAdventurer
+	bookBehindTheWall
 }
 
-list rare_books {
-	book_ld
-	book_runic
+list rareBooks {
+	bookLucidDream
+	bookRunic
 }
 
-list short_blade leveled {
-	dagger_knife 1
-	dagger_short 2
-	dagger_sword 5
-	dagger_rapier 7
-	dagger_cutlass 10
-	dagger_assassin 13
-	dagger_sword_a 16
+list shortBlade leveled {
+	knife 1
+	dagger 2
+	shortSword 5
+	rapier 7
+	cutlass 10
+	assassinDagger 13
+	shortAdamantineSword 16
 }
 
-list long_blade leveled {
-	sword_wooden 1
-	sword_long 2
-	sword_scimitar 5
-	sword_orcish 7
-	sword_serrated 10
-	sword_mercenary 13
-	sword_adamantine 16
+list longBlade leveled {
+	woodenSword 1
+	longSword 2
+	scimitar 5
+	orcSword 7
+	serratedSword 10
+	mercenarySword 13
+	adamantineSword 16
 }
 
 list axe leveled {
-	axe_rusted 1
-	axe_small 2
-	axe_battle 5
-	axe_orcish 7
-	axe_crystal 10
-	axe_dwarf 13
-	axe_giant 16
+	rustedHatchet 1
+	hatchet 2
+	battleAxe 5
+	orcAxe 7
+	crystalAxe 10
+	dwarfAxe 13
+	giantAxe 16
 }
 
 list blunt leveled {
-	blunt_club 1
-	blunt_mace 2
+	club 1
+	mace 2
 	pickaxe 4
-	blacksmith_hammer 4
-	blunt_orcish 5
-	blunt_barbed 7
-	blunt_morningstar 10
-	blunt_dwarven 13
-	blunt_adamantine 16
+	blacksmithHammer 4
+	orcHammer 5
+	barbedCudgel 7
+	morningstar 10
+	dwarfHammer 13
+	adamantineMace 16
 }
 
 list wand leveled {
-	wand_novice 1
-	wand_adept 5
-	wand_expert 10
-	wand_master 15
+	noviceWand 1
+	adeptWand 5
+	expertWand 10
+	masterWand 15
 }
 
 list bow leveled {
-	bow_short 1
-	bow_long 4
-	bow_composite 8
-	bow_elven 12
-	bow_dragonbone 16
+	shortBow 1
+	longBow 4
+	compositeBow 8
+	elvenBow 12
+	dragonBow 16
 }
 
 list shield leveled {
-	shield_plank 1
-	shield_wood 3
-	shield_kite 5
-	shield_iron 7
-	shield_steel 10
-	shield_mithril 13
-	shield_spiked 14
-	shield_adamantine 16
+	plankShield 1
+	woodenShield 3
+	kiteShield 5
+	ironShield 7
+	steelShield 10
+	mithrilShield 13
+	spikedShield 14
+	adamantineShield 16
 }
 
-list light_armor leveled {
-	al_padded 1
-	al_padded_hq 2
-	al_padded_m 4
-	al_leather 2
-	al_leather_hq 3
-	al_leather_m 5
-	al_studded 5
-	al_studded_hq 6
-	al_studded_m 8
-	al_chain_shirt 10
-	al_chain_shirt_hq 11
-	al_chain_shirt_m 13
-	al_chain_shirt_mith 15
-	al_dragonskin 18
+list lightArmor leveled {
+	paddedArmor 1
+	paddedArmorHq 2
+	paddedArmorM 4
+	leatherArmor 2
+	leatherArmorHq 3
+	leatherArmorM 5
+	studdedArmor 5
+	studdedArmorHq 6
+	studdedArmorM 8
+	chainShirt 10
+	chainShirtHq 11
+	chainShirtM 13
+	mithrilChainShirt 15
+	dragonskinArmor 18
 }
 
-list medium_armor leveled {
-	am_hide 1
-	am_hide_hq 2
-	am_hide_m 4
-	am_troll_hide 8
-	am_chainmail 2
-	am_chainmail_hq 3
-	am_chainmail_m 5
-	am_chainmail_mith 7
-	am_scale 5
-	am_scale_hq 6
-	am_scale_m 8
-	am_dragonscale 18
-	am_breastplate 10
-	am_breastplate_hq 11
-	am_breastplate_m 13
-	am_breastplate_mith 15
-	am_breastplate_adam 17
+list mediumArmor leveled {
+	hideArmor 1
+	hideArmorHq 2
+	hideArmorM 4
+	trollHideArmor 8
+	chainmail 2
+	chainmailHq 3
+	chainmailM 5
+	mithrilChainmail 7
+	scaleArmor 5
+	scaleArmorHq 6
+	scaleArmorM 8
+	dragonscaleArmor 18
+	breastplate 10
+	breastplateHq 11
+	breastplateM 13
+	mithrilBreastplate 15
+	adamantineBreastplate 17
 }
 
-list heavy_armor leveled {
-	ah_splint_rusted 1 // this is level 2 but there is nothing worse, people needs to get something
-	ah_splint 5
-	ah_splint_hq 6
-	ah_splint_m 8
-	ah_splint_mith 10
-	ah_plate 10
-	ah_plate_hq 11
-	ah_plate_m 13
-	ah_plate_mith 15
-	ah_plate_adam 17
-	ah_crystal 15
-	ah_crystal_m 18
+list heavyArmor leveled {
+	rustedSplitArmor 1 // this is level 2 but there is nothing worse, people needs to get something
+	splintArmor 5
+	splintArmorHq 6
+	splintArmorM 8
+	mithrilSplintArmor 10
+	plateArmor 10
+	plateArmorHq 11
+	plateArmorM 13
+	mithrilPlateArmor 15
+	adamantinePlateArmor 17
+	crystalArmor 15
+	crystalArmorM 18
 }
 
-list mage_armor leveled {
-	al_mage 1
-	al_mage2 9
-	al_mage3 13
+list mageArmor leveled {
+	noviceRobe 1
+	mageRobe 9
+	battleMageRobe 13
 }
 
 list amulets leveled {
-	a_food 9
-	a_sprinter 9
-	a_mage 12
-	a_defense 12
-	a_stamina 12
-	a_mana 12
-	a_warrior 15
-	a_archer 15
-	a_antimagic 15
-	a_health 18
+	amuletGourmet 9
+	amuletSprinter 9
+	amuletMage 12
+	amuletDefense 12
+	amuletStamina 12
+	amuletMana 12
+	amuletWarrior 15
+	amuletArcher 15
+	amuletAntimagic 15
+	amuletHealth 18
 }
 
 list rings leveled {
-	r_str 8
-	r_end 8
-	r_dex 8
-	r_int 8
-	r_wis 8
-	r_cha 8
-	r_hp 8
-	r_stamina 8
-	r_def 8
-	r_attack 8
-	r_ranged_attack 8
-	r_mage 8
-	r_one_handed_weapon 8
-	r_short_blade 8
-	r_long_blade 8
-	r_axe 8
-	r_blunt 8
-	r_bow 8
-	r_shield 8
-	r_light_armor 8
-	r_medium_armor 8
-	r_heavy_armor 8
-	r_persuasion 8
-	r_carry 8
-	r_gods_magic 8
-	r_concentration 8
-	r_mystic_magic 8
-	r_mana 8
-	r_str2 11
-	r_end2 11
-	r_dex2 11
-	r_int2 11
-	r_wis2 11
-	r_cha2 11
-	r_regeneration 11
-	r_assassin 11
-	r_poison_resistance 11
-	r_mana_regen 11
+	ringStrength 8
+	ringEndurance 8
+	ringDexterity 8
+	ringIntelligence 8
+	ringWisdom 8
+	ringCharisma 8
+	ringHealth 8
+	ringStamina 8
+	ringDefense 8
+	ringAttack 8
+	ringRangedAttack 8
+	ringMage 8
+	ringOneHandedWeapon 8
+	ringShortBlade 8
+	ringLongBlade 8
+	ringAxe 8
+	ringBlunt 8
+	ringBow 8
+	ringShield 8
+	ringLightArmor 8
+	ringMediumArmor 8
+	ringHeavyArmor 8
+	ringPersuasion 8
+	ringCarry 8
+	ringGodsMagic 8
+	ringConcentration 8
+	ringMysticMagic 8
+	ringMana 8
+	ringStrength2 11
+	ringEndurance2 11
+	ringDexterity2 11
+	ringIntelligence2 11
+	ringWisdom2 11
+	ringCharisma2 11
+	ringRegeneration 11
+	ringAssassin 11
+	ringPoisonResistance 11
+	ringManaRegeneration 11
 }
 
 list potions {
-	p_nreg
-	p_nreg2
-	p_hp
-	p_hp2
-	p_hp3
-	p_mp
-	p_mp2
-	p_mp3
-	p_reg
-	p_antidote
-	p_antimagic
+	potionNatural
+	potionNatural2
+	potionHealth
+	potionHealth2
+	potionHealth3
+	potionMana
+	potionMana2
+	potionMana3
+	potionRegeneration
+	potionAntidote
+	potionAntimagic
 }
 
 list ingredients priority {
-	4 healing_herb
-	4 mana_herb
-	3 heal_crystal
-	3 magic_crystal
+	4 healingHerb
+	4 manaHerb
+	3 healCrystal
+	3 magicCrystal
 	2 tallow
-	2 troll_blood
+	2 trollBlood
 }
 
 list recipes {
-	recipe_antidote
-	recipe_reg
-	recipe_antimagic
-	recipe_book_nreg
+	recipeAntidote
+	recipeRegeneration
+	recipeAntimagic
+	recipeBookNatural
 }
 
 list artifacts {
-	a_amulet
-	a_amulet2
-	a_amulet3
-	a_brosza
-	a_butelka
-	a_cos
-	a_czaszka
-	a_figurka
-	a_figurka2
-	a_figurka3
-	a_ksiega
-	a_maska
-	a_maska2
-	a_misa
-	a_moneta
-	a_pierscien
-	a_pierscien2
-	a_pierscien3
-	a_talizman
-	a_talizman2
+	ancientAmulet
+	ancientAmulet2
+	ancientAmulet3
+	ancientBrooch
+	ancientFlask
+	ancientArtifact
+	ancientSkull
+	ancientFigurine
+	ancientFigurine2
+	ancientFigurine3
+	ancientBook
+	ancientMask
+	ancientMask2
+	ancientBowl
+	ancientCoin
+	ancientRing
+	ancientRing2
+	ancientRing3
+	ancientTalisman
+	ancientTalisman2
 }
 
 //------------------------------------------------------------------------------
@@ -3555,8 +3548,8 @@ stock merchant {
 		}
 	}
 	// potions
-	random 5 10 p_nreg
-	random 5 10 p_hp
+	random 5 10 potionNatural
+	random 5 10 potionHealth
 }
 
 // blacksmith - random equipment & 1 set of selected items
@@ -3581,106 +3574,108 @@ stock blacksmith {
 
 	// short blade
 	set {
-		dagger_short
-		dagger_sword
-		dagger_rapier
-		city dagger_cutlass
-		city dagger_assassin
+		dagger
+		shortSword
+		rapier
+		city cutlass
+		city assassinDagger
 	}
 	// long blade
 	set {
-		sword_long
-		sword_scimitar
-		sword_orcish
-		city sword_serrated
-		city sword_mercenary
+		longSword
+		scimitar
+		orcSword
+		city serratedSword
+		city mercenarySword
 	}
 	// axe
 	set {
-		axe_small
-		axe_battle
-		axe_orcish
-		city axe_crystal
-		city axe_dwarf
+		hatchet
+		battleAxe
+		orcAxe
+		city crystalAxe
+		city dwarfAxe
 	}
 	// blunt
 	set {
-		blunt_mace
-		blunt_orcish
-		blunt_barbed
-		city blunt_morningstar
-		city blunt_dwarven
+		mace
+		orcHammer
+		barbedCudgel
+		city morningstar
+		city dwarfHammer
 	}
 	// bow
 	set {
-		bow_short
-		bow_long
-		bow_composite
-		city bow_elven
+		shortBow
+		longBow
+		compositeBow
+		city elvenBow
 	}
 	// shield
 	set {
-		shield_wood
-		shield_iron
-		shield_steel
-		city shield_mithril
+		woodenShield
+		kiteShield
+		ironShield
+		city steelShield
+		city mithrilShield
+		city spikedShield
 	}
 	// light armor
 	set {
 		city {
-			chance al_padded_m al_padded_hq
-			chance al_leather_m al_leather_hq
-			chance al_studded_m al_studded_hq
+			chance paddedArmorM paddedArmorHq
+			chance leatherArmorM leatherArmorHq
+			chance studdedArmorM studdedArmorHq
 			chance {
-				al_chain_shirt_mith 1
-				al_chain_shirt_m 2
-				al_chain_shirt_hq 2
+				mithrilChainShirt 1
+				chainShirtM 2
+				chainShirtHq 2
 			}
 		}
 		else {
-			chance al_padded_hq al_padded
-			chance al_leather_hq al_leather
-			chance al_studded_hq al_studded
-			chance al_chain_shirt_hq al_chain_shirt
+			chance paddedArmorHq paddedArmor
+			chance leatherArmorHq leatherArmor
+			chance studdedArmorHq studdedArmor
+			chance chainShirtHq chainShirt
 		}
 	}
 	// medium armor
 	set {
 		city {
-			chance am_hide_m am_hide_hq
+			chance hideArmorM hideArmorHq
 			chance {
-				am_chainmail_mith 1
-				am_chainmail_m 2
-				am_chainmail_hq 2
+				mithrilChainmail 1
+				chainmailM 2
+				chainmailHq 2
 			}
-			chance am_scale_m am_scale_hq
+			chance scaleArmorM scaleArmorHq
 			chance {
-				am_breastplate_mith 1
-				am_breastplate_m 2
-				am_breastplate_hq 2
+				mithrilBreastplate 1
+				breastplateM 2
+				breastplateHq 2
 			}
 		}
 		else {
-			chance am_hide_hq am_hide
-			chance am_chainmail_hq am_chainmail
-			chance am_scale_hq am_scale
-			chance am_breastplate_hq am_breastplate
+			chance hideArmorHq hideArmor
+			chance chainmailHq chainmail
+			chance scaleArmorHq scaleArmor
+			chance breastplateHq breastplate
 		}
 	}
 	// heavy armor
 	set {
 		city {
 			chance {
-				ah_splint_mith 1
-				ah_splint_m 2
-				ah_splint_hq 2
+				mithrilSplintArmor 1
+				splintArmorM 2
+				splintArmorHq 2
 			}
-			chance ah_plate_m ah_plate_hq
+			chance plateArmorM plateArmorHq
 		}
 		else {
-			ah_splint_rusted
-			chance ah_splint_hq ah_splint
-			chance ah_plate_hq ah_plate
+			rustedSplitArmor
+			chance splintArmorHq splintArmor
+			chance plateArmorHq plateArmor
 		}
 	}
 }
@@ -3731,7 +3726,7 @@ stock innkeeper {
 		int count = Random(10, 20);
 		if(!Level::IsCity())
 			count -= Random(1, 3);
-		ItemList@ list = ItemList::Get("normal_food");
+		ItemList@ list = ItemList::Get("normalFood");
 		for(int i=0; i<count; ++i)
 			StockScript::AddItem(list.GetItem());
 	}
@@ -3741,21 +3736,21 @@ stock innkeeper {
 		random 8 12 vodka
 		random 5 10 water
 		random 2 4 spirit
-		random 0 2 spring_water
+		random 0 2 springWater
 	}
 	else {
 		random 5 7 beer
 		random 4 6 vodka
 		random 2 5 water
 		random 1 2 spirit
-		random 0 2 spring_water
+		random 0 2 springWater
 	}
 }
 
 // food seller - food & drinks and sometimes cooking items
-stock food_seller {
+stock foodSeller {
 	script {
-		ItemList@ list = ItemList::Get("food_and_drink");
+		ItemList@ list = ItemList::Get("foodAndDrink");
 		bool isVillage = !Level::IsCity();
 		for(int i=0, count=list.Size(); i<count; ++i)
 		{
@@ -3768,41 +3763,41 @@ stock food_seller {
 				StockScript::AddItem(item, add);
 		}
 		if(Rand() % 4 == 0)
-			StockScript::AddItem(Item::Get("frying_pan"));
+			StockScript::AddItem(Item::Get("fryingPan"));
 		if(Rand() % 4 == 0)
 			StockScript::AddItem(Item::Get("ladle"));
 	}
 }
 
-stock orc_blacksmith {
-	random 1 3 sword_orcish
-	random 1 3 axe_orcish
-	random 1 3 blunt_orcish
-	blunt_orcish_shaman
-	bow_long
-	shield_iron
-	shield_steel
-	random 1 2 al_orc
-	random 1 2 am_orc
-	al_orc_shaman
+stock orcBlacksmith {
+	random 1 3 orcSword
+	random 1 3 orcAxe
+	random 1 3 orcHammer
+	shamanOrcHammer
+	longBow
+	ironShield
+	steelShield
+	random 1 2 orcLeatherArmor
+	random 1 2 orcChainmail
+	orcShamanArmor
 }
 
-stock alchemist_apprentice {
-	8 p_hp
-	3 p_hp2
-	5 p_nreg
+stock alchemistApprentice {
+	8 potionHealth
+	3 potionHealth2
+	5 potionNatural
 	ladle
 }
 
-stock mage_seller {
+stock mageSeller {
 	random 2 4 amulets
 	random 6 8 rings
-	random 1 2 magic_scroll
+	random 1 2 magicScroll
 	random 2 3 wand
-	random 2 3 mage_armor
+	random 2 3 mageArmor
 }
 
-stock inn_on_table {
+stock innOnTable {
 	script {
 		if(Rand() % 2 == 0)
 		{
@@ -3818,27 +3813,27 @@ stock inn_on_table {
 	}
 }
 
-stock inn_on_shelve {
+stock innOnShelve {
 	random 3 5 beer
 	random 1 3 vodka
 }
 
-stock foodseller_shelve {
-	20 food_and_drink
+stock foodsellerShelve {
+	20 foodAndDrink
 }
 
-stock alchemist_shelve {
+stock alchemistShelve {
 	script {
-		Item@ p_hp = Item::Get("p_hp");
-		StockScript::AddItem(p_hp);
+		Item@ potionHealth = Item::Get("potionHealth");
+		StockScript::AddItem(potionHealth);
 		if(Rand() % 2 == 0)
-			StockScript::AddItem(p_hp);
+			StockScript::AddItem(potionHealth);
 		if(Rand() % 2 == 0)
-			StockScript::AddItem(Item::Get("p_nreg"));
+			StockScript::AddItem(Item::Get("potionNatural"));
 		if(Rand() % 2 == 0)
-			StockScript::AddItem(Item::Get("healing_herb"));
+			StockScript::AddItem(Item::Get("healingHerb"));
 		if(Rand() % 2 == 0)
-			StockScript::AddItem(Item::Get("p_mp"));
+			StockScript::AddItem(Item::Get("potionMana"));
 	}
 }
 
@@ -3847,79 +3842,79 @@ stock alchemist_shelve {
 //------------------------------------------------------------------------------
 startItems {
 	shortBlade {
-		0 dagger_knife
-		10 dagger_short
-		20 dagger_sword
-		30 dagger_rapier
-		* dagger_cutlass
+		0 knife
+		10 dagger
+		20 shortSword
+		30 rapier
+		* cutlass
 	}
 	longBlade {
-		0 sword_wooden
-		10 sword_long
-		20 sword_scimitar
-		30 sword_orcish
-		* sword_serrated
+		0 woodenSword
+		10 longSword
+		20 scimitar
+		30 orcSword
+		* serratedSword
 	}
 	axe {
-		0 axe_rusted
-		10 axe_small
-		20 axe_battle
-		30 axe_orcish
-		* axe_crystal
+		0 rustedHatchet
+		10 hatchet
+		20 battleAxe
+		30 orcAxe
+		* crystalAxe
 	}
 	blunt {
-		0 blunt_club
-		10 blunt_mace
-		20 blunt_orcish
-		30 blunt_barbed
-		* blunt_morningstar
+		0 club
+		10 mace
+		20 orcHammer
+		30 barbedCudgel
+		* morningstar
 	}
 	bow {
-		5 bow_short
-		20 bow_long
-		30 bow_composite
-		* bow_elven
+		5 shortBow
+		20 longBow
+		30 compositeBow
+		* elvenBow
 	}
 	shield {
-		5 shield_plank
-		10 shield_wood
-		20 shield_kite
-		30 shield_iron
-		* shield_steel
+		5 plankShield
+		10 woodenShield
+		20 kiteShield
+		30 ironShield
+		* steelShield
 	}
 	lightArmor {
-		0 al_padded
-		10 al_padded_hq
-		15 al_leather_hq
-		20 al_studded
-		30 al_studded_hq
-		* al_chain_shirt
-		mage 0 al_clothes
-		mage 10 al_mage
-		mage 25 al_mage2
-		mage * al_mage3
+		0 paddedArmor
+		10 paddedArmorHq
+		15 leatherArmorHq
+		20 studdedArmor
+		30 studdedArmorHq
+		* chainShirt
+		mage 0 clothes
+		mage 10 noviceRobe
+		mage 25 mageRobe
+		mage * battleMageRobe
 	}
 	mediumArmor {
-		0 am_hide
-		10 am_chainmail
-		15 am_chainmail_hq
-		20 am_scale
-		30 am_scale_hq
-		* am_breastplate
+		0 hideArmor
+		10 chainmail
+		15 chainmailHq
+		20 scaleArmor
+		30 scaleArmorHq
+		* breastplate
 	}
 	heavyArmor {
-		0 ah_splint_rusted
-		20 ah_splint
-		30 ah_splint_hq
-		* ah_plate
+		0 rustedSplitArmor
+		20 splintArmor
+		30 splintArmorHq
+		* plateArmor
 	}
 	mysticMagic {
-		0 wand_novice
-		25 wand_adept
-		* wand_expert
+		0 noviceWand
+		25 adeptWand
+		* expertWand
 	}
 	godsMagic {
-		* a_mana
+		* amuletMana
 	}
 }
 
@@ -3928,220 +3923,220 @@ startItems {
 // This is for ai buying better items for gold, shouldn't contain unique items
 //------------------------------------------------------------------------------
 betterItems {
-	dagger_knife dagger_short
-	dagger_short dagger_sword
-	dagger_sword dagger_rapier
-	dagger_rapier dagger_cutlass
-	dagger_cutlass dagger_assassin
-	dagger_assassin dagger_sword_a
+	knife dagger
+	dagger shortSword
+	shortSword rapier
+	rapier cutlass
+	cutlass assassinDagger
+	assassinDagger shortAdamantineSword
 	
-	sword_wooden sword_long
-	sword_long sword_scimitar
-	sword_scimitar sword_orcish
-	sword_orcish sword_serrated
-	sword_serrated sword_mercenary
-	sword_mercenary sword_adamantine
+	woodenSword longSword
+	longSword scimitar
+	scimitar orcSword
+	orcSword serratedSword
+	serratedSword mercenarySword
+	mercenarySword adamantineSword
 	
-	axe_rusted axe_small
-	axe_small axe_battle
-	axe_battle axe_orcish
-	axe_orcish axe_crystal
-	axe_crystal axe_dwarf
-	axe_dwarf axe_giant
+	rustedHatchet hatchet
+	hatchet battleAxe
+	battleAxe orcAxe
+	orcAxe crystalAxe
+	crystalAxe giantAxe
 	
-	blunt_club blunt_mace
-	blunt_mace blunt_orcish
-	blunt_orcish blunt_barbed
-	blunt_barbed blunt_morningstar
-	blunt_morningstar blunt_dwarven
-	blunt_dwarven blunt_adamantine
-	blacksmith_hammer blunt_orcish
-	pickaxe blunt_orcish
-	frying_pan blunt_orcish
+	club mace
+	mace orcHammer
+	orcHammer barbedCudgel
+	barbedCudgel morningstar
+	morningstar dwarfHammer
+	dwarfHammer adamantineMace
+	ogreClub adamantineMace
+	blacksmithHammer orcHammer
+	pickaxe orcHammer
+	fryingPan orcHammer
 	
-	wand_novice wand_adept
-	wand_adept wand_expert
-	wand_expert wand_master
+	noviceWand adeptWand
+	adeptWand expertWand
+	expertWand masterWand
 
-	bow_short bow_long
-	bow_long bow_composite
-	bow_composite bow_elven
-	bow_elven bow_dragonbone
+	shortBow longBow
+	longBow compositeBow
+	compositeBow elvenBow
+	elvenBow dragonBow
 
-	shield_plank shield_wood
-	shield_wood shield_kite
-	shield_kite shield_iron
-	shield_iron shield_steel
-	shield_steel shield_mithril
-	shield_mithril shield_spiked
-	shield_spiked shield_adamantine
+	plankShield woodenShield
+	woodenShield kiteShield
+	kiteShield ironShield
+	ironShield steelShield
+	steelShield mithrilShield
+	mithrilShield spikedShield
+	spikedShield adamantineShield
 
-	al_padded al_leather
-	al_padded_hq al_leather
-	al_padded_m al_chain_shirt
-	al_leather al_studded
-	al_leather_hq al_studded
-	al_leather_m al_chain_shirt
-	al_studded al_chain_shirt
-	al_studded_hq al_chain_shirt
-	al_studded_m al_chain_shirt_hq
-	al_chain_shirt al_chain_shirt_hq
-	al_chain_shirt_hq al_chain_shirt_m
-	al_chain_shirt_m al_dragonskin
-	al_chain_shirt_mith al_dragonskin
+	paddedArmor leatherArmor
+	paddedArmorHq leatherArmor
+	paddedArmorM chainShirt
+	leatherArmor studdedArmor
+	leatherArmorHq studdedArmor
+	leatherArmorM chainShirt
+	studdedArmor chainShirt
+	studdedArmorHq chainShirt
+	studdedArmorM chainShirtHq
+	chainShirt chainShirtHq
+	chainShirtHq chainShirtM
+	chainShirtM dragonskinArmor
+	mithrilChainShirt dragonskinArmor
 
-	am_hide am_chainmail
-	am_hide_hq am_chainmail
-	am_hide_m am_breastplate
-	am_troll_hide am_breastplate_m
-	am_chainmail am_scale
-	am_chainmail_hq am_scale
-	am_chainmail_m am_breastplate_hq
-	am_chainmail_mith am_breastplate_hq
-	am_scale am_breastplate
-	am_scale_hq am_breastplate
-	am_scale_m am_breastplate_m
-	am_breastplate am_breastplate_hq
-	am_breastplate_hq am_breastplate_m
-	am_breastplate_m am_breastplate_adam
-	am_breastplate_mith am_breastplate_adam
-	am_breastplate_adam am_dragonscale
+	hideArmor chainmail
+	hideArmorHq chainmail
+	hideArmorM breastplate
+	trollHideArmor breastplateM
+	chainmail scaleArmor
+	chainmailHq scaleArmor
+	chainmailM breastplateHq
+	mithrilChainmail breastplateHq
+	scaleArmor breastplate
+	scaleArmorHq breastplate
+	scaleArmorM breastplateM
+	breastplate breastplateHq
+	breastplateHq breastplateM
+	breastplateM adamantineBreastplate
+	mithrilBreastplate adamantineBreastplate
+	adamantineBreastplate dragonscaleArmor
 
-	ah_splint_rusted ah_splint
-	ah_splint ah_splint_hq
-	ah_splint_hq ah_splint_m
-	ah_splint_m ah_plate
-	ah_splint_mith ah_plate
-	ah_plate ah_crystal
-	ah_plate_hq ah_crystal
-	ah_plate_m ah_crystal
-	ah_plate_mith ah_crystal
-	ah_crystal ah_plate_adam
-	ah_crystal_m ah_plate_adam
+	rustedSplitArmor splintArmor
+	splintArmor splintArmorHq
+	splintArmorHq splintArmorM
+	splintArmorM plateArmor
+	mithrilSplintArmor plateArmor
+	plateArmor crystalArmor
+	plateArmorHq crystalArmor
+	plateArmorM crystalArmor
+	mithrilPlateArmor crystalArmor
+	crystalArmor adamantinePlateArmor
+	crystalArmorM adamantinePlateArmor
 
-	al_blacksmith al_studded
-	al_innkeeper al_leather
-	al_mage al_mage2
-	al_mage2 al_mage3
-	al_necromancer al_chain_shirt
-	al_clothes al_leather
-	al_clothes2 al_leather
-	al_clothes2b al_leather
-	al_clothes3 al_leather
-	al_clothes3b al_leather
-	al_old_robe al_leather
+	blacksmithClothes studdedArmor
+	innkeeperClothes leatherArmor
+	noviceRobe mageRobe
+	mageRobe battleMageRobe
+	necromancerRobe chainShirt
+	clothes leatherArmor
+	clothes2 leatherArmor
+	clothes2b leatherArmor
+	clothes3 leatherArmor
+	clothes3b leatherArmor
+	oldRobe leatherArmor
 }
 
 //------------------------------------------------------------------------------
 // RECIPES
 //------------------------------------------------------------------------------
-recipe p_hp {
-	result p_hp
+recipe potionHealth {
+	result potionHealth
 	ingredients {
-		healing_herb
+		healingHerb
 	}
 	skill 1
 	autolearn 1
 	order 0
 }
 
-recipe p_hp2 {
-	result p_hp2
+recipe potionHealth2 {
+	result potionHealth2
 	ingredients {
-		heal_crystal
-		healing_herb
+		healCrystal
+		healingHerb
 	}
 	skill 25
 	autolearn 1
 	order 1
 }
 
-recipe p_hp3 {
-	result p_hp3
+recipe potionHealth3 {
+	result potionHealth3
 	ingredients {
-		2 heal_crystal
+		2 healCrystal
 	}
 	skill 50
 	autolearn 1
 	order 2
 }
 
-recipe p_mp {
-	result p_mp
+recipe potionMana {
+	result potionMana
 	ingredients {
-		mana_herb
+		manaHerb
 	}
 	skill 1
 	autolearn 1
 	order 3
 }
 
-recipe p_mp2 {
-	result p_mp2
+recipe potionMana2 {
+	result potionMana2
 	ingredients {
-		magic_crystal
-		mana_herb
+		magicCrystal
+		manaHerb
 	}
 	skill 25
 	autolearn 1
 	order 4
 }
 
-recipe p_mp3 {
-	result p_mp3
+recipe potionMana3 {
+	result potionMana3
 	ingredients {
-		2 magic_crystal
+		2 magicCrystal
 	}
 	skill 50
 	autolearn 1
 	order 5
 }
 
-recipe p_nreg {
-	result p_nreg
+recipe potionNatural {
+	result potionNatural
 	ingredients {
 		tallow
-		healing_herb
+		healingHerb
 	}
 	skill 1
 	order 6
 }
 
-recipe p_nreg2 {
-	result p_nreg2
+recipe potionNatural2 {
+	result potionNatural2
 	ingredients {
 		2 tallow
-		healing_herb
+		healingHerb
 	}
 	skill 25
 	order 7
 }
 
-recipe p_antidote {
-	result p_antidote
+recipe potionAntidote {
+	result potionAntidote
 	ingredients {
-		healing_herb
-		mana_herb
+		healingHerb
+		manaHerb
 	}
 	skill 1
 	order 8
 }
 
-recipe p_reg {
-	result p_reg
+recipe potionRegeneration {
+	result potionRegeneration
 	ingredients {
-		troll_blood
-		healing_herb
+		trollBlood
+		healingHerb
 	}
 	skill 25
 	order 9
 }
 
-recipe p_antimagic {
-	result p_antimagic
+recipe potionAntimagic {
+	result potionAntimagic
 	ingredients {
-		2 magic_crystal
-		heal_crystal
+		2 magicCrystal
+		healCrystal
 	}
 	skill 50
 	order 10
@@ -4151,8 +4146,281 @@ recipe p_antimagic {
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
 // renamed in V_0_13
-alias wand_novice wand_1
-alias wand_adept wand_2
-alias wand_expert wand_3
+alias noviceWand wand_1
+alias adeptWand wand_2
+alias expertWand wand_3
 // renamed in V_0_17
-alias r_persuasion r_haggle
+alias ringPersuasion r_haggle
+// renamed in V_DEV
+alias knife dagger_knife
+alias dagger dagger_short
+alias shortSword dagger_sword
+alias rapier dagger_rapier
+alias cutlass dagger_cutlass
+alias assassinDagger dagger_assassin
+alias shortAdamantineSword dagger_sword_a
+alias spinesheathDagger dagger_spinesheath
+alias woodenSword sword_wooden
+alias longSword sword_long
+alias scimitar sword_scimitar
+alias orcSword sword_orcish
+alias serratedSword sword_serrated
+alias mercenarySword sword_mercenary
+alias adamantineSword sword_adamantine
+alias semurScimitar sword_semur
+alias forbiddenSword sword_forbidden
+alias rustedHatchet axe_rusted
+alias hatchet axe_small
+alias battleAxe axe_battle
+alias orcAxe axe_orcish
+alias crystalAxe axe_crystal
+alias dwarfAxe axe_dwarf
+alias giantAxe axe_giant
+alias ripperAxe axe_ripper
+alias club blunt_club
+alias mace blunt_mace
+alias orcHammer blunt_orcish
+alias shamanOrcHammer blunt_orcish_shaman
+alias barbedCudgel blunt_barbed
+alias morningstar blunt_morningstar
+alias dwarfHammer blunt_dwarven
+alias ogreClub blunt_ogre
+alias adamantineMace blunt_adamantine
+alias skullsmasherMace blunt_skullsmasher
+alias blacksmithHammer blacksmith_hammer
+alias fryingPan frying_pan
+alias noviceWand wand_novice
+alias adeptWand wand_adept
+alias expertWand wand_expert
+alias masterWand wand_master
+alias shortBow bow_short
+alias longBow bow_long
+alias compositeBow bow_composite
+alias elvenBow bow_elven
+alias dragonBow bow_dragonbone
+alias angelBow bow_angel
+alias qGoblinsBow q_gobliny_luk
+alias plankShield shield_plank
+alias woodenShield shield_wood
+alias kiteShield shield_kite
+alias ironShield shield_iron
+alias steelShield shield_steel
+alias mithrilShield shield_mithril
+alias spikedShield shield_spiked
+alias adamantineShield shield_adamantine
+alias wallShield shield_wall
+alias deathShield shield_death
+alias paddedArmor al_padded
+alias paddedArmorHq al_padded_hq
+alias paddedArmorM al_padded_m
+alias leatherArmor al_leather
+alias leatherArmorHq al_leather_hq
+alias leatherArmorM al_leather_m
+alias studdedArmor al_studded
+alias studdedArmorHq al_studded_hq
+alias studdedArmorM al_studded_m
+alias dragonskinArmor al_dragonskin
+alias shadowArmor al_shadow
+alias chainShirt al_chain_shirt
+alias chainShirtHq al_chain_shirt_hq
+alias chainShirtM al_chain_shirt_m
+alias mithrilChainShirt al_chain_shirt_mith
+alias angelskinArmor al_angelskin
+alias hideArmor am_hide
+alias hideArmorHq am_hide_hq
+alias hideArmorM am_hide_m
+alias trollHideArmor am_troll_hide
+alias chainmail am_chainmail
+alias chainmailHq am_chainmail_hq
+alias chainmailM am_chainmail_m
+alias mithrilChainmail am_chainmail_mith
+alias scaleArmor am_scale
+alias scaleArmorHq am_scale_hq
+alias scaleArmorM am_scale_m
+alias dragonscaleArmor am_dragonscale
+alias breastplate am_breastplate
+alias breastplateHq am_breastplate_hq
+alias breastplateM am_breastplate_m
+alias mithrilBreastplate am_breastplate_mith
+alias adamantineBreastplate am_breastplate_adam
+alias gladiatorArmor am_gladiator
+alias rustedSplitArmor ah_splint_rusted
+alias splintArmor ah_splint
+alias splintArmorHq ah_splint_hq
+alias splintArmorM ah_splint_m
+alias mithrilSplintArmor ah_splint_mith
+alias antimageArmor ah_antimage
+alias plateArmor ah_plate
+alias plateArmorHq ah_plate_hq
+alias plateArmorM ah_plate_m
+alias mithrilPlateArmor ah_plate_mith
+alias adamantinePlateArmor ah_plate_adam
+alias blackArmor ah_black_armor
+alias crystalArmor ah_crystal
+alias crystalArmorM ah_crystal_m
+alias bloodCrystalArmor ah_blood_crystal
+alias blacksmithClothes al_blacksmith
+alias innkeeperClothes al_innkeeper
+alias clothes al_clothes
+alias clothes2 al_clothes2
+alias clothes2b al_clothes2b
+alias clothes3 al_clothes3
+alias clothes3b al_clothes3b
+alias oldRobe al_old_robe
+alias goblinArmor al_goblin
+alias orcLeatherArmor al_orc
+alias orcShamanArmor al_orc_shaman
+alias orcChainmail am_orc
+alias noviceRobe al_mage
+alias mageRobe al_mage2
+alias battleMageRobe al_mage3
+alias archmageRobe al_mage4
+alias necromancerRobe al_necromancer
+alias amuletSilver a_silver
+alias amuletGold a_gold
+alias amuletRuby a_ruby
+alias amuletDiamond a_diamond
+alias amuletGourmet a_food
+alias amuletSprinter a_sprinter
+alias amuletMage a_mage
+alias amuletDefense a_defense
+alias amuletStamina a_stamina
+alias amuletMana a_mana
+alias amuletWarrior a_warrior
+alias amuletArcher a_archer
+alias amuletAntimagic a_antimagic
+alias amuletHealth a_health
+alias ringSilver r_silver
+alias ringGold r_gold
+alias ringEmerald r_emerald
+alias ringStrength r_str
+alias ringEndurance r_end
+alias ringDexterity r_dex
+alias ringIntelligence r_int
+alias ringWisdom r_wis
+alias ringCharisma r_cha
+alias ringHealth r_hp
+alias ringStamina r_stamina
+alias ringDefense r_def
+alias ringAttack r_attack
+alias ringRangedAttack r_ranged_attack
+alias ringMage r_mage
+alias ringOneHandedWeapon r_one_handed_weapon
+alias ringShortBlade r_short_blade
+alias ringLongBlade r_long_blade
+alias ringAxe r_axe
+alias ringBlunt r_blunt
+alias ringBow r_bow
+alias ringShield r_shield
+alias ringLightArmor r_light_armor
+alias ringMediumArmor r_medium_armor
+alias ringHeavyArmor r_heavy_armor
+alias ringPersuasion r_persuasion
+alias ringCarry r_carry
+alias ringGodsMagic r_gods_magic
+alias ringConcentration r_concentration
+alias ringMysticMagic r_mystic_magic
+alias ringMana r_mana
+alias ringStrength2 r_str2
+alias ringEndurance2 r_end2
+alias ringDexterity2 r_dex2
+alias ringIntelligence2 r_int2
+alias ringWisdom2 r_wis2
+alias ringCharisma2 r_cha2
+alias ringRegeneration r_regeneration
+alias ringAssassin r_assassin
+alias ringPoisonResistance r_poison_resistance
+alias ringManaRegeneration r_mana_regen
+alias potionNatural p_nreg
+alias potionNatural2 p_nreg2
+alias potionHealth p_hp
+alias potionHealth2 p_hp2
+alias potionHealth3 p_hp3
+alias potionMana p_mp
+alias potionMana2 p_mp2
+alias potionMana3 p_mp3
+alias potionRegeneration p_reg
+alias potionAntidote p_antidote
+alias potionStrength p_str
+alias potionEndurance p_end
+alias potionDexterity p_dex
+alias qMagesPotion q_magowie_potion
+alias potionAntimagic p_antimagic
+alias springWater spring_water
+alias rawMeat raw_meat
+alias fishMeat fish_meat
+alias healingHerb healing_herb
+alias manaHerb mana_herb
+alias greenHerb green_herb
+alias alchemistHerb alchemist_herb
+alias goldenBar golden_bar
+alias goldenCup golden_cup
+alias wolfPelt wolf_pelt
+alias worgPelt worg_pelt
+alias direWolfPelt dire_wolf_pelt
+alias bearPelt bear_pelt
+alias blackBearPelt black_bear_pelt
+alias healCrystal heal_crystal
+alias magicCrystal magic_crystal
+alias trollBlood troll_blood
+alias ancientAmulet a_amulet
+alias ancientAmulet2 a_amulet2
+alias ancientAmulet3 a_amulet3
+alias ancientBrooch a_brosza
+alias ancientFlask a_butelka
+alias ancientArtifact a_cos
+alias ancientSkull a_czaszka
+alias ancientFigurine a_figurka
+alias ancientFigurine2 a_figurka2
+alias ancientFigurine3 a_figurka3
+alias ancientBook a_ksiega
+alias ancientMask a_maska
+alias ancientMask2 a_maska2
+alias ancientBowl a_misa
+alias ancientCoin a_moneta
+alias ancientRing a_pierscien
+alias ancientRing2 a_pierscien2
+alias ancientRing3 a_pierscien3
+alias ancientTalisman a_talizman
+alias ancientTalisman2 a_talizman2
+alias qMineKey key_kopalnia
+alias qBanditsParcel q_bandyci_paczka
+alias qBanditsLetter q_bandyci_list
+alias qMagesBall q_magowie_kula
+alias qMagesBall2 q_magowie_kula2
+alias qOrcsKey q_orkowie_klucz
+alias qCraziesStone q_szaleni_kamien
+alias qSecretNote sekret_kartka
+alias qSecretNote2 sekret_kartka2
+alias wantedPoster wanted_letter
+alias qResources q_resources
+alias qInfectedOrgan q_infected_organ
+alias qYellowCrystal q_yellow_crystal
+alias qYellowHerbs q_yellow_herbs
+alias bookHistory book_history
+alias bookOrcs book_orcs
+alias bookUndead book_undead
+alias bookBehindTheWall book_behind_the_wall
+alias bookAdventurer book_adventurer
+alias bookLucidDream book_ld
+alias bookRunic book_runic
+alias qEvilBook q_zlo_ksiega
+alias magicScroll magic_scroll
+alias qClericBook book_q_cleric
+alias qSoltysJournal book_q_journal
+alias cryptNote crypt_note
+alias recipeAntidote recipe_antidote
+alias recipeRegeneration recipe_reg
+alias recipeAntimagic recipe_antimagic
+alias recipeBookNatural recipe_book_nreg
+recipeAlias potionNatural p_nreg
+recipeAlias potionNatural2 p_nreg2
+recipeAlias potionHealth p_hp
+recipeAlias potionHealth2 p_hp2
+recipeAlias potionHealth3 p_hp3
+recipeAlias potionMana p_mp
+recipeAlias potionMana2 p_mp2
+recipeAlias potionMana3 p_mp3
+recipeAlias potionRegeneration p_reg
+recipeAlias potionAntidote p_antidote
+recipeAlias potionAntimagic p_antimagic

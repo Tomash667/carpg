@@ -133,7 +133,7 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
 		if(HavePerk(Perk::Get("alchemistApprentice")))
-			Stock::Get("alchemist_apprentice")->Parse(unit->items);
+			Stock::Get("alchemistApprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
 		unit->RecalculateWeight();
 		if(HavePerk(Perk::Get("poor")))
@@ -2868,10 +2868,10 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					switch(door->locked)
 					{
 					case LOCK_MINE:
-						key = "key_kopalnia";
+						key = "qMineKey";
 						break;
 					case LOCK_ORCS:
-						key = "q_orkowie_klucz";
+						key = "qOrcsKey";
 						break;
 					case LOCK_UNLOCKABLE:
 					default:

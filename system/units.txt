@@ -4,101 +4,101 @@
 //------------------------------------------------------------------------------
 items mage {
 	!wand
-	!mage_armor
+	!mageArmor
 	if chance 50 {
 		random {!-4bow !-4shield}
 	}
 	if level 20 {
-		p_hp2
-		p_mp3
-		random 0 1 p_hp
-		chance 25 magic_scroll
-		r_mage
-		a_mage
-		r_def
+		potionHealth2
+		potionMana3
+		random 0 1 potionHealth
+		chance 25 magicScroll
+		ringMage
+		amuletMage
+		ringDefense
 	}
 	else if level 16 {
-		p_hp2
-		p_mp2
-		chance 10 magic_scroll
-		r_mage
-		chance 75 r_def
-		chance 25 a_mage
+		potionHealth2
+		potionMana2
+		chance 10 magicScroll
+		ringMage
+		chance 75 ringDefense
+		chance 25 amuletMage
 	}
 	else if level 12 {
-		random 1 2 p_hp
-		p_mp2
-		chance 5 magic_scroll
-		r_mage
-		chance 25 r_def
-		chance 10 a_mage
+		random 1 2 potionHealth
+		potionMana2
+		chance 5 magicScroll
+		ringMage
+		chance 25 ringDefense
+		chance 10 amuletMage
 	}
 	else if level 8 {
-		p_hp
-		p_mp
-		chance 50 r_mage
+		potionHealth
+		potionMana
+		chance 50 ringMage
 	}
 	else {
-		p_mp
-		chance 75 p_hp
-		chance 25 r_mage
+		potionMana
+		chance 75 potionHealth
+		chance 25 ringMage
 	}
-	random 1 3 !normal_food
+	random 1 3 !normalFood
 }
 
 items guard {
 	if chance 33 {
-		!light_armor
-		random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!lightArmor
+		random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
 		!bow
 	}
 	else if chance 50 {
-		!medium_armor
-		random {!long_blade !axe !blunt !short_blade}
+		!mediumArmor
+		random {!longBlade !axe !blunt !shortBlade}
 		random {!-2bow !-2shield}
 	}
 	else {
-		!heavy_armor
-		random {!long_blade !axe !blunt}
+		!heavyArmor
+		random {!longBlade !axe !blunt}
 		!shield
 	}
 	if level 9
-		chance 50 p_hp2
+		chance 50 potionHealth2
 	else
-		chance 50 p_hp
-	random 1 3 !normal_food
+		chance 50 potionHealth
+	random 1 3 !normalFood
 }
 
 items q_guard {
-	3 p_hp2
+	3 potionHealth2
 	if chance 33 {
-		!light_armor
-		random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!lightArmor
+		random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
 		!bow
 	}
 	else if chance 50 {
-		!medium_armor
-		random {!long_blade !axe !blunt !short_blade}
+		!mediumArmor
+		random {!longBlade !axe !blunt !shortBlade}
 		random {!-2bow !-2shield}
 	}
 	else {
-		!heavy_armor
-		random {!long_blade !axe !blunt}
+		!heavyArmor
+		random {!longBlade !axe !blunt}
 		!shield
 	}
 	if level 9
-		chance 50 p_hp2
+		chance 50 potionHealth2
 	else
-		chance 50 p_hp
-	random 1 3 !normal_food
+		chance 50 potionHealth
+	random 1 3 !normalFood
 }
 
 items rogue {
-	random {!short_blade !long_blade}
-	!light_armor
+	random {!shortBlade !longBlade}
+	!lightArmor
 	random {!-2bow !-2shield}
-	chance 10 p_hp2
-	random 1 3 !normal_food
+	chance 10 potionHealth2
+	random 1 3 !normalFood
 }
 
 //------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ profile cleric {
 	strength 50
 	endurance 55
 	dexterity 50
-	inteligence 55
+	intelligence 55
 	wisdom 60
 	charisma 70
 
@@ -181,64 +181,64 @@ profile cleric {
 			!-2shield
 			chance 50 !-4bow
 			if level 20 {
-				p_hp2
-				random 1 2 p_hp2
-				p_mp3
-				p_mp2
-				a_mana
-				random {r_cha2 r_mana_regen}
-				random {r_cha r_concentration r_mana r_gods_magic}
+				potionHealth2
+				random 1 2 potionHealth2
+				potionMana3
+				potionMana2
+				amuletMana
+				random {ringCharisma2 ringManaRegeneration}
+				random {ringCharisma ringConcentration ringMana ringGodsMagic}
 			}
 			else if level 16 {
-				p_hp2
-				p_hp
-				p_mp2
-				random 1 2 p_mp
+				potionHealth2
+				potionHealth
+				potionMana2
+				random 1 2 potionMana
 				if chance 50 {
-					a_mana
+					amuletMana
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				random {r_cha2 r_mana_regen}
-				random {r_cha r_concentration r_mana r_gods_magic}
+				random {ringCharisma2 ringManaRegeneration}
+				random {ringCharisma ringConcentration ringMana ringGodsMagic}
 			}
 			else if level 12 {
-				p_hp2
-				p_mp2
-				p_mp
+				potionHealth2
+				potionMana2
+				potionMana
 				if chance 25 {
-					a_mana
+					amuletMana
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					random {r_cha2 r_mana_regen}
+					random {ringCharisma2 ringManaRegeneration}
 				}
 				else {
-					random {r_cha r_concentration r_mana r_gods_magic}
+					random {ringCharisma ringConcentration ringMana ringGodsMagic}
 				}
 				if chance 25 {
-					random {r_cha r_concentration r_mana r_gods_magic}
+					random {ringCharisma ringConcentration ringMana ringGodsMagic}
 				}
 			}
 			else if level 8 {
-				random 1 2 p_hp
-				random 1 2 p_mp
+				random 1 2 potionHealth
+				random 1 2 potionMana
 				if chance 50 {
-					random {r_cha r_concentration r_mana r_gods_magic}
+					random {ringCharisma ringConcentration ringMana ringGodsMagic}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				p_hp
-				p_mp
+				potionHealth
+				potionMana
 				if chance 10 {
-					random {r_cha r_concentration r_mana r_gods_magic}
+					random {ringCharisma ringConcentration ringMana ringGodsMagic}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 }
@@ -247,7 +247,7 @@ profile hunter {
 	strength 60
 	endurance 65
 	dexterity 65
-	inteligence 50
+	intelligence 50
 	wisdom 60
 	charisma 45
 
@@ -293,60 +293,60 @@ profile hunter {
 		perk skillFocus bow
 		items {
 			$-2weapon
-			!light_armor
+			!lightArmor
 			!bow
 			chance 50 !-4shield
 			if level 20 {
-				p_hp3
-				p_hp
-				a_archer
-				r_dex2
-				random {r_dex r_ranged_attack r_bow}
+				potionHealth3
+				potionHealth
+				amuletArcher
+				ringDexterity2
+				random {ringDexterity ringRangedAttack ringBow}
 			}
 			else if level 16 {
-				p_hp3
+				potionHealth3
 				if chance 50 {
-					a_archer
+					amuletArcher
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_dex2
-				random {r_dex r_ranged_attack r_bow}
+				ringDexterity2
+				random {ringDexterity ringRangedAttack ringBow}
 			}
 			else if level 12 {
-				p_hp2
-				p_hp
+				potionHealth2
+				potionHealth
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_sprinter
+					amuletSprinter
 				}
 				if chance 50 {
-					r_dex2
+					ringDexterity2
 				}
 				else {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 				if chance 25 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 			}
 			else if level 8 {
-				p_hp2
+				potionHealth2
 				if chance 50 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
-				chance 25 a_sprinter
+				chance 25 amuletSprinter
 			}
 			else {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 10 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 	subprofile weapon {
@@ -380,60 +380,60 @@ profile hunter {
 		perk skillFocus weapon
 		items {
 			$weapon
-			!light_armor
+			!lightArmor
 			!-2bow
 			chance 50 !-4shield
 			if level 20 {
-				p_hp3
-				p_hp
-				a_warrior
-				r_dex2
-				random {r_dex r_attack r_one_handed_weapon}
+				potionHealth3
+				potionHealth
+				amuletWarrior
+				ringDexterity2
+				random {ringDexterity ringAttack ringOneHandedWeapon}
 			}
 			else if level 16 {
-				p_hp3
+				potionHealth3
 				if chance 50 {
-					a_warrior
+					amuletWarrior
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_dex2
-				random {r_dex r_attack r_one_handed_weapon}
+				ringDexterity2
+				random {ringDexterity ringAttack ringOneHandedWeapon}
 			}
 			else if level 12 {
-				p_hp2
-				p_hp
+				potionHealth2
+				potionHealth
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_sprinter
+					amuletSprinter
 				}
 				if chance 50 {
-					r_dex2
+					ringDexterity2
 				}
 				else {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 				if chance 25 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 			}
 			else if level 8 {
-				p_hp2
+				potionHealth2
 				if chance 50 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
-				chance 25 a_sprinter
+				chance 25 amuletSprinter
 			}
 			else {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 10 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 	subprofile weapon_medium {
@@ -468,61 +468,61 @@ profile hunter {
 		perk skillFocus weapon
 		items {
 			$weapon
-			!medium_armor
+			!mediumArmor
 			!-4bow
 			!-2shield
 			if level 20 {
-				p_hp3
-				p_hp2
-				a_warrior
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				potionHealth3
+				potionHealth2
+				amuletWarrior
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 16 {
-				p_hp3
-				p_hp
+				potionHealth3
+				potionHealth
 				if chance 50 {
-					a_warrior
+					amuletWarrior
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 12 {
-				2 p_hp2
+				2 potionHealth2
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					r_str2
+					ringStrength2
 				}
 				else {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 				if chance 25 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
 			else if level 8 {
-				p_hp2
-				random 0 1 p_hp
+				potionHealth2
+				random 0 1 potionHealth
 				if chance 50 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 10 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 }
@@ -531,7 +531,7 @@ profile mage {
 	strength 45
 	endurance 50
 	dexterity 50
-	inteligence 70
+	intelligence 70
 	wisdom 60
 	charisma 50
 
@@ -572,71 +572,71 @@ profile mage {
 			mana 1.5
 			cleric 0
 		}
-		perk talent inteligence
+		perk talent intelligence
 		perk skillFocus mysticMagic
 		items {
 			!wand
-			!mage_armor
+			!mageArmor
 			chance 50 !-4shield
 			if level 20 {
-				p_hp2
-				random 1 2 p_hp2
-				p_mp3
-				p_mp2
-				a_mana
-				random {r_int2 r_mana_regen}
-				random {r_int r_concentration r_mana r_mystic_magic}
+				potionHealth2
+				random 1 2 potionHealth2
+				potionMana3
+				potionMana2
+				amuletMana
+				random {ringIntelligence2 ringManaRegeneration}
+				random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 			}
 			else if level 16 {
-				p_hp2
-				p_hp
-				p_mp2
-				random 1 2 p_mp
+				potionHealth2
+				potionHealth
+				potionMana2
+				random 1 2 potionMana
 				if chance 50 {
-					a_mana
+					amuletMana
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				random {r_int2 r_mana_regen}
-				random {r_int r_concentration r_mana r_mystic_magic}
+				random {ringIntelligence2 ringManaRegeneration}
+				random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 			}
 			else if level 12 {
-				p_hp2
-				p_mp2
-				p_mp
+				potionHealth2
+				potionMana2
+				potionMana
 				if chance 25 {
-					a_mana
+					amuletMana
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					random {r_int2 r_mana_regen}
+					random {ringIntelligence2 ringManaRegeneration}
 				}
 				else {
-					random {r_int r_concentration r_mana r_mystic_magic}
+					random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 				}
 				if chance 25 {
-					random {r_int r_concentration r_mana r_mystic_magic}
+					random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 				}
 			}
 			else if level 8 {
-				random 1 2 p_hp
-				random 1 2 p_mp
+				random 1 2 potionHealth
+				random 1 2 potionMana
 				if chance 50 {
-					random {r_int r_concentration r_mana r_mystic_magic}
+					random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				p_hp
-				p_mp
+				potionHealth
+				potionMana
 				if chance 10 {
-					random {r_int r_concentration r_mana r_mystic_magic}
+					random {ringIntelligence ringConcentration ringMana ringMysticMagic}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 }
@@ -645,7 +645,7 @@ profile rogue {
 	strength 55
 	endurance 55
 	dexterity 70
-	inteligence 60
+	intelligence 60
 	wisdom 50
 	charisma 55
 
@@ -692,59 +692,59 @@ profile rogue {
 		perk skillFocus weapon
 		items {
 			$weapon
-			!light_armor
+			!lightArmor
 			!-2shield
 			chance 50 !-4bow
 			if level 20 {
-				p_hp3
-				a_warrior
-				r_dex2
-				random {r_dex r_attack r_one_handed_weapon}
+				potionHealth3
+				amuletWarrior
+				ringDexterity2
+				random {ringDexterity ringAttack ringOneHandedWeapon}
 			}
 			else if level 16 {
-				p_hp2
-				p_hp
+				potionHealth2
+				potionHealth
 				if chance 50 {
-					a_warrior
+					amuletWarrior
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_dex2
-				random {r_dex r_attack r_one_handed_weapon}
+				ringDexterity2
+				random {ringDexterity ringAttack ringOneHandedWeapon}
 			}
 			else if level 12 {
-				p_hp2
+				potionHealth2
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_sprinter
+					amuletSprinter
 				}
 				if chance 50 {
-					r_dex2
+					ringDexterity2
 				}
 				else {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 				if chance 25 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 			}
 			else if level 8 {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 50 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
-				chance 25 a_sprinter
+				chance 25 amuletSprinter
 			}
 			else {
-				p_hp
+				potionHealth
 				if chance 10 {
-					random {r_dex r_attack r_one_handed_weapon}
+					random {ringDexterity ringAttack ringOneHandedWeapon}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 	subprofile bow {
@@ -778,59 +778,59 @@ profile rogue {
 		perk skillFocus bow
 		items {
 			$-2weapon
-			!light_armor
+			!lightArmor
 			!bow
 			chance 50 !-4shield
 			if level 20 {
-				p_hp3
-				a_archer
-				r_dex2
-				random {r_dex r_ranged_attack r_bow}
+				potionHealth3
+				amuletArcher
+				ringDexterity2
+				random {ringDexterity ringRangedAttack ringBow}
 			}
 			else if level 16 {
-				p_hp2
-				p_hp
+				potionHealth2
+				potionHealth
 				if chance 50 {
-					a_archer
+					amuletArcher
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_dex2
-				random {r_dex r_ranged_attack r_bow}
+				ringDexterity2
+				random {ringDexterity ringRangedAttack ringBow}
 			}
 			else if level 12 {
-				p_hp2
+				potionHealth2
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_sprinter
+					amuletSprinter
 				}
 				if chance 50 {
-					r_dex2
+					ringDexterity2
 				}
 				else {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 				if chance 25 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 			}
 			else if level 8 {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 50 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
-				chance 25 a_sprinter
+				chance 25 amuletSprinter
 			}
 			else {
-				p_hp
+				potionHealth
 				if chance 10 {
-					random {r_dex r_ranged_attack r_bow}
+					random {ringDexterity ringRangedAttack ringBow}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 }
@@ -839,7 +839,7 @@ profile warrior {
 	strength 65
 	endurance 65
 	dexterity 60
-	inteligence 50
+	intelligence 50
 	wisdom 50
 	charisma 50
 
@@ -889,59 +889,59 @@ profile warrior {
 		items {
 			$weapon
 			!shield
-			!heavy_armor
+			!heavyArmor
 			if level 20 {
-				2 p_hp3
-				random {a_antimagic a_health}
-				random {r_end2 r_regeneration}
-				random {r_end r_hp r_def}
+				2 potionHealth3
+				random {amuletAntimagic amuletHealth}
+				random {ringEndurance2 ringRegeneration}
+				random {ringEndurance ringHealth ringDefense}
 			}
 			else if level 16 {
-				p_hp3
-				p_hp2
+				potionHealth3
+				potionHealth2
 				if chance 50 {
-					a_antimagic
+					amuletAntimagic
 				}
 				else {
-					a_defense
+					amuletDefense
 				}
-				random {r_end2 r_regeneration}
-				random {r_end r_hp r_def}
+				random {ringEndurance2 ringRegeneration}
+				random {ringEndurance ringHealth ringDefense}
 			}
 			else if level 12 {
-				p_hp3
-				p_hp
+				potionHealth3
+				potionHealth
 				if chance 25 {
-					a_defense
+					amuletDefense
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					random {r_end2 r_regeneration}
+					random {ringEndurance2 ringRegeneration}
 				}
 				else {
-					random {r_end r_hp r_def}
+					random {ringEndurance ringHealth ringDefense}
 				}
 				if chance 25 {
-					random {r_end r_hp r_def}
+					random {ringEndurance ringHealth ringDefense}
 				}
 			}
 			else if level 8 {
-				p_hp2
-				p_hp
+				potionHealth2
+				potionHealth
 				if chance 50 {
-					random {r_end r_hp r_def}
+					random {ringEndurance ringHealth ringDefense}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				p_hp2
+				potionHealth2
 				if chance 10 {
-					random {r_end r_hp r_def}
+					random {ringEndurance ringHealth ringDefense}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 	subprofile heavy {
@@ -977,60 +977,60 @@ profile warrior {
 		items {
 			$weapon
 			!shield
-			!heavy_armor
+			!heavyArmor
 			chance 50 !-4bow
 			if level 20 {
-				p_hp3
-				p_hp2
-				a_warrior
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				potionHealth3
+				potionHealth2
+				amuletWarrior
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 16 {
-				p_hp3
-				p_hp
+				potionHealth3
+				potionHealth
 				if chance 50 {
-					a_warrior
+					amuletWarrior
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 12 {
-				2 p_hp2
+				2 potionHealth2
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					r_str2
+					ringStrength2
 				}
 				else {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 				if chance 25 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
 			else if level 8 {
-				p_hp2
-				random 0 1 p_hp
+				potionHealth2
+				random 0 1 potionHealth
 				if chance 50 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 10 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 	subprofile medium {
@@ -1066,61 +1066,61 @@ profile warrior {
 		perk skillFocus weapon
 		items {
 			$weapon
-			!medium_armor
+			!mediumArmor
 			!-2bow
 			!-2shield
 			if level 20 {
-				p_hp3
-				p_hp2
-				a_warrior
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				potionHealth3
+				potionHealth2
+				amuletWarrior
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 16 {
-				p_hp3
-				p_hp
+				potionHealth3
+				potionHealth
 				if chance 50 {
-					a_warrior
+					amuletWarrior
 				}
 				else {
-					a_stamina
+					amuletStamina
 				}
-				r_str2
-				random {r_str r_attack r_one_handed_weapon}
+				ringStrength2
+				random {ringStrength ringAttack ringOneHandedWeapon}
 			}
 			else if level 12 {
-				2 p_hp2
+				2 potionHealth2
 				if chance 25 {
-					a_stamina
+					amuletStamina
 				}
 				else {
-					a_food
+					amuletGourmet
 				}
 				if chance 50 {
-					r_str2
+					ringStrength2
 				}
 				else {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 				if chance 25 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
 			else if level 8 {
-				p_hp2
-				random 0 1 p_hp
+				potionHealth2
+				random 0 1 potionHealth
 				if chance 50 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
-				chance 25 a_food
+				chance 25 amuletGourmet
 			}
 			else {
-				random 1 2 p_hp
+				random 1 2 potionHealth
 				if chance 10 {
-					random {r_str r_attack r_one_handed_weapon}
+					random {ringStrength ringAttack ringOneHandedWeapon}
 				}
 			}
-			random 1 3 !normal_food
+			random 1 3 !normalFood
 		}
 	}
 }
@@ -1129,7 +1129,7 @@ profile ai_fighter {
 	strength 60
 	endurance 60
 	dexterity 60
-	inteligence 50
+	intelligence 50
 	wisdom 50
 	charisma 50
 
@@ -1149,7 +1149,7 @@ profile ai_archer {
 	strength 60
 	endurance 60
 	dexterity 60
-	inteligence 50
+	intelligence 50
 	wisdom 50
 	charisma 50
 
@@ -1169,7 +1169,7 @@ profile ai_assassin {
 	strength 60
 	endurance 60
 	dexterity 60
-	inteligence 50
+	intelligence 50
 	wisdom 50
 	charisma 50
 
@@ -1189,7 +1189,7 @@ profile ai_tank {
 	strength 60
 	endurance 65
 	dexterity 60
-	inteligence 50
+	intelligence 50
 	wisdom 50
 	charisma 50
 
@@ -1209,7 +1209,7 @@ profile ai_shaman {
 	strength 55
 	endurance 55
 	dexterity 60
-	inteligence 60
+	intelligence 60
 	wisdom 50
 	charisma 50
 
@@ -1231,7 +1231,7 @@ profile ai_mage {
 	strength 40
 	endurance 50
 	dexterity 50
-	inteligence 60
+	intelligence 60
 	wisdom 50
 	charisma 50
 
@@ -1289,11 +1289,11 @@ unit base_human {
 	armorType human
 	items {
 		if chance 40
-			random {al_clothes2 al_clothes2b}
+			random {clothes2 clothes2b}
 		else
-			al_clothes
-		random {!-2short_blade !-2axe !-2blunt}
-		random 1 3 !normal_food
+			clothes
+		random {!-2shortBlade !-2axe !-2blunt}
+		random 1 3 !normalFood
 	}
 	idleDialog citizen_idle
 }
@@ -1305,8 +1305,8 @@ unit base_player : base_human {
 unit base_warrior : base_player {
 	profile warrior
 	items {
-		4 p_hp
-		2 p_nreg
+		4 potionHealth
+		2 potionNatural
 	}
 	gold 85
 	class warrior
@@ -1315,8 +1315,8 @@ unit base_warrior : base_player {
 unit base_hunter : base_player {
 	profile hunter
 	items {
-		2 p_hp
-		3 p_nreg
+		2 potionHealth
+		3 potionNatural
 	}
 	gold 60
 	class hunter
@@ -1326,8 +1326,8 @@ unit base_rogue : base_player {
 	profile rogue
 	flags | backstab
 	items {
-		3 p_hp
-		2 p_nreg
+		3 potionHealth
+		2 potionNatural
 	}
 	gold 100
 	class rogue
@@ -1336,8 +1336,8 @@ unit base_rogue : base_player {
 unit base_cleric : base_player {
 	profile cleric
 	items {
-		3 p_hp
-		2 p_mp
+		3 potionHealth
+		2 potionMana
 	}
 	gold 90
 	class cleric
@@ -1346,8 +1346,8 @@ unit base_cleric : base_player {
 unit base_mage : base_player {
 	profile mage
 	items {
-		2 p_hp
-		3 p_mp
+		2 potionHealth
+		3 potionMana
 	}
 	gold 50
 	class mage
@@ -1360,9 +1360,9 @@ unit blacksmith : base_human {
 	level 5
 	flags | {aiStay dontEat limitedRot}
 	items {
-		al_blacksmith
-		blacksmith_hammer
-		random 1 3 !normal_food
+		blacksmithClothes
+		blacksmithHammer
+		random 1 3 !normalFood
 	}
 	trader {
 		stock blacksmith
@@ -1376,9 +1376,9 @@ unit merchant : base_human {
 	level 4
 	flags | {aiStay aiGuard dontEat limitedRot}
 	items {
-		random {al_clothes2 al_clothes2b}
-		!short_blade
-		random 1 3 !normal_food
+		random {clothes2 clothes2b}
+		!shortBlade
+		random 1 3 !normalFood
 	}
 	trader {
 		stock merchant
@@ -1398,9 +1398,9 @@ unit traveling_merchant : merchant {
 
 unit food_seller : merchant {
 	trader {
-		stock food_seller
+		stock foodSeller
 		groups {food drink}
-		include {ladle frying_pan}
+		include {ladle fryingPan}
 	}
 	gold {250 500}
 	dialog foodseller
@@ -1408,11 +1408,11 @@ unit food_seller : merchant {
 
 unit alchemist : merchant {
 	items {
-		random {al_clothes2 al_clothes2b}
-		dagger_short
-		p_hp
+		random {clothes2 clothes2b}
+		dagger
+		potionHealth
 		ladle
-		random 1 3 !normal_food
+		random 1 3 !normalFood
 	}
 	trader {
 		stock alchemist
@@ -1449,9 +1449,9 @@ unit mayor : base_human {
 	level 4
 	flags | {aiClerk aiStay dontEat limitedRot}
 	items {
-		random {al_clothes3 al_clothes3b}
-		random {dagger_sword dagger_rapier sword_long sword_scimitar}
-		random 1 3 !normal_food
+		random {clothes3 clothes3b}
+		random {shortSword rapier longSword scimitar}
+		random 1 3 !normalFood
 	}
 	gold {250 500}
 	dialog mayor
@@ -1510,12 +1510,12 @@ unit clerk : base_human {
 unit innkeeper : merchant {
 	flags | {limitedRot talkAtCompetition}
 	items {
-		al_innkeeper
-		random {blunt_mace axe_small sword_long}
+		innkeeperClothes
+		random {mace hatchet longSword}
 		5 beer
 		5 water
 		3 vodka
-		random 1 3 !normal_food
+		random 1 3 !normalFood
 	}
 	trader {
 		stock innkeeper
@@ -1531,9 +1531,9 @@ unit mage_seller : base_human {
 	flags | {aiStay aiGuard dontEat limitedRot mage mpBar}
 	items mage
 	trader {
-		stock mage_seller
+		stock mageSeller
 		groups {amulet ring}
-		include {magic_scroll}
+		include {magicScroll}
 	}
 	gold {1000 2000}
 	abilities mage
@@ -1546,7 +1546,7 @@ unit cleric_seller : base_human {
 	flags | {aiStay aiGuard dontEat limitedRot mpBar}
 	items {
 		!-2blunt
-		!-1medium_armor
+		!-1mediumArmor
 		!-2shield
 	}
 	abilities {
@@ -1577,11 +1577,11 @@ unit captive : base_human {
 	flags | {aiWanders hero specificName peaceful}
 	items {
 		if chance 40
-			random {al_clothes3 al_clothes3b}
+			random {clothes3 clothes3b}
 		else
-			random {al_clothes2 al_clothes2b}
-		random {!short_blade !long_blade}
-		random 0 2 !normal_food
+			random {clothes2 clothes2b}
+		random {!shortBlade !longBlade}
+		random 0 2 !normalFood
 	}
 	gold 0
 	dialog captive
@@ -1591,12 +1591,12 @@ unit traveler : base_human {
 	level {4 8}
 	flags | contest25
 	items {
-		!light_armor
-		random {!long_blade !blunt !axe}
+		!lightArmor
+		random {!longBlade !blunt !axe}
 		chance 50 !shield
 		chance 50 !bow
-		random 1 3 !normal_food
-		chance 5 p_hp
+		random 1 3 !normalFood
+		chance 5 potionHealth
 	}
 	gold {{40 80}{80 160}}
 	dialog traveler
@@ -1606,10 +1606,10 @@ unit artur_drwal : base_human {
 	level 6
 	flags | {aiStay hero specificName contest50}
 	items {
-		!light_armor
-		axe_battle
-		random 1 3 !normal_food
-		r_axe
+		!lightArmor
+		battleAxe
+		random 1 3 !normalFood
+		ringAxe
 	}
 	gold {250 500}
 	dialog q_sawmill
@@ -1619,9 +1619,9 @@ unit messenger : base_human {
 	level 4
 	flags | aiWanders
 	items {
-		al_clothes
-		random {!-1short_blade !-1axe !-1blunt !-1long_blade}
-		random 1 3 !normal_food
+		clothes
+		random {!-1shortBlade !-1axe !-1blunt !-1longBlade}
+		random 1 3 !normalFood
 	}
 	gold {40 80}
 }
@@ -1633,9 +1633,9 @@ unit poslaniec_tartak : messenger {
 unit drwal : base_human {
 	level 5
 	items {
-		!light_armor
-		random {axe_small axe_battle}
-		random 1 3 !normal_food
+		!lightArmor
+		random {hatchet battleAxe}
+		random 1 3 !normalFood
 	}
 	gold {25 50}
 	dialog woodcutter
@@ -1645,10 +1645,10 @@ unit inwestor : base_human {
 	level 10
 	flags | {aiStay hero specificName}
 	items {
-		random {al_clothes3 al_clothes3b}
-		dagger_rapier
-		random 1 3 !normal_food
-		r_persuasion
+		random {clothes3 clothes3b}
+		rapier
+		random 1 3 !normalFood
+		ringPersuasion
 	}
 	gold {2500 5000}
 	dialog q_mine
@@ -1663,8 +1663,8 @@ unit gornik : base_human {
 	flags | miner
 	items {
 		pickaxe
-		random {al_leather al_padded al_clothes}
-		random 1 3 !normal_food
+		random {leatherArmor paddedArmor clothes}
+		random 1 3 !normalFood
 	}
 	gold {25 50}
 	dialog miner
@@ -1683,9 +1683,9 @@ unit pijak : base_human {
 	profile ai_fighter
 	flags | {contest drunkmanAfterContest}
 	items {
-		al_clothes
-		random {dagger_short sword_long axe_small blunt_mace}
-		random 1 3 !normal_food
+		clothes
+		random {dagger longSword hatchet mace}
+		random 1 3 !normalFood
 	}
 	gold {{15 30}{100 200}}
 	dialog drunkman
@@ -1765,12 +1765,12 @@ unit q_zlo_kaplan : base_human {
 	profile cleric
 	flags | {hero aiStay aiTrain specificName fastLearner}
 	items {
-		blunt_morningstar
-		shield_iron
-		am_breastplate_hq
-		p_hp2
-		2 p_mp
-		random 1 3 !normal_food
+		morningstar
+		ironShield
+		breastplateHq
+		potionHealth2
+		2 potionMana
+		random 1 3 !normalFood
 	}
 	gold {{50 100}{200 400}}
 	abilities {
@@ -1797,13 +1797,13 @@ unit hunter : base_human {
 	flags | {archer aiTrain}
 	class hunter
 	items {
-		!light_armor
-		random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!lightArmor
+		random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
 		!bow
-		chance 50 p_hp
-		random 1 3 !normal_food
-		random 0 2 wolf_pelt
-		random 0 2 bear_pelt
+		chance 50 potionHealth
+		random 1 3 !normalFood
+		random 0 2 wolfPelt
+		random 0 2 bearPelt
 	}
 	gold {40 80}
 	dialog hunter
@@ -1857,15 +1857,15 @@ unit goblin : base_goblin {
 	flags | aiTrain
 	items {
 		chance 25 !shield
-		chance 5 p_hp
+		chance 5 potionHealth
 		if chance 5 {
-			frying_pan
+			fryingPan
 		}
 		else {
-			random {!long_blade !axe !blunt !short_blade}
+			random {!longBlade !axe !blunt !shortBlade}
 		}
-		chance 25 al_goblin
-		random 0 2 !orc_food
+		chance 25 goblinArmor
+		random 0 2 !orcFood
 	}
 	gold {{15 30} {20 40}}
 }
@@ -1877,10 +1877,10 @@ unit goblin_hunter : base_goblin {
 	flags | {archer aiTrain}
 	items {
 		!bow
-		chance 5 p_hp
-		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-		chance 50 al_goblin
-		random 0 2 !orc_food
+		chance 5 potionHealth
+		random {!-2longBlade !-2axe !-2blunt !-2shortBlade}
+		chance 50 goblinArmor
+		random 0 2 !orcFood
 	}
 	gold {{20 40} {25 50}}
 }
@@ -1890,11 +1890,11 @@ unit goblin_fighter : base_goblin {
 	def 30
 	flags | aiTrain
 	items {
-		random {!long_blade !axe !blunt !short_blade}
+		random {!longBlade !axe !blunt !shortBlade}
 		!shield
-		chance 10 p_hp
-		al_goblin
-		random 0 2 !orc_food
+		chance 10 potionHealth
+		goblinArmor
+		random 0 2 !orcFood
 	}
 	gold {{20 40} {25 50}}
 }
@@ -1903,11 +1903,11 @@ unit goblin_chief : base_goblin {
 	level {6 7}
 	def 40
 	items {
-		chance 25 p_hp
-		al_goblin
+		chance 25 potionHealth
+		goblinArmor
 		chance 75 !shield
-		random {!long_blade !axe !blunt !short_blade}
-		random 1 3 !orc_food
+		random {!longBlade !axe !blunt !shortBlade}
+		random 1 3 !orcFood
 	}
 	gold {{60 120} {70 140}}
 }
@@ -1918,13 +1918,13 @@ unit q_gobliny_szlachcic2 : base_human {
 	hp 1400
 	attack -60 // too good weapon
 	items {
-		dagger_assassin
-		bow_angel
-		!light_armor
-		p_hp3
-		2 p_hp2
-		p_dex
-		random 1 3 !normal_food
+		assassinDagger
+		angelBow
+		!lightArmor
+		potionHealth3
+		2 potionHealth2
+		potionDexterity
+		random 1 3 !normalFood
 	}
 	gold {1000 2000}
 	dialog q_goblins
@@ -1944,13 +1944,13 @@ unit tut_goblin : goblin {
 	flags | {aiStay aiGuard ~aiTrain}
 	items {
 		if chance 5 {
-			frying_pan
+			fryingPan
 		}
 		else {
-			random {!long_blade !axe !blunt !short_blade}
+			random {!longBlade !axe !blunt !shortBlade}
 		}
-		chance 25 al_goblin
-		random 0 2 !orc_food
+		chance 25 goblinArmor
+		random 0 2 !orcFood
 	}
 }
 
@@ -2004,12 +2004,12 @@ unit q_orkowie_gorush : base_gorush {
 	flags | contest50
 	def 50
 	items {
-		p_hp
-		al_orc
-		shield_wood
-		axe_orcish
-		bow_short
-		random 0 2 !orc_food
+		potionHealth
+		orcLeatherArmor
+		woodenShield
+		orcAxe
+		shortBow
+		random 0 2 !orcFood
 	}
 	class warrior
 }
@@ -2019,13 +2019,13 @@ unit q_orkowie_gorush_woj : base_gorush {
 	flags | {melee contest sitOnThrone}
 	def 100
 	items {
-		p_hp2
-		am_orc
-		shield_steel
-		axe_crystal
-		bow_long
-		random 3 5 !orc_food
-		r_str
+		potionHealth2
+		orcChainmail
+		steelShield
+		crystalAxe
+		longBow
+		random 3 5 !orcFood
+		ringStrength
 	}
 	class warrior
 }
@@ -2035,13 +2035,13 @@ unit q_orkowie_gorush_lowca : base_gorush {
 	flags | {archer contest50 sitOnThrone}
 	def 75
 	items {
-		p_hp2
-		bow_elven
-		shield_iron
-		axe_orcish
-		al_orc
-		random 3 5 !orc_food
-		r_dex
+		potionHealth2
+		elvenBow
+		ironShield
+		orcAxe
+		orcLeatherArmor
+		random 3 5 !orcFood
+		ringDexterity
 	}
 	class hunter
 }
@@ -2051,12 +2051,12 @@ unit q_orkowie_gorush_szaman : base_gorush {
 	flags | {mage sitOnThrone}
 	def 60
 	items {
-		p_hp
-		al_orc_shaman
-		blunt_orcish_shaman
-		shield_iron
-		random 3 5 !orc_food
-		r_mage
+		potionHealth
+		orcShamanArmor
+		shamanOrcHammer
+		ironShield
+		random 3 5 !orcFood
+		ringMage
 	}
 	profile ai_shaman
 	abilities orc_shaman
@@ -2073,11 +2073,11 @@ unit orc : base_orc {
 	def 51
 	flags | aiTrain
 	items {
-		chance 5 p_hp
-		chance 33 al_orc
+		chance 5 potionHealth
+		chance 33 orcLeatherArmor
 		chance 75 !shield
-		random {!long_blade !axe !blunt}
-		random 1 3 !orc_food
+		random {!longBlade !axe !blunt}
+		random 1 3 !orcFood
 	}
 	gold {{25 50} {35 70}}
 }
@@ -2092,8 +2092,8 @@ unit q_orkowie_slaby : base_orc {
 	def 40
 	flags | {coward peaceful}
 	items {
-		random {!-2long_blade !-2axe !-2blunt}
-		random 0 2 !orc_food
+		random {!-2longBlade !-2axe !-2blunt}
+		random 0 2 !orcFood
 	}
 	gold {20 40}
 	group citizens
@@ -2108,10 +2108,10 @@ unit orc_hunter : base_orc {
 	items {
 		!bow
 		chance 75 !-2shield
-		random {!-2long_blade !-2axe !-2blunt}
-		chance 10 p_hp
-		chance 66 al_orc
-		random 1 3 !orc_food
+		random {!-2longBlade !-2axe !-2blunt}
+		chance 10 potionHealth
+		chance 66 orcLeatherArmor
+		random 1 3 !orcFood
 	}
 	gold {{40 80} {50 100}}
 }
@@ -2126,11 +2126,11 @@ unit orc_fighter : base_orc {
 	flags | {aiTrain melee}
 	def 52
 	items {
-		random {!long_blade !axe !blunt}
-		random {am_orc al_orc}
+		random {!longBlade !axe !blunt}
+		random {orcChainmail orcLeatherArmor}
 		!shield
-		chance 10 p_hp2
-		random 1 3 !orc_food
+		chance 10 potionHealth2
+		random 1 3 !orcFood
 	}
 	gold {{40 80} {50 100}}
 }
@@ -2143,7 +2143,7 @@ unit q_orkowie_orc_fighter : orc_fighter {
 unit q_orkowie_kowal : q_orkowie_orc_fighter {
 	flags | aiStay
 	trader {
-		stock orc_blacksmith
+		stock orcBlacksmith
 		groups {weapon bow shield armor}
 	}
 	gold {250 500}
@@ -2156,10 +2156,10 @@ unit orc_warius : base_orc {
 	flags | {aiTrain melee}
 	items {
 		random {!axe !blunt}
-		am_orc
+		orcChainmail
 		!shield
-		chance 15 p_hp2
-		random 1 3 !orc_food
+		chance 15 potionHealth2
+		random 1 3 !orcFood
 	}
 	gold {{45 90}{60 120}}
 }
@@ -2174,11 +2174,11 @@ unit orc_chief : base_orc {
 	flags | melee
 	def 65
 	items {
-		random {!long_blade !axe !blunt}
-		am_orc
+		random {!longBlade !axe !blunt}
+		orcChainmail
 		!shield
-		chance 20 p_hp2
-		random 2 4 !orc_food
+		chance 20 potionHealth2
+		random 2 4 !orcFood
 	}
 	gold {{100 200} {140 280}}
 }
@@ -2194,10 +2194,10 @@ unit orc_shaman : base_orc {
 	def 60
 	flags | {mage mpBar}
 	items {
-		al_orc_shaman
-		blunt_orcish_shaman
-		chance 5 p_hp
-		random 1 3 !orc_food
+		orcShamanArmor
+		shamanOrcHammer
+		chance 5 potionHealth
+		random 1 3 !orcFood
 	}
 	gold {{40 80} {50 100}}
 	abilities orc_shaman
@@ -2220,13 +2220,13 @@ unit q_orkowie_boss : base_orc {
 	attack -40
 	def 110
 	items {
-		am_orc
-		axe_ripper
-		3 p_hp3
-		shield_adamantine
-		p_str
-		random 3 5 !orc_food
-		r_str2
+		orcChainmail
+		ripperAxe
+		3 potionHealth3
+		adamantineShield
+		potionStrength
+		random 3 5 !orcFood
+		ringStrength2
 	}
 	gold {1000 2000}
 	sounds {
@@ -2269,8 +2269,8 @@ unit ogre {
 		"search_pockets"
 	}
 	items {
-		blunt_ogre
-		random 5 10 !orc_food
+		ogreClub
+		random 5 10 !orcFood
 	}
 	gold {140 180}
 	width 0.5
@@ -2392,7 +2392,7 @@ unit skeleton : base_skeleton {
 	def 120
 	items {
 		chance 50 !-1shield
-		random {!-1short_blade !-1long_blade !-1axe !-1blunt}
+		random {!-1shortBlade !-1longBlade !-1axe !-1blunt}
 	}
 }
 
@@ -2404,7 +2404,7 @@ unit skeleton_archer : base_skeleton {
 	def 140
 	items {
 		!bow
-		random {!-2short_blade !-2long_blade !-2axe !-2blunt}
+		random {!-2shortBlade !-2longBlade !-2axe !-2blunt}
 		chance 25 !-2shield
 	}
 }
@@ -2417,7 +2417,7 @@ unit skeleton_fighter : base_skeleton {
 	def 140
 	items {
 		!shield
-		random {!short_blade !long_blade !axe !blunt}
+		random {!shortBlade !longBlade !axe !blunt}
 	}
 }
 
@@ -2430,7 +2430,7 @@ unit skeleton_mage : base_skeleton {
 	def 140
 	spellPower 140
 	items {
-		wand_novice
+		noviceWand
 	}
 	abilities {
 		{magicBolt 0}
@@ -2443,9 +2443,9 @@ unit necromancer : base_human {
 	profile ai_mage
 	flags | {mage mpBar}
 	items {
-		al_necromancer
+		necromancerRobe
 		!wand
-		random 1 3 raw_meat
+		random 1 3 rawMeat
 	}
 	gold {{50 100} {80 160}}
 	abilities {
@@ -2502,8 +2502,8 @@ unit undead_guard : base_undead {
 	flags | melee
 	items {
 		!shield
-		random {!long_blade !axe !blunt}
-		random {!medium_armor !heavy_armor}
+		random {!longBlade !axe !blunt}
+		random {!mediumArmor !heavyArmor}
 	}
 }
 
@@ -2511,8 +2511,8 @@ unit undead_archer : base_undead {
 	flags | archer
 	items {
 		!bow
-		random {!-3short_blade !-3long_blade !-3axe !-3blunt}
-		random {!light_armor !medium_armor}
+		random {!-3shortBlade !-3longBlade !-3axe !-3blunt}
+		random {!lightArmor !mediumArmor}
 	}
 }
 
@@ -2522,9 +2522,9 @@ unit evil_cleric : base_human {
 	items {
 		!blunt
 		!shield
-		!medium_armor
-		chance 10 p_hp2
-		random 1 3 raw_meat
+		!mediumArmor
+		chance 10 potionHealth2
+		random 1 3 rawMeat
 	}
 	gold {{80 160}{120 240}}
 	abilities {
@@ -2551,9 +2551,9 @@ unit evil_cleric2 : evil_cleric {
 	items {
 		!blunt
 		!shield
-		!heavy_armor
-		chance 10 p_hp3
-		random 1 3 raw_meat
+		!heavyArmor
+		chance 10 potionHealth3
+		random 1 3 rawMeat
 	}
 	gold {{130 260}{160 320}}
 }
@@ -2563,14 +2563,14 @@ unit q_zlo_boss : base_human {
 	flags | {dontEscape poisonRes melee boss xar magicRes25 backstabRes dontEat stunRes rootedRes dontTalk}
 	hp 2000
 	items {
-		blunt_skullsmasher
-		ah_black_armor
-		shield_death
-		3 p_hp3
-		p_str
-		p_end
-		random 2 4 raw_meat
-		r_regeneration
+		skullsmasherMace
+		blackArmor
+		deathShield
+		3 potionHealth3
+		potionStrength
+		potionEndurance
+		random 2 4 rawMeat
+		ringRegeneration
 	}
 	gold {4000 6000}
 	abilities {
@@ -2611,12 +2611,12 @@ unit thief : base_bandit {
 	profile ai_assassin
 	flags | aiTrain
 	items {
-		!short_blade
-		!light_armor
-		chance 5 p_hp
-		chance 5 golden_cup
-		random 0 2 !normal_food
-		chance 10 r_silver
+		!shortBlade
+		!lightArmor
+		chance 5 potionHealth
+		chance 5 goldenCup
+		random 0 2 !normalFood
+		chance 10 ringSilver
 	}
 	gold {{15 30} {25 50}}
 }
@@ -2626,17 +2626,17 @@ unit bandit : base_bandit {
 	flags | aiTrain
 	items {
 		if chance 50 {
-			!medium_armor
-			random {!long_blade !axe !blunt}
+			!mediumArmor
+			random {!longBlade !axe !blunt}
 		}
 		else {
-			!light_armor
-			random {!long_blade !short_blade}
+			!lightArmor
+			random {!longBlade !shortBlade}
 		}
 		!shield
-		chance 10 p_hp
-		random 1 3 !normal_food
-		chance 10 r_gold
+		chance 10 potionHealth
+		random 1 3 !normalFood
+		chance 10 ringGold
 	}
 	gold {{30 60} {40 80}}
 }
@@ -2646,12 +2646,12 @@ unit bandit_archer : base_bandit {
 	profile ai_archer
 	flags | {archer aiTrain}
 	items {
-		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-		!light_armor
+		random {!-2longBlade !-2axe !-2blunt !-2shortBlade}
+		!lightArmor
 		!bow
-		chance 5 p_hp
-		random 1 3 !normal_food
-		chance 10 r_gold
+		chance 5 potionHealth
+		random 1 3 !normalFood
+		chance 10 ringGold
 	}
 	gold {{30 60} {40 80}}
 }
@@ -2659,13 +2659,13 @@ unit bandit_archer : base_bandit {
 unit bandit_chief : base_bandit {
 	level {7 10}
 	items {
-		!medium_armor
-		random {!long_blade !axe !blunt}
+		!mediumArmor
+		random {!longBlade !axe !blunt}
 		!shield
 		chance 50 !-4bow
-		chance 15 p_hp2
-		random 2 4 !normal_food
-		chance 10 r_emerald
+		chance 15 potionHealth2
+		random 2 4 !normalFood
+		chance 10 ringEmerald
 	}
 	gold {{70 140} {100 200}}
 }
@@ -2676,10 +2676,10 @@ unit ruffian : base_bandit {
 	flags | aiTrain
 	items {
 		random {!axe !blunt}
-		!heavy_armor
+		!heavyArmor
 		!shield
-		chance 10 p_hp2
-		random 1 3 !normal_food
+		chance 10 potionHealth2
+		random 1 3 !normalFood
 	}
 	gold {{40 80} {50 100}}
 }
@@ -2690,16 +2690,16 @@ unit assassin : base_bandit {
 	flags | {aiTrain backstab}
 	items {
 		if chance 75 {
-			!short_blade
+			!shortBlade
 			!bow
 		}
 		else {
-			!long_blade
+			!longBlade
 			!-2shield
 		}
-		!light_armor
-		chance 10 p_hp2
-		random 1 3 !normal_food
+		!lightArmor
+		chance 10 potionHealth2
+		random 1 3 !normalFood
 	}
 	gold {{45 90} {55 110}}
 }
@@ -2717,14 +2717,14 @@ unit q_bandyci_szef : base_bandit {
 	attack -30 // too good weapon
 	flags | {melee boss backstab guarded rootedRes}
 	items {
-		dagger_spinesheath
-		!light_armor
+		spinesheathDagger
+		!lightArmor
 		!-2bow
 		!-2shield
-		p_hp3
-		p_dex
-		random 2 4 !normal_food
-		r_dex2
+		potionHealth3
+		potionDexterity
+		random 2 4 !normalFood
+		ringDexterity2
 	}
 	gold {1000 2000}
 	dialog q_bandits
@@ -2739,45 +2739,45 @@ unit mage : base_human {
 	flags | {mage mpBar}
 	items {
 		!wand
-		!mage_armor
+		!mageArmor
 		if level 13 {
-			chance 10 p_hp2
-			chance 9 magic_scroll
+			chance 10 potionHealth2
+			chance 9 magicScroll
 			if chance 20 {
 				if chance 75 {
-					r_mage
+					ringMage
 				}
 				else {
-					a_mage
+					amuletMage
 				}
 			}
 			if chance 50 {
 				if chance 75 {
-					p_mp2
+					potionMana2
 				}
 				else {
-					p_mp3
+					potionMana3
 				}
 			}
 		}
 		else if level 9 {
-			chance 10 p_hp
-			chance 3 magic_scroll
-			chance 10 r_mage
+			chance 10 potionHealth
+			chance 3 magicScroll
+			chance 10 ringMage
 			if chance 40 {
 				if chance 75 {
-					p_mp
+					potionMana
 				}
 				else {
-					p_mp2
+					potionMana2
 				}
 			}
 		}
 		else {
-			chance 5 p_hp
-			chance 25 p_mp
+			chance 5 potionHealth
+			chance 25 potionMana
 		}
-		random 1 3 !normal_food
+		random 1 3 !normalFood
 	}
 	gold {{50 100}{80 160}}
 	abilities mage
@@ -2801,22 +2801,22 @@ unit mage_guard : base_human {
 	flags | aiTrain
 	items {
 		if chance 33 {
-			!light_armor
-			random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+			!lightArmor
+			random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
 			!bow
 		}
 		else if chance 50 {
-			!medium_armor
-			random {!long_blade !axe !blunt !short_blade}
+			!mediumArmor
+			random {!longBlade !axe !blunt !shortBlade}
 			random {!-2bow !-2shield}
 		}
 		else {
-			!heavy_armor
-			random {!long_blade !axe !blunt}
+			!heavyArmor
+			random {!longBlade !axe !blunt}
 			!shield
 		}
-		chance 5 p_hp
-		random 1 3 !normal_food
+		chance 5 potionHealth
+		random 1 3 !normalFood
 	}
 	gold {{25 50}{40 80}}
 	dialog mage_bodyguard
@@ -2901,15 +2901,15 @@ unit q_magowie_boss : base_human {
 	hp 1440
 	def 150
 	items {
-		sword_semur
-		al_mage4
-		p_hp2
-		q_magowie_kula2
-		p_end
-		random 2 4 !normal_food
-		magic_scroll
-		r_mage
-		a_mage
+		semurScimitar
+		archmageRobe
+		potionHealth2
+		qMagesBall2
+		potionEndurance
+		random 2 4 !normalFood
+		magicScroll
+		ringMage
+		amuletMage
 	}
 	gold {1000 2000}
 	abilities {
@@ -2938,8 +2938,8 @@ unit wolf {
 	attack 50
 	def 50
 	items {
-		random 2 3 raw_meat
-		wolf_pelt
+		random 2 3 rawMeat
+		wolfPelt
 		chance 50 tallow
 	}
 	group animals
@@ -2981,8 +2981,8 @@ unit worg : wolf {
 		null
 	}
 	items {
-		random 2 3 raw_meat
-		worg_pelt
+		random 2 3 rawMeat
+		worgPelt
 		chance 50 tallow
 	}
 }
@@ -3020,8 +3020,8 @@ unit dire_wolf : wolf {
 		null
 	}
 	items {
-		random 5 10 raw_meat
-		dire_wolf_pelt
+		random 5 10 rawMeat
+		direWolfPelt
 	}
 	width 0.8
 	attackRange 1.8
@@ -3119,8 +3119,8 @@ unit bear {
 	attack 160
 	def 160
 	items {
-		random 4 6 raw_meat
-		bear_pelt
+		random 4 6 rawMeat
+		bearPelt
 		random 1 2 tallow
 	}
 	group animals
@@ -3159,8 +3159,8 @@ unit bear_black : bear {
 	attack 200
 	def 200
 	items {
-		random 4 6 raw_meat
-		black_bear_pelt
+		random 4 6 rawMeat
+		blackBearPelt
 		random 1 3 tallow
 	}
 }
@@ -3201,13 +3201,13 @@ unit wild_hunter : base_human {
 	level {6 10}
 	flags {human archer}
 	items {
-		random {!-1light_armor !-1medium_armor}
+		random {!-1lightArmor !-1mediumArmor}
 		!bow
 		!-2shield
-		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-		chance 10 p_hp2
-		chance 10 p_hp
-		random 1 3 !normal_food
+		random {!-2longBlade !-2axe !-2blunt !-2shortBlade}
+		chance 10 potionHealth2
+		chance 10 potionHealth
+		random 1 3 !normalFood
 	}
 	gold {{60 120} {100 200}}
 	group animals
@@ -3222,13 +3222,13 @@ unit wild_hunter : base_human {
 unit q_szaleni_szaleniec : wild_hunter {
 	level 15
 	items {
-		p_hp2
-		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+		potionHealth2
+		random {!-2longBlade !-2axe !-2blunt !-2shortBlade}
 		!bow
-		!light_armor
+		!lightArmor
 		!-2shield
-		q_szaleni_kamien
-		random 1 3 !normal_food
+		qCraziesStone
+		random 1 3 !normalFood
 	}
 	gold {150 300}
 	dialog q_crazies
@@ -3280,10 +3280,10 @@ unit crazy_cook : base_crazy {
 	flags {crazy human}
 	profile ai_fighter
 	items {
-		frying_pan
-		!light_armor
-		random 5 15 raw_meat
-		random 4 6 !normal_food
+		fryingPan
+		!lightArmor
+		random 5 15 rawMeat
+		random 4 6 !normalFood
 		ladle
 	}
 	gold {80 160}
@@ -3349,13 +3349,13 @@ unit tomashu : base_human {
 	profile ai_fighter
 	hp 2500
 	items {
-		sword_forbidden
-		ah_black_armor
-		shield_adamantine
-		bow_dragonbone
-		3 p_hp3
+		forbiddenSword
+		blackArmor
+		adamantineShield
+		dragonBow
+		3 potionHealth3
 		5 krystal
-		a_health
+		amuletHealth
 	}
 	gold 666
 	abilities {
@@ -3412,13 +3412,13 @@ unit xwokloiz : base_human {
 	def 25
 	flags | {aiStay hero}
 	items {
-		al_studded_hq
-		axe_small
-		bow_long
-		random 1 3 !normal_food
-		alchemist_herb
-		random 3 5 healing_herb
-		2 p_hp
+		studdedArmorHq
+		hatchet
+		longBow
+		random 1 3 !normalFood
+		alchemistHerb
+		random 3 5 healingHerb
+		2 potionHealth
 	}
 	gold {10 50}
 	dialog "alchemistApprentice/xwokloiz"
@@ -3452,9 +3452,9 @@ unit q_main_oldman : villager {
 	dialog "mainVillage4/oldman"
 	flags {human aiStay hero peaceful specificName}
 	items {
-		dagger_short
-		al_old_robe
-		random 1 3 !normal_food
+		dagger
+		oldRobe
+		random 1 3 !normalFood
 	}
 	appearance {
 		hairColor 0xDED5D0
@@ -3474,11 +3474,11 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 	gold {20 35}
 	items {
 		if chance 40
-			random {al_clothes2 al_clothes2b}
+			random {clothes2 clothes2b}
 		else
-			al_clothes
-		random {!-2short_blade !-2axe !-2blunt}
-		q_infected_organ
+			clothes
+		random {!-2shortBlade !-2axe !-2blunt}
+		qInfectedOrgan
 	}
 	tex {
 		null
@@ -3493,10 +3493,10 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 
 unit q_main_plague_soltys : q_main_plague_villager {
 	items {
-		random {al_clothes3 al_clothes3b}
-		random {dagger_sword dagger_rapier sword_long sword_scimitar}
-		q_infected_organ
-		q_yellow_crystal
+		random {clothes3 clothes3b}
+		random {shortSword rapier longSword scimitar}
+		qInfectedOrgan
+		qYellowCrystal
 	}
 	gold {125 250}
 }
@@ -3504,12 +3504,12 @@ unit q_main_plague_soltys : q_main_plague_villager {
 unit q_main_plague_alchemist : q_main_plague_villager {
 	gold {500 1000}
 	items {
-		random {al_clothes2 al_clothes2b}
-		dagger_short
-		p_hp
+		random {clothes2 clothes2b}
+		dagger
+		potionHealth
 		ladle
-		q_infected_organ
-		q_yellow_herbs
+		qInfectedOrgan
+		qYellowHerbs
 	}
 }
 
@@ -3518,22 +3518,22 @@ unit q_main_plague_guard : q_main_plague_villager {
 	gold {60 120}
 	items {
 		if chance 33 {
-			!light_armor
-			random {!-1long_blade !-1axe !-1blunt !-1short_blade}
+			!lightArmor
+			random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
 			!bow
 		}
 		else if chance 50 {
-			!medium_armor
-			random {!long_blade !axe !blunt !short_blade}
+			!mediumArmor
+			random {!longBlade !axe !blunt !shortBlade}
 			random {!-2bow !-2shield}
 		}
 		else {
-			!heavy_armor
-			random {!long_blade !axe !blunt}
+			!heavyArmor
+			random {!longBlade !axe !blunt}
 			!shield
 		}
-		chance 50 p_hp
-		q_infected_organ
+		chance 50 potionHealth
+		qInfectedOrgan
 	}
 }
 

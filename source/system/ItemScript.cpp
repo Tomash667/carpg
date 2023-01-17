@@ -11,13 +11,13 @@ const ItemList* ItemScript::weaponList[WT_MAX], *ItemScript::armorList[AT_MAX];
 //=================================================================================================
 void ItemScript::Init()
 {
-	weaponList[WT_SHORT_BLADE] = &ItemList::Get("short_blade");
-	weaponList[WT_LONG_BLADE] = &ItemList::Get("long_blade");
+	weaponList[WT_SHORT_BLADE] = &ItemList::Get("shortBlade");
+	weaponList[WT_LONG_BLADE] = &ItemList::Get("longBlade");
 	weaponList[WT_AXE] = &ItemList::Get("axe");
 	weaponList[WT_BLUNT] = &ItemList::Get("blunt");
-	armorList[AT_LIGHT] = &ItemList::Get("light_armor");
-	armorList[AT_MEDIUM] = &ItemList::Get("medium_armor");
-	armorList[AT_HEAVY] = &ItemList::Get("heavy_armor");
+	armorList[AT_LIGHT] = &ItemList::Get("lightArmor");
+	armorList[AT_MEDIUM] = &ItemList::Get("mediumArmor");
+	armorList[AT_HEAVY] = &ItemList::Get("heavyArmor");
 }
 
 //=================================================================================================
