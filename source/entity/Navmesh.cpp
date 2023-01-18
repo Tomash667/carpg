@@ -10,10 +10,10 @@ Navmesh::~Navmesh()
 }
 
 //=================================================================================================
-void Navmesh::Init(Building* building, const Vec2& offset)
+void Navmesh::Init(Building& building, const Vec2& offset)
 {
-	regions.reserve(building->navmesh.size());
-	for(Building::Region& buildingRegion : building->navmesh)
+	regions.reserve(building.navmesh.size());
+	for(Building::Region& buildingRegion : building.navmesh)
 	{
 		Region* region = new Region;
 		region->box = buildingRegion.box;

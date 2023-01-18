@@ -2503,8 +2503,7 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->building;
-		gameLevel->ProcessBuildingObjects(locPart, city, nullptr, b->mesh, b->insideMesh, DirToRot(it->dir), it->dir,
-			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 0.f, float(it->pt.y + b->shift[it->dir].y) * 2), b, &*it);
+		gameLevel->ProcessBuildingObjects(locPart, city, nullptr, b->mesh, b->insideMesh, DirToRot(it->dir), it->dir, it->GetShift(), b, &*it);
 	}
 }
 
@@ -2928,17 +2927,19 @@ void CityGenerator::OnLoad()
 //=================================================================================================
 void CityGenerator::RespawnBuildingPhysics()
 {
-	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
+	for(CityBuilding& cityBuilding : city->buildings)
 	{
-		Building* b = it->building;
-		gameLevel->ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->dir), it->dir,
-			Vec3(float(it->pt.x + b->shift[it->dir].x) * 2, 1.f, float(it->pt.y + b->shift[it->dir].y) * 2), nullptr, &*it, Level::PBOF_RECREATE);
+		gameLevel->ProcessBuildingObjects(*city, city, nullptr, cityBuilding.building->mesh, nullptr, DirToRot(cityBuilding.dir), cityBuilding.dir,
+			cityBuilding.GetShift(), nullptr, &cityBuilding, Level::PBOF_RECREATE);
 	}
 
-	for(vector<InsideBuilding*>::iterator it = city->insideBuildings.begin(), end = city->insideBuildings.end(); it != end; ++it)
+	for(InsideBuilding* insideBuilding : city->insideBuildings)
 	{
-		gameLevel->ProcessBuildingObjects(**it, city, *it, (*it)->building->insideMesh, nullptr, 0.f, GDIR_DOWN,
-			Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr, nullptr, Level::PBOF_RECREATE);
+		const int flags = Level::PBOF_RECREATE | (insideBuilding->building->navmesh.empty() ? 0 : Level::PBOF_CUSTOM_PHYSICS);
+		gameLevel->ProcessBuildingObjects(*insideBuilding, city, insideBuilding, insideBuilding->building->insideMesh, nullptr, 0.f, GDIR_DOWN,
+			insideBuilding->offset.XZ(), nullptr, nullptr, flags);
+		if(IsSet(flags, Level::PBOF_CUSTOM_PHYSICS))
+			gameLevel->CreateInsideBuildingPhysics(*insideBuilding);
 	}
 }
 

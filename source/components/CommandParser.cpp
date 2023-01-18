@@ -963,44 +963,54 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				break;
 			}
 
-			bool inside = true;
+			InsideBuilding* inside;
 			if((t.Next() && t.IsItem("front")) || !cityBuilding->HaveInside())
-				inside = false;
+				inside = nullptr;
 			else
-				gameLevel->cityCtx->FindInsideBuilding(cityBuilding->building, &index);
+				inside = gameLevel->cityCtx->FindInsideBuilding(cityBuilding->building, &index);
 
 			if(Net::IsLocal())
 			{
+				Unit& unit = *game->pc->unit;
 				if(inside)
 				{
-					// warp to building
-					game->fallbackType = FALLBACK::ENTER;
-					game->fallbackTimer = -1.f;
-					game->fallbackValue = index;
-					game->fallbackValue2 = -1;
-					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					if(unit.locPart->partId != index)
+					{
+						// warp to building
+						game->fallbackType = FALLBACK::ENTER;
+						game->fallbackTimer = -1.f;
+						game->fallbackValue = index;
+						game->fallbackValue2 = -1;
+						unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					}
+					else
+					{
+						// already in that building, warp to entrance
+						unit.rot = PI;
+						gameLevel->WarpUnit(unit, inside->insideSpawn);
+					}
 				}
-				else if(game->pc->unit->locPart->partType != LocationPart::Type::Outside)
+				else if(unit.locPart->partType != LocationPart::Type::Outside)
 				{
 					// warp from building to front of building
 					game->fallbackType = FALLBACK::ENTER;
 					game->fallbackTimer = -1.f;
 					game->fallbackValue = -1;
 					game->fallbackValue2 = index;
-					game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				}
 				else
 				{
 					// warp from outside to front of building
 					gameLevel->WarpUnit(*game->pc->unit, cityBuilding->walkPt);
-					game->pc->unit->RotateTo(PtToPos(cityBuilding->pt));
+					unit.RotateTo(PtToPos(cityBuilding->pt));
 				}
 			}
 			else
 			{
 				PushGenericCmd(CMD_WARP)
 					<< (byte)index
-					<< inside;
+					<< (inside != nullptr);
 			}
 		}
 		else
@@ -2408,13 +2418,22 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					Error("CommandParser CMD_WARP: Invalid inside building index %u.", buildingIndex);
 					break;
 				}
-				Net::WarpData& warp = Add1(net->warps);
-				warp.u = &unit;
-				warp.where = buildingIndex;
-				warp.building = -1;
-				warp.timer = 1.f;
-				unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-				player->playerInfo->PushChange(NetChangePlayer::PREPARE_WARP);
+
+				if(unit.locPart->partId != buildingIndex)
+				{
+					Net::WarpData& warp = Add1(net->warps);
+					warp.u = &unit;
+					warp.where = buildingIndex;
+					warp.building = -1;
+					warp.timer = 1.f;
+					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+					player->playerInfo->PushChange(NetChangePlayer::PREPARE_WARP);
+				}
+				else
+				{
+					unit.rot = PI;
+					gameLevel->WarpUnit(unit, gameLevel->cityCtx->insideBuildings[buildingIndex]->insideSpawn);
+				}
 			}
 			else
 			{
@@ -2423,6 +2442,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f, PlayerController* playe
 					Error("CommandParser CMD_WARP: Invalid building index %u.", buildingIndex);
 					return false;
 				}
+
 				if(unit.locPart->partType != LocationPart::Type::Outside)
 				{
 					Net::WarpData& warp = Add1(net->warps);

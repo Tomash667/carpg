@@ -1331,13 +1331,12 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 
 					if(insideMesh)
 					{
-						Vec3 oPos = Vec3(inside->offset.x, 0.f, inside->offset.y);
 
 						Object* o = new Object;
 						o->base = nullptr;
 						o->mesh = insideMesh;
-						o->pos = oPos;
-						o->rot = Vec3(0, 0, 0);
+						o->pos = inside->offset.XZ();
+						o->rot = Vec3::Zero;
 						o->scale = 1.f;
 						o->requireSplit = true;
 						inside->objects.push_back(o);
@@ -5054,18 +5053,16 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 }
 
 //=================================================================================================
-void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
+void Level::CreateInsideBuilding(CityBuilding& cityBuilding)
 {
 	City* city = cityCtx;
-	Building* building = cityBuilding->building;
-	building->mesh->EnsureIsLoaded();
+	Building& building = *cityBuilding.building;
+	building.mesh->EnsureIsLoaded();
 
-	if(!building->insideMesh || cityBuilding->GetInsideBuilding() != nullptr)
+	if(!building.insideMesh || cityBuilding.GetInsideBuilding() != nullptr)
 		return;
 
-	const Vec3 shift(float(cityBuilding->pt.x + building->shift[cityBuilding->dir].x) * 2,
-		0.f, float(cityBuilding->pt.y + building->shift[cityBuilding->dir].y) * 2);
-	const Matrix mat = Matrix::RotationY(cityBuilding->GetRot()) * Matrix::Translation(shift);
+	const Matrix mat = Matrix::RotationY(cityBuilding.GetRot()) * Matrix::Translation(cityBuilding.GetShift());
 	InsideBuilding* inside = new InsideBuilding((int)city->insideBuildings.size());
 	inside->lvlPart = new LevelPart(inside);
 	inside->levelShift = city->insideOffset;
@@ -5082,10 +5079,10 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	}
 	inside->mine = Int2(inside->levelShift.x * 256, inside->levelShift.y * 256);
 	inside->maxe = inside->mine + Int2(256, 256);
-	Mesh::Point* point = building->mesh->FindPoint("o_s_enter");
+	Mesh::Point* point = building.mesh->FindPoint("o_s_enter");
 	Vec3 pos = Vec3::TransformZero(point->mat * mat);
 	float w, h;
-	if(cityBuilding->dir == GDIR_DOWN || cityBuilding->dir == GDIR_UP)
+	if(cityBuilding.dir == GDIR_DOWN || cityBuilding.dir == GDIR_UP)
 	{
 		w = point->size.x;
 		h = point->size.z;
@@ -5100,12 +5097,12 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	inside->enterRegion.v2.x = pos.x + w;
 	inside->enterRegion.v2.y = pos.z + h;
 	inside->enterY = terrain->GetH(pos.x, pos.z) + 0.1f;
-	inside->building = building;
-	inside->outsideRot = cityBuilding->GetRot();
+	inside->building = &building;
+	inside->outsideRot = cityBuilding.GetRot();
 	inside->top = 999.f;
 	inside->xsphereRadius = -1.f;
 	inside->insideSpawn = inside->offset.XZ(0);
-	point = building->mesh->FindPoint("o_s_spawn");
+	point = building.mesh->FindPoint("o_s_spawn");
 	pos = Vec3::TransformZero(point->mat * mat);
 	pos.y = terrain->GetH(pos.x, pos.z);
 	inside->outsideSpawn = pos;
@@ -5121,51 +5118,64 @@ void Level::CreateInsideBuilding(CityBuilding* cityBuilding)
 	scene->useLightDir = false;
 	inside->lvlPart->drawRange = 80.f;
 
-	Mesh* insideMesh = building->insideMesh;
+	Mesh* insideMesh = building.insideMesh;
 	insideMesh->EnsureIsLoaded();
 
 	Object* o = new Object;
 	o->base = nullptr;
 	o->mesh = insideMesh;
-	o->pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
+	o->pos = inside->offset.XZ();
 	o->rot = Vec3(0, 0, 0);
 	o->scale = 1.f;
 	o->requireSplit = true;
 	inside->objects.push_back(o);
 
-	ProcessBuildingObjects(*inside, city, inside, insideMesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr, PBOF_CUSTOM_PHYSICS);
+	const int flags = (building.navmesh.empty() ? 0 : PBOF_CUSTOM_PHYSICS);
+	ProcessBuildingObjects(*inside, city, inside, insideMesh, nullptr, 0.f, GDIR_DOWN, o->pos, nullptr, nullptr, flags);
 
-	// navmesh
-	inside->navmesh = new Navmesh;
-	inside->navmesh->Init(building, inside->offset);
-
-	// building physics
-	if(!building->shapePhysics)
+	if(flags == PBOF_CUSTOM_PHYSICS)
 	{
-		building->vdPhysics->EnsureIsLoaded();
-		building->shapePhysics = physics->CreateTrimeshShape(building->vdPhysics);
-	}
-	btCollisionObject* cobj = new btCollisionObject;
-	cobj->setCollisionShape(building->shapePhysics);
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-	cobj->getWorldTransform().setOrigin(ToVector3(o->pos));
-	phyWorld->addCollisionObject(cobj, CG_BUILDING);
+		// navmesh
+		inside->navmesh = new Navmesh;
+		inside->navmesh->Init(building, inside->offset);
 
-	// building floor
-	if(!building->shapeFloor)
-	{
-		building->vdFloor->EnsureIsLoaded();
-		building->shapeFloor = physics->CreateTrimeshShape(building->vdFloor);
+		CreateInsideBuildingPhysics(*inside);
 	}
-	cobj = new btCollisionObject;
-	cobj->setCollisionShape(building->shapeFloor);
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
-	cobj->getWorldTransform().setOrigin(ToVector3(o->pos));
-	phyWorld->addCollisionObject(cobj, CG_TERRAIN);
 
 	if(Net::IsServer())
 	{
 		NetChange& c = Net::PushChange(NetChange::CREATE_INSIDE_BUILDING);
-		c.id = GetIndex(city->buildings, [=](const CityBuilding& b) { return &b == cityBuilding; });
+		c.id = GetIndex(city->buildings, [&](const CityBuilding& b) { return &b == &cityBuilding; });
 	}
+}
+
+//=================================================================================================
+void Level::CreateInsideBuildingPhysics(InsideBuilding& insideBuilding)
+{
+	Building& building = *insideBuilding.building;
+	const Vec3 pos = insideBuilding.offset.XZ();
+
+	// building physics
+	if(!building.shapePhysics)
+	{
+		building.vdPhysics->EnsureIsLoaded();
+		building.shapePhysics = physics->CreateTrimeshShape(building.vdPhysics);
+	}
+	btCollisionObject* cobj = new btCollisionObject;
+	cobj->setCollisionShape(building.shapePhysics);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	cobj->getWorldTransform().setOrigin(ToVector3(pos));
+	phyWorld->addCollisionObject(cobj, CG_BUILDING);
+
+	// building floor
+	if(!building.shapeFloor)
+	{
+		building.vdFloor->EnsureIsLoaded();
+		building.shapeFloor = physics->CreateTrimeshShape(building.vdFloor);
+	}
+	cobj = new btCollisionObject;
+	cobj->setCollisionShape(building.shapeFloor);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
+	cobj->getWorldTransform().setOrigin(ToVector3(pos));
+	phyWorld->addCollisionObject(cobj, CG_TERRAIN);
 }

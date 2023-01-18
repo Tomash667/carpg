@@ -3114,7 +3114,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(!gameLevel->cityCtx || index >= gameLevel->cityCtx->buildings.size())
 					Error("Update client: CREATE_INSIDE_BUILDING, invalid building '%u'.", index);
 				else
-					gameLevel->CreateInsideBuilding(&gameLevel->cityCtx->buildings[index]);
+					gameLevel->CreateInsideBuilding(gameLevel->cityCtx->buildings[index]);
 			}
 			break;
 		// invalid change

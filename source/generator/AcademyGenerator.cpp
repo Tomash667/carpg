@@ -178,7 +178,7 @@ void AcademyGenerator::SpawnBuilding(bool first)
 	if(first)
 	{
 		Object* o = new Object;
-		o->rot = Vec3(0, 0, 0);
+		o->rot = Vec3::Zero;
 		o->pos = pos;
 		o->scale = 1.f;
 		o->base = nullptr;

@@ -24,7 +24,7 @@ struct Navmesh
 	};
 
 	~Navmesh();
-	void Init(Building* building, const Vec2& offset);
+	void Init(Building& building, const Vec2& offset);
 	Region* GetRegion(const Vec2& pos);
 	bool GetHeight(const Vec2& pos, float& height);
 	bool FindPath(const Vec2& from, const Vec2& to, vector<Vec3>& path);

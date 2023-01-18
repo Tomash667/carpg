@@ -232,7 +232,8 @@ public:
 	void EndBossFight();
 	// ---
 	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
-	void CreateInsideBuilding(CityBuilding* cityBuilding);
+	void CreateInsideBuilding(CityBuilding& cityBuilding);
+	void CreateInsideBuildingPhysics(InsideBuilding& insideBuilding);
 
 	Location* location; // same as world->currentLocation
 	int locationIndex; // same as world->currentLocationIndex

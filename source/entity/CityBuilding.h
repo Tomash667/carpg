@@ -16,6 +16,7 @@ struct CityBuilding
 	bool HaveInside();
 	float GetRot();
 	Vec3 GetUnitPos();
+	Vec3 GetShift();
 	void SetCanEnter(bool value);
 	void CreateInside();
 };

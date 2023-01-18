@@ -62,6 +62,12 @@ Vec3 CityBuilding::GetUnitPos()
 }
 
 //=================================================================================================
+Vec3 CityBuilding::GetShift()
+{
+	return Vec3(float(pt.x + building->shift[dir].x) * 2, 0.f, float(pt.y + building->shift[dir].y) * 2);
+}
+
+//=================================================================================================
 void CityBuilding::SetCanEnter(bool value)
 {
 	InsideBuilding* inside = GetInsideBuilding();
@@ -83,5 +89,5 @@ void CityBuilding::CreateInside()
 	if(HaveInside() || !building->insideMesh)
 		return;
 
-	gameLevel->CreateInsideBuilding(this);
+	gameLevel->CreateInsideBuilding(*this);
 }

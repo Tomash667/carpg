@@ -66,7 +66,7 @@ void InsideBuilding::Load(GameReader& f)
 		if(f.Read<bool>())
 		{
 			navmesh = new Navmesh;
-			navmesh->Init(building, offset);
+			navmesh->Init(*building, offset);
 		}
 	}
 
@@ -121,12 +121,11 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	int flags = Level::PBOF_RECREATE;
 	if(haveNavmesh)
 		flags |= Level::PBOF_CUSTOM_PHYSICS;
-	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->insideMesh, nullptr, 0.f, GDIR_DOWN,
-		Vec3(offset.x, 0, offset.y), building, nullptr, flags);
+	gameLevel->ProcessBuildingObjects(*this, gameLevel->cityCtx, this, building->insideMesh, nullptr, 0.f, GDIR_DOWN, offset.XZ(), building, nullptr, flags);
 	if(haveNavmesh)
 	{
 		navmesh = new Navmesh;
-		navmesh->Init(building, offset);
+		navmesh->Init(*building, offset);
 	}
 
 	return true;
