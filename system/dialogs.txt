@@ -83,7 +83,7 @@ dialog merchant
 }
 
 //==============================================================================
-dialog traveling_merchant
+dialog travelingMerchant
 {
 	if once
 		talk 0
@@ -428,7 +428,7 @@ dialog trainer
 }
 
 //==============================================================================
-dialog guard_captain
+dialog guardCaptain
 {
 	if needTalk "captive"
 	{
@@ -683,7 +683,7 @@ dialog clerk
 }
 
 //==============================================================================
-dialog arena_master
+dialog arenaMaster
 {
 	if special "ironfist_preparing"
 	{
@@ -1202,7 +1202,7 @@ dialog hero
 }
 
 //==============================================================================
-dialog hero_get_item
+dialog heroGetItem
 {
 	talk 0
 	talk 1
@@ -1222,7 +1222,7 @@ dialog hero_get_item
 }
 
 //==============================================================================
-dialog hero_buy_item
+dialog heroBuyItem
 {
 	talk 0
 	talk 1
@@ -1242,7 +1242,7 @@ dialog hero_buy_item
 }
 
 //==============================================================================
-dialog hero_pvp
+dialog heroPvp
 {
 	if script "target.hero.lostPvp"
 		talk 0
@@ -1533,7 +1533,7 @@ dialog crazy
 }
 
 //==============================================================================
-dialog crazy_get_item
+dialog crazyGetItem
 {
 	talk 0
 	talk 1
@@ -1561,7 +1561,7 @@ dialog crazy_get_item
 }
 
 //==============================================================================
-dialog crazy_buy_item
+dialog crazyBuyItem
 {
 	talk 0
 	talk 1
@@ -1589,7 +1589,7 @@ dialog crazy_buy_item
 }
 
 //==============================================================================
-dialog crazy_pvp
+dialog crazyPvp
 {
 	if script "target.hero.lostPvp"
 		talk 0
@@ -1686,7 +1686,7 @@ dialog bandit
 }
 
 //==============================================================================
-dialog crazy_mage_encounter
+dialog crazyMageEncounter
 {
 	talk 0
 	choice 1
@@ -1825,7 +1825,7 @@ dialog captive
 }
 
 //==============================================================================
-dialog guards_encounter
+dialog guardsEncounter
 {
 	if script "guards_enc_reward == false"
 	{
@@ -1866,23 +1866,9 @@ dialog traveler
 }
 
 //==============================================================================
-dialog q_sawmill
-{
-	doQuest2 "tartak"
-	end
-}
-
-//==============================================================================
 dialog woodcutter
 {
 	talk 0
-	end
-}
-
-//==============================================================================
-dialog q_mine
-{
-	doQuest2 "kopalnia"
 	end
 }
 
@@ -1901,56 +1887,7 @@ dialog drunkman
 }
 
 //==============================================================================
-dialog q_bandits
-{
-	doQuest2 "bandyci"
-	end
-}
-
-//==============================================================================
-dialog q_mages
-{
-	doQuest2 "magowie"
-	end
-}
-
-//==============================================================================
-dialog q_mages2
-{
-	doQuest2 "magowie2"
-	end
-}
-
-//==============================================================================
-dialog q_orcs
-{
-	doQuest2 "orkowie"
-	end
-}
-
-//==============================================================================
-dialog q_orcs2
-{
-	doQuest2 "orkowie2"
-	end
-}
-
-//==============================================================================
-dialog q_goblins
-{
-	doQuest2 "gobliny"
-	end
-}
-
-//==============================================================================
-dialog q_evil
-{
-	doQuest2 "zlo"
-	end
-}
-
-//==============================================================================
-dialog q_tutorial
+dialog qTutorial
 {
 	if once
 		talk 0
@@ -1968,17 +1905,7 @@ dialog q_tutorial
 }
 
 //==============================================================================
-dialog q_crazies
-{
-	talk 0
-	talk 1
-	talk 2
-	script "target.OrderAttack()"
-	end
-}
-
-//==============================================================================
-dialog crazies_encounter
+dialog craziesEncounter
 {
 	if rand 2
 	{
@@ -2164,7 +2091,7 @@ dialog bodyguard
 }
 
 //==============================================================================
-dialog mage_bodyguard
+dialog mageBodyguard
 {
 	talk 0
 	end
@@ -2196,7 +2123,14 @@ dialog foodseller
 }
 
 //==============================================================================
-dialog q_bandits_master
+dialog qBandits
+{
+	doQuest2 "bandyci"
+	end
+}
+
+//==============================================================================
+dialog qBanditsMaster
 {
 	if questProgress 0
 	{
@@ -2355,7 +2289,7 @@ dialog q_bandits_master
 }
 
 //==============================================================================
-dialog q_bandits_encounter
+dialog qBanditsEncounter
 {
 	setQuestProgress 4
 	talk 0
@@ -2406,7 +2340,7 @@ dialog q_bandits_encounter
 }
 
 //==============================================================================
-dialog q_bandits_captain
+dialog qBanditsCaptain
 {
 	talk 0
 	talk 1
@@ -2416,7 +2350,7 @@ dialog q_bandits_captain
 }
 
 //==============================================================================
-dialog q_bandits_guard
+dialog qBanditsGuard
 {
 	if questProgress 7
 		talk 0
@@ -2426,7 +2360,7 @@ dialog q_bandits_guard
 }
 
 //==============================================================================
-dialog q_bandits_agent
+dialog qBanditsAgent
 {
 	if questProgress 8
 	{
@@ -2443,7 +2377,7 @@ dialog q_bandits_agent
 }
 
 //==============================================================================
-dialog q_bandits_boss
+dialog qBanditsBoss
 {
 	talk 0
 	talk 1
@@ -2453,7 +2387,17 @@ dialog q_bandits_boss
 }
 
 //==============================================================================
-dialog q_crazies_trainer
+dialog qCrazies
+{
+	talk 0
+	talk 1
+	talk 2
+	script "target.OrderAttack()"
+	end
+}
+
+//==============================================================================
+dialog qCraziesTrainer
 {
 	talk 0
 	talk 1
@@ -2465,7 +2409,7 @@ dialog q_crazies_trainer
 }
 
 //==============================================================================
-dialog q_deliver_parcel_start
+dialog qDeliverParcelStart
 {
 	talk 0
 	choice 1
@@ -2482,7 +2426,7 @@ dialog q_deliver_parcel_start
 }
 
 //==============================================================================
-dialog q_deliver_parcel_give
+dialog qDeliverParcelGive
 {
 	talk 0
 	if questTimeout
@@ -2507,7 +2451,7 @@ dialog q_deliver_parcel_give
 }
 
 //==============================================================================
-dialog q_deliver_parcel_timeout
+dialog qDeliverParcelTimeout
 {
 	talk 0
 	setQuestProgress 3
@@ -2515,7 +2459,7 @@ dialog q_deliver_parcel_timeout
 }
 
 //==============================================================================
-dialog q_deliver_parcel_bandits
+dialog qDeliverParcelBandits
 {
 	if questProgress 1
 	{
@@ -2552,7 +2496,14 @@ dialog q_deliver_parcel_bandits
 }
 
 //==============================================================================
-dialog q_evil_cleric
+dialog qEvil
+{
+	doQuest2 "zlo"
+	end
+}
+
+//==============================================================================
+dialog qEvilCleric
 {
 	if questEvent
 	{
@@ -2678,7 +2629,7 @@ dialog q_evil_cleric
 }
 
 //==============================================================================
-dialog q_evil_mage
+dialog qEvilMage
 {
 	if questProgress 5
 	{
@@ -2704,7 +2655,7 @@ dialog q_evil_mage
 }
 
 //==============================================================================
-dialog q_evil_captain
+dialog qEvilCaptain
 {
 	if questProgress 6
 	{
@@ -2730,7 +2681,7 @@ dialog q_evil_captain
 }
 
 //==============================================================================
-dialog q_evil_mayor
+dialog qEvilMayor
 {
 	talk 0
 	talk 1
@@ -2739,7 +2690,7 @@ dialog q_evil_mayor
 }
 
 //==============================================================================
-dialog q_evil_boss
+dialog qEvilBoss
 {
 	talk 0
 	talk 1
@@ -2748,7 +2699,14 @@ dialog q_evil_boss
 }
 
 //==============================================================================
-dialog q_goblins_nobleman
+dialog qGoblins
+{
+	doQuest2 "gobliny"
+	end
+}
+
+//==============================================================================
+dialog qGoblinsNobleman
 {
 	if questProgress 0
 	{
@@ -2853,7 +2811,7 @@ dialog q_goblins_nobleman
 }
 
 //==============================================================================
-dialog q_goblins_encounter
+dialog qGoblinsEncounter
 {
 	setQuestProgress 3
 	talk 0
@@ -2863,7 +2821,7 @@ dialog q_goblins_encounter
 }
 
 //==============================================================================
-dialog q_goblins_messenger
+dialog qGoblinsMessenger
 {
 	if questProgress 4
 	{
@@ -2880,7 +2838,7 @@ dialog q_goblins_messenger
 }
 
 //==============================================================================
-dialog q_goblins_mage
+dialog qGoblinsMage
 {
 	if questProgress 6
 	{
@@ -2938,7 +2896,7 @@ dialog q_goblins_mage
 }
 
 //==============================================================================
-dialog q_goblins_innkeeper
+dialog qGoblinsInnkeeper
 {
 	talk 0
 	talk 1
@@ -2949,7 +2907,7 @@ dialog q_goblins_innkeeper
 }
 
 //==============================================================================
-dialog q_goblins_boss
+dialog qGoblinsBoss
 {
 	talk 0
 	talk 1
@@ -2959,7 +2917,14 @@ dialog q_goblins_boss
 }
 
 //==============================================================================
-dialog q_mages_scholar
+dialog qMages
+{
+	doQuest2 "magowie"
+	end
+}
+
+//==============================================================================
+dialog qMagesScholar
 {
 	if questProgress 0
 	{
@@ -3012,7 +2977,7 @@ dialog q_mages_scholar
 }
 
 //==============================================================================
-dialog q_mages_golem
+dialog qMagesGolem
 {
 	if questProgress 2
 		setQuestProgress 3
@@ -3038,7 +3003,14 @@ dialog q_mages_golem
 }
 
 //==============================================================================
-dialog q_mages2_captain
+dialog qMages2
+{
+	doQuest2 "magowie2"
+	end
+}
+
+//==============================================================================
+dialog qMages2Captain
 {
 	if questProgress 0
 	{
@@ -3102,7 +3074,7 @@ dialog q_mages2_captain
 }
 
 //==============================================================================
-dialog q_mages2_mage
+dialog qMages2Mage
 {
 	if questProgress between 13 and 14
 	{
@@ -3292,7 +3264,7 @@ dialog q_mages2_mage
 }
 
 //==============================================================================
-dialog q_mages2_boss
+dialog qMages2Boss
 {
 	talk 0
 	if questProgress 11
@@ -3303,7 +3275,14 @@ dialog q_mages2_boss
 }
 
 //==============================================================================
-dialog q_mine_investor
+dialog qMine
+{
+	doQuest2 "kopalnia"
+	end
+}
+
+//==============================================================================
+dialog qMineInvestor
 {
 	if questProgress 0
 	{
@@ -3473,7 +3452,7 @@ dialog q_mine_investor
 }
 
 //==============================================================================
-dialog q_mine_messenger
+dialog qMineMessenger
 {
 	setQuestProgress 4
 	talk 0
@@ -3485,7 +3464,7 @@ dialog q_mine_messenger
 }
 
 //==============================================================================
-dialog q_mine_messenger2
+dialog qMineMessenger2
 {
 	setQuestProgress 6
 	talk 0
@@ -3497,7 +3476,7 @@ dialog q_mine_messenger2
 }
 
 //==============================================================================
-dialog q_mine_messenger3
+dialog qMineMessenger3
 {
 	setQuestProgress 10
 	talk 0
@@ -3509,7 +3488,7 @@ dialog q_mine_messenger3
 }
 
 //==============================================================================
-dialog q_mine_messenger4
+dialog qMineMessenger4
 {
 	setQuestProgress 11
 	talk 0
@@ -3521,7 +3500,7 @@ dialog q_mine_messenger4
 }
 
 //==============================================================================
-dialog q_mine_boss
+dialog qMineBoss
 {
 	if questProgress 3
 		talk 0
@@ -3556,14 +3535,21 @@ dialog q_mine_boss
 }
 
 //==============================================================================
-dialog messenger_talked
+dialog qMineMessengerTalked
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog q_orcs_guard
+dialog qOrcs
+{
+	doQuest2 "orkowie"
+	end
+}
+
+//==============================================================================
+dialog qOrcsGuard
 {
 	talk 0
 	if questProgress 0
@@ -3577,7 +3563,7 @@ dialog q_orcs_guard
 }
 
 //==============================================================================
-dialog q_orcs_captain
+dialog qOrcsCaptain
 {
 	if questProgress between 0 and 2
 	{
@@ -3626,7 +3612,14 @@ dialog q_orcs_captain
 }
 
 //==============================================================================
-dialog q_orcs2_gorush
+dialog qOrcs2
+{
+	doQuest2 "orkowie2"
+	end
+}
+
+//==============================================================================
+dialog qOrcs2Gorush
 {
 	if questProgress 16
 	{
@@ -3805,7 +3798,7 @@ dialog q_orcs2_gorush
 }
 
 //==============================================================================
-dialog q_orcs2_weak_orc
+dialog qOrcs2WeakOrc
 {
 	if questProgress 16
 		talk 0
@@ -3815,7 +3808,7 @@ dialog q_orcs2_weak_orc
 }
 
 //==============================================================================
-dialog q_orcs2_blacksmith
+dialog qOrcs2Blacksmith
 {
 	if questProgress 16
 	{
@@ -3834,14 +3827,14 @@ dialog q_orcs2_blacksmith
 }
 
 //==============================================================================
-dialog q_orcs2_orc
+dialog qOrcs2Orc
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog q_rescue_captive_start
+dialog qRescueCaptiveStart
 {
 	talk 0
 	talk 1
@@ -3861,7 +3854,7 @@ dialog q_rescue_captive_start
 }
 
 //==============================================================================
-dialog q_rescue_captive_timeout
+dialog qRescueCaptiveTimeout
 {
 	talk 0
 	setQuestProgress 4
@@ -3869,7 +3862,7 @@ dialog q_rescue_captive_timeout
 }
 
 //==============================================================================
-dialog q_rescue_captive_end
+dialog qRescueCaptiveEnd
 {
 	if questProgress 2
 	{
@@ -3894,7 +3887,7 @@ dialog q_rescue_captive_end
 }
 
 //==============================================================================
-dialog q_rescue_captive_talk
+dialog qRescueCaptiveTalk
 {
 	if questProgress 9
 	{
@@ -3927,7 +3920,7 @@ dialog q_rescue_captive_talk
 }
 
 //==============================================================================
-dialog q_retrieve_package_start
+dialog qRetrievePackageStart
 {
 	talk 0
 	choice 1
@@ -3946,7 +3939,7 @@ dialog q_retrieve_package_start
 }
 
 //==============================================================================
-dialog q_retrieve_package_timeout
+dialog qRetrievePackageTimeout
 {
 	talk 0
 	setQuestProgress 2
@@ -3954,7 +3947,7 @@ dialog q_retrieve_package_timeout
 }
 
 //==============================================================================
-dialog q_retrieve_package_end
+dialog qRetrievePackageEnd
 {
 	talk 0
 	talk 1
@@ -3963,7 +3956,14 @@ dialog q_retrieve_package_end
 }
 
 //==============================================================================
-dialog q_sawmill_talk
+dialog qSawmill
+{
+	doQuest2 "tartak"
+	end
+}
+
+//==============================================================================
+dialog qSawmillTalk
 {
 	if questProgress 0
 	{
@@ -4038,7 +4038,7 @@ dialog q_sawmill_talk
 }
 
 //==============================================================================
-dialog q_sawmill_messenger
+dialog qSawmillMessenger
 {
 	if questProgress 5
 		talk 0
@@ -4055,7 +4055,7 @@ dialog q_sawmill_messenger
 }
 
 //==============================================================================
-dialog q_spread_news_start
+dialog qSpreadNewsStart
 {
 	talk 0
 	choice 1
@@ -4076,7 +4076,7 @@ dialog q_spread_news_start
 }
 
 //==============================================================================
-dialog q_spread_news_tell
+dialog qSpreadNewsTell
 {
 	talk 0
 	setQuestProgress 2
@@ -4084,7 +4084,7 @@ dialog q_spread_news_tell
 }
 
 //==============================================================================
-dialog q_spread_news_timeout
+dialog qSpreadNewsTimeout
 {
 	talk 0
 	setQuestProgress 3
@@ -4092,7 +4092,7 @@ dialog q_spread_news_timeout
 }
 
 //==============================================================================
-dialog q_spread_news_end
+dialog qSpreadNewsEnd
 {
 	talk 0
 	talk 1
@@ -4101,7 +4101,7 @@ dialog q_spread_news_end
 }
 
 //==============================================================================
-dialog q_wanted_start
+dialog qWantedStart
 {
 	talk 0
 	talk 1
@@ -4120,7 +4120,7 @@ dialog q_wanted_start
 }
 
 //==============================================================================
-dialog q_wanted_timeout
+dialog qWantedTimeout
 {
 	setQuestProgress 2
 	talk 0
@@ -4129,7 +4129,7 @@ dialog q_wanted_timeout
 }
 
 //==============================================================================
-dialog q_wanted_end
+dialog qWantedEnd
 {
 	talk 0
 	setQuestProgress 4
@@ -4138,7 +4138,7 @@ dialog q_wanted_end
 }
 
 //==============================================================================
-dialog crazy_cook
+dialog crazyCook
 {
 	talk 0
 	script "target.OrderAttack()"
@@ -4183,7 +4183,7 @@ dialog tomir
 }
 
 //==============================================================================
-dialog mage_seller
+dialog mageSeller
 {
 	if once
 		talk 0
@@ -4248,7 +4248,7 @@ dialog mage_seller
 }
 
 //==============================================================================
-dialog cleric_seller
+dialog clericSeller
 {
 	if once
 		talk 0
@@ -4293,7 +4293,7 @@ dialog cleric_seller
 }
 
 //==============================================================================
-dialog generic_idle {
+dialog genericIdle {
 	if rand 60%
 		talk 0
 	else if script "Level::location.outside"
@@ -4304,7 +4304,7 @@ dialog generic_idle {
 }
 
 //==============================================================================
-dialog hero_idle {
+dialog heroIdle {
 	if script "Level::location.type == L_CITY"
 		talk 0
 	else if script "Level::location.outside"
@@ -4315,52 +4315,52 @@ dialog hero_idle {
 }
 
 //==============================================================================
-dialog secret_idle {
+dialog secretIdle {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog bandit_idle {
+dialog banditIdle {
 	if rand 2
 		talk 0
-	next "generic_idle"
+	next "genericIdle"
 	end
 }
 
 //==============================================================================
-dialog goblin_idle
+dialog goblinIdle
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog orc_idle
+dialog orcIdle
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog ogre_idle
+dialog ogreIdle
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog wild_hunter_idle
+dialog wildHunterIdle
 {
 	talk 0
 	end
 }
 
 //==============================================================================
-dialog crazy_idle
+dialog crazyIdle
 {
 	if rand 100
-		next "secret_idle"
+		next "secretIdle"
 	if script "target.IsTeamMember()"
 	{
 		random
@@ -4368,9 +4368,9 @@ dialog crazy_idle
 			chance 1
 				talk 0
 			chance 1
-				next "hero_idle"
+				next "heroIdle"
 			chance 1
-				next "generic_idle"
+				next "genericIdle"
 		}
 	}
 	else
@@ -4378,16 +4378,16 @@ dialog crazy_idle
 		if rand 2
 			talk 0
 		else
-			next "generic_idle"
+			next "genericIdle"
 	}
 	end
 }
 
 //==============================================================================
-dialog citizen_idle
+dialog citizenIdle
 {
 	if rand 100
-		next "secret_idle"
+		next "secretIdle"
 	if script "target.IsTeamMember()"
 	{
 		random
@@ -4398,9 +4398,9 @@ dialog citizen_idle
 				else
 					talk 0, 1
 			chance 45
-				next "hero_idle"
+				next "heroIdle"
 			chance 45
-				next "generic_idle"
+				next "genericIdle"
 		}
 	}
 	else
@@ -4419,26 +4419,26 @@ dialog citizen_idle
 			else
 				talk 0, 1
 		}
-		next "generic_idle"
+		next "genericIdle"
 	}
 	end
 }
 
 //==============================================================================
-dialog mage_idle
+dialog mageIdle
 {
 	if rand 2
 		talk 0
-	next "generic_idle"
+	next "genericIdle"
 	end
 }
 
 //==============================================================================
-dialog drunk_mage_idle
+dialog drunkMageIdle
 {
 	if special "is_drunkmage"
 		talk 0
-	next "citizen_idle"
+	next "citizenIdle"
 	end
 }
 
@@ -4450,7 +4450,7 @@ dialog hunter
 }
 
 //==============================================================================
-dialog hunter_leader
+dialog hunterLeader
 {
 	if once
 		talk 0
@@ -4476,7 +4476,7 @@ dialog hunter_leader
 }
 
 //==============================================================================
-dialog ill_idle
+dialog illIdle
 {
 	special "coughs"
 	talk 0
@@ -4484,7 +4484,7 @@ dialog ill_idle
 }
 
 //==============================================================================
-dialog plague_idle
+dialog plagueIdle
 {
 	if rand 2
 	{
@@ -4495,3 +4495,14 @@ dialog plague_idle
 		talk 1
 	end
 }
+
+//==============================================================================
+// pre V_DEV
+alias crazyMageEncounter crazy_mage_encounter
+alias craziesEncounter crazies_encounter
+alias crazyCook crazy_cook
+alias qBandits q_bandits
+alias qCrazies q_crazies
+alias qDeliverParcelBandits q_deliver_parcel_bandits
+alias qGoblinsEncounter q_goblins_encounter
+alias qMages q_mages

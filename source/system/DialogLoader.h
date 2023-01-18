@@ -74,6 +74,7 @@ private:
 	int ParseProgressOrInt(int keyword);
 	int ParseProgress();
 	void LoadGlobals();
+	void ParseAlias(const string& id);
 	void LoadTexts() override;
 	cstring GetEntityName() override;
 	Node* GetNode()

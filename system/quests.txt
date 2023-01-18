@@ -51,9 +51,9 @@ quest globalInit
 	type unique
 	flags dontCount
 	
-	// pre V_0_20
 	alias {
-		artifactsLoc artifacts_loc
+		// pre V_0_20
+		var artifactsLoc artifacts_loc
 	}
 
 	code {
@@ -238,10 +238,10 @@ quest deliverLetter
 		end
 	}
 	
-	// pre V_0_20
 	alias {
-		startLoc start_loc
-		endLoc end_loc
+		// pre V_0_20
+		var startLoc start_loc
+		var endLoc end_loc
 	}
 
 	code {
@@ -400,7 +400,7 @@ quest deliverResources
 		end
 	}
 
-	dialog bandits_enc {
+	dialog banditsEnc {
 		talk 0
 		script "target.OrderAttack()"
 		end
@@ -412,10 +412,12 @@ quest deliverResources
 		end2
 	}
 	
-	// pre V_0_20
 	alias {
-		startLoc start_loc
-		targetLoc target_loc
+		// pre V_0_20
+		var startLoc start_loc
+		var targetLoc target_loc
+		// pre V_DEV
+		dialog banditsEnc bandits_enc
 	}
 
 	code {
@@ -481,7 +483,7 @@ quest deliverResources
 						enc.dontAttack = true;
 						enc.text = TEXT(6);
 						@enc.group = UnitGroup::Get("bandits");
-						@enc.dialog = quest.GetDialog("bandits_enc");
+						@enc.dialog = quest.GetDialog("banditsEnc");
 						@enc.quest = quest;
 						enc.st = 8;
 					}
@@ -625,10 +627,10 @@ quest banditsCollectToll
 		showChoices
 	}
 	
-	// pre V_0_20
 	alias {
-		startLoc start_loc
-		otherLoc other_loc
+		// pre V_0_20
+		var startLoc start_loc
+		var otherLoc other_loc
 	}
 	
 	code {
@@ -785,9 +787,9 @@ quest campNearCity
 		end
 	}
 	
-	// pre V_0_20
 	alias {
-		startLoc start_loc
+		// pre V_0_20
+		var startLoc start_loc
 	}
 	
 	code {
@@ -1111,10 +1113,10 @@ quest findArtifact
 		end
 	}
 	
-	// pre V_0_20
 	alias {
-		startLoc start_loc
-		targetLoc target_loc
+		// pre V_0_20
+		var startLoc start_loc
+		var targetLoc target_loc
 	}
 	
 	code
@@ -1808,10 +1810,10 @@ quest alchemistApprentice
 		}
 	}
 	
-	// pre V_0_20
 	alias {
-		lastItem last_item
-		lastPos last_pos
+		// pre V_0_20
+		var lastItem last_item
+		var lastPos last_pos
 	}
 	
 	//-------------------------------------
@@ -2068,7 +2070,7 @@ quest main
 		end
 	}
 
-	dialog ill_villager {
+	dialog illVillager {
 		talk 0
 		if questProgress == P_MAIN_TALKED_SOLTYS
 		if script "!target.vars.IsSet(\"talked\")"
@@ -2101,7 +2103,7 @@ quest main
 		end
 	}
 
-	dialog cleric_seller {
+	dialog clericSeller {
 		choice 0
 		{
 			talk 1
@@ -2230,9 +2232,12 @@ quest main
 		end2
 	}
 	
-	// pre V_0_20
 	alias {
-		shrineLoc shrine_loc
+		// pre V_0_20
+		var shrineLoc shrine_loc
+		// pre V_DEV
+		dialog clericSeller cleric_seller
+		dialog illVillager ill_villager
 	}
 	
 	code {
@@ -2368,7 +2373,7 @@ quest main
 					case P_MAIN_TALKED_SOLTYS2:
 						{
 							Unit@ u = Level::FindUnit(UnitData::Get("cleric_seller"));
-							u.AddDialog(quest, "cleric_seller");
+							u.AddDialog(quest, "clericSeller");
 						}
 						break;
 					case P_MAIN_CLERIC_IN_VILLAGE:
@@ -2952,12 +2957,17 @@ quest mainVillage3
 		end2
 	}
 	
-	dialog inn_villager {
+	dialog innVillager {
 		talk 0
 		script "InnVillagerTalk()"
 		talk 1
 		talk 2
 		end2
+	}
+	
+	alias {
+		// pre V_DEV
+		dialog innVillager inn_villager
 	}
 	
 	code {
@@ -3008,7 +3018,7 @@ quest mainVillage3
 					// inn villager
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
 					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
-					unit.AddDialog(quest, "inn_villager");
+					unit.AddDialog(quest, "innVillager");
 					unit.OrderAutoTalk();
 					
 					// alchemist

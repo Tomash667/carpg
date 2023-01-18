@@ -24,11 +24,11 @@ GameDialog* Quest_DeliverParcel::GetDialog(int dialogType)
 	switch(dialogType)
 	{
 	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_deliver_parcel_start");
+		return GameDialog::TryGet("qDeliverParcelStart");
 	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_deliver_parcel_timeout");
+		return GameDialog::TryGet("qDeliverParcelTimeout");
 	case QUEST_DIALOG_NEXT:
-		return GameDialog::TryGet("q_deliver_parcel_give");
+		return GameDialog::TryGet("qDeliverParcelGive");
 	default:
 		assert(0);
 		return nullptr;
@@ -66,7 +66,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->range = 64;
 				e->chance = 45;
 				e->dontAttack = true;
-				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
+				e->dialog = GameDialog::TryGet("qDeliverParcelBandits");
 				e->group = UnitGroup::Get("bandits");
 				e->text = questMgr->txQuest[11];
 				e->quest = this;
@@ -236,7 +236,7 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 		e->range = 64;
 		e->chance = 45;
 		e->dontAttack = true;
-		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
+		e->dialog = GameDialog::TryGet("qDeliverParcelBandits");
 		e->group = UnitGroup::Get("bandits");
 		e->text = questMgr->txQuest[11];
 		e->quest = this;

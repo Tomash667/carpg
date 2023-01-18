@@ -54,7 +54,7 @@ dialog merchant {
 }
 
 //==============================================================================
-dialog traveling_merchant {
+dialog travelingMerchant {
 	0 {
 		"Jak mogê ci pomóc?"
 		"Witaj! Jeœli jesteœ zainteresowany to mam na sprzeda¿ kilka rzeczy."
@@ -199,7 +199,7 @@ dialog trainer {
 }
 
 //==============================================================================
-dialog guard_captain {
+dialog guardCaptain {
 	0 "Masz jakieœ nowe informacje o tych golemach lub orkach?"
 	1 "Masz jakieœ nowe informacje o tych golemach?"
 	2 "O golemach"
@@ -287,7 +287,7 @@ dialog clerk {
 }
 
 //==============================================================================
-dialog arena_master {
+dialog arenaMaster {
 	0 "Poczekaj chwilê, muszê zobaczyæ ile jest chêtnych osób do wziêcia udzia³u w zawodach."
 	1 "Za chwilê rozpoczn¹ siê zawody, chcesz siê zapisaæ? Wpisowe to 100 sztuk z³ota."
 	2 "Tak"
@@ -483,7 +483,7 @@ dialog hero {
 }
 
 //==============================================================================
-dialog hero_get_item {
+dialog heroGetItem {
 	0 "Ten przedmiot $item$ jest lepszy ni¿ to co mam aktualnie."
 	1 "Mogê go wzi¹æ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
 	2 "Tak"
@@ -493,7 +493,7 @@ dialog hero_get_item {
 }
 
 //==============================================================================
-dialog hero_buy_item {
+dialog heroBuyItem {
 	0 "Ten przedmiot $item$ jest lepszy ni¿ to co mam aktualnie."
 	1 "Odkupie go od ciebie za $item_value$ sztuk z³ota. Co ty na to?"
 	2 "Tak"
@@ -503,7 +503,7 @@ dialog hero_buy_item {
 }
 
 //==============================================================================
-dialog hero_pvp {
+dialog heroPvp {
 	0 {
 		"Wygl¹da na to, ¿e muszê jeszcze popracowaæ nad moimi umiejêtnoœciami."
 		"Cholera, przegra³em!"
@@ -664,7 +664,7 @@ dialog crazy {
 }
 
 //==============================================================================
-dialog crazy_get_item {
+dialog crazyGetItem {
 	0 "Nie wiem jak ci siê to uda³o ale $item$ to to czego w³aœnie potrzebuje."
 	1 "Mogê go wzi¹æ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
 	2 "Tak"
@@ -675,7 +675,7 @@ dialog crazy_get_item {
 }
 
 //==============================================================================
-dialog crazy_buy_item {
+dialog crazyBuyItem {
 	0 "Nie wiem jak ci siê to uda³o ale $item$ to to czego w³aœnie potrzebuje."
 	1 "Mam tu $item_value$ sztuk z³ota które mog¹ staæ siê twoje. To co, wymiana?"
 	2 "Tak"
@@ -686,7 +686,7 @@ dialog crazy_buy_item {
 }
 
 //==============================================================================
-dialog crazy_pvp {
+dialog crazyPvp {
 	0 {
 		"Kurwaaaa!"
 		"Co?! To niemo¿liwe!"
@@ -741,7 +741,7 @@ dialog bandit {
 }
 
 //==============================================================================
-dialog crazy_mage_encounter {
+dialog crazyMageEncounter {
 	0 "Witaj podró¿niku! Mogê rzuciæ na ciebie zaklêcie?"
 	1 "Tak"
 	2 "Nareszcie jacyœ ochotnicy do magicznych eksperymentów."
@@ -781,7 +781,7 @@ dialog captive {
 }
 
 //==============================================================================
-dialog guards_encounter {
+dialog guardsEncounter {
 	0 "Gdyby nie ty wszystkich nas by pozabijali. WeŸ to 250 sztuk z³ota w podziêce."
 	1 {
 		"Jeszcze raz dziêki za pomoc."
@@ -829,7 +829,7 @@ dialog drunkman {
 }
 
 //==============================================================================
-dialog q_tutorial {
+dialog qTutorial {
 	0 "Witaj!"
 	1 "Kim jesteœ?"
 	2 "Jestem wêdrownym kupcem, trafi³em na te podziemia przypadkiem."
@@ -839,14 +839,7 @@ dialog q_tutorial {
 }
 
 //==============================================================================
-dialog q_crazies {
-	0 "Nigdy mnie nie dorwiecie! NIGDY!"
-	1 "Kamieñ powiedzia³ mi wyraŸnie co ze mn¹ zrobi¹!"
-	2 "Po ciebie te¿ przyjd¹! Skrócê twoje cierpienie!"
-}
-
-//==============================================================================
-dialog crazies_encounter {
+dialog craziesEncounter {
 	0 {
 		"Znowu siê spotykamy $rhero$! Wyprujê ci flaki!"
 		"Pewnie myœla³eœ ¿e ciê nie znajdê $rhero$? Jak widaæ myli³eœ siê!"
@@ -937,7 +930,7 @@ dialog bodyguard {
 }
 
 //==============================================================================
-dialog mage_bodyguard {
+dialog mageBodyguard {
 	0 {
 		"Szykuj siê na œmieræ."
 		"Po co tu przyszed³eœ? Chcesz umrzeæ?"
@@ -965,7 +958,7 @@ dialog foodseller {
 }
 
 //==============================================================================
-dialog q_bandits_master {
+dialog qBanditsMaster {
 	0 "Witaj poszukiwaczu przygód!"
 	1 "Jestem Arto, mistrz agentów jego królewskiej moœci."
 	2 "Mam zadanie dla kogoœ takiego jak ty."
@@ -1027,7 +1020,7 @@ dialog q_bandits_master {
 }
 
 //==============================================================================
-dialog q_bandits_encounter {
+dialog qBanditsEncounter {
 	0 "Staæ!"
 	1 "Dawaj t¹ paczkê albo ¿egnaj siê z ¿yciem!"
 	2 "Oddaj paczkê"
@@ -1045,14 +1038,14 @@ dialog q_bandits_encounter {
 }
 
 //==============================================================================
-dialog q_bandits_captain {
+dialog qBanditsCaptain {
 	0 "Wiêc to ty pracujesz dla agentów króla."
 	1 "Dam ci kogo trzeba, tylko postaraj siê ¿eby wrócili ¿ywi do domu."
 	2 "Udaj siê do tego obozu na $camp_dir$ st¹d, posi³ki ju¿ bêd¹ tam na ciebie czekaæ."
 }
 
 //==============================================================================
-dialog q_bandits_guard {
+dialog qBanditsGuard {
 	0 {
 		"Poka¿my tym bandziorom ¿e stra¿nicy to nie s³abeusze!"
 		"ProwadŸ!"
@@ -1065,7 +1058,7 @@ dialog q_bandits_guard {
 }
 
 //==============================================================================
-dialog q_bandits_agent {
+dialog qBanditsAgent {
 	0 "Witaj!"
 	1 "Gdy wy siê tu biliœcie ja przeszuka³em ca³y obóz, wygl¹da na to bandyci maj¹ sekretn¹ bazê w jakichœ podziemiach."
 	2 "Wed³ug moich informacji jest to $target_loc$ na $target_dir_camp$ st¹d."
@@ -1075,14 +1068,21 @@ dialog q_bandits_agent {
 }
 
 //==============================================================================
-dialog q_bandits_boss {
+dialog qBanditsBoss {
 	0 "Ty têpy chuju!"
 	1 "Myœlisz ¿e mo¿esz od tak przyjœæ tutaj, zabiæ moich kamratów i ukraœæ co ci siê podoba?!"
 	2 "Przerobiê ciê na mielone!"
 }
 
 //==============================================================================
-dialog q_crazies_trainer {
+dialog qCrazies {
+	0 "Nigdy mnie nie dorwiecie! NIGDY!"
+	1 "Kamieñ powiedzia³ mi wyraŸnie co ze mn¹ zrobi¹!"
+	2 "Po ciebie te¿ przyjd¹! Skrócê twoje cierpienie!"
+}
+
+//==============================================================================
+dialog qCraziesTrainer {
 	0 "S³ysza³em opowieœci o tym kamieniu."
 	1 "Jego obecnoœæ przyci¹ga jakieœ stwory i powoduje szaleñstwo."
 	2 "Lepiej siê go szybko pozb¹dŸ..."
@@ -1091,7 +1091,7 @@ dialog q_crazies_trainer {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_start {
+dialog qDeliverParcelStart {
 	0 "Szukam kogoœ kto dostarczy t¹ paczkê do $target_burmistrza$ $target_locname$. Jesteœ zainteresowany?"
 	1 "Tak"
 	2 "Dobrze, oto paczka. Masz pó³ miesi¹ca ¿eby j¹ dostarczyæ. Zap³atê otrzymasz w $target_locname$."
@@ -1101,7 +1101,7 @@ dialog q_deliver_parcel_start {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_give {
+dialog qDeliverParcelGive {
 	0 "Co masz dla mnie?"
 	1 "Mia³eœ dostarczyæ tê paczkê wczeœniej, ale lepiej póŸno ni¿ wcale."
 	2 "Masz tu 300 sztuk z³ota."
@@ -1110,12 +1110,12 @@ dialog q_deliver_parcel_give {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_timeout {
+dialog qDeliverParcelTimeout {
 	0 "Zawiod³em siê na tobie. Mia³eœ dostarczyæ paczkê do $target_burmistrza$ $target_locname$. Nie licz, ¿e wyznaczê ci jakieœ odpowiedzialne zadanie."
 }
 
 //==============================================================================
-dialog q_deliver_parcel_bandits {
+dialog qDeliverParcelBandits {
 	0 "Wiemy ¿e masz paczkê dla $target_burmistrza$ $target_locname$."
 	1 "Oddajesz j¹ po dobroci czy mamy ciê zabiæ?!"
 	2 "Oddaj"
@@ -1125,7 +1125,7 @@ dialog q_deliver_parcel_bandits {
 }
 
 //==============================================================================
-dialog q_evil_cleric {
+dialog qEvilCleric {
 	0 "Dobra robota! Jeden portal zamkniêty, dwa zosta³y."
 	1 "Jeszcze tylko jeden portal!"
 	2 "Doskonale! Wszystkie portale zamkniête!"
@@ -1169,7 +1169,7 @@ dialog q_evil_cleric {
 }
 
 //==============================================================================
-dialog q_evil_mage {
+dialog qEvilMage {
 	0 "Co siê na mnie gapisz?! Chcesz coœ?"
 	1 "Potrzebujê Ksiêgê przywo³ywania"
 	2 "A po co ci ona? Nie wygl¹dasz mi na maga."
@@ -1182,7 +1182,7 @@ dialog q_evil_mage {
 }
 
 //==============================================================================
-dialog q_evil_captain {
+dialog qEvilCaptain {
 	0 "A na co ci ta ksiêga?"
 	1 "Chcesz powstrzymaæ przywo³ywanie nieumar³ych?"
 	2 "Porozmawiaj z $(Level::IsCity() ? \"burmistrzem\" : \"so\\xB3tysem\"), bez jego pozwolenia nic ci nie dam."
@@ -1192,19 +1192,19 @@ dialog q_evil_captain {
 }
 
 //==============================================================================
-dialog q_evil_mayor {
+dialog qEvilMayor {
 	0 "Potrzebujesz tej ksiêgi aby powstrzymaæ przywo³ywanie nieumar³ych?"
 	1 "Oczywiœcie, mo¿esz j¹ wzi¹æ. Porozmawia z kapitanem to ci j¹ wyda."
 }
 
 //==============================================================================
-dialog q_evil_boss {
+dialog qEvilBoss {
 	0 "Cholerny cz³owiek!"
 	1 "Bêdê torturowa³ twoj¹ duszê do koñca œwiata i jeden dzieñ d³u¿ej!"
 }
 
 //==============================================================================
-dialog q_goblins_nobleman {
+dialog qGoblinsNobleman {
 	0 "Eeeee... Witaj dzielny podró¿niku!"
 	1 "Jestem sir Foltest Denhoff."
 	2 "Czy przybywasz wykonaæ dla mnie wa¿ne zadanie?"
@@ -1246,13 +1246,13 @@ dialog q_goblins_nobleman {
 }
 
 //==============================================================================
-dialog q_goblins_encounter {
+dialog qGoblinsEncounter {
 	0 "Spleen! Zanieœ ³uk do bazy, szybko!"
 	1 "Squee i Spoon! Zabiæ ich!"
 }
 
 //==============================================================================
-dialog q_goblins_messenger {
+dialog qGoblinsMessenger {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ od sir Foltesta Denhoffa."
 	2 "Jest gotów wybaczyæ ci twoj¹ g³upotê jeœli w tej chwili pójdziesz i odzyskasz ten ³uk."
@@ -1262,7 +1262,7 @@ dialog q_goblins_messenger {
 }
 
 //==============================================================================
-dialog q_goblins_mage {
+dialog qGoblinsMage {
 	0 "Witaj podró¿niku!"
 	1 "Jestem wêdrownym magiem. S³ysza³em ¿e znalaz³eœ pewien artefakt - ³uk."
 	2 "Mo¿e masz go jeszcze przy sobie?"
@@ -1283,7 +1283,7 @@ dialog q_goblins_mage {
 }
 
 //==============================================================================
-dialog q_goblins_innkeeper {
+dialog qGoblinsInnkeeper {
 	0 "Sir Foltest Denhoff? Ta kanalia?!"
 	1 "Ma³o kto go tu lubi, dorobi³ siê na handlu z goblinami i orkami."
 	2 "Ma fort na $target_dir$ st¹d, $target_loc$."
@@ -1291,14 +1291,14 @@ dialog q_goblins_innkeeper {
 }
 
 //==============================================================================
-dialog q_goblins_boss {
+dialog qGoblinsBoss {
 	0 "Proszê, proszê. Kogo my tu mamy?"
 	1 "Zakichany poszukiwacz przygód. Przyszed³eœ popatrzeæ jak wygl¹da prawdziwa potêga Anielskiego ³uku?"
 	2 "Wypróbujê go na tobie!"
 }
 
 //==============================================================================
-dialog q_mages_scholar {
+dialog qMagesScholar {
 	0 "Witaj podró¿niku!"
 	1 "Mam dla ciebie zadanie jeœli jesteœ zainteresowany."
 	2 "Szukam pewnego artefaktu, nic specjalnie cennego."
@@ -1320,7 +1320,7 @@ dialog q_mages_scholar {
 }
 
 //==============================================================================
-dialog q_mages_golem {
+dialog qMagesGolem {
 	0 "*OdejdŸ*"
 	1 "*Oddaj ca³e z³oto lub zgiñ*"
 	2 "Oddaj"
@@ -1330,7 +1330,7 @@ dialog q_mages_golem {
 }
 
 //==============================================================================
-dialog q_mages2_captain {
+dialog qMages2Captain {
 	0 "Uda³o ci siê dowiedzieæ coœ o tych golemach?"
 	1 "Wiemy tylko tyle ¿e rabuj¹ podró¿nych, niektórzy je niszcz¹ ale i tak jest ich coraz wiêcej."
 	2 "Ktoœ musi je tworzyæ."
@@ -1353,7 +1353,7 @@ dialog q_mages2_captain {
 }
 
 //==============================================================================
-dialog q_mages2_mage {
+dialog qMages2Mage {
 	0 "Witaj ponownie przyjacielu!"
 	1 "Dziêkuje ci za wszystko! Za to ¿e odzyska³em jasnoœæ umys³u i za to ¿e pokona³eœ tego cholernego maga!"
 	2 "Mo¿e siê jeszcze kiedyœ spotkamy."
@@ -1417,14 +1417,14 @@ dialog q_mages2_mage {
 }
 
 //==============================================================================
-dialog q_mages2_boss {
+dialog qMages2Boss {
 	0 "Co ty sobie myœlisz? ¯e masz jakiekolwiek szanse? Œmieszny jesteœ!"
 	1 "O, widzê ¿e przyprowadzi³eœ $dobry$. Jego te¿ zabijê!"
 	2 "Wolisz zgin¹æ od ognistej kuli czy od pioruna!?"
 }
 
 //==============================================================================
-dialog q_mine_investor {
+dialog qMineInvestor {
 	0 "Witaj, jestem Marco Bartoli."
 	1 "Jesteœ zainteresowany prac¹ dla mnie?"
 	2 "Witaj ponownie."
@@ -1484,7 +1484,7 @@ dialog q_mine_investor {
 }
 
 //==============================================================================
-dialog q_mine_messenger {
+dialog qMineMessenger {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ i z³oto od Marco Bartoli."
 	2 "Kopalnia zosta³a wybudowana i ju¿ przynios³a pierwsze zyski."
@@ -1493,7 +1493,7 @@ dialog q_mine_messenger {
 }
 
 //==============================================================================
-dialog q_mine_messenger2 {
+dialog qMineMessenger2 {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ od Marco Bartoli."
 	2 "W kopalni odkryto z³o¿a z³ota."
@@ -1502,7 +1502,7 @@ dialog q_mine_messenger2 {
 }
 
 //==============================================================================
-dialog q_mine_messenger3 {
+dialog qMineMessenger3 {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ i z³oto od Marco Bartoli."
 	2 "Kopalnia zosta³a rozbudowana, z³oto jest ju¿ wydobywane."
@@ -1511,7 +1511,7 @@ dialog q_mine_messenger3 {
 }
 
 //==============================================================================
-dialog q_mine_messenger4 {
+dialog qMineMessenger4 {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ od Marco Bartoli."
 	2 "W kopalni przekopano siê do jakichœ podziemi."
@@ -1520,7 +1520,7 @@ dialog q_mine_messenger4 {
 }
 
 //==============================================================================
-dialog q_mine_boss {
+dialog qMineBoss {
 	0 "Prace nad budow¹ ci¹gle trwaj¹."
 	1 "Wydobycie idzie dobrze."
 	2 "Prace nad budow¹ ci¹gle trwaj¹."
@@ -1538,12 +1538,12 @@ dialog q_mine_boss {
 }
 
 //==============================================================================
-dialog messenger_talked {
+dialog qMineMessengerTalked {
 	0 "Chcesz ¿ebym komuœ coœ przekaza³?"
 }
 
 //==============================================================================
-dialog q_orcs_guard {
+dialog qOrcsGuard {
 	0 "Witaj podró¿niku."
 	1 "Wpad³em do karczmy zobaczyæ czy s¹ tu jacyœ silni poszukiwacze przygód."
 	2 "Kapitan szuka kogoœ kto zajmie siê band¹ orków znajduj¹c¹ siê w pobli¿u."
@@ -1551,7 +1551,7 @@ dialog q_orcs_guard {
 }
 
 //==============================================================================
-dialog q_orcs_captain {
+dialog qOrcsCaptain {
 	0 "Orkowie zadomowili siê w jednych z pobliskich podziemi i napadaj¹ na farmerów i podró¿nych."
 	1 "Potrzebujê kogoœ kto siê z nimi rozprawi. Jesteœ zainteresowany?"
 	2 "Tak"
@@ -1567,7 +1567,7 @@ dialog q_orcs_captain {
 }
 
 //==============================================================================
-dialog q_orcs2_gorush {
+dialog qOrcs2Gorush {
 	0 "Witaj ponownie mora!"
 	1 "To by³a dobra walka mora!"
 	2 "Teraz gdy wódz Czarnego smoka nie ¿yje pora bym odbudowa³ mój klan."
@@ -1644,7 +1644,7 @@ dialog q_orcs2_gorush {
 }
 
 //==============================================================================
-dialog q_orcs2_weak_orc {
+dialog qOrcs2WeakOrc {
 	0 "Witaj mora!"
 	1 {
 		"Zostaw mnie mora!"
@@ -1653,7 +1653,7 @@ dialog q_orcs2_weak_orc {
 }
 
 //==============================================================================
-dialog q_orcs2_blacksmith {
+dialog qOrcs2Blacksmith {
 	0 "Witaj mora! Chcesz handlowaæ?"
 	1 "Tak"
 	2 "Nie"
@@ -1661,7 +1661,7 @@ dialog q_orcs2_blacksmith {
 }
 
 //==============================================================================
-dialog q_orcs2_orc {
+dialog qOrcs2Orc {
 	0 {
 		"Co jest mora?"
 		"Tak mora?"
@@ -1670,7 +1670,7 @@ dialog q_orcs2_orc {
 }
 
 //==============================================================================
-dialog q_rescue_captive_start {
+dialog qRescueCaptiveStart {
 	0 "$Goddamn_bandits$ porwali jednego z naszych obywateli. Teraz ¿¹daj¹ okupu a ja nie mam doœæ stra¿ników aby siê nimi zaj¹æ."
 	1 "Mo¿e ty chcesz siê wykazaæ?"
 	2 "Tak"
@@ -1681,12 +1681,12 @@ dialog q_rescue_captive_start {
 }
 
 //==============================================================================
-dialog q_rescue_captive_timeout {
+dialog qRescueCaptiveTimeout {
 	0 "SpóŸni³eœ siê, musieliœmy zap³aciæ okup. Wiedzia³em ¿e ¿aden z ciebie bohater!"
 }
 
 //==============================================================================
-dialog q_rescue_captive_end {
+dialog qRescueCaptiveEnd {
 	0 "Rodzina jest bardzo zadowolona z twojej misji ratunkowej. WeŸ to $reward$ sztuk z³ota nagrody."
 	1 "Co ty odpierdalasz?! Nie po to ciê wys³a³em ¿ebyœ zabi³ porwan¹ osobê tylko j¹ uratowa³!"
 	2 "Nie pokazuj siê tu wiêcej!"
@@ -1695,7 +1695,7 @@ dialog q_rescue_captive_end {
 }
 
 //==============================================================================
-dialog q_rescue_captive_talk {
+dialog qRescueCaptiveTalk {
 	0 "Ehhh, sam sobie poradzê. Ale najpierw muszê siê napiæ..."
 	1 "Dziêki bogom! Ktoœ odwa¿y³ siê mnie uratowaæ, ci leniwi stra¿nicy boj¹ siê wystawiæ nos poza mury miasta."
 	2 "Proszê, zabierz mnie do $start_loc$. Mogê iœæ za tob¹?"
@@ -1707,7 +1707,7 @@ dialog q_rescue_captive_talk {
 }
 
 //==============================================================================
-dialog q_retrieve_package_start {
+dialog qRetrievePackageStart {
 	0 "Mam dla ciebie wa¿ne zadanie. $burmistrz_od$ $locname_od$ wys³a³ mi przesy³kê ale niestety wpad³a ona w rêce bandytów. Chcesz j¹ odzyskaæ?"
 	1 "Tak"
 	2 "Bandyci którzy przejêli paczkê znajduj¹ siê w obozie na $target_dir$ st¹d."
@@ -1717,18 +1717,18 @@ dialog q_retrieve_package_start {
 }
 
 //==============================================================================
-dialog q_retrieve_package_timeout {
+dialog qRetrievePackageTimeout {
 	0 "Cholerni bandyci! Mia³eœ mi dostarczyæ t¹ paczkê, a czas min¹³! Nie licz na jakieœ zadania ode mnie!"
 }
 
 //==============================================================================
-dialog q_retrieve_package_end {
+dialog qRetrievePackageEnd {
 	0 "Doskona³a robota! Zawartoœæ tej paczki jest dla mnie bardzo wa¿na."
 	1 "WeŸ to $reward$ sztuk z³ota i moje podziêkowania."
 }
 
 //==============================================================================
-dialog q_sawmill_talk {
+dialog qSawmillTalk {
 	0 "Witaj, jestem Artur Drwal."
 	1 "Zajmujê siê okolicznymi lasami i ostatnio chcia³em za³o¿yæ w pobliskim lesie tartak."
 	2 "Jest tylko jeden problem - potwory."
@@ -1762,7 +1762,7 @@ dialog q_sawmill_talk {
 }
 
 //==============================================================================
-dialog q_sawmill_messenger {
+dialog qSawmillMessenger {
 	0 "Chcesz ¿ebym komuœ coœ przekaza³?"
 	1 "Witaj!"
 	2 "Mam dla ciebie wiadomoœæ od Artura Drwala i z³oto."
@@ -1772,7 +1772,7 @@ dialog q_sawmill_messenger {
 }
 
 //==============================================================================
-dialog q_spread_news_start {
+dialog qSpreadNewsStart {
 	0 "Mam dla ciebie wa¿ne zadanie. Trzeba dostarczyæ wieœci do kilku okolicznych wiosek i miast. Jesteœ zainteresowany?"
 	1 "Tak"
 	2 "Niedaleko $start_loc$ spostrze¿ono patrole orków."
@@ -1789,23 +1789,23 @@ dialog q_spread_news_start {
 }
 
 //==============================================================================
-dialog q_spread_news_tell {
+dialog qSpreadNewsTell {
 	0 "To wa¿ne informacje, nie zapomnij ich przekazaæ pozosta³ym."
 }
 
 //==============================================================================
-dialog q_spread_news_timeout {
+dialog qSpreadNewsTimeout {
 	0 "Zawiod³em siê na tobie. Mia³eœ roznieœæ wieœci do okolicznych miast. Nie licz, ¿e wiêcej otrzymasz jakieœ zadanie ode mnie."
 }
 
 //==============================================================================
-dialog q_spread_news_end {
+dialog qSpreadNewsEnd {
 	0 "Dobrze, w³aœnie takich ludzi jak ty mi potrzeba, sumiennych i odpowiedzialnych."
 	1 "WeŸ to 500 sztuk z³ota."
 }
 
 //==============================================================================
-dialog q_wanted_start {
+dialog qWantedStart {
 	0 "Mam tutaj list goñczy na jednego z poszukiwaczy przygód. Pope³ni³ wiele przestêpstw."
 	1 "Nagroda za jego g³owê wynosi $reward$ sztuk z³ota."
 	2 "Jesteœ w stanie go zabiæ?"
@@ -1817,19 +1817,19 @@ dialog q_wanted_start {
 }
 
 //==============================================================================
-dialog q_wanted_timeout {
+dialog qWantedTimeout {
 	0 "Nie uda³o ci siê zabiæ $name$? To Ÿle."
 	1 "Teraz ju¿ pewnie siê gdzieœ zaszy³ na dobre..."
 }
 
 //==============================================================================
-dialog q_wanted_end {
+dialog qWantedEnd {
 	0 "Wiedzia³em ¿e mo¿na na tobie polegaæ $player$."
 	1 "Oto twoje $reward$ sztuk z³ota."
 }
 
 //==============================================================================
-dialog crazy_cook {
+dialog crazyCook {
 	0 "Dobrze ¿e siê spotykamy bo akurat skoñczy³o mi siê œwie¿e miêso! Hahaha!"
 }
 
@@ -1850,7 +1850,7 @@ dialog tomir {
 }
 
 //==============================================================================
-dialog mage_seller {
+dialog mageSeller {
 	0 {
 		"Witaj. Potrzebujesz jakichœ magicznych przedmiotów?"
 		"Co s³ychaæ w œwiecie magii?"
@@ -1874,7 +1874,7 @@ dialog mage_seller {
 }
 
 //==============================================================================
-dialog cleric_seller {
+dialog clericSeller {
 	0 {
 		"Witaj wêdrowcze."
 		"W czym mogê ci pomóc?"
@@ -1893,7 +1893,7 @@ dialog cleric_seller {
 }
 
 //==============================================================================
-dialog generic_idle {
+dialog genericIdle {
 	0 { // generic
 		"Nuda! Czemu nie dzieje siê tu nic ciekawego?"
 		"S³ysza³eœ o tym co siê ostatnio wydarzy³o?"
@@ -1918,7 +1918,7 @@ dialog generic_idle {
 }
 
 //==============================================================================
-dialog hero_idle {
+dialog heroIdle {
 	0 { // city
 		"Napi³bym siê piwa."
 		"Idziemy do karczmy?"
@@ -1939,7 +1939,7 @@ dialog hero_idle {
 }
 
 //==============================================================================
-dialog secret_idle {
+dialog secretIdle {
 	0 {
 		"Co powiedzia³ jeden ba³wanek do drugiego?"
 		"Kamieñ ksiê¿ycowy, ksiê¿ycowa studnia. Czy to ma jakiœ zwi¹zek?"
@@ -1948,7 +1948,7 @@ dialog secret_idle {
 }
 
 //==============================================================================
-dialog citizen_idle {
+dialog citizenIdle {
 	0 { // generic
 		"Ludzie ci¹gle gadaj¹..."
 		"W tej historii musi byæ jednak ziarno prawdy."
@@ -1974,7 +1974,7 @@ dialog citizen_idle {
 }
 
 //==============================================================================
-dialog bandit_idle {
+dialog banditIdle {
 	0 {
 		"Gdzie ta karawana?!"
 		"Kupcy jak zwykle siê spóŸniaj¹, trzeba ukraœæ im wiêcej z³ota za karê."
@@ -1987,7 +1987,7 @@ dialog bandit_idle {
 }
 
 //==============================================================================
-dialog goblin_idle {
+dialog goblinIdle {
 	0 {
 		"¯ryj gruz!"
 		"Ciê¿kie jest ¿ycie goblina!"
@@ -1998,7 +1998,7 @@ dialog goblin_idle {
 }
 
 //==============================================================================
-dialog orc_idle {
+dialog orcIdle {
 	0 {
 		"Ile dziœ zabi³eœ ludzi?"
 		"Gdzie jest mój topór do kurwy?"
@@ -2011,7 +2011,7 @@ dialog orc_idle {
 }
 
 //==============================================================================
-dialog ogre_idle {
+dialog ogreIdle {
 	0 {
 		"Ogry robi¹ z koœci chleb, wyciskaj¹ bia³ko z oczu, najlepiej smakuje na tostach..."
 		"Ja zgnieœæ twój pysk!"
@@ -2021,7 +2021,7 @@ dialog ogre_idle {
 }
 
 //==============================================================================
-dialog mage_idle {
+dialog mageIdle {
 	0 {
 		"Dziwne! To nie powinno siê wydarzyæ."
 		"Ktoœ nas obserwuje. Udawaj ¿e nie widzisz."
@@ -2031,7 +2031,7 @@ dialog mage_idle {
 }
 
 //==============================================================================
-dialog wild_hunter_idle {
+dialog wildHunterIdle {
 	0 {
 		"Przeklêci drwale! Wykarczowali by ca³y las gdyby im na to pozwoliæ!"
 		"Gdzie ja zostawi³em mój kostium wilka?"
@@ -2040,7 +2040,7 @@ dialog wild_hunter_idle {
 }
 
 //==============================================================================
-dialog crazy_idle {
+dialog crazyIdle {
 	0 {
 		"Czy wiesz ¿e to co teraz mówiê nie jest podpowiedzi¹ jak znaleŸæ skarb wart milion sztuk z³ota?"
 		"Nie ma nic do powiedzenia."
@@ -2058,7 +2058,7 @@ dialog crazy_idle {
 }
 
 //==============================================================================
-dialog drunk_mage_idle {
+dialog drunkMageIdle {
 	0 {
 		"(hic)"
 		"Gdzie moje (hic) piwo?!"
@@ -2076,7 +2076,7 @@ dialog hunter {
 }
 
 //==============================================================================
-dialog hunter_leader {
+dialog hunterLeader {
 	0 {
 		"Udanych ³owów!"
 		"Witaj w naszym obozie."
@@ -2088,12 +2088,12 @@ dialog hunter_leader {
 }
 
 //==============================================================================
-dialog ill_idle {
+dialog illIdle {
 	0 "(kaszle)"
 }
 
 //==============================================================================
-dialog plague_idle {
+dialog plagueIdle {
 	0 "(kaszle)"
 	1 "(mamrotanie)"
 }

@@ -25,11 +25,11 @@ GameDialog* Quest_RetrievePackage::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_retrieve_package_start");
+		return GameDialog::TryGet("qRetrievePackageStart");
 	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_retrieve_package_timeout");
+		return GameDialog::TryGet("qRetrievePackageTimeout");
 	case QUEST_DIALOG_NEXT:
-		return GameDialog::TryGet("q_retrieve_package_end");
+		return GameDialog::TryGet("qRetrievePackageEnd");
 	default:
 		assert(0);
 		return nullptr;

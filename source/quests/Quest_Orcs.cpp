@@ -38,9 +38,9 @@ GameDialog* Quest_Orcs::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(DialogContext::current->talker->data->id == "q_orkowie_straznik")
-		return GameDialog::TryGet("q_orcs_guard");
+		return GameDialog::TryGet("qOrcsGuard");
 	else
-		return GameDialog::TryGet("q_orcs_captain");
+		return GameDialog::TryGet("qOrcsCaptain");
 }
 
 //=================================================================================================
@@ -240,13 +240,13 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
-		return GameDialog::TryGet("q_orcs2_weak_orc");
+		return GameDialog::TryGet("qOrcs2WeakOrc");
 	else if(id == "q_orkowie_kowal")
-		return GameDialog::TryGet("q_orcs2_blacksmith");
+		return GameDialog::TryGet("qOrcs2Blacksmith");
 	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
-		return GameDialog::TryGet("q_orcs2_gorush");
+		return GameDialog::TryGet("qOrcs2Gorush");
 	else
-		return GameDialog::TryGet("q_orcs2_orc");
+		return GameDialog::TryGet("qOrcs2Orc");
 }
 
 //=================================================================================================

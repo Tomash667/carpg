@@ -42,7 +42,7 @@ dialog merchant {
 }
 
 //==============================================================================
-dialog traveling_merchant {
+dialog travelingMerchant {
 	0 {
 		"How can I help you?"
 		"Hello! If you're interested, I have a few things for sale."
@@ -187,7 +187,7 @@ dialog trainer {
 }
 
 //==============================================================================
-dialog guard_captain {
+dialog guardCaptain {
 	0 "Do you have any new information about these golems or orcs?"
 	1 "Do you have any new information about these golems?"
 	2 "About golems"
@@ -275,7 +275,7 @@ dialog clerk {
 }
 
 //==============================================================================
-dialog arena_master {
+dialog arenaMaster {
 	0 "Wait a minute, I need to see how many people are willing to participate in the tournament."
 	1 "Tournament will start in a moment, you want to join? Entrance fee is 100 gold."
 	2 "Yes"
@@ -471,7 +471,7 @@ dialog hero {
 }
 
 //==============================================================================
-dialog hero_get_item {
+dialog heroGetItem {
 	0 "This item $item$ is better than what I have currently."
 	1 "Can I take it? (Companion will repay price of an item in the future spoils)"
 	2 "Yes"
@@ -481,7 +481,7 @@ dialog hero_get_item {
 }
 
 //==============================================================================
-dialog hero_buy_item {
+dialog heroBuyItem {
 	0 "This item $item$ is better than what I have currently."
 	1 "I'll buy it from you for $item_value$ gold pieces. What do you say?"
 	2 "Yes"
@@ -491,7 +491,7 @@ dialog hero_buy_item {
 }
 
 //==============================================================================
-dialog hero_pvp {
+dialog heroPvp {
 	0 {
 		"It seems that I have to work on my skills."
 		"Damn, I lost!"
@@ -652,7 +652,7 @@ dialog crazy {
 }
 
 //==============================================================================
-dialog crazy_get_item {
+dialog crazyGetItem {
 	0 "I do not know how you do this but $item$ is just what I needed."
 	1 "Can I take it? (Companion will repay price of an item in the future spoils)"
 	2 "Yes"
@@ -663,7 +663,7 @@ dialog crazy_get_item {
 }
 
 //==============================================================================
-dialog crazy_buy_item {
+dialog crazyBuyItem {
 	0 "I do not know how you do this but $item$ is just what I needed."
 	1 "I've got $item_value$ gold pieces that could become yours. So what, the exchange?"
 	2 "Yes"
@@ -674,7 +674,7 @@ dialog crazy_buy_item {
 }
 
 //==============================================================================
-dialog crazy_pvp {
+dialog crazyPvp {
 	0 {
 		"Fuuuuck!"
 		"What? It's impossible!"
@@ -729,7 +729,7 @@ dialog bandit {
 }
 
 //==============================================================================
-dialog crazy_mage_encounter {
+dialog crazyMageEncounter {
 	0 "Welcome traveler! May I cast a spell on you?"
 	1 "Yes"
 	2 "Finally some volunteers for magical experiments."
@@ -769,7 +769,7 @@ dialog captive {
 }
 
 //==============================================================================
-dialog guards_encounter {
+dialog guardsEncounter {
 	0 "If not you would have killed us all. Take this 250 gold pieces in thanks."
 	1 {
 		"Thanks again for your help."
@@ -817,7 +817,7 @@ dialog drunkman {
 }
 
 //==============================================================================
-dialog q_tutorial {
+dialog qTutorial {
 	0 "Hello!"
 	1 "Who are you?"
 	2 "I am traveling merchant, I came across this dungeon by accident."
@@ -827,14 +827,7 @@ dialog q_tutorial {
 }
 
 //==============================================================================
-dialog q_crazies {
-	0 "You will never get me alive! NEVER!"
-	1 "Stone told me clearly what they will do with me!"
-	2 "They will come for you too! I will shorten your suffering!"
-}
-
-//==============================================================================
-dialog crazies_encounter {
+dialog craziesEncounter {
 	0 {
 		"We meet again $rhero$! I gone rip out your guts!"
 		"I guess you thought that I won't find you $rhero$? As you can see you were wrong!"
@@ -925,7 +918,7 @@ dialog bodyguard {
 }
 
 //==============================================================================
-dialog mage_bodyguard {
+dialog mageBodyguard {
 	0 {
 		"Prepare to die."
 		"Why are you here? You want to die?"
@@ -953,7 +946,7 @@ dialog foodseller {
 }
 
 //==============================================================================
-dialog q_bandits_master {
+dialog qBanditsMaster {
 	0 "Hello adventurer!"
 	1 "I'm Arto, master agents of His Majesty."
 	2 "I have a task for someone like you."
@@ -1015,7 +1008,7 @@ dialog q_bandits_master {
 }
 
 //==============================================================================
-dialog q_bandits_encounter {
+dialog qBanditsEncounter {
 	0 "Stop!"
 	1 "Give this package or say goodbye to life!"
 	2 "Give package"
@@ -1033,14 +1026,14 @@ dialog q_bandits_encounter {
 }
 
 //==============================================================================
-dialog q_bandits_captain {
+dialog qBanditsCaptain {
 	0 "So you work for the agents of the king."
 	1 "I'll give you who you need, but try to keep them alive."
 	2 "Go to the camp to the $camp_dir$ from here, guards already be there waiting for you."
 }
 
 //==============================================================================
-dialog q_bandits_guard {
+dialog qBanditsGuard {
 	0 {
 		"Let's show the bandits that the guards are not weaklings!"
 		"Lead on!"
@@ -1053,7 +1046,7 @@ dialog q_bandits_guard {
 }
 
 //==============================================================================
-dialog q_bandits_agent {
+dialog qBanditsAgent {
 	0 "Hello!"
 	1 "When you fought here I searched the whole camp, it looks like the bandits have a secret base in some dungeon."
 	2 "From my information it is $target_loc$ to the $target_dir_camp$ from here."
@@ -1063,14 +1056,21 @@ dialog q_bandits_agent {
 }
 
 //==============================================================================
-dialog q_bandits_boss {
+dialog qBanditsBoss {
 	0 "You dumb fuck!"
 	1 "You think you can just come on here to kill my comrades and steal what you like?!"
 	2 "I'll torn you into pieces!"
 }
 
 //==============================================================================
-dialog q_crazies_trainer {
+dialog qCrazies {
+	0 "You will never get me alive! NEVER!"
+	1 "Stone told me clearly what they will do with me!"
+	2 "They will come for you too! I will shorten your suffering!"
+}
+
+//==============================================================================
+dialog qCraziesTrainer {
 	0 "I've heard stories about this stone."
 	1 "His presence attracts some creatures and cause madness."
 	2 "You'd better get rid of it quickly..."
@@ -1079,7 +1079,7 @@ dialog q_crazies_trainer {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_start {
+dialog qDeliverParcelStart {
 	0 "I'm looking for someone who will deliver this package to $target_burmistrza$ in $target_locname$. Are you interested in it?"
 	1 "Yes"
 	2 "Well, here's the package. You have half a month to deliver it. You will receive your payment at $target_locname$."
@@ -1089,7 +1089,7 @@ dialog q_deliver_parcel_start {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_give {
+dialog qDeliverParcelGive {
 	0 "What have you got for me?"
 	1 "You were supposed to deliver the parcel sooner, but better late than never."
 	2 "Take this 300 gold pieces."
@@ -1098,12 +1098,12 @@ dialog q_deliver_parcel_give {
 }
 
 //==============================================================================
-dialog q_deliver_parcel_timeout {
+dialog qDeliverParcelTimeout {
 	0 "I'm disappointed. You were supposed to deliver a package for $target_burmistrza$ in $target_locname$. Do not expect that you will appoint some responsible task from me."
 }
 
 //==============================================================================
-dialog q_deliver_parcel_bandits {
+dialog qDeliverParcelBandits {
 	0 "We know that you have a package for $target_burmistrza$ in $target_locname$."
 	1 "Will you give it to me or do I need to kill you?!"
 	2 "Give it"
@@ -1113,7 +1113,7 @@ dialog q_deliver_parcel_bandits {
 }
 
 //==============================================================================
-dialog q_evil_cleric {
+dialog qEvilCleric {
 	0 "Good job! One portal closed, two left."
 	1 "Only one portal left!"
 	2 "Perfect! All the portals closed!"
@@ -1157,7 +1157,7 @@ dialog q_evil_cleric {
 }
 
 //==============================================================================
-dialog q_evil_mage {
+dialog qEvilMage {
 	0 "What are you staring at me?! Do you want something?"
 	1 "I need Summoning book"
 	2 "And why do you need it? You do not look like a mage."
@@ -1170,7 +1170,7 @@ dialog q_evil_mage {
 }
 
 //==============================================================================
-dialog q_evil_captain {
+dialog qEvilCaptain {
 	0 "And what's with the book?"
 	1 "You want to stop summoning of the undead?"
 	2 "Talk to the $(Level::IsCity() ? \"mayor\" : \"soltys\"), without his permission nothing can be done."
@@ -1180,19 +1180,19 @@ dialog q_evil_captain {
 }
 
 //==============================================================================
-dialog q_evil_mayor {
+dialog qEvilMayor {
 	0 "You need this book to stop summoning of the undead?"
 	1 "Of course, you can take. Talk with the captain, he will hand it to you."
 }
 
 //==============================================================================
-dialog q_evil_boss {
+dialog qEvilBoss {
 	0 "Damn manling!"
 	1 "I will torture your soul to the end of the world and one day longer!"
 }
 
 //==============================================================================
-dialog q_goblins_nobleman {
+dialog qGoblinsNobleman {
 	0 "Eeeee... Hello brave traveler!"
 	1 "I am Sir Foltest Denhoff."
 	2 "Are you coming to perform an important task for me?"
@@ -1234,13 +1234,13 @@ dialog q_goblins_nobleman {
 }
 
 //==============================================================================
-dialog q_goblins_encounter {
+dialog qGoblinsEncounter {
 	0 "Spleen! Take bow to the base, quickly!"
 	1 "Squee and Spoon! Kill them!"
 }
 
 //==============================================================================
-dialog q_goblins_messenger {
+dialog qGoblinsMessenger {
 	0 "Hello!"
 	1 "I have a message for you from Sir Foltest Denhoff."
 	2 "He is ready to forgive you for your stupidity if at the moment you go and recover the bow."
@@ -1250,7 +1250,7 @@ dialog q_goblins_messenger {
 }
 
 //==============================================================================
-dialog q_goblins_mage {
+dialog qGoblinsMage {
 	0 "Welcome traveler!"
 	1 "I am a traveling mage. I've heard that you have found a artifact - a bow."
 	2 "Maybe you have it with you still?"
@@ -1271,7 +1271,7 @@ dialog q_goblins_mage {
 }
 
 //==============================================================================
-dialog q_goblins_innkeeper {
+dialog qGoblinsInnkeeper {
 	0 "Sir Foltest Denhoff? That scoundrel?!"
 	1 "Hardly anyone likes it here, made his money in the trade with goblins and orcs."
 	2 "He has a fort at $target_dir$ from here, $target_loc$."
@@ -1279,14 +1279,14 @@ dialog q_goblins_innkeeper {
 }
 
 //==============================================================================
-dialog q_goblins_boss {
+dialog qGoblinsBoss {
 	0 "Please, please. Whom have we here?"
 	1 "Pesky adventurer. Came to look at real power of the Angelic bow?"
 	2 "I'll try it on you!"
 }
 
 //==============================================================================
-dialog q_mages_scholar {
+dialog qMagesScholar {
 	0 "Welcome traveler!"
 	1 "I have a job for you if you're interested."
 	2 "I'm looking for some artifact, nothing especially valuable."
@@ -1308,7 +1308,7 @@ dialog q_mages_scholar {
 }
 
 //==============================================================================
-dialog q_mages_golem {
+dialog qMagesGolem {
 	0 "*Leave*"
 	1 "*Give all the gold or die*"
 	2 "Give"
@@ -1318,7 +1318,7 @@ dialog q_mages_golem {
 }
 
 //==============================================================================
-dialog q_mages2_captain {
+dialog qMages2Captain {
 	0 "Did you learn anything about these golems?"
 	1 "We only know that they rob travelers, some of them got destroy but there it is more and more of them."
 	2 "Someone has to make them."
@@ -1341,7 +1341,7 @@ dialog q_mages2_captain {
 }
 
 //==============================================================================
-dialog q_mages2_mage {
+dialog qMages2Mage {
 	0 "Welcome back my friend!"
 	1 "Thank you for everything! For that I regained clarity of mind and for that you beat the damn mage!"
 	2 "Maybe we will meet again someday."
@@ -1405,14 +1405,14 @@ dialog q_mages2_mage {
 }
 
 //==============================================================================
-dialog q_mages2_boss {
+dialog qMages2Boss {
 	0 "What do you think? That you have any chances? Funny you are!"
 	1 "Oh, I see you have brought $dobry$. I'll kill him too!"
 	2 "Would you rather die from a fireball or by lightning!?"
 }
 
 //==============================================================================
-dialog q_mine_investor {
+dialog qMineInvestor {
 	0 "Hello, my name is Marco Bartoli."
 	1 "Are you interested in working for me?"
 	2 "Welcome back."
@@ -1472,7 +1472,7 @@ dialog q_mine_investor {
 }
 
 //==============================================================================
-dialog q_mine_messenger {
+dialog qMineMessenger {
 	0 "Hello!"
 	1 "I have a message for you, and gold from Marco Bartoli."
 	2 "Mine was built and has already produced the first profits."
@@ -1481,7 +1481,7 @@ dialog q_mine_messenger {
 }
 
 //==============================================================================
-dialog q_mine_messenger2 {
+dialog qMineMessenger2 {
 	0 "Hello!"
 	1 "I have a message for you from Marco Bartoli."
 	2 "In the mine there was discovered deposits of gold."
@@ -1490,7 +1490,7 @@ dialog q_mine_messenger2 {
 }
 
 //==============================================================================
-dialog q_mine_messenger3 {
+dialog qMineMessenger3 {
 	0 "Hello!"
 	1 "I have a message for you, and gold from Marco Bartoli."
 	2 "Mine has been expanded, gold is already mined."
@@ -1499,7 +1499,7 @@ dialog q_mine_messenger3 {
 }
 
 //==============================================================================
-dialog q_mine_messenger4 {
+dialog qMineMessenger4 {
 	0 "Hello!"
 	1 "I have a message for you from Marco Bartoli."
 	2 "In the mine they dug into some dungeon."
@@ -1508,7 +1508,7 @@ dialog q_mine_messenger4 {
 }
 
 //==============================================================================
-dialog q_mine_boss {
+dialog qMineBoss {
 	0 "Work on the construction is still going on."
 	1 "Mining is going well."
 	2 "Work on the construction is still going on."
@@ -1526,12 +1526,12 @@ dialog q_mine_boss {
 }
 
 //==============================================================================
-dialog messenger_talked {
+dialog qMineMessengerTalked {
 	0 "You want me to pass something?"
 }
 
 //==============================================================================
-dialog q_orcs_guard {
+dialog qOrcsGuard {
 	0 "Welcome traveler."
 	1 "I came to the inn to see if there are any strong adventurers here."
 	2 "The captain is looking for someone who will take care of a bunch of orcs located nearby."
@@ -1539,7 +1539,7 @@ dialog q_orcs_guard {
 }
 
 //==============================================================================
-dialog q_orcs_captain {
+dialog qOrcsCaptain {
 	0 "Orcs ensconced in one of the nearby dungeons and attack the farmers and travelers."
 	1 "I need someone who would deal with them. Are you interested in it?"
 	2 "Yes"
@@ -1555,7 +1555,7 @@ dialog q_orcs_captain {
 }
 
 //==============================================================================
-dialog q_orcs2_gorush {
+dialog qOrcs2Gorush {
 	0 "Welcome again mora!"
 	1 "That was good fight mora!"
 	2 "Now the leader of the Black dragon is dead it's time to rebuilt my clan."
@@ -1632,7 +1632,7 @@ dialog q_orcs2_gorush {
 }
 
 //==============================================================================
-dialog q_orcs2_weak_orc {
+dialog qOrcs2WeakOrc {
 	0 "Welcome mora!"
 	1 {
 		"Leave me mora!"
@@ -1641,7 +1641,7 @@ dialog q_orcs2_weak_orc {
 }
 
 //==============================================================================
-dialog q_orcs2_blacksmith {
+dialog qOrcs2Blacksmith {
 	0 "Welcome mora! Want to trade?"
 	1 "Yes"
 	2 "No"
@@ -1649,7 +1649,7 @@ dialog q_orcs2_blacksmith {
 }
 
 //==============================================================================
-dialog q_orcs2_orc {
+dialog qOrcs2Orc {
 	0 {
 		"What mora?"
 		"Yes mora?"
@@ -1658,7 +1658,7 @@ dialog q_orcs2_orc {
 }
 
 //==============================================================================
-dialog q_rescue_captive_start {
+dialog qRescueCaptiveStart {
 	0 "$Goddamn_bandits$ kidnapped one of our citizens. Demanding ransom now and I do not have enough guards to take care of them."
 	1 "Maybe you want to prove yourself?"
 	2 "Yes"
@@ -1669,12 +1669,12 @@ dialog q_rescue_captive_start {
 }
 
 //==============================================================================
-dialog q_rescue_captive_timeout {
+dialog qRescueCaptiveTimeout {
 	0 "You're late, we had to pay the ransom. Knew that you're not a hero!"
 }
 
 //==============================================================================
-dialog q_rescue_captive_end {
+dialog qRescueCaptiveEnd {
 	0 "The family is very happy with your rescue mission. Take this $reward$ gold pieces award."
 	1 "What the fuck are you doing?! You were sent you save the kidnapped person not to kill him!"
 	2 "Don't show here again!"
@@ -1683,7 +1683,7 @@ dialog q_rescue_captive_end {
 }
 
 //==============================================================================
-dialog q_rescue_captive_talk {
+dialog qRescueCaptiveTalk {
 	0 "Ehhh, I can handle it. But first, I need a drink..."
 	1 "Thank the gods! Someone dared to rescue me, lazy guards are afraid to stick nose outside the city walls."
 	2 "Please take me to $start_loc$. Can I go after you?"
@@ -1695,7 +1695,7 @@ dialog q_rescue_captive_talk {
 }
 
 //==============================================================================
-dialog q_retrieve_package_start {
+dialog qRetrievePackageStart {
 	0 "I have important task for you. $burmistrz_od$ from $locname_od$ sent me a package, but unfortunately it fell into the hands of bandits. Can you take it back?"
 	1 "Yes"
 	2 "The bandits who took over a parcel are located in the camp $target_dir$ from here."
@@ -1705,18 +1705,18 @@ dialog q_retrieve_package_start {
 }
 
 //==============================================================================
-dialog q_retrieve_package_timeout {
+dialog qRetrievePackageTimeout {
 	0 "Damn bandits! You had to get this package for me, and the time has passed! Do not count on any job from me!"
 }
 
 //==============================================================================
-dialog q_retrieve_package_end {
+dialog qRetrievePackageEnd {
 	0 "Excellent work! The contents of this package are very important to me."
 	1 "You have my thanks. Take these $reward$ gold pieces."
 }
 
 //==============================================================================
-dialog q_sawmill_talk {
+dialog qSawmillTalk {
 	0 "Hello, I'm Arthur the Lumberjack."
 	1 "I deal with the surrounding forests and recently wanted to set up sawmill in a nearby forest."
 	2 "There is only one problem - the monsters."
@@ -1750,7 +1750,7 @@ dialog q_sawmill_talk {
 }
 
 //==============================================================================
-dialog q_sawmill_messenger {
+dialog qSawmillMessenger {
 	0 "You want me to pass something?"
 	1 "Hello!"
 	2 "I have a message for you from Arthur the Lumberjack and gold."
@@ -1760,7 +1760,7 @@ dialog q_sawmill_messenger {
 }
 
 //==============================================================================
-dialog q_spread_news_start {
+dialog qSpreadNewsStart {
 	0 "I have some important task. Need to deliver the news to several surrounding villages and towns. Are you interested in it?"
 	1 "Yes"
 	2 "Near $start_loc$ was noticed patrols orcs."
@@ -1777,23 +1777,23 @@ dialog q_spread_news_start {
 }
 
 //==============================================================================
-dialog q_spread_news_tell {
+dialog qSpreadNewsTell {
 	0 "This is important information, do not forget to pass them to others."
 }
 
 //==============================================================================
-dialog q_spread_news_timeout {
+dialog qSpreadNewsTimeout {
 	0 "You disappointed me. You were supposed to spread the news to the surrounding towns. Don't count on getting task from me."
 }
 
 //==============================================================================
-dialog q_spread_news_end {
+dialog qSpreadNewsEnd {
 	0 "Good, just people like you I need, conscientious and responsible."
 	1 "Take this 500 gold pieces."
 }
 
 //==============================================================================
-dialog q_wanted_start {
+dialog qWantedStart {
 	0 "I've got a wanted poster on one of the adventurers. Committed many crimes."
 	1 "Award for his head is $reward$ gold pieces."
 	2 "You are able to kill him?"
@@ -1805,19 +1805,19 @@ dialog q_wanted_start {
 }
 
 //==============================================================================
-dialog q_wanted_timeout {
+dialog qWantedTimeout {
 	0 "You could not kill the $name$? That's bad."
 	1 "He probably holed up somewhere for good..."
 }
 
 //==============================================================================
-dialog q_wanted_end {
+dialog qWantedEnd {
 	0 "I knew that I could rely on you $player$."
 	1 "Here is you reward, $reward$ gold pieces."
 }
 
 //==============================================================================
-dialog crazy_cook {
+dialog crazyCook {
 	0 "Well we meet because I just run out of fresh meat! Hahaha!"
 }
 
@@ -1838,7 +1838,7 @@ dialog tomir {
 }
 
 //==============================================================================
-dialog mage_seller {
+dialog mageSeller {
 	0 {
 		"Welcome. Do you need some magic items?"
 		"What's going on in the world of magic?"
@@ -1862,7 +1862,7 @@ dialog mage_seller {
 }
 
 //==============================================================================
-dialog cleric_seller {
+dialog clericSeller {
 	0 {
 		"Hello, traveler."
 		"How can I help you?"
@@ -1881,7 +1881,7 @@ dialog cleric_seller {
 }
 
 //==============================================================================
-dialog generic_idle {
+dialog genericIdle {
 	0 { // generic
 		"Boring! Why doesn't anything interesting happen here?"
 		"Did you hear about what happened the other day?"
@@ -1906,7 +1906,7 @@ dialog generic_idle {
 }
 
 //==============================================================================
-dialog hero_idle {
+dialog heroIdle {
 	0 { // city
 		"I could use a beer."
 		"Can we go to the inn?"
@@ -1927,7 +1927,7 @@ dialog hero_idle {
 }
 
 //==============================================================================
-dialog secret_idle {
+dialog secretIdle {
 	0 {
 		"What did one snowman say to the other?"
 		"Moonstone, moonwell. Did it have anything to do with those?"
@@ -1936,7 +1936,7 @@ dialog secret_idle {
 }
 
 //==============================================================================
-dialog citizen_idle {
+dialog citizenIdle {
 	0 { // generic
 		"People keep talking..."
 		"In this story, however, there must be a grain of truth."
@@ -1962,7 +1962,7 @@ dialog citizen_idle {
 }
 
 //==============================================================================
-dialog bandit_idle {
+dialog banditIdle {
 	0 {
 		"Where is the caravan?!"
 		"Merchants are late as usual, we have to teach them a lesson by stealing more gold."
@@ -1975,7 +1975,7 @@ dialog bandit_idle {
 }
 
 //==============================================================================
-dialog goblin_idle {
+dialog goblinIdle {
 	0 {
 		"Eat rubble!"
 		"Hard is the life of a goblin!"
@@ -1986,7 +1986,7 @@ dialog goblin_idle {
 }
 
 //==============================================================================
-dialog orc_idle {
+dialog orcIdle {
 	0 {
 		"How many people did you kill today?"
 		"Where is my fucking axe?"
@@ -1999,7 +1999,7 @@ dialog orc_idle {
 }
 
 //==============================================================================
-dialog ogre_idle {
+dialog ogreIdle {
 	0 {
 		"Ogres make bread from bones, squeeze protein out of eyes, it tastes best on toast..."
 		"Me crush your muzzle!"
@@ -2009,7 +2009,7 @@ dialog ogre_idle {
 }
 
 //==============================================================================
-dialog mage_idle {
+dialog mageIdle {
 	0 {
 		"Strange! This should not happen."
 		"Someone is watching us. Pretend you don't see."
@@ -2019,7 +2019,7 @@ dialog mage_idle {
 }
 
 //==============================================================================
-dialog wild_hunter_idle {
+dialog wildHunterIdle {
 	0 {
 		"Cursed woodcutters! They would have cleared the whole forest if they let it happen!"
 		"Where did I leave my wolf costume?"
@@ -2028,7 +2028,7 @@ dialog wild_hunter_idle {
 }
 
 //==============================================================================
-dialog crazy_idle {
+dialog crazyIdle {
 	0 {
 		"Do you know that what I say now isn't a hint on how to find a treasure worth a million gold pieces?"
 		"There is nothing to say."
@@ -2046,7 +2046,7 @@ dialog crazy_idle {
 }
 
 //==============================================================================
-dialog drunk_mage_idle {
+dialog drunkMageIdle {
 	0 {
 		"(hic)"
 		"Where is (hic) my beer?!"
@@ -2064,7 +2064,7 @@ dialog hunter {
 }
 
 //==============================================================================
-dialog hunter_leader {
+dialog hunterLeader {
 	0 {
 		"Happy hunting!"
 		"Welcome to our camp."
@@ -2076,12 +2076,12 @@ dialog hunter_leader {
 }
 
 //==============================================================================
-dialog ill_idle {
+dialog illIdle {
 	0 "(coughs)"
 }
 
 //==============================================================================
-dialog plague_idle {
+dialog plagueIdle {
 	0 "(coughs)"
 	1 "(mumble)"
 }

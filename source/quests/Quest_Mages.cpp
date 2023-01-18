@@ -29,9 +29,9 @@ GameDialog* Quest_Mages::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(DialogContext::current->talker->data->id == "q_magowie_uczony")
-		return GameDialog::TryGet("q_mages_scholar");
+		return GameDialog::TryGet("qMagesScholar");
 	else
-		return GameDialog::TryGet("q_mages_golem");
+		return GameDialog::TryGet("qMagesGolem");
 }
 
 //=================================================================================================
@@ -174,11 +174,11 @@ GameDialog* Quest_Mages2::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(DialogContext::current->talker->data->id == "q_magowie_stary")
-		return GameDialog::TryGet("q_mages2_mage");
+		return GameDialog::TryGet("qMages2Mage");
 	else if(DialogContext::current->talker->data->id == "q_magowie_boss")
-		return GameDialog::TryGet("q_mages2_boss");
+		return GameDialog::TryGet("qMages2Boss");
 	else
-		return GameDialog::TryGet("q_mages2_captain");
+		return GameDialog::TryGet("qMages2Captain");
 }
 
 //=================================================================================================
@@ -557,5 +557,5 @@ void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
 	spawn.level = 8;
 	spawn.groupName = "q_magowie_golems";
 	spawn.dontAttack = true;
-	spawn.dialog = GameDialog::TryGet("q_mages");
+	spawn.dialog = GameDialog::TryGet("qMages");
 }

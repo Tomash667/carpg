@@ -61,15 +61,15 @@ GameDialog* Quest_Evil::GetDialog(int type2)
 	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
-		return GameDialog::TryGet("q_evil_cleric");
+		return GameDialog::TryGet("qEvilCleric");
 	else if(id == "q_zlo_mag")
-		return GameDialog::TryGet("q_evil_mage");
+		return GameDialog::TryGet("qEvilMage");
 	else if(id == "q_zlo_boss")
-		return GameDialog::TryGet("q_evil_boss");
+		return GameDialog::TryGet("qEvilBoss");
 	else if(id == "guard_captain")
-		return GameDialog::TryGet("q_evil_captain");
+		return GameDialog::TryGet("qEvilCaptain");
 	else if(id == "mayor" || id == "soltys")
-		return GameDialog::TryGet("q_evil_mayor");
+		return GameDialog::TryGet("qEvilMayor");
 	else
 	{
 		assert(0);

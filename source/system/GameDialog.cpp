@@ -6,6 +6,7 @@
 #include <angelscript.h>
 
 GameDialog::Map GameDialog::dialogs;
+std::map<string, GameDialog*> GameDialog::aliases;
 DialogScripts DialogScripts::global;
 
 //=================================================================================================
@@ -199,10 +200,14 @@ GameDialog::Text& GameDialog::GetMultiText(int value)
 GameDialog* GameDialog::TryGet(cstring id)
 {
 	auto it = dialogs.find(id);
-	if(it == dialogs.end())
-		return nullptr;
-	else
+	if(it != dialogs.end())
 		return it->second;
+
+	auto it2 = aliases.find(id);
+	if(it2 != aliases.end())
+		return it2->second;
+
+	return nullptr;
 }
 
 //=================================================================================================

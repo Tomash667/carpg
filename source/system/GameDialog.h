@@ -128,6 +128,7 @@ struct GameDialog
 	}
 	static void Cleanup();
 	static Map dialogs;
+	static std::map<string, GameDialog*> aliases;
 };
 
 //-----------------------------------------------------------------------------

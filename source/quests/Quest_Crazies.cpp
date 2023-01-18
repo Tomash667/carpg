@@ -36,7 +36,7 @@ void Quest_Crazies::Start()
 //=================================================================================================
 GameDialog* Quest_Crazies::GetDialog(int type2)
 {
-	return GameDialog::TryGet("q_crazies_trainer");
+	return GameDialog::TryGet("qCraziesTrainer");
 }
 
 //=================================================================================================
@@ -247,7 +247,7 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 		spawn.essential = UnitData::Get("q_szaleni_szaleniec");
 		spawn.level = 13;
 		spawn.dontAttack = true;
-		spawn.dialog = GameDialog::TryGet("q_crazies");
+		spawn.dialog = GameDialog::TryGet("qCrazies");
 		spawn.count = 1;
 
 		checkStone = true;

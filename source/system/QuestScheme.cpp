@@ -26,11 +26,9 @@ QuestScheme* QuestScheme::TryGet(const string& id)
 //=================================================================================================
 GameDialog* QuestScheme::GetDialog(const string& id)
 {
-	for(GameDialog* dialog : dialogs)
-	{
-		if(dialog->id == id)
-			return dialog;
-	}
+	auto it = dialogMap.find(id);
+	if(it != dialogMap.end())
+		return it->second;
 	return nullptr;
 }
 

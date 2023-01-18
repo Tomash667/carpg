@@ -79,7 +79,7 @@ quest deliverResources {
 		3 "But wait... Where do you have these resources?"
 	}
 	
-	dialog bandits_enc {
+	dialog banditsEnc {
 		0 "Finally you are fucking here! Kill him!"
 	}
 	
@@ -384,7 +384,7 @@ quest main {
 		11 "I hope this plague can be ended..."
 	}
 	
-	dialog ill_villager {
+	dialog illVillager {
 		0 "You'd better step back. I think I'm ill..."
 		1 "Ask about illness"
 		2 "End dialog"
@@ -397,7 +397,7 @@ quest main {
 		9 "I feel sick. I think you will have to send for some cleric..."
 	}
 	
-	dialog cleric_seller {
+	dialog clericSeller {
 		0 "Plague"
 		1 "Plague? Nothing that I know of..."
 		2 "You probably wanted to talk to $(cleric.realName)?"
@@ -530,7 +530,7 @@ quest mainVillage3 {
 		0 "Thanks for the rescue. I'm getting out of here!"
 	}
 	
-	dialog inn_villager {
+	dialog innVillager {
 		0 "Thank the gods someone showed up! I thought I was over."
 		1 "It all started with this alchemist..."
 		2 "I'm getting out of here while I still have a chance!"

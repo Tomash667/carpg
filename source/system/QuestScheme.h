@@ -16,6 +16,7 @@ struct QuestScheme
 	string id;
 	QuestCategory category;
 	vector<GameDialog*> dialogs;
+	std::map<string, GameDialog*> dialogMap;
 	vector<string> progress;
 	vector<pair<uint, uint>> varAlias;
 	asITypeInfo* scriptType;

@@ -46,17 +46,17 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 	cstring dialogId;
 
 	if(id == "mistrz_agentow")
-		dialogId = "q_bandits_master";
+		dialogId = "qBanditsMaster";
 	else if(id == "guard_captain")
-		dialogId = "q_bandits_captain";
+		dialogId = "qBanditsCaptain";
 	else if(id == "guard_q_bandyci")
-		dialogId = "q_bandits_guard";
+		dialogId = "qBanditsGuard";
 	else if(id == "agent")
-		dialogId = "q_bandits_agent";
+		dialogId = "qBanditsAgent";
 	else if(id == "q_bandyci_szef")
 		dialogId = "q_bandits_boss";
 	else
-		dialogId = "q_bandits_encounter";
+		dialogId = "qBanditsEncounter";
 
 	return GameDialog::TryGet(dialogId);
 }
@@ -93,7 +93,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			Location& other = *world->GetLocation(otherLoc);
 			Encounter* e = world->AddEncounter(enc);
-			e->dialog = GameDialog::TryGet("q_bandits");
+			e->dialog = GameDialog::TryGet("qBandits");
 			e->dontAttack = true;
 			e->group = UnitGroup::Get("bandits");
 			e->locationEventHandler = nullptr;
@@ -116,7 +116,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location* other = world->GetRandomSettlement(startLoc);
 			otherLoc = other->index;
 			Encounter* e = world->AddEncounter(enc);
-			e->dialog = GameDialog::TryGet("q_bandits");
+			e->dialog = GameDialog::TryGet("qBandits");
 			e->dontAttack = true;
 			e->group = UnitGroup::Get("bandits");
 			e->locationEventHandler = nullptr;
@@ -361,7 +361,7 @@ Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 	if(enc != -1)
 	{
 		Encounter* e = world->RecreateEncounter(enc);
-		e->dialog = GameDialog::TryGet("q_bandits");
+		e->dialog = GameDialog::TryGet("qBandits");
 		e->dontAttack = true;
 		e->group = UnitGroup::Get("bandits");
 		e->locationEventHandler = nullptr;

@@ -16,7 +16,8 @@ enum Group
 	G_TOP,
 	G_PROPERTY,
 	G_QUEST_CATEGORY,
-	G_FLAGS
+	G_FLAGS,
+	G_ALIAS_TYPE
 };
 
 enum TopKeyword
@@ -35,6 +36,12 @@ enum Property
 	P_DIALOG,
 	P_FLAGS,
 	P_ALIAS
+};
+
+enum AliasType
+{
+	AT_VAR,
+	AT_DIALOG
 };
 
 enum QuestKeyword
@@ -93,6 +100,11 @@ void QuestLoader::InitTokenizer()
 	t.AddKeywords(G_FLAGS, {
 		{ "dontCount", QuestScheme::DONT_COUNT },
 		{ "recreate", QuestScheme::RECREATE }
+		});
+
+	t.AddKeywords(G_ALIAS_TYPE, {
+		{ "var", AT_VAR },
+		{ "dialog", AT_DIALOG }
 		});
 }
 
@@ -173,6 +185,7 @@ void QuestLoader::ParseQuest(const string& id)
 					t.Throw(str);
 				}
 				quest->dialogs.push_back(dialog);
+				quest->dialogMap[dialog->id] = dialog;
 			}
 			break;
 		case P_FLAGS:
@@ -184,11 +197,27 @@ void QuestLoader::ParseQuest(const string& id)
 				t.Next();
 				while(!t.IsSymbol('}'))
 				{
-					uint newHash = Hash(t.MustGetItem());
+					const AliasType type = (AliasType)t.MustGetKeywordId(G_ALIAS_TYPE);
 					t.Next();
-					uint oldHash = Hash(t.MustGetItem());
-					quest->varAlias.push_back(std::make_pair(newHash, oldHash));
-					t.Next();
+					if(type == AT_VAR)
+					{
+						uint newHash = Hash(t.MustGetItem());
+						t.Next();
+						uint oldHash = Hash(t.MustGetItem());
+						quest->varAlias.push_back(std::make_pair(newHash, oldHash));
+						t.Next();
+					}
+					else
+					{
+						const string& dialogId = t.MustGetItem();
+						GameDialog* dialog = quest->GetDialog(dialogId);
+						if(!dialog)
+							t.Throw("Missing dialog '%s'.", dialogId.c_str());
+						t.Next();
+						const string& aliasId = t.MustGetItem();
+						quest->dialogMap[aliasId] = dialog;
+						t.Next();
+					}
 				}
 			}
 			break;

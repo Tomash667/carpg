@@ -43,17 +43,17 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_gobliny_szlachcic")
-		return GameDialog::TryGet("q_goblins_nobleman");
+		return GameDialog::TryGet("qGoblinsNobleman");
 	else if(id == "q_gobliny_mag")
-		return GameDialog::TryGet("q_goblins_mage");
+		return GameDialog::TryGet("qGoblinsMage");
 	else if(id == "innkeeper")
-		return GameDialog::TryGet("q_goblins_innkeeper");
+		return GameDialog::TryGet("qGoblinsInnkeeper");
 	else if(id == "q_gobliny_szlachcic2")
-		return GameDialog::TryGet("q_goblins_boss");
+		return GameDialog::TryGet("qGoblinsBoss");
 	else
 	{
 		assert(id == "q_gobliny_poslaniec");
-		return GameDialog::TryGet("q_goblins_messenger");
+		return GameDialog::TryGet("qGoblinsMessenger");
 	}
 }
 
@@ -137,7 +137,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			// encounter
 			Encounter* e = world->AddEncounter(enc);
 			e->checkFunc = TeamHaveOldBow;
-			e->dialog = GameDialog::TryGet("q_goblins_encounter");
+			e->dialog = GameDialog::TryGet("qGoblinsEncounter");
 			e->dontAttack = true;
 			e->group = UnitGroup::Get("goblins");
 			e->locationEventHandler = nullptr;
@@ -349,7 +349,7 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 	{
 		Encounter* e = world->RecreateEncounter(enc);
 		e->checkFunc = TeamHaveOldBow;
-		e->dialog = GameDialog::TryGet("q_goblins_encounter");
+		e->dialog = GameDialog::TryGet("qGoblinsEncounter");
 		e->dontAttack = true;
 		e->group = UnitGroup::Get("goblins");
 		e->locationEventHandler = nullptr;

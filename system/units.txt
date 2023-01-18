@@ -1295,7 +1295,7 @@ unit base_human {
 		random {!-2shortBlade !-2axe !-2blunt}
 		random 1 3 !normalFood
 	}
-	idleDialog citizen_idle
+	idleDialog citizenIdle
 }
 
 unit base_player : base_human {
@@ -1393,7 +1393,7 @@ unit traveling_merchant : merchant {
 		stock merchant
 		groups {weapon bow shield armor amulet ring consumable other book}
 	}
-	dialog traveling_merchant
+	dialog travelingMerchant
 }
 
 unit food_seller : merchant {
@@ -1438,7 +1438,7 @@ unit tut_czlowiek : base_human {
 		stock merchant
 		groups {weapon bow shield armor amulet ring consumable other book}
 	}
-	dialog q_tutorial
+	dialog qTutorial
 }
 
 unit villager : citizen {
@@ -1474,7 +1474,7 @@ unit guard : base_guard {
 }
 
 unit guard_wagon : base_guard {
-	dialog guards_encounter
+	dialog guardsEncounter
 }
 
 unit guard_merchant : base_guard {
@@ -1489,7 +1489,7 @@ unit guard_captain : base_human {
 	flags | {aiGuard aiStay dontEat limitedRot guard}
 	items guard
 	gold {100 200}
-	dialog guard_captain
+	dialog guardCaptain
 }
 
 unit trainer : base_human {
@@ -1537,7 +1537,7 @@ unit mage_seller : base_human {
 	}
 	gold {1000 2000}
 	abilities mage
-	dialog mage_seller
+	dialog mageSeller
 }
 
 unit cleric_seller : base_human {
@@ -1554,7 +1554,7 @@ unit cleric_seller : base_human {
 		{heal 0}
 	}
 	gold {1000 2000}
-	dialog cleric_seller
+	dialog clericSeller
 }
 
 unit arena_master : base_human {
@@ -1562,7 +1562,7 @@ unit arena_master : base_human {
 	flags | {aiGuard aiStay limitedRot dontEat talkAtCompetition}
 	items guard
 	gold {150 300}
-	dialog arena_master
+	dialog arenaMaster
 }
 
 unit viewer : base_human {
@@ -1612,7 +1612,7 @@ unit artur_drwal : base_human {
 		ringAxe
 	}
 	gold {250 500}
-	dialog q_sawmill
+	dialog qSawmill
 }
 
 unit messenger : base_human {
@@ -1627,7 +1627,7 @@ unit messenger : base_human {
 }
 
 unit poslaniec_tartak : messenger {
-	dialog q_sawmill
+	dialog qSawmill
 }
 
 unit drwal : base_human {
@@ -1651,11 +1651,11 @@ unit inwestor : base_human {
 		ringPersuasion
 	}
 	gold {2500 5000}
-	dialog q_mine
+	dialog qMine
 }
 
 unit poslaniec_kopalnia : messenger {
-	dialog q_mine
+	dialog qMine
 }
 
 unit gornik : base_human {
@@ -1675,7 +1675,7 @@ unit gornik_szef : gornik {
 	flags | {aiStay ~miner limitedRot}
 	hp 600
 	gold {60 120}
-	dialog q_mine
+	dialog qMine
 }
 
 unit pijak : base_human {
@@ -1696,13 +1696,13 @@ unit mistrz_agentow : base_human {
 	flags | {aiStay hero specificName backstab dontEat}
 	items rogue
 	gold {120 240}
-	dialog q_bandits
+	dialog qBandits
 }
 
 unit guard_q_bandyci : base_guard {
 	flags | aiTrain
 	items q_guard
-	dialog q_bandits
+	dialog qBandits
 }
 
 unit agent : base_human {
@@ -1710,11 +1710,11 @@ unit agent : base_human {
 	flags | {aiStay dontEat hero specificName}
 	items rogue
 	gold {80 160}
-	dialog q_bandits
+	dialog qBandits
 }
 
 unit q_magowie_uczony : mayor {
-	dialog q_mages
+	dialog qMages
 }
 
 unit q_magowie_stary : base_human {
@@ -1724,8 +1724,8 @@ unit q_magowie_stary : base_human {
 	items mage
 	gold {150 300}
 	abilities mage
-	dialog q_mages2
-	idleDialog drunk_mage_idle
+	dialog qMages2
+	idleDialog drunkMageIdle
 	class mage
 	appearance {
 		hairColor 0xDED5D0
@@ -1734,7 +1734,7 @@ unit q_magowie_stary : base_human {
 
 unit q_orkowie_straznik : base_guard {
 	flags | dontEat
-	dialog q_orcs
+	dialog qOrcs
 }
 
 unit q_gobliny_szlachcic : mayor {
@@ -1743,11 +1743,11 @@ unit q_gobliny_szlachcic : mayor {
 	hp 1400
 	attack -60
 	gold {250 500}
-	dialog q_goblins
+	dialog qGoblins
 }
 
 unit q_gobliny_poslaniec : messenger {
-	dialog q_goblins
+	dialog qGoblins
 }
 
 unit q_gobliny_mag : base_human {
@@ -1757,7 +1757,7 @@ unit q_gobliny_mag : base_human {
 	items mage
 	gold {100 200}
 	abilities mage
-	dialog q_goblins
+	dialog qGoblins
 }
 
 unit q_zlo_kaplan : base_human {
@@ -1777,7 +1777,7 @@ unit q_zlo_kaplan : base_human {
 		nonCombat 1
 		{heal 0}
 	}
-	dialog q_evil
+	dialog qEvil
 	class cleric
 }
 
@@ -1788,7 +1788,7 @@ unit q_zlo_mag : base_human {
 	items mage
 	gold {100 200}
 	abilities mage
-	dialog q_evil
+	dialog qEvil
 }
 
 unit hunter : base_human {
@@ -1812,7 +1812,7 @@ unit hunter : base_human {
 unit hunter_leader : hunter {
 	level 10
 	gold {100 200}
-	dialog hunter_leader
+	dialog hunterLeader
 }
 
 //------------------------------------------------------------------------------
@@ -1848,7 +1848,7 @@ unit base_goblin {
 	width 0.3
 	attackRange 0.8
 	armorType goblin
-	idleDialog goblin_idle
+	idleDialog goblinIdle
 }
 
 unit goblin : base_goblin {
@@ -1927,7 +1927,7 @@ unit q_gobliny_szlachcic2 : base_human {
 		random 1 3 !normalFood
 	}
 	gold {1000 2000}
-	dialog q_goblins
+	dialog qGoblins
 	group goblins
 }
 
@@ -1988,15 +1988,15 @@ unit base_orc {
 	width 0.41
 	attackRange 1
 	armorType orc
-	idleDialog orc_idle
+	idleDialog orcIdle
 }
 
 unit base_gorush : base_orc {
 	flags | {hero aiTrain specificName tournament peaceful}
-	dialog q_orcs2
+	dialog qOrcs2
 	gold {10 30}
 	group citizens
-	idleDialog citizen_idle
+	idleDialog citizenIdle
 }
 
 unit q_orkowie_gorush : base_gorush {
@@ -2084,7 +2084,7 @@ unit orc : base_orc {
 
 unit q_orkowie_orc : orc {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit q_orkowie_slaby : base_orc {
@@ -2097,7 +2097,7 @@ unit q_orkowie_slaby : base_orc {
 	}
 	gold {20 40}
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit orc_hunter : base_orc {
@@ -2118,7 +2118,7 @@ unit orc_hunter : base_orc {
 
 unit q_orkowie_orc_hunter : orc_hunter {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit orc_fighter : base_orc {
@@ -2137,7 +2137,7 @@ unit orc_fighter : base_orc {
 
 unit q_orkowie_orc_fighter : orc_fighter {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit q_orkowie_kowal : q_orkowie_orc_fighter {
@@ -2166,7 +2166,7 @@ unit orc_warius : base_orc {
 
 unit q_orkowie_orc_warius : orc_warius {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit orc_chief : base_orc {
@@ -2185,7 +2185,7 @@ unit orc_chief : base_orc {
 
 unit q_orkowie_orc_chief : orc_chief {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit orc_shaman : base_orc {
@@ -2210,7 +2210,7 @@ unit orc_shaman : base_orc {
 
 unit q_orkowie_orc_shaman : orc_shaman {
 	group citizens
-	dialog q_orcs2
+	dialog qOrcs2
 }
 
 unit q_orkowie_boss : base_orc {
@@ -2275,7 +2275,7 @@ unit ogre {
 	gold {140 180}
 	width 0.5
 	attackRange 1.5
-	idleDialog ogre_idle
+	idleDialog ogreIdle
 }
 
 //------------------------------------------------------------------------------
@@ -2455,7 +2455,7 @@ unit necromancer : base_human {
 		{explodingSkull 13}
 	}
 	group undead
-	dialog mage_idle
+	dialog mageIdle
 	blood black
 	tex {
 		null
@@ -2540,7 +2540,7 @@ unit evil_cleric : base_human {
 		"evil.jpg"
 		null
 	}
-	dialog mage_idle
+	dialog mageIdle
 	appearance {
 		hairColor grayscale
 	}
@@ -2577,7 +2577,7 @@ unit q_zlo_boss : base_human {
 		{explodingSkull 0}
 		{drain2 0}
 	}
-	dialog q_evil
+	dialog qEvil
 	group undead
 	blood black
 	sounds {
@@ -2602,7 +2602,7 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 unit base_bandit : base_human {
 	dialog bandit
-	idleDialog bandit_idle
+	idleDialog banditIdle
 	group bandits
 }
 
@@ -2727,7 +2727,7 @@ unit q_bandyci_szef : base_bandit {
 		ringDexterity2
 	}
 	gold {1000 2000}
-	dialog q_bandits
+	dialog qBandits
 }
 
 //------------------------------------------------------------------------------
@@ -2781,8 +2781,8 @@ unit mage : base_human {
 	}
 	gold {{50 100}{80 160}}
 	abilities mage
-	dialog mage_bodyguard
-	idleDialog mage_idle
+	dialog mageBodyguard
+	idleDialog mageIdle
 	group mages
 }
 
@@ -2819,8 +2819,8 @@ unit mage_guard : base_human {
 		random 1 3 !normalFood
 	}
 	gold {{25 50}{40 80}}
-	dialog mage_bodyguard
-	idleDialog generic_idle
+	dialog mageBodyguard
+	idleDialog genericIdle
 	group mages
 }
 
@@ -2917,8 +2917,8 @@ unit q_magowie_boss : base_human {
 		{fireball 0}
 		{thunderBolt 0}
 	}
-	dialog q_mages2
-	idleDialog mage_idle
+	dialog qMages2
+	idleDialog mageIdle
 	group mages
 	appearance {
 		hairColor 0xDED5D0
@@ -3216,7 +3216,7 @@ unit wild_hunter : base_human {
 		"crazy_hunter.jpg"
 		null
 	}
-	idleDialog wild_hunter_idle
+	idleDialog wildHunterIdle
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
@@ -3231,7 +3231,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 		random 1 3 !normalFood
 	}
 	gold {150 300}
-	dialog q_crazies
+	dialog qCrazies
 }
 
 //------------------------------------------------------------------------------
@@ -3241,7 +3241,7 @@ unit base_crazy : base_human {
 	level {5 20}
 	flags | {crazy hero tournament aiWanders}
 	dialog crazy
-	idleDialog crazy_idle
+	idleDialog crazyIdle
 	group crazies
 	gold {{50 100}{200 400}}
 	appearance {
@@ -3287,7 +3287,7 @@ unit crazy_cook : base_crazy {
 		ladle
 	}
 	gold {80 160}
-	dialog crazy_cook
+	dialog crazyCook
 }
 
 //------------------------------------------------------------------------------
@@ -3433,14 +3433,14 @@ unit q_main_messenger : messenger {
 }
 
 unit q_main_ill_villager : villager {
-	dialog "main/ill_villager"
+	dialog "main/illVillager"
 	flags {human aiStay dontEat dontEscape}
 	tex {
 		null
 		"head_ill.jpg"
 		null
 	}
-	idleDialog ill_idle
+	idleDialog illIdle
 }
 
 unit q_main_villager_def : villager {
@@ -3488,7 +3488,7 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 	appearance {
 		hairColor {255 216 0}
 	}
-	idleDialog plague_idle
+	idleDialog plagueIdle
 }
 
 unit q_main_plague_soltys : q_main_plague_villager {

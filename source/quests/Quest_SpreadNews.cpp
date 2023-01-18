@@ -63,14 +63,14 @@ GameDialog* Quest_SpreadNews::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_spread_news_start");
+		return GameDialog::TryGet("qSpreadNewsStart");
 	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_spread_news_timeout");
+		return GameDialog::TryGet("qSpreadNewsTimeout");
 	case QUEST_DIALOG_NEXT:
 		if(prog == Progress::Started)
-			return GameDialog::TryGet("q_spread_news_tell");
+			return GameDialog::TryGet("qSpreadNewsTell");
 		else
-			return GameDialog::TryGet("q_spread_news_end");
+			return GameDialog::TryGet("qSpreadNewsEnd");
 	default:
 		assert(0);
 		return nullptr;

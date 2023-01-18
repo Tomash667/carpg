@@ -29,11 +29,11 @@ GameDialog* Quest_Wanted::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_wanted_start");
+		return GameDialog::TryGet("qWantedStart");
 	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_wanted_timeout");
+		return GameDialog::TryGet("qWantedTimeout");
 	case QUEST_DIALOG_NEXT:
-		return GameDialog::TryGet("q_wanted_end");
+		return GameDialog::TryGet("qWantedEnd");
 	default:
 		assert(0);
 		return nullptr;

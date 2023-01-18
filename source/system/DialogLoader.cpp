@@ -15,7 +15,8 @@ enum Group
 enum TopKeyword
 {
 	T_DIALOG,
-	T_GLOBALS
+	T_GLOBALS,
+	T_ALIAS
 };
 
 enum Keyword
@@ -67,7 +68,7 @@ void DialogLoader::DoLoading()
 	quest = nullptr;
 	scripts = &DialogScripts::global;
 	loadingTexts = false;
-	bool requireId[2] = { true, false };
+	bool requireId[3] = { true, false, true };
 	Load("dialogs.txt", G_TOP, requireId);
 }
 
@@ -82,7 +83,8 @@ void DialogLoader::InitTokenizer()
 {
 	t.AddKeywords(G_TOP, {
 		{ "dialog", T_DIALOG },
-		{ "globals", T_GLOBALS }
+		{ "globals", T_GLOBALS },
+		{ "alias", T_ALIAS }
 		});
 
 	t.AddKeywords(G_KEYWORD, {
@@ -131,18 +133,26 @@ void DialogLoader::InitTokenizer()
 //=================================================================================================
 void DialogLoader::LoadEntity(int top, const string& id)
 {
-	if(top == T_DIALOG)
+	switch(top)
 	{
-		GameDialog* dialog = LoadDialog(id);
-		pair<GameDialog::Map::iterator, bool> result = GameDialog::dialogs.insert(pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
-		if(!result.second)
+	case T_DIALOG:
 		{
-			delete dialog;
-			t.Throw("Dialog with that id already exists.");
+			GameDialog* dialog = LoadDialog(id);
+			pair<GameDialog::Map::iterator, bool> result = GameDialog::dialogs.insert(pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+			if(!result.second)
+			{
+				delete dialog;
+				t.Throw("Dialog with that id already exists.");
+			}
 		}
-	}
-	else
+		break;
+	case T_GLOBALS:
 		LoadGlobals();
+		break;
+	case T_ALIAS:
+		ParseAlias(id);
+		break;
+	}
 }
 
 //=================================================================================================
@@ -1095,6 +1105,21 @@ void DialogLoader::LoadGlobals()
 		else if(result == ScriptManager::AlreadyExists)
 			LoadError("Global variable with name '%s' already declared.", name.c_str());
 	}
+}
+
+//=================================================================================================
+void DialogLoader::ParseAlias(const string& id)
+{
+	GameDialog* dialog = GameDialog::TryGet(id.c_str());
+	if(!dialog)
+		t.Throw("Missing dialog '%s'.", id.c_str());
+	t.Next();
+
+	const string& aliasId = t.MustGetItem();
+	if(GameDialog::TryGet(aliasId.c_str()))
+		t.Throw("Alias or dialog already exists.");
+
+	GameDialog::aliases[aliasId] = dialog;
 }
 
 //=================================================================================================

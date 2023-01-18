@@ -39,14 +39,14 @@ GameDialog* Quest_RescueCaptive::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return GameDialog::TryGet("q_rescue_captive_start");
+		return GameDialog::TryGet("qRescueCaptiveStart");
 	case QUEST_DIALOG_FAIL:
-		return GameDialog::TryGet("q_rescue_captive_timeout");
+		return GameDialog::TryGet("qRescueCaptiveTimeout");
 	case QUEST_DIALOG_NEXT:
 		if(DialogContext::current->talker->data->id == "captive")
-			return GameDialog::TryGet("q_rescue_captive_talk");
+			return GameDialog::TryGet("qRescueCaptiveTalk");
 		else
-			return GameDialog::TryGet("q_rescue_captive_end");
+			return GameDialog::TryGet("qRescueCaptiveEnd");
 	default:
 		assert(0);
 		return nullptr;

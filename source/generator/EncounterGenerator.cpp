@@ -206,14 +206,14 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			spawn.groupName = nullptr;
 			spawn.count = 1;
 			spawn.level = Clamp(encounter.st * 2, 10, 16);
-			spawn.dialog = GameDialog::TryGet("crazy_mage_encounter");
+			spawn.dialog = GameDialog::TryGet("crazyMageEncounter");
 			break;
 		case SE_CRAZY_HEROES:
 			spawn.groupName = "crazies";
 			spawn.count = Random(3, 4);
 			if(spawn.level < 5)
 				spawn.level = 5;
-			spawn.dialog = GameDialog::TryGet("crazies_encounter");
+			spawn.dialog = GameDialog::TryGet("craziesEncounter");
 			spawn.isTeam = true;
 			break;
 		case SE_MERCHANT:

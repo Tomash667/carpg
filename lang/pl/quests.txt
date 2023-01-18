@@ -93,7 +93,7 @@ quest deliverResources {
 		3 "Ale zaraz... Gdzie masz te zasoby?"
 	}
 	
-	dialog bandits_enc {
+	dialog banditsEnc {
 		0 "Wreszcie kurwa jesteœ! Zabiæ go!"
 	}
 	
@@ -398,7 +398,7 @@ quest main {
 		11 "Mam nadzieje ¿e da siê zakoñczyæ t¹ zarazê..."
 	}
 	
-	dialog ill_villager {
+	dialog illVillager {
 		0 "Lepiej siê odsuñ. Coœ mnie bierze..."
 		1 "Wypytaj o chorobê"
 		2 "Koniec rozmowy"
@@ -411,7 +411,7 @@ quest main {
 		9 "Nie dobrze mi. Chyba bêdzie trzeba pos³aæ po jakiegoœ kleryka..."
 	}
 	
-	dialog cleric_seller {
+	dialog clericSeller {
 		0 "Zaraza"
 		1 "Zaraza? Nic o tym nie wiem..."
 		2 "Pewnie chcia³eœ porozmawiaæ z $(cleric.realName)?"
@@ -544,7 +544,7 @@ quest mainVillage3 {
 		0 "Dziêki za ratunek. Wynoszê siê st¹d!"
 	}
 	
-	dialog inn_villager {
+	dialog innVillager {
 		0 "Dziêki bogom ¿e ktoœ siê tu zjawi³! Myœla³em ¿e ju¿ po mnie."
 		1 "Wszystko zaczê³o siê od tego alchemika..."
 		2 "Wynoszê siê st¹d póki jeszcze mam szansê!"
