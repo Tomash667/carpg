@@ -350,7 +350,7 @@ void CampGenerator::GenerateUnits()
 	if(outside->target == HUNTERS_CAMP)
 	{
 		UnitData* hunter = UnitData::Get("hunter"),
-			*hunterLeader = UnitData::Get("hunter_leader");
+			*hunterLeader = UnitData::Get("hunterLeader");
 
 		// leader
 		const Vec2 center(128, 128);

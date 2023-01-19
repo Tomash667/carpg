@@ -40,6 +40,7 @@ struct UnitGroup
 	Int2 GetLevelRange() const;
 	UnitGroup* GetRandomGroup();
 
+	static std::map<string, UnitGroup*> groupMap;
 	static vector<UnitGroup*> groups;
 	static UnitGroup* empty;
 	static UnitGroup* random;

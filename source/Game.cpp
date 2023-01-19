@@ -3771,7 +3771,7 @@ void Game::OnEnterLevel()
 		}
 
 		if(text)
-			talker = team->FindTeamMember("q_magowie_stary");
+			talker = team->FindTeamMember("qMagesScholar");
 	}
 
 	// default talking about location

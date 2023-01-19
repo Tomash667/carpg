@@ -244,7 +244,7 @@ void Quest_Crazies::OnEncounter(EncounterSpawn& spawn)
 	if(craziesState == State::TalkedWithCrazy)
 	{
 		spawn.groupName = nullptr;
-		spawn.essential = UnitData::Get("q_szaleni_szaleniec");
+		spawn.essential = UnitData::Get("qCraziesMadman");
 		spawn.level = 13;
 		spawn.dontAttack = true;
 		spawn.dialog = GameDialog::TryGet("qCrazies");

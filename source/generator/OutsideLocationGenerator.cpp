@@ -233,7 +233,7 @@ void OutsideLocationGenerator::OnEnter()
 	if(questMgr->questBandits->banditsState == Quest_Bandits::State::GenerateGuards && gameLevel->location == questMgr->questBandits->targetLoc)
 	{
 		questMgr->questBandits->banditsState = Quest_Bandits::State::GeneratedGuards;
-		UnitData* ud = UnitData::Get("guard_q_bandyci");
+		UnitData* ud = UnitData::Get("qBanditsGuard");
 		int count = Random(4, 5);
 		Vec3 pos = teamPos + Vec3(sin(teamDir + PI) * 8, 0, cos(teamDir + PI) * 8);
 		for(int i = 0; i < count; ++i)

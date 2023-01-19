@@ -1112,14 +1112,14 @@ void DialogLoader::ParseAlias(const string& id)
 {
 	GameDialog* dialog = GameDialog::TryGet(id.c_str());
 	if(!dialog)
-		t.Throw("Missing dialog '%s'.", id.c_str());
+		t.Throw("Missing dialog.");
 	t.Next();
 
-	const string& aliasId = t.MustGetItem();
-	if(GameDialog::TryGet(aliasId.c_str()))
-		t.Throw("Alias or dialog already exists.");
+	const string& alias = t.MustGetItem();
+	if(GameDialog::TryGet(alias.c_str()))
+		t.Throw("Alias or dialog '%s' already exists.", alias.c_str());
 
-	GameDialog::aliases[aliasId] = dialog;
+	GameDialog::aliases[alias] = dialog;
 }
 
 //=================================================================================================

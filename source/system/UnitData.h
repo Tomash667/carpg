@@ -137,7 +137,7 @@ enum UNIT_FLAGS3
 	F3_DONT_EAT = 1 << 3, // don't randomly eat because can't or is in work (like guards)
 	F3_ORC_FOOD = 1 << 4, // when randomly eating use food from orc list
 	F3_MINER = 1 << 5, // 50% chance to start mining when idle
-	F3_TALK_AT_COMPETITION = 1 << 6, // don't talk randomly when in competition (innkeeper/arena_master)
+	F3_TALK_AT_COMPETITION = 1 << 6, // don't talk randomly when in competition (innkeeper/arenaMaster)
 	F3_PARENT_DATA = 1 << 7, // unit data is inherited
 };
 

@@ -5,6 +5,7 @@
 #include "ScriptException.h"
 
 //-----------------------------------------------------------------------------
+std::map<string, UnitGroup*> UnitGroup::groupMap;
 vector<UnitGroup*> UnitGroup::groups;
 UnitGroup* UnitGroup::empty;
 UnitGroup* UnitGroup::random;
@@ -89,11 +90,9 @@ UnitGroup* UnitGroup::GetRandomGroup()
 //=================================================================================================
 UnitGroup* UnitGroup::TryGet(Cstring id)
 {
-	for(UnitGroup* group : groups)
-	{
-		if(group->id == id.s)
-			return group;
-	}
+	auto it = groupMap.find(string(id));
+	if(it != groupMap.end())
+		return it->second;
 	return nullptr;
 }
 

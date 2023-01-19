@@ -70,7 +70,7 @@ weapon assassinDagger {
 	dmgType pierce
 	flags hq
 	effects {
-		on_attack backstab 0.1
+		onAttack backstab 0.1
 	}
 }
 
@@ -97,7 +97,7 @@ weapon spinesheathDagger {
 	dmgType pierce
 	flags {notShop notRandom unique}
 	effects {
-		on_attack backstab 0.25
+		onAttack backstab 0.25
 	}
 }
 

@@ -96,7 +96,7 @@ BaseLocation gBaseLocations[] = {
 		LocationTexturePack("floor_tile.jpg", "mur078.jpg", "sufit3.jpg"),
 	"Mage tower",			Int2(4, 5),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND | BLO_DOOR_ENTRY | BLO_GOES_UP, "stairs", nullptr,
 		Color(100,0,0), Color(0.4f,0.3f,0.3f), Vec2(10,20), 20.f,
-		mageTowerRooms, countof(mageTowerRooms), 0, 100, 0, 3, "mages", "mages_and_golems", "random", 50, 25, 25, TRAPS_MAGIC, -1,
+		mageTowerRooms, countof(mageTowerRooms), 0, 100, 0, 3, "mages", "magesAndGolems", "random", 50, 25, 25, TRAPS_MAGIC, -1,
 		LocationTexturePack("floor_pavingStone_ceramic.jpg", "stone01d.jpg", "block02b.jpg"),
 	"Bandits hideout",		Int2(2, 3),		40, 2,		40, 20,		30,			Int2(3,12),	Int2(5,10),	BLO_DOOR_ENTRY, "stairs", nullptr,
 		Color::Black, Color(0.3f,0.3f,0.3f), Vec2(10,20), 20.f,

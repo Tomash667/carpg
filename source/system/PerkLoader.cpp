@@ -344,13 +344,13 @@ void PerkLoader::ParseAlias(const string& id)
 {
 	Perk* perk = Perk::Get(id);
 	if(!perk)
-		t.Throw("Missing perk '%s'.", id.c_str());
+		t.Throw("Missing perk.");
 	t.Next();
 
-	const string& aliasId = t.MustGetItemKeyword();
-	int hash = Hash(aliasId);
+	const string& alias = t.MustGetItemKeyword();
+	int hash = Hash(alias);
 	if(Perk::Get(hash))
-		t.Throw("Alias or perk already exists.");
+		t.Throw("Alias or perk '%s' already exists.", alias.c_str());
 
 	Perk::hashPerks[hash] = perk;
 }

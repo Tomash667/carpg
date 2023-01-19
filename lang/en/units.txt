@@ -1,175 +1,185 @@
-unit base_warrior = "Base warrior"
-unit base_hunter = "Base hunter"
-unit base_rogue = "Base rogue"
-unit base_cleric = "Base cleric"
-unit base_mage = "Base mage"
+unit playerWarrior = "Base warrior"
+unit playerHunter = "Base hunter"
+unit playerRogue = "Base rogue"
+unit playerCleric = "Base cleric"
+unit playerMage = "Base mage"
 unit blacksmith = "Blacksmith"
 unit merchant = "Merchant"
-unit traveling_merchant = "Traveling merchant"
-unit food_seller = "Grocer"
+unit travelingMerchant = "Traveling merchant"
+unit foodSeller = "Grocer"
 unit alchemist = "Alchemist"
 unit citizen = "Citizen"
-unit tut_czlowiek = "Citizen"
+unit qTutorialCitizen = "Citizen"
 unit villager = "Villager"
 unit mayor = "Mayor"
 unit soltys = "Soltys"
 unit trainer = "Trainer"
-unit guard = "Guard"
-unit guard_wagon = "Guard"
-unit guard_merchant = "Guard"
-unit guard_move = "Guard"
-unit guard_captain = "Captain of guard"
+unit baseGuard = "Guard"
+unit guard {}
+unit guardWagon {}
+unit guardMerchant {}
+unit guardMove {}
+unit guardCaptain = "Captain of guard"
 unit clerk = "Clerk"
 unit innkeeper = "Innkeeper"
-unit mage_seller = "Mage seller"
-unit cleric_seller = "Cleric"
-unit arena_master = "Arena master"
+unit mageSeller = "Mage seller"
+unit clericSeller = "Cleric"
+unit arenaMaster = "Arena master"
 unit viewer = "Viewer"
 unit captive = "Captive"
 unit traveler = "Traveler"
-unit artur_drwal {
+unit messenger = "Messenger"
+unit lumberjack = "Lumberjack"
+unit lumberjackLeader {
 	name "Lumberjack"
 	realName "Arthur the Luberjack"
 }
-unit poslaniec_tartak = "Messenger"
-unit drwal = "Lumberjack"
-unit inwestor {
+unit lumberjackMessenger {}
+unit qMineInvestor {
 	name "Investor"
 	realName "Marco Bartoli"
 }
-unit poslaniec_kopalnia = "Messenger"
-unit gornik = "Miner"
-unit gornik_szef = "Chief of miners"
-unit pijak = "Drunkard"
-unit mistrz_agentow {
+unit qMineMessenger {}
+unit miner = "Miner"
+unit qMineLeader = "Chief of miners"
+unit drunkard = "Drunkard"
+unit qBanditsMaster {
 	name "Stranger"
 	realName "Arto"
 }
-unit guard_q_bandyci = "Guard"
-unit agent = "Agent"
-unit q_magowie_uczony = "Scholar"
-unit q_magowie_stary = "Old mage"
-unit q_orkowie_straznik = "Guard"
-unit base_gorush {
-	name "Ork"
-	realName "Gorush"
-}
-unit q_orkowie_gorush {}
-unit q_orkowie_gorush_woj {}
-unit q_orkowie_gorush_lowca {}
-unit q_orkowie_gorush_szaman {}
-unit q_orkowie_slaby = "Weak orc"
-unit q_orkowie_kowal = "Orc blacksmith"
-unit q_orkowie_orc = "Orc"
-unit q_orkowie_orc_hunter = "Orc hunter"
-unit q_orkowie_orc_fighter = "Orc fighter"
-unit q_orkowie_orc_warius = "Orc warius"
-unit q_orkowie_orc_chief = "Orc chief"
-unit q_orkowie_orc_shaman = "Orc shaman"
-unit q_gobliny_szlachcic {
+unit qBanditsGuard {}
+unit qBanditsAgent = "Agent"
+unit qMagesScholar = "Scholar"
+unit qMagesOld = "Old mage"
+unit qOrcsGuard {}
+unit qGoblinsNoble {
 	name "Nobleman"
 	realName "Sir Foltest Denhoff"
 }
-unit q_gobliny_poslaniec = "Messenger"
-unit q_gobliny_mag = "Wandering mage"
-unit q_zlo_kaplan {
+unit qGoblinsNoble2 {
+	name "Nobleman"
+	realName "Sir Foltest Denhoff"
+}
+unit qGoblinsBodyguard = "Bodyguard"
+unit qGoblinsMessenger {}
+unit qGoblinsMage = "Wandering mage"
+unit qEvilCleric {
 	name "Priest"
 	realName "Jozan"
 }
-unit q_zlo_mag = "Mage"
+unit qEvilMage = "Mage"
 unit hunter = "Hunter"
-unit hunter_leader = "Leader of hunters"
-unit goblin = "Goblin"
-unit goblin_hunter = "Goblin hunter"
-unit goblin_fighter = "Goblin fighter"
-unit goblin_chief = "Goblin chief"
-unit q_gobliny_szlachcic2 {
-	name "Nobleman"
-	realName "Sir Foltest Denhoff"
-}
-unit q_gobliny_ochroniarz = "Bodyguard"
-unit tut_goblin = "Goblin"
-unit orc = "Orc"
-unit orc_hunter = "Orc hunter"
-unit orc_fighter = "Orc fighter"
-unit orc_warius = "Orc warius"
-unit orc_chief = "Orc chief"
-unit orc_shaman = "Orc shaman"
-unit q_orkowie_boss = "Great chief"
-unit ogre = "Ogre"
-unit zombie = "Zombie"
-unit zombie_rotting = "Rotting zombie"
-unit zombie_ancient = "Ancient zombie"
-unit skeleton = "Skeleton"
-unit skeleton_archer = "Skeleton archer"
-unit skeleton_fighter = "Skeleton fighter"
-unit skeleton_mage = "Skeleton mage"
-unit necromancer = "Necromancer novice"
-unit necromancer2 = "Necromancer"
-unit necromancer3 = "Necromancer master"
-unit undead_guard = "Undead guard"
-unit undead_archer = "Undead archer"
-unit evil_cleric = "Evil cleric"
-unit evil_cleric2 = "Evil leader"
-unit q_zlo_boss = "Xar"
-unit thief = "Thief"
-unit bandit = "Bandit"
-unit bandit_archer = "Bandit archer"
-unit bandit_chief = "Bandit chief"
-unit ruffian = "Ruffian"
-unit assassin = "Assassin"
-unit ruffian_hegemon = "Hegemon"
-unit q_bandyci_szef = "Bandit leader"
-unit mage = "Mage novice"
-unit mage2 = "Mage"
-unit mage3 = "Experienced mage"
-unit mage_guard = "Guard"
-unit golem_stone = "Stone golem"
-unit golem_iron = "Iron golem"
-unit golem_adamantine = "Adamantine golem"
-unit q_magowie_golem = "Stone golem"
-unit q_magowie_boss = "Archmage"
-unit wolf = "Wolf"
-unit worg = "Worg"
-unit white_wolf_sum = "Wolf (summoned)"
-unit dire_wolf = "Dire wolf"
-unit spider = "Spider"
-unit spider_big = "Big spider"
-unit rat = "Giant rat"
-unit bear = "Bear"
-unit bear_black = "Black bear"
-unit slime = "Slime"
-unit wild_hunter = "Wild hunter"
-unit q_szaleni_szaleniec = "Madman"
-unit crazy_mage = "Crazy mage"
-unit crazy_warrior = "Crazy warrior"
-unit crazy_hunter = "Crazy hunter"
-unit crazy_rogue = "Crazy rogue"
-unit hero_mage = "Mage"
-unit hero_warrior = "Warrior"
-unit hero_hunter = "Hunter"
-unit hero_rogue = "Rogue"
-unit hero_tomir {
-	realName "Tomir"
-}
-unit hero_cleric = "Cleric"
+unit hunterLeader = "Leader of hunters"
 unit tomashu = "Tomashu"
-unit unk = "Unknown"
-unit crazy_cook = "Crazy cook"
 unit xwokloiz {
 	name "Alchemist apprentice"
 	realName "Luke Herbalist"
 }
-unit q_main_academy = "Academy teacher"
-unit q_main_messenger = "Messenger"
-unit q_main_villager_def {}
-unit q_main_oldman = "Old villager"
-unit q_main_ill_villager = "Ill villager"
-unit q_main_ill_villager_attack {}
-unit q_main_plague_villager = "Infected villager"
-unit q_main_plague_soltys = "Infected soltys"
-unit q_main_plague_alchemist = "Infected alchemist"
-unit q_main_plague_guard = "Infected guard"
+unit qMainAcademyTrainer = "Academy teacher"
+unit qMainMessenger {}
+unit qMainIllVillager = "Ill villager"
+unit qMainVillagerDef {}
+unit qMainOldman = "Old villager"
+// goblins
+unit goblin = "Goblin"
+unit goblinHunter = "Goblin hunter"
+unit goblinFighter = "Goblin fighter"
+unit goblinChief = "Goblin chief"
+unit qTutorialGoblin {}
+// orcs
+unit orc = "Orc"
+unit orcHunter = "Orc hunter"
+unit orcFighter = "Orc fighter"
+unit orcWarius = "Orc warius"
+unit orcChief = "Orc chief"
+unit orcShaman = "Orc shaman"
+unit ogre = "Ogre"
+unit baseGorush {
+	name "Ork"
+	realName "Gorush"
+}
+unit qOrcsGorush {}
+unit qOrcsGorushWarrior {}
+unit qOrcsGorushHunter {}
+unit qOrcsGorushShaman {}
+unit qOrcsWeak = "Weak orc"
+unit qOrcsOrc {}
+unit qOrcsHunter {}
+unit qOrcsFighter {}
+unit qOrcsWarius {}
+unit qOrcsChief {}
+unit qOrcsShaman {}
+unit qOrcsBlacksmith = "Orc blacksmith"
+unit qOrcsBoss = "Great chief"
+// undead
+unit zombie = "Zombie"
+unit zombieRotting = "Rotting zombie"
+unit zombieAncient = "Ancient zombie"
+unit skeleton = "Skeleton"
+unit skeletonArcher = "Skeleton archer"
+unit skeletonFighter = "Skeleton fighter"
+unit skeletonMage = "Skeleton mage"
+unit necromancer = "Necromancer novice"
+unit necromancer2 = "Necromancer"
+unit necromancer3 = "Necromancer master"
+unit undeadGuard = "Undead guard"
+unit undeadArcher = "Undead archer"
+unit evilCleric = "Evil cleric"
+unit evilCleric2 = "Evil leader"
+unit qEvilBoss = "Xar"
+// bandits
+unit thief = "Thief"
+unit bandit = "Bandit"
+unit banditArcher = "Bandit archer"
+unit banditChief = "Bandit chief"
+unit ruffian = "Ruffian"
+unit assassin = "Assassin"
+unit ruffianHegemon = "Hegemon"
+unit qBanditsBoss = "Bandit leader"
+// mages & golems
+unit mage = "Mage novice"
+unit mage2 = "Mage"
+unit mage3 = "Experienced mage"
+unit mageGuard = "Guard"
+unit golemStone = "Stone golem"
+unit golemIron = "Iron golem"
+unit golemAdamantine = "Adamantine golem"
+unit qMagesBoss = "Archmage"
+// animals & hunters
+unit wolf = "Wolf"
+unit worg = "Worg"
+unit whiteWolfSummoned = "Wolf (summoned)"
+unit direWolf = "Dire wolf"
+unit spider = "Spider"
+unit spiderBig = "Big spider"
+unit rat = "Giant rat"
+unit bear = "Bear"
+unit bearBlack = "Black bear"
+unit slime = "Slime"
+unit wildHunter = "Wild hunter"
+unit qCraziesMadman = "Madman"
+// crazies
+unit crazyMage = "Crazy mage"
+unit crazyWarrior = "Crazy warrior"
+unit crazyHunter = "Crazy hunter"
+unit crazyRogue = "Crazy rogue"
+unit crazyCook = "Crazy cook"
+// heroes
+unit heroMage = "Mage"
+unit heroWarrior = "Warrior"
+unit heroHunter = "Hunter"
+unit heroRogue = "Rogue"
+unit heroCleric = "Cleric"
+unit heroTomir {
+	realName "Tomir"
+}
+// other
+unit unk = "Unknown"
+unit qMainIllVillagerAttack {}
+unit qMainPlagueVillager = "Infected villager"
+unit qMainPlagueSoltys = "Infected soltys"
+unit qMainPlagueAlchemist = "Infected alchemist"
+unit qMainPlagueGuard = "Infected guard"
 
 unitGroup orcs {
 	name "orcs"
@@ -198,7 +208,7 @@ unitGroup mages {
 unitGroup golems {
 	name "golems"
 }
-unitGroup mages_and_golems {
+unitGroup magesAndGolems {
 	name "mages and golems"
 }
 unitGroup unk {

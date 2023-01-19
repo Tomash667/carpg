@@ -37,7 +37,7 @@ GameDialog* Quest_Orcs::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(DialogContext::current->talker->data->id == "q_orkowie_straznik")
+	if(DialogContext::current->talker->data->id == "qOrcsGuard")
 		return GameDialog::TryGet("qOrcsGuard");
 	else
 		return GameDialog::TryGet("qOrcsCaptain");
@@ -97,7 +97,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			wholeLocationEventHandler = true;
 			itemToGive[0] = Item::Get("qOrcsKey");
 			spawnItem = Quest_Event::Item_GiveSpawned2;
-			unitToSpawn = UnitData::Get("q_orkowie_gorush");
+			unitToSpawn = UnitData::Get("qOrcsGorush");
 			unitSpawnRoom = RoomTarget::Prison;
 			unitDontAttack = true;
 			unitToSpawn2 = UnitGroup::Get("orcs")->GetLeader(10);
@@ -202,7 +202,7 @@ Quest::LoadResult Quest_Orcs::Load(GameReader& f)
 	{
 		itemToGive[0] = Item::Get("qOrcsKey");
 		spawnItem = Quest_Event::Item_GiveSpawned2;
-		unitToSpawn = UnitData::Get("q_orkowie_gorush");
+		unitToSpawn = UnitData::Get("qOrcsGorush");
 		unitToSpawn2 = UnitGroup::Get("orcs")->GetLeader(10);
 		unitSpawnLevel2 = -3;
 		unitSpawnRoom = RoomTarget::Prison;
@@ -239,11 +239,11 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 
 	const string& id = DialogContext::current->talker->data->id;
 
-	if(id == "q_orkowie_slaby")
+	if(id == "qOrcsWeak")
 		return GameDialog::TryGet("qOrcs2WeakOrc");
-	else if(id == "q_orkowie_kowal")
+	else if(id == "qOrcsBlacksmith")
 		return GameDialog::TryGet("qOrcs2Blacksmith");
-	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
+	else if(id == "qOrcsGorush" || id == "qOrcsGorushWarrior" || id == "qOrcsGorushHunter" || id == "qOrcsGorushShaman")
 		return GameDialog::TryGet("qOrcs2Gorush");
 	else
 		return GameDialog::TryGet("qOrcs2Orc");
@@ -255,7 +255,7 @@ void WarpToThroneOrcBoss()
 	LocationPart& locPart = *gameLevel->localPart;
 
 	// search for boss
-	UnitData* ud = UnitData::Get("q_orkowie_boss");
+	UnitData* ud = UnitData::Get("qOrcsBoss");
 	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 	{
@@ -418,7 +418,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedWhereIsBase:
 		{
 			targetLoc->SetKnown();
-			unitToSpawn = UnitData::Get("q_orkowie_boss");
+			unitToSpawn = UnitData::Get("qOrcsBoss");
 			unitSpawnRoom = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
 			atLevel = targetLoc->GetLastLevel();
@@ -461,14 +461,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 
 			// convert orcs to friendly version
 			UnitData* ud[12] = {
-				UnitData::Get("orc"), UnitData::Get("q_orkowie_orc"),
-				UnitData::Get("orc_fighter"), UnitData::Get("q_orkowie_orc_fighter"),
-				UnitData::Get("orc_warius"), UnitData::Get("q_orkowie_orc_warius"),
-				UnitData::Get("orc_hunter"), UnitData::Get("q_orkowie_orc_hunter"),
-				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
-				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
+				UnitData::Get("orc"), UnitData::Get("qOrcsOrc"),
+				UnitData::Get("orcHunter"), UnitData::Get("qOrcsHunter"),
+				UnitData::Get("orcFighter"), UnitData::Get("qOrcsFighter"),
+				UnitData::Get("orcWarius"), UnitData::Get("qOrcsWarius"),
+				UnitData::Get("orcChief"), UnitData::Get("qOrcsChief"),
+				UnitData::Get("orcShaman"), UnitData::Get("qOrcsShaman")
 			};
-			UnitData* udWeakOrc = UnitData::Get("q_orkowie_slaby");
+			UnitData* udWeakOrc = UnitData::Get("qOrcsWeak");
 
 			for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)
 			{
@@ -638,7 +638,7 @@ Quest::LoadResult Quest_Orcs2::Load(GameReader& f)
 			locationEventHandler = this;
 		else if(prog == Progress::TalkedWhereIsBase)
 		{
-			unitToSpawn = UnitData::Get("q_orkowie_boss");
+			unitToSpawn = UnitData::Get("qOrcsBoss");
 			unitSpawnRoom = RoomTarget::Throne;
 			locationEventHandler = nullptr;
 			unitEventHandler = this;
@@ -661,15 +661,15 @@ void Quest_Orcs2::ChangeClass(OrcClass newOrcClass)
 	case OrcClass::Warrior:
 	default:
 		className = questMgr->txQuest[207];
-		udi = "q_orkowie_gorush_woj";
+		udi = "qOrcsGorushWarrior";
 		break;
 	case OrcClass::Hunter:
 		className = questMgr->txQuest[208];
-		udi = "q_orkowie_gorush_lowca";
+		udi = "qOrcsGorushHunter";
 		break;
 	case OrcClass::Shaman:
 		className = questMgr->txQuest[209];
-		udi = "q_orkowie_gorush_szaman";
+		udi = "qOrcsGorushShaman";
 		break;
 	}
 

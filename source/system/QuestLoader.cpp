@@ -294,14 +294,14 @@ void QuestLoader::ParseAlias(const string& id)
 {
 	QuestScheme* scheme = QuestScheme::TryGet(id);
 	if(!scheme)
-		t.Throw("Missing quest '%s'.", id.c_str());
+		t.Throw("Missing quest.");
 	t.Next();
 
-	const string& aliasId = t.MustGetItemKeyword();
-	if(QuestScheme::TryGet(aliasId))
-		t.Throw("Alias or quest already exists.");
+	const string& alias = t.MustGetItemKeyword();
+	if(QuestScheme::TryGet(alias))
+		t.Throw("Alias or quest '%s' already exists.", alias.c_str());
 
-	QuestScheme::ids[aliasId] = scheme;
+	QuestScheme::ids[alias] = scheme;
 }
 
 //=================================================================================================

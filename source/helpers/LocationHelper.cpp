@@ -89,7 +89,7 @@ Unit* LocationHelper::GetCaptain(Location* loc)
 	assert(loc);
 	if(loc->type != L_CITY)
 		return nullptr;
-	return ForLocation(loc)->FindUnit(UnitData::Get("guard_captain"));
+	return ForLocation(loc)->FindUnit(UnitData::Get("guardCaptain"));
 }
 
 //=================================================================================================

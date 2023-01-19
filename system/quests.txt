@@ -124,8 +124,8 @@ quest globalInit
 					Room@ room = Level::GetRoom(ROOM_TREASURY);
 					Chest@ chest = Level::GetRandomChest(room);
 					chest.AddItem(Item::Get("am_gladiator"));
-					Level::SpawnUnit(room, UnitData::Get("golem_adamantine"));
-					Level::SpawnUnit(room, UnitData::Get("golem_iron"));
+					Level::SpawnUnit(room, UnitData::Get("golemAdamantine"));
+					Level::SpawnUnit(room, UnitData::Get("golemIron"));
 				}
 			}
 			else if(Level::location is vault)
@@ -2341,7 +2341,7 @@ quest main
 					{
 					case P_MAIN_NONE:
 						{
-							Unit@ u = Level::FindUnit(UnitData::Get("q_main_academy"));
+							Unit@ u = Level::FindUnit(UnitData::Get("qMainAcademyTrainer"));
 							Team::Warp(u.pos - Vec3(0,0,1.5), u.pos);
 							if(!Cutscene::ShouldSkip())
 							{
@@ -2360,7 +2360,7 @@ quest main
 							Unit@ u = Level::FindUnit(UnitData::Get("soltys"));
 							u.AddDialog(quest, "soltys");
 
-							UnitData@ ill = UnitData::Get("q_main_ill_villager");
+							UnitData@ ill = UnitData::Get("qMainIllVillager");
 							BuildingGroup@ group = BuildingGroup::Get("cottage");
 							for(int i=0; i<5; ++i)
 							{
@@ -2372,7 +2372,7 @@ quest main
 						break;
 					case P_MAIN_TALKED_SOLTYS2:
 						{
-							Unit@ u = Level::FindUnit(UnitData::Get("cleric_seller"));
+							Unit@ u = Level::FindUnit(UnitData::Get("clericSeller"));
 							u.AddDialog(quest, "clericSeller");
 						}
 						break;
@@ -2392,7 +2392,7 @@ quest main
 				if(Level::location is shrineLoc)
 				{
 					Unit@ me = e.onUpdate.unit;
-					Unit@ target = Level::FindUnit(UnitData::Get("cleric_seller"));
+					Unit@ target = Level::FindUnit(UnitData::Get("clericSeller"));
 					if(Vec3::Distance(me.pos, target.pos) < 10)
 					{
 						progress = P_MAIN_CLERIC_RETURNED;
@@ -2428,7 +2428,7 @@ quest main
 			{
 			case P_MAIN_TALKED_TRAINER:
 				{
-					Unit@ u = Level::SpawnUnitNearLocation(UnitData::Get("q_main_messenger"), Team::leader.pos, 4);
+					Unit@ u = Level::SpawnUnitNearLocation(UnitData::Get("qMainMessenger"), Team::leader.pos, 4);
 					u.RotateTo(Team::leader.pos);
 					u.OrderAutoTalk(true);
 				}
@@ -2449,7 +2449,7 @@ quest main
 				break;
 			case P_MAIN_ATTACKED:
 				quest.AddEntry(TEXT(10));
-				target.ChangeBase(UnitData::Get("q_main_ill_villager_attack"));
+				target.ChangeBase(UnitData::Get("qMainIllVillagerAttack"));
 				break;
 			case P_MAIN_TALKED_SOLTYS2:
 				@shrineLoc = World::GetRandomSettlementWithBuilding("shrine");
@@ -2460,7 +2460,7 @@ quest main
 				{
 					target.RemoveDialog(quest);
 
-					@cleric = World::CreateUnit(UnitData::Get("hero_cleric"), 8);
+					@cleric = World::CreateUnit(UnitData::Get("heroCleric"), 8);
 
 					Vec2 pos = World::FindPlace(Level::location.pos, 80, 100);
 					@dungeon = World::CreateLocation(L_DUNGEON, pos, HERO_CRYPT, 2);
@@ -2697,14 +2697,14 @@ quest direWolf
 				if(progress == P_WOLF_NONE)
 				{
 					// add dialog to hunters leader
-					UnitData@ ud = UnitData::Get("hunter_leader");
+					UnitData@ ud = UnitData::Get("hunterLeader");
 					Unit@ unit = Level::FindUnit(ud);
 					unit.AddDialog(quest, "hunter");
 				}
 				else
 				{
 					// spawn dire wolf
-					UnitData@ ud = UnitData::Get("dire_wolf");
+					UnitData@ ud = UnitData::Get("direWolf");
 					Unit@ unit = Level::SpawnUnitNearLocation(ud, Vec3(128, 0, 128));
 					unit.AddEventHandler(quest, EVENT_DIE);
 				}
@@ -2724,7 +2724,7 @@ quest direWolf
 			
 			if(progress != P_WOLF_COMPLETE)
 			{
-				Unit@ unit = startLoc.GetUnit(UnitData::Get("hunter_leader"));
+				Unit@ unit = startLoc.GetUnit(UnitData::Get("hunterLeader"));
 				if(unit is null)
 					startLoc.AddEventHandler(quest, EVENT_ENTER);
 				else
@@ -2733,7 +2733,7 @@ quest direWolf
 			
 			if(progress == P_WOLF_STARTED)
 			{
-				Unit@ unit = forest.GetUnit(UnitData::Get("dire_wolf"));
+				Unit@ unit = forest.GetUnit(UnitData::Get("direWolf"));
 				if(unit is null)
 					forest.AddEventHandler(quest, EVENT_ENTER);
 				else
@@ -2876,7 +2876,7 @@ quest mainVillage2
 					
 					// soltys
 					LocationPart@ locPart = village.GetBuildingLocationPart("hall");
-					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_plague_soltys"));
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("qMainPlagueSoltys"));
 					unit.AddEventHandler(quest, EVENT_PICKUP);
 					
 					village.image = LI_VILLAGE_DESTROYED;
@@ -3005,8 +3005,8 @@ quest mainVillage3
 					Level::SpawnUnits(UnitGroup::Get("plague"), 10);
 					
 					// villages
-					Level::SpawnUnits(UnitGroup::Get("plague_villagers"), 3);
-					UnitData@ data = UnitData::Get("q_main_villager_def");
+					Level::SpawnUnits(UnitGroup::Get("plagueVillagers"), 3);
+					UnitData@ data = UnitData::Get("qMainVillagerDef");
 					array<Unit@> units = Level::GetUnits();
 					for(uint i = 0; i < units.length(); ++i)
 					{
@@ -3017,13 +3017,13 @@ quest mainVillage3
 					
 					// inn villager
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
-					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("qMainVillagerDef"));
 					unit.AddDialog(quest, "innVillager");
 					unit.OrderAutoTalk();
 					
 					// alchemist
 					CityBuilding@ building = Level::GetBuilding(BuildingGroup::Get("alchemist"));
-					@unit = Level::SpawnUnitNearLocation(UnitData::Get("q_main_plague_alchemist"), building.unitPos);
+					@unit = Level::SpawnUnitNearLocation(UnitData::Get("qMainPlagueAlchemist"), building.unitPos);
 					unit.RotateTo(building.rot);
 					unit.AddEventHandler(quest, EVENT_PICKUP);
 					
@@ -3091,7 +3091,7 @@ quest mainVillage3
 			exp += 1000;
 			target.OrderLeave();
 			
-			UnitData@ data = UnitData::Get("q_main_villager_def");
+			UnitData@ data = UnitData::Get("qMainVillagerDef");
 			array<Unit@> units = Level::GetNearbyUnits(target.pos, 20);
 			for(uint i = 0; i < units.length(); ++i)
 			{
@@ -3227,10 +3227,10 @@ quest mainVillage4
 					
 					// inn people
 					LocationPart@ locPart = village.GetBuildingLocationPart("inn");
-					@oldman = Level::SpawnUnit(locPart, UnitData::Get("q_main_oldman"));
+					@oldman = Level::SpawnUnit(locPart, UnitData::Get("qMainOldman"));
 					oldman.OrderAutoTalk();
 					oldman.dontAttack = true;
-					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("q_main_villager_def"));
+					Unit@ unit = Level::SpawnUnit(locPart, UnitData::Get("qMainVillagerDef"));
 					unit.OrderAutoTalk();
 					
 					// barricade

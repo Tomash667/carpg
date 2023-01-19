@@ -1,175 +1,185 @@
-unit base_warrior = "Bazowy wojownik"
-unit base_hunter = "Bazowy ³owca"
-unit base_rogue = "Bazowy ³otrzyk"
-unit base_cleric = "Bazowy kap³an"
-unit base_mage = "Bazowy mag"
+unit playerWarrior = "Bazowy wojownik"
+unit playerHunter = "Bazowy ³owca"
+unit playerRogue = "Bazowy ³otrzyk"
+unit playerCleric = "Bazowy kap³an"
+unit playerMage = "Bazowy mag"
 unit blacksmith = "Kowal"
 unit merchant = "Kupiec"
-unit traveling_merchant = "Wêdrowny kupiec"
-unit food_seller = "Sprzedawca jedzenia"
+unit travelingMerchant = "Wêdrowny kupiec"
+unit foodSeller = "Sprzedawca jedzenia"
 unit alchemist = "Alchemik"
 unit citizen = "Mieszkaniec miasta"
-unit tut_czlowiek = "Mieszkaniec miasta"
+unit qTutorialCitizen = "Mieszkaniec miasta"
 unit villager = "Mieszkaniec wioski"
 unit mayor = "Burmistrz"
 unit soltys = "So³tys"
 unit trainer = "Trener"
-unit guard = "Stra¿nik"
-unit guard_wagon = "Stra¿nik"
-unit guard_merchant = "Stra¿nik"
-unit guard_move = "Stra¿nik"
-unit guard_captain = "Kapitan stra¿y"
+unit baseGuard = "Stra¿nik"
+unit guard {}
+unit guardWagon {}
+unit guardMerchant {}
+unit guardMove {}
+unit guardCaptain = "Kapitan stra¿y"
 unit clerk = "Urzêdnik"
 unit innkeeper = "Karczmarz"
-unit mage_seller = "Mag sprzedawca"
-unit cleric_seller = "Kap³an"
-unit arena_master = "Mistrz areny"
+unit mageSeller = "Mag sprzedawca"
+unit clericSeller = "Kap³an"
+unit arenaMaster = "Mistrz areny"
 unit viewer = "Widz"
 unit captive = "Porwany"
 unit traveler = "Podró¿ny"
-unit artur_drwal {
+unit messenger = "Pos³aniec"
+unit lumberjack = "Drwal"
+unit lumberjackLeader {
 	name "Drwal"
 	realName "Artur Drwal"
 }
-unit poslaniec_tartak = "Pos³aniec"
-unit drwal = "Drwal"
-unit inwestor {
+unit lumberjackMessenger {}
+unit qMineInvestor {
 	name "Inwestor"
 	realName "Marco Bartoli"
 }
-unit poslaniec_kopalnia = "Pos³aniec"
-unit gornik = "Górnik"
-unit gornik_szef = "Szef górników"
-unit pijak = "Pijak"
-unit mistrz_agentow {
+unit qMineMessenger {}
+unit miner = "Górnik"
+unit qMineLeader = "Szef górników"
+unit drunkard = "Pijak"
+unit qBanditsMaster {
 	name "Nieznajomy"
 	realName "Arto"
 }
-unit guard_q_bandyci = "Stra¿nik"
-unit agent = "Agent"
-unit q_magowie_uczony = "Uczony"
-unit q_magowie_stary = "Stary mag"
-unit q_orkowie_straznik = "Stra¿nik"
-unit base_gorush {
-	name "Ork"
-	realName "Gorush"
-}
-unit q_orkowie_gorush {}
-unit q_orkowie_gorush_woj {}
-unit q_orkowie_gorush_lowca {}
-unit q_orkowie_gorush_szaman {}
-unit q_orkowie_slaby = "S³aby ork"
-unit q_orkowie_kowal = "Ork kowal"
-unit q_orkowie_orc = "Ork"
-unit q_orkowie_orc_hunter = "Ork ³owca"
-unit q_orkowie_orc_fighter = "Ork zbrojny"
-unit q_orkowie_orc_warius = "Ork warius"
-unit q_orkowie_orc_chief = "Ork wódz"
-unit q_orkowie_orc_shaman = "Ork szaman"
-unit q_gobliny_szlachcic {
+unit qBanditsGuard {}
+unit qBanditsAgent = "Agent"
+unit qMagesScholar = "Uczony"
+unit qMagesOld = "Stary mag"
+unit qOrcsGuard {}
+unit qGoblinsNoble {
 	name "Szlachcic"
 	realName "Sir Foltest Denhoff"
 }
-unit q_gobliny_poslaniec = "Pos³aniec"
-unit q_gobliny_mag = "Wêdrowny mag"
-unit q_zlo_kaplan {
+unit qGoblinsNoble2 {
+	name "Szlachcic"
+	realName "Sir Foltest Denhoff"
+}
+unit qGoblinsBodyguard = "Ochroniarz"
+unit qGoblinsMessenger {}
+unit qGoblinsMage = "Wêdrowny mag"
+unit qEvilCleric {
 	name "Kap³an"
 	realName "Jozan"
 }
-unit q_zlo_mag = "Mag"
+unit qEvilMage = "Mag"
 unit hunter = "£owca"
-unit hunter_leader = "Przywódca ³owców"
-unit goblin = "Goblin"
-unit goblin_hunter = "Goblin ³owca"
-unit goblin_fighter = "Goblin zbrojny"
-unit goblin_chief = "Goblin wódz"
-unit q_gobliny_szlachcic2 {
-	name "Szlachcic"
-	realName "Sir Foltest Denhoff"
-}
-unit q_gobliny_ochroniarz = "Ochroniarz"
-unit tut_goblin = "Goblin"
-unit orc = "Ork"
-unit orc_hunter = "Ork ³owca"
-unit orc_fighter = "Ork zbrojny"
-unit orc_warius = "Ork warius"
-unit orc_chief = "Ork wódz"
-unit orc_shaman = "Ork szaman"
-unit q_orkowie_boss = "Wielki wódz"
-unit ogre = "Ogr"
-unit zombie = "Zombie"
-unit zombie_rotting = "Gnij¹cy zombie"
-unit zombie_ancient = "Prastary zombie"
-unit skeleton = "Szkielet"
-unit skeleton_archer = "Szkielet ³ucznik"
-unit skeleton_fighter = "Szkielet zbrojny"
-unit skeleton_mage = "Szkielet mag"
-unit necromancer = "Nekromanta uczeñ"
-unit necromancer2 = "Nekromanta"
-unit necromancer3 = "Nekromanta mistrz"
-unit undead_guard = "Nieumar³y stra¿nik"
-unit undead_archer = "Nieumar³y ³ucznik"
-unit evil_cleric = "Mroczny kap³an"
-unit evil_cleric2 = "Mroczny przywódca"
-unit q_zlo_boss = "Xar"
-unit thief = "Z³odziej"
-unit bandit = "Bandyta"
-unit bandit_archer = "Bandyta ³ucznik"
-unit bandit_chief = "Bandyta szef"
-unit ruffian = "Zbój"
-unit assassin = "Zabójca"
-unit ruffian_hegemon = "Herszt"
-unit q_bandyci_szef = "Przywódca bandytów"
-unit mage = "Mag uczeñ"
-unit mage2 = "Mag"
-unit mage3 = "Doœwiadczony mag"
-unit mage_guard = "Stra¿nik"
-unit golem_stone = "Kamienny golem"
-unit golem_iron = "¯elazny golem"
-unit golem_adamantine = "Adamantowy golem"
-unit q_magowie_golem = "Kamienny golem"
-unit q_magowie_boss = "Arcymag"
-unit wolf = "Wilk"
-unit worg = "Worg"
-unit white_wolf_sum = "Wilk (przywo³any)"
-unit dire_wolf = "Z³owieszczy wilk"
-unit spider = "Paj¹k"
-unit spider_big = "Olbrzymi paj¹k"
-unit rat = "Olbrzymi szczur"
-unit bear = "NiedŸwiedŸ"
-unit bear_black = "Czarny niedŸwiedŸ"
-unit slime = "Szlam"
-unit wild_hunter = "Dziki ³owca"
-unit q_szaleni_szaleniec = "Szaleniec"
-unit crazy_mage = "Szalony mag"
-unit crazy_warrior = "Szalony wojownik"
-unit crazy_hunter = "Szalony ³owca"
-unit crazy_rogue = "Szalony ³otrzyk"
-unit hero_mage = "Mag"
-unit hero_warrior = "Wojownik"
-unit hero_hunter = "£owca"
-unit hero_rogue = "£otrzyk"
-unit hero_tomir {
-	realName "Tomir"
-}
-unit hero_cleric = "Kap³an"
+unit hunterLeader = "Przywódca ³owców"
 unit tomashu = "Tomashu"
-unit unk = "Nieznany"
-unit crazy_cook = "Szalony kucharz"
 unit xwokloiz {
 	name "Uczeñ alchemika"
 	realName "£ukasz Zió³koski"
 }
-unit q_main_academy = "Nauczyciel z akademii"
-unit q_main_messenger = "Pos³aniec"
-unit q_main_villager_def {}
-unit q_main_oldman = "Stary mieszkaniec wioski"
-unit q_main_ill_villager = "Chory mieszkaniec wioski"
-unit q_main_ill_villager_attack {}
-unit q_main_plague_villager = "Zara¿ony wieœniak"
-unit q_main_plague_soltys = "Zara¿ony so³tys"
-unit q_main_plague_alchemist = "Zara¿ony alchemik"
-unit q_main_plague_guard = "Zara¿ony stra¿nik"
+unit qMainAcademyTrainer = "Nauczyciel z akademii"
+unit qMainMessenger {}
+unit qMainIllVillager = "Chory mieszkaniec wioski"
+unit qMainVillagerDef {}
+unit qMainOldman = "Stary mieszkaniec wioski"
+// goblins
+unit goblin = "Goblin"
+unit goblinHunter = "Goblin ³owca"
+unit goblinFighter = "Goblin zbrojny"
+unit goblinChief = "Goblin wódz"
+unit qTutorialGoblin {}
+// orcs
+unit orc = "Ork"
+unit orcHunter = "Ork ³owca"
+unit orcFighter = "Ork zbrojny"
+unit orcWarius = "Ork warius"
+unit orcChief = "Ork wódz"
+unit orcShaman = "Ork szaman"
+unit ogre = "Ogr"
+unit baseGorush {
+	name "Ork"
+	realName "Gorush"
+}
+unit qOrcsGorush {}
+unit qOrcsGorushWarrior {}
+unit qOrcsGorushHunter {}
+unit qOrcsGorushShaman {}
+unit qOrcsWeak = "S³aby ork"
+unit qOrcsOrc {}
+unit qOrcsHunter {}
+unit qOrcsFighter {}
+unit qOrcsWarius {}
+unit qOrcsChief {}
+unit qOrcsShaman {}
+unit qOrcsBlacksmith = "Ork kowal"
+unit qOrcsBoss = "Wielki wódz"
+// undead
+unit zombie = "Zombie"
+unit zombieRotting = "Gnij¹cy zombie"
+unit zombieAncient = "Prastary zombie"
+unit skeleton = "Szkielet"
+unit skeletonArcher = "Szkielet ³ucznik"
+unit skeletonFighter = "Szkielet zbrojny"
+unit skeletonMage = "Szkielet mag"
+unit necromancer = "Nekromanta uczeñ"
+unit necromancer2 = "Nekromanta"
+unit necromancer3 = "Nekromanta mistrz"
+unit undeadGuard = "Nieumar³y stra¿nik"
+unit undeadArcher = "Nieumar³y ³ucznik"
+unit evilCleric = "Mroczny kap³an"
+unit evilCleric2 = "Mroczny przywódca"
+unit qEvilBoss = "Xar"
+// bandits
+unit thief = "Z³odziej"
+unit bandit = "Bandyta"
+unit banditArcher = "Bandyta ³ucznik"
+unit banditChief = "Bandyta szef"
+unit ruffian = "Zbój"
+unit assassin = "Zabójca"
+unit ruffianHegemon = "Herszt"
+unit qBanditsBoss = "Przywódca bandytów"
+// mages & golems
+unit mage = "Mag uczeñ"
+unit mage2 = "Mag"
+unit mage3 = "Doœwiadczony mag"
+unit mageGuard = "Stra¿nik"
+unit golemStone = "Kamienny golem"
+unit golemIron = "¯elazny golem"
+unit golemAdamantine = "Adamantowy golem"
+unit qMagesBoss = "Arcymag"
+// animals & hunters
+unit wolf = "Wilk"
+unit worg = "Worg"
+unit whiteWolfSummoned = "Wilk (przywo³any)"
+unit direWolf = "Z³owieszczy wilk"
+unit spider = "Paj¹k"
+unit spiderBig = "Olbrzymi paj¹k"
+unit rat = "Olbrzymi szczur"
+unit bear = "NiedŸwiedŸ"
+unit bearBlack = "Czarny niedŸwiedŸ"
+unit slime = "Szlam"
+unit wildHunter = "Dziki ³owca"
+unit qCraziesMadman = "Szaleniec"
+// crazies
+unit crazyMage = "Szalony mag"
+unit crazyWarrior = "Szalony wojownik"
+unit crazyHunter = "Szalony ³owca"
+unit crazyRogue = "Szalony ³otrzyk"
+unit crazyCook = "Szalony kucharz"
+// heroes
+unit heroMage = "Mag"
+unit heroWarrior = "Wojownik"
+unit heroHunter = "£owca"
+unit heroRogue = "£otrzyk"
+unit heroCleric = "Kap³an"
+unit heroTomir {
+	realName "Tomir"
+}
+// other
+unit unk = "Nieznany"
+unit qMainIllVillagerAttack {}
+unit qMainPlagueVillager = "Zara¿ony wieœniak"
+unit qMainPlagueSoltys = "Zara¿ony so³tys"
+unit qMainPlagueAlchemist = "Zara¿ony alchemik"
+unit qMainPlagueGuard = "Zara¿ony stra¿nik"
 
 unitGroup orcs {
 	name "orkowie"
@@ -214,7 +224,7 @@ unitGroup golems {
 	name2 "golemów"
 	name3 "golemami"
 }
-unitGroup mages_and_golems {
+unitGroup magesAndGolems {
 	name "magowie i golemy"
 	name2 "magów i golemów"
 	name3 "magami i golemami"

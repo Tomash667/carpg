@@ -103,116 +103,112 @@ stock alchemistShelve
 // Required units
 //------------------------------------------------------------------------------
 // hardcoded spawn in forest
-unit wild_hunter
+unit wildHunter
 // hardcoded spawn in dungeons
 unit slime
 // quest units
-unit q_bandyci_szef
-unit guard_q_bandyci
-unit q_zlo_mag
-unit q_zlo_boss
-unit q_zlo_kaplan
-unit q_gobliny_szlachcic
-unit q_gobliny_szlachcic2
-unit q_gobliny_ochroniarz
-unit q_gobliny_poslaniec
-unit q_gobliny_mag
-unit q_magowie_uczony
-unit q_magowie_boss
-unit q_magowie_stary
+unit qBanditsBoss
+unit qBanditsGuard
+unit qEvilMage
+unit qEvilBoss
+unit qEvilCleric
+unit qGoblinsNoble
+unit qGoblinsNoble2
+unit qGoblinsBodyguard
+unit qGoblinsMessenger
+unit qGoblinsMage
+unit qMagesScholar
+unit qMagesBoss
+unit qMagesOld
 unit q_magowie_golem
-unit q_orkowie_gorush
-unit q_orkowie_gorush_woj
-unit q_orkowie_gorush_lowca
-unit q_orkowie_gorush_szaman
-unit q_orkowie_straznik
-unit q_orkowie_boss
-unit q_orkowie_orc
-unit q_orkowie_orc_fighter
-unit q_orkowie_orc_warius
-unit q_orkowie_orc_hunter
-unit q_orkowie_orc_shaman
-unit q_orkowie_orc_chief
-unit q_orkowie_slaby
-unit q_orkowie_kowal
+unit qOrcsGorush
+unit qOrcsGorushWarrior
+unit qOrcsGorushHunter
+unit qOrcsGorushShaman
+unit qOrcsGuard
+unit qOrcsWeak
+unit qOrcsOrc
+unit qOrcsHunter
+unit qOrcsFighter
+unit qOrcsWarius
+unit qOrcsChief
+unit qOrcsShaman
+unit qOrcsBlacksmith
+unit qOrcsBoss
 unit captive
-unit artur_drwal
-unit poslaniec_tartak
-unit drwal
+unit lumberjack
+unit lumberjackLeader
+unit lumberjackMessenger
 unit viewer
-unit inwestor
-unit poslaniec_kopalnia
-unit gornik
-unit gornik_szef
-unit mistrz_agentow
-unit agent
-unit guard_q_bandyci
-unit crazy_mage
-unit q_szaleni_szaleniec
+unit qMineInvestor
+unit qMineMessenger
+unit miner
+unit qMineLeader
+unit qBanditsMaster
+unit qBanditsAgent
+unit crazyMage
+unit qCraziesMadman
 unit tomashu
-unit golem_adamantine
-unit zombie_ancient
+unit golemAdamantine
+unit zombieAncient
 // citizens
 unit innkeeper
-unit pijak
-unit arena_master
+unit drunkard
+unit arenaMaster
 unit alchemist
 unit blacksmith
 unit merchant
-unit guard_captain
+unit guardCaptain
 unit trainer
-unit food_seller
 unit citizen
 unit villager
-unit wild_hunter
+unit wildHunter
 unit traveler
 unit mayor
 unit soltys
 unit clerk
 unit guard
-unit guard_wagon
-unit guard_merchant
-unit guard_move
+unit guardMove
 // tutorial
-unit tut_goblin
-unit tut_czlowiek
+unit qTutorialGoblin
+unit qTutorialCitizen
 // encounters
-unit crazy_cook
-unit hero_tomir
-unit traveling_merchant
+unit crazyCook
+unit heroTomir
+unit travelingMerchant
 
 //------------------------------------------------------------------------------
 // Required unit groups
 //------------------------------------------------------------------------------
 group empty
-group with_leader goblins
-group with_leader orcs
-group with_leader bandits
+group withLeader goblins
+group withLeader orcs
+group withLeader bandits
 group crazies
 group undead
 group necromancers
-group with_leader evil
-group with_leader mages
+group withLeader evil
+group withLeader mages
 group golems
-group mages_and_golems
+group magesAndGolems
 group wolfs
 group spiders
 group rats
 group animals
 group hunters
 group heroes
-group evil_heroes
+group evilHeroes
 group tournament
-group merchant_guards
-group wagon_guards
+group merchantGuards
+group wagonGuards
 group unk
-group q_magowie_golems
+group qMagesGolems
 group list challange
 group list cave
 group list forest
-group list arena_easy
-group list arena_medium
-group list arena_hard
+group list arenaEasy
+group list arenaMedium
+group list arenaHard
 group list random
 
 //------------------------------------------------------------------------------
@@ -221,6 +217,9 @@ group list random
 ability fireball
 ability magicBolt
 ability thunderBolt
+// pre V_0_13
+ability dash
+ability bull_charge
 
 //------------------------------------------------------------------------------
 // Required perks

@@ -2628,7 +2628,7 @@ void CityGenerator::SpawnUnits()
 	}
 
 	// stra¿nicy
-	UnitData* guard = UnitData::Get("guard_move");
+	UnitData* guard = UnitData::Get("guardMove");
 	uint guardCount;
 	switch(city->target)
 	{
@@ -2742,7 +2742,7 @@ void CityGenerator::RepositionUnits()
 		citizen = UnitData::Get("villager");
 	else
 		citizen = UnitData::Get("citizen");
-	UnitData* guard = UnitData::Get("guard_move");
+	UnitData* guard = UnitData::Get("guardMove");
 
 	for(vector<Unit*>::iterator it = city->units.begin(), end = city->units.end(); it != end; ++it)
 	{

@@ -176,7 +176,7 @@ ability dash {
 
 ability summonWolf {
 	type summon
-	unit white_wolf_sum
+	unit whiteWolfSummoned
 	flags useCast
 	cooldown 60
 	range 10

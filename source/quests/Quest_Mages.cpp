@@ -28,7 +28,7 @@ GameDialog* Quest_Mages::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(DialogContext::current->talker->data->id == "q_magowie_uczony")
+	if(DialogContext::current->talker->data->id == "qMagesScholar")
 		return GameDialog::TryGet("qMagesScholar");
 	else
 		return GameDialog::TryGet("qMagesGolem");
@@ -173,9 +173,9 @@ GameDialog* Quest_Mages2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(DialogContext::current->talker->data->id == "q_magowie_stary")
+	if(DialogContext::current->talker->data->id == "qMagesScholar")
 		return GameDialog::TryGet("qMages2Mage");
-	else if(DialogContext::current->talker->data->id == "q_magowie_boss")
+	else if(DialogContext::current->talker->data->id == "qMagesBoss")
 		return GameDialog::TryGet("qMages2Boss");
 	else
 		return GameDialog::TryGet("qMages2Captain");
@@ -272,7 +272,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(questMgr->txQuest[181]);
 			targetLoc->activeQuest = nullptr;
 			Location& loc = *world->CreateLocation(L_DUNGEON, world->GetRandomPlace(), MAGE_TOWER);
-			loc.group = UnitGroup::Get("mages_and_golems");
+			loc.group = UnitGroup::Get("magesAndGolems");
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.activeQuest = this;
@@ -286,9 +286,9 @@ void Quest_Mages2::SetProgress(int prog2)
 			unitEventHandler = this;
 			unitAutoTalk = true;
 			atLevel = loc.GetLastLevel();
-			unitToSpawn = UnitData::Get("q_magowie_boss");
+			unitToSpawn = UnitData::Get("qMagesBoss");
 			unitDontAttack = true;
-			unitToSpawn2 = UnitData::Get("golem_iron");
+			unitToSpawn2 = UnitData::Get("golemIron");
 			spawnGuards = true;
 		}
 		break;
@@ -448,7 +448,7 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE eventType, Unit* unit)
 			scholar = nullptr;
 		}
 	}
-	else if(unit->data->id == "q_magowie_boss" && eventType == UnitEventHandler::DIE && prog != Progress::KilledBoss)
+	else if(unit->data->id == "qMagesBoss" && eventType == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
 		SetProgress(Progress::KilledBoss);
 		unit->eventHandler = nullptr;
@@ -493,9 +493,9 @@ Quest::LoadResult Quest_Mages2::Load(GameReader& f)
 		unitEventHandler = this;
 		unitAutoTalk = true;
 		atLevel = targetLoc->GetLastLevel();
-		unitToSpawn = UnitData::Get("q_magowie_boss");
+		unitToSpawn = UnitData::Get("qMagesBoss");
 		unitDontAttack = true;
-		unitToSpawn2 = UnitData::Get("golem_iron");
+		unitToSpawn2 = UnitData::Get("golemIron");
 		spawnGuards = true;
 	}
 
@@ -555,7 +555,7 @@ void Quest_Mages2::OnEncounter(EncounterSpawn& spawn)
 	pts = int(Random(0.5f, 0.75f) * pts);
 	spawn.count = max(1, pts / 8);
 	spawn.level = 8;
-	spawn.groupName = "q_magowie_golems";
+	spawn.groupName = "qMagesGolems";
 	spawn.dontAttack = true;
 	spawn.dialog = GameDialog::TryGet("qMages");
 }

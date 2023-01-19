@@ -45,16 +45,16 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 	const string& id = DialogContext::current->talker->data->id;
 	cstring dialogId;
 
-	if(id == "mistrz_agentow")
+	if(id == "qBanditsMaster")
 		dialogId = "qBanditsMaster";
-	else if(id == "guard_captain")
+	else if(id == "guardCaptain")
 		dialogId = "qBanditsCaptain";
-	else if(id == "guard_q_bandyci")
+	else if(id == "qBanditsGuard")
 		dialogId = "qBanditsGuard";
-	else if(id == "agent")
+	else if(id == "qBanditsAgent")
 		dialogId = "qBanditsAgent";
-	else if(id == "q_bandyci_szef")
-		dialogId = "q_bandits_boss";
+	else if(id == "qBanditsBoss")
+		dialogId = "qBanditsBoss";
 	else
 		dialogId = "qBanditsEncounter";
 
@@ -65,7 +65,7 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 void WarpToThroneBanditBoss()
 {
 	// search for boss
-	UnitData* ud = UnitData::Get("q_bandyci_szef");
+	UnitData* ud = UnitData::Get("qBanditsBoss");
 	Unit* u = gameLevel->localPart->FindUnit(ud);
 	assert(u);
 
@@ -179,7 +179,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			timer = 7.5f;
 
 			// change ai of following guards
-			UnitData* ud = UnitData::Get("guard_q_bandyci");
+			UnitData* ud = UnitData::Get("qBanditsGuard");
 			for(Unit* unit : gameLevel->localPart->units)
 			{
 				if(unit->data == ud)
@@ -209,7 +209,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(Format(questMgr->txQuest[161], target.name.c_str(), GetLocationDirName(startLoc->pos, target.pos)));
 			done = false;
 			atLevel = 1;
-			unitToSpawn = UnitData::Get("q_bandyci_szef");
+			unitToSpawn = UnitData::Get("qBanditsBoss");
 			unitSpawnRoom = RoomTarget::Throne;
 			unitDontAttack = true;
 			locationEventHandler = nullptr;
@@ -381,7 +381,7 @@ Quest::LoadResult Quest_Bandits::Load(GameReader& f)
 
 	if(prog == Progress::TalkedWithAgent && !done)
 	{
-		unitToSpawn = UnitData::Get("q_bandyci_szef");
+		unitToSpawn = UnitData::Get("qBanditsBoss");
 		unitSpawnRoom = RoomTarget::Throne;
 		atLevel = 1;
 		unitDontAttack = true;
@@ -403,7 +403,7 @@ void Quest_Bandits::Update(float dt)
 		if(timer <= 0.f)
 		{
 			// spawn agent
-			agent = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("agent"), &team->leader->pos, -2, 2.f);
+			agent = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("qBanditsAgent"), &team->leader->pos, -2, 2.f);
 			if(agent)
 			{
 				banditsState = State::AgentCome;

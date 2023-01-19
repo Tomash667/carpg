@@ -214,7 +214,7 @@ Static methods:
 * Dialog@ Get(const string& in id) - return dialog with id.
 
 ### Building type
-Building like "inn", "village_house" etc.
+Building like "inn", "villageHouse" etc.
 
 ### BuildingGroup type
 Group of buildings: house, inn, hall etc.

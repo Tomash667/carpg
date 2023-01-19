@@ -83,7 +83,7 @@ void Quest_Tournament::Load(GameReader& f)
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	if(generated)
-		master = gameLevel->localPart->FindUnit(UnitData::Get("arena_master"));
+		master = gameLevel->localPart->FindUnit(UnitData::Get("arenaMaster"));
 	else
 		master = nullptr;
 }
@@ -249,7 +249,7 @@ void Quest_Tournament::GenerateUnits()
 {
 	LocationPart& locPart = *gameLevel->cityCtx;
 	Vec3 pos = gameLevel->cityCtx->FindBuilding(BuildingGroup::BG_ARENA)->walkPt;
-	master = locPart.FindUnit(UnitData::Get("arena_master"));
+	master = locPart.FindUnit(UnitData::Get("arenaMaster"));
 
 	// warp heroes in front of arena
 	for(vector<Unit*>::iterator it = locPart.units.begin(), end = locPart.units.end(); it != end; ++it)

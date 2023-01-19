@@ -177,7 +177,7 @@ building barracks {
 		" .... "
 	}
 	group barracks
-	unit guard_captain
+	unit guardCaptain
 	shift {
 		bottom {1 2}
 		left {-1 1}
@@ -298,7 +298,7 @@ building arena {
 		"    @+    "
 	}
 	group arena
-	unit arena_master
+	unit arenaMaster
 	shift {
 		bottom {1 1}
 		left {0 1}
@@ -318,7 +318,7 @@ building foodSeller {
 		"...."
 	}
 	group foodSeller
-	unit food_seller
+	unit foodSeller
 	shift {
 		bottom {1 1}
 		left {0 1}
@@ -419,7 +419,7 @@ building magesTower {
 		" ||||| "
 		"  +@   "
 	}
-	unit mage_seller
+	unit mageSeller
 	shift {
 		bottom {1 1}
 		left {0 1}
@@ -440,7 +440,7 @@ building shrine {
 		" |||| "
 		"  +@  "
 	}
-	unit cleric_seller
+	unit clericSeller
 	shift {
 		bottom {1 1}
 		left {0 1}

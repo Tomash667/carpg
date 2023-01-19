@@ -462,13 +462,13 @@ void AbilityLoader::ParseAlias(const string& id)
 {
 	Ability* ability = Ability::Get(id);
 	if(!ability)
-		t.Throw("Missing ability '%s'.", id.c_str());
+		t.Throw("Missing ability.");
 	t.Next();
 
-	const string& aliasId = t.MustGetItemKeyword();
-	int hash = Hash(aliasId);
+	const string& alias = t.MustGetItemKeyword();
+	int hash = Hash(alias);
 	if(Ability::Get(hash))
-		t.Throw("Alias or ability already exists.");
+		t.Throw("Alias or ability '%s' already exists.", alias.c_str());
 
 	Ability::hashAbilities[hash] = ability;
 }

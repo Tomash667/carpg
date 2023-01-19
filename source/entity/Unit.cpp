@@ -2255,7 +2255,7 @@ void Unit::Load(GameReader& f)
 			if(LOAD_VERSION >= V_0_13)
 				act.dash.ability = Ability::Get(f.Read<int>());
 			else
-				act.dash.ability = Ability::Get(animationState == 0 ? "dash" : "bull_charge");
+				act.dash.ability = Ability::Get(animationState == 0 ? "dash" : "bullCharge");
 			f >> act.dash.rot;
 			if(LOAD_VERSION >= V_0_17 && act.dash.ability->RequireList())
 			{
@@ -2533,7 +2533,7 @@ void Unit::Load(GameReader& f)
 		if(LOAD_VERSION < V_0_12)
 		{
 			if(hero->teamMember && hero->type == HeroType::Visitor &&
-				(data->id == "q_zlo_kaplan" || data->id == "q_magowie_stary" || strncmp(data->id.c_str(), "q_orkowie_gorush", 16) == 0))
+				(data->id == "qEvilCleric" || data->id == "qMagesScholar" || strncmp(data->id.c_str(), "qOrcsGorush", 11) == 0))
 			{
 				hero->type = HeroType::Free;
 			}

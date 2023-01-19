@@ -192,7 +192,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		else if(encounter.group->id == "animals")
 		{
 			if(Rand() % 3 != 0)
-				spawn.essential = UnitData::Get("wild_hunter");
+				spawn.essential = UnitData::Get("wildHunter");
 		}
 		spawn.groupName = encounter.group->id.c_str();
 		spawn.count = Random(3, 5);
@@ -202,7 +202,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		switch(encounter.special)
 		{
 		case SE_CRAZY_MAGE:
-			spawn.essential = UnitData::Get("crazy_mage");
+			spawn.essential = UnitData::Get("crazyMage");
 			spawn.groupName = nullptr;
 			spawn.count = 1;
 			spawn.level = Clamp(encounter.st * 2, 10, 16);
@@ -217,8 +217,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			spawn.isTeam = true;
 			break;
 		case SE_MERCHANT:
-			spawn.essential = UnitData::Get("traveling_merchant");
-			spawn.groupName = "merchant_guards";
+			spawn.essential = UnitData::Get("travelingMerchant");
+			spawn.groupName = "merchantGuards";
 			spawn.count = Random(3, 4);
 			spawn.level = Clamp(encounter.st, 5, 6);
 			break;
@@ -234,7 +234,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				spawn.farEncounter = true;
 				spawn.groupName = "bandits";
 				spawn.count = Random(4, 6);
-				spawn.groupName2 = "wagon_guards";
+				spawn.groupName2 = "wagonGuards";
 				spawn.count2 = Random(2, 3);
 				spawn.level2 = Clamp(encounter.st, 5, 6);
 				gameLevel->SpawnObjectNearLocation(locPart, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
@@ -281,7 +281,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			break;
 		case SE_CRAZY_COOK:
 			spawn.groupName = nullptr;
-			spawn.essential = UnitData::Get("crazy_cook");
+			spawn.essential = UnitData::Get("crazyCook");
 			spawn.level = -2;
 			spawn.dialog = spawn.essential->dialog;
 			spawn.count = 1;
@@ -342,7 +342,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			}
 			break;
 		case SE_TOMIR:
-			spawn.essential = UnitData::Get("hero_tomir");
+			spawn.essential = UnitData::Get("heroTomir");
 			spawn.dialog = GameDialog::TryGet("tomir");
 			spawn.level = -10;
 			break;
@@ -358,7 +358,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		if(enc->group->id == "animals")
 		{
 			if(Rand() % 3 != 0)
-				spawn.essential = UnitData::Get("wild_hunter");
+				spawn.essential = UnitData::Get("wildHunter");
 		}
 		spawn.groupName = enc->group->id.c_str();
 
@@ -423,6 +423,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		if(team)
 			team->Add(talker);
 	}
+
 	if(spawn.groupName)
 	{
 		UnitGroup* group = UnitGroup::TryGet(spawn.groupName);
@@ -439,6 +440,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				team->Add(u);
 		});
 	}
+
 	if(team)
 		team->SelectLeader();
 
@@ -453,6 +455,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			if(team)
 				team->Add(u);
 		});
+
 		if(team)
 			team->SelectLeader();
 	}

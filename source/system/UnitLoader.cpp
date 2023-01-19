@@ -59,7 +59,8 @@ enum UnitDataType
 	T_TEX,
 	T_IDLES,
 	T_ALIAS,
-	T_GROUP
+	T_GROUP,
+	T_GROUP_ALIAS
 };
 
 enum Property
@@ -215,7 +216,8 @@ void UnitLoader::InitTokenizer()
 		{ "tex", T_TEX },
 		{ "idles", T_IDLES },
 		{ "alias", T_ALIAS },
-		{ "group", T_GROUP }
+		{ "group", T_GROUP },
+		{ "groupAlias", T_GROUP_ALIAS }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -603,6 +605,9 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		break;
 	case T_GROUP:
 		ParseGroup(id);
+		break;
+	case T_GROUP_ALIAS:
+		ParseGroupAlias(id);
 		break;
 	default:
 		assert(0);
@@ -1170,7 +1175,7 @@ void UnitLoader::ParseUnit(const string& id)
 							human->hairType = HumanData::HairColorType::Grayscale;
 							crc.Update(human->hairType);
 						}
-						else if(t.IsItem("random_color"))
+						else if(t.IsItem("randomColor"))
 						{
 							human->hairType = HumanData::HairColorType::Random;
 							crc.Update(human->hairType);
@@ -2293,13 +2298,13 @@ void UnitLoader::ParseAlias(const string& id)
 {
 	UnitData* ud = UnitData::TryGet(id.c_str());
 	if(!ud)
-		t.Throw("Missing unit data '%s'.", id.c_str());
+		t.Throw("Missing unit.");
 	t.Next();
 
 	const string& alias = t.MustGetItemKeyword();
 	UnitData* ud2 = UnitData::TryGet(alias.c_str());
 	if(ud2)
-		t.Throw("Can't create alias '%s', already exists.", alias.c_str());
+		t.Throw("Alias or unit '%s' already exists.", alias.c_str());
 
 	UnitData::aliases[alias] = ud;
 	crc.Update(alias);
@@ -2453,7 +2458,23 @@ void UnitLoader::ParseGroup(const string& id)
 			t.Throw("Group list with encounter chance must have entry marked as 'encounter'.");
 	}
 
+	UnitGroup::groupMap[group->id] = group.Get();
 	UnitGroup::groups.push_back(group.Pin());
+}
+
+//=================================================================================================
+void UnitLoader::ParseGroupAlias(const string& id)
+{
+	UnitGroup* group = UnitGroup::TryGet(id);
+	if(!group)
+		t.Throw("Missing unit group.");
+	t.Next();
+
+	const string& aliasId = t.MustGetItem();
+	if(UnitGroup::TryGet(aliasId))
+		t.Throw("Alias or unit group '%s' already exists.", aliasId.c_str());
+
+	UnitGroup::groupMap[aliasId] = group;
 }
 
 //=================================================================================================

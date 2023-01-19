@@ -999,9 +999,9 @@ void BuildingLoader::ParseAlias(const string& id)
 {
 	Building* building = Building::TryGet(id);
 	if(!building)
-		t.Throw("Missing building '%s'.", id.c_str());
+		t.Throw("Missing building.");
 	t.Next();
 
-	const string& aliasId = t.MustGetItemKeyword();
-	Building::aliases[aliasId] = building;
+	const string& alias = t.MustGetItemKeyword();
+	Building::aliases[alias] = building;
 }

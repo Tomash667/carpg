@@ -69,30 +69,6 @@ items guard {
 	random 1 3 !normalFood
 }
 
-items q_guard {
-	3 potionHealth2
-	if chance 33 {
-		!lightArmor
-		random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
-		!bow
-	}
-	else if chance 50 {
-		!mediumArmor
-		random {!longBlade !axe !blunt !shortBlade}
-		random {!-2bow !-2shield}
-	}
-	else {
-		!heavyArmor
-		random {!longBlade !axe !blunt}
-		!shield
-	}
-	if level 9
-		chance 50 potionHealth2
-	else
-		chance 50 potionHealth
-	random 1 3 !normalFood
-}
-
 items rogue {
 	random {!shortBlade !longBlade}
 	!lightArmor
@@ -104,7 +80,7 @@ items rogue {
 //------------------------------------------------------------------------------
 // COMMON ABILITIES
 //------------------------------------------------------------------------------
-abilities orc_shaman {
+abilities orcShaman {
 	{magicBolt 0}
 	{fireball 6}
 }
@@ -115,7 +91,7 @@ abilities mage {
 	{thunderBolt 12}
 }
 
-abilities mage_hero {
+abilities mageHero {
 	{magicBolt 0}
 	{fireball 0}
 	{thunderBolt 10}
@@ -1125,7 +1101,7 @@ profile warrior {
 	}
 }
 
-profile ai_fighter {
+profile aiFighter {
 	strength 60
 	endurance 60
 	dexterity 60
@@ -1145,7 +1121,7 @@ profile ai_fighter {
 	heavyArmor 25
 }
 
-profile ai_archer {
+profile aiArcher {
 	strength 60
 	endurance 60
 	dexterity 60
@@ -1165,7 +1141,7 @@ profile ai_archer {
 	heavyArmor 25
 }
 
-profile ai_assassin {
+profile aiAssassin {
 	strength 60
 	endurance 60
 	dexterity 60
@@ -1185,7 +1161,7 @@ profile ai_assassin {
 	heavyArmor 15
 }
 
-profile ai_tank {
+profile aiTank {
 	strength 60
 	endurance 65
 	dexterity 60
@@ -1205,7 +1181,7 @@ profile ai_tank {
 	heavyArmor 35
 }
 
-profile ai_shaman {
+profile aiShaman {
 	strength 55
 	endurance 55
 	dexterity 60
@@ -1227,7 +1203,7 @@ profile ai_shaman {
 	concentration 15
 }
 
-profile ai_mage {
+profile aiMage {
 	strength 40
 	endurance 50
 	dexterity 50
@@ -1252,11 +1228,11 @@ profile ai_mage {
 //------------------------------------------------------------------------------
 // BASE PLAYER UNITS
 //------------------------------------------------------------------------------
-unit base_human {
+unit baseHuman {
 	mat body
 	flags human
 	group citizens
-	profile ai_fighter
+	profile aiFighter
 	walkSpeed 1.5
 	runSpeed 5
 	rotSpeed 4.5
@@ -1298,11 +1274,11 @@ unit base_human {
 	idleDialog citizenIdle
 }
 
-unit base_player : base_human {
+unit basePlayer : baseHuman {
 	group player
 }
 
-unit base_warrior : base_player {
+unit playerWarrior : basePlayer {
 	profile warrior
 	items {
 		4 potionHealth
@@ -1312,7 +1288,7 @@ unit base_warrior : base_player {
 	class warrior
 }
 
-unit base_hunter : base_player {
+unit playerHunter : basePlayer {
 	profile hunter
 	items {
 		2 potionHealth
@@ -1322,7 +1298,7 @@ unit base_hunter : base_player {
 	class hunter
 }
 
-unit base_rogue : base_player {
+unit playerRogue : basePlayer {
 	profile rogue
 	flags | backstab
 	items {
@@ -1333,7 +1309,7 @@ unit base_rogue : base_player {
 	class rogue
 }
 
-unit base_cleric : base_player {
+unit playerCleric : basePlayer {
 	profile cleric
 	items {
 		3 potionHealth
@@ -1343,7 +1319,7 @@ unit base_cleric : base_player {
 	class cleric
 }
 
-unit base_mage : base_player {
+unit playerMage : basePlayer {
 	profile mage
 	items {
 		2 potionHealth
@@ -1356,7 +1332,7 @@ unit base_mage : base_player {
 //------------------------------------------------------------------------------
 // CITIZENS
 //------------------------------------------------------------------------------
-unit blacksmith : base_human {
+unit blacksmith : baseHuman {
 	level 5
 	flags | {aiStay dontEat limitedRot}
 	items {
@@ -1372,7 +1348,7 @@ unit blacksmith : base_human {
 	dialog blacksmith
 }
 
-unit merchant : base_human {
+unit merchant : baseHuman {
 	level 4
 	flags | {aiStay aiGuard dontEat limitedRot}
 	items {
@@ -1388,7 +1364,7 @@ unit merchant : base_human {
 	dialog merchant
 }
 
-unit traveling_merchant : merchant {
+unit travelingMerchant : merchant {
 	trader {
 		stock merchant
 		groups {weapon bow shield armor amulet ring consumable other book}
@@ -1396,7 +1372,7 @@ unit traveling_merchant : merchant {
 	dialog travelingMerchant
 }
 
-unit food_seller : merchant {
+unit foodSeller : merchant {
 	trader {
 		stock foodSeller
 		groups {food drink}
@@ -1423,14 +1399,14 @@ unit alchemist : merchant {
 	dialog alchemist
 }
 
-unit citizen : base_human {
+unit citizen : baseHuman {
 	level 3
 	flags | {aiWanders aiDrunkman contest25}
 	gold {30 60}
 	dialog citizen
 }
 
-unit tut_czlowiek : base_human {
+unit qTutorialCitizen : baseHuman {
 	level 3
 	flags | {aiStay limitedRot}
 	gold {50 100}
@@ -1445,7 +1421,7 @@ unit villager : citizen {
 	gold {15 30}
 }
 
-unit mayor : base_human {
+unit mayor : baseHuman {
 	level 4
 	flags | {aiClerk aiStay dontEat limitedRot}
 	items {
@@ -1461,7 +1437,7 @@ unit soltys : mayor {
 	gold {125 250}
 }
 
-unit base_guard : base_human {
+unit baseGuard : baseHuman {
 	level {5 6}
 	flags | {dontEat guard}
 	items guard
@@ -1469,22 +1445,22 @@ unit base_guard : base_human {
 	dialog guard
 }
 
-unit guard : base_guard {
+unit guard : baseGuard {
 	flags | {aiGuard aiStay limitedRot}
 }
 
-unit guard_wagon : base_guard {
+unit guardWagon : baseGuard {
 	dialog guardsEncounter
 }
 
-unit guard_merchant : base_guard {
+unit guardMerchant : baseGuard {
 }
 
-unit guard_move : base_guard {
+unit guardMove : baseGuard {
 	flags | {aiWanders aiTrain}
 }
 
-unit guard_captain : base_human {
+unit guardCaptain : baseHuman {
 	level 10
 	flags | {aiGuard aiStay dontEat limitedRot guard}
 	items guard
@@ -1492,7 +1468,7 @@ unit guard_captain : base_human {
 	dialog guardCaptain
 }
 
-unit trainer : base_human {
+unit trainer : baseHuman {
 	level 10
 	flags | {aiGuard aiStay dontEat limitedRot}
 	items guard
@@ -1500,7 +1476,7 @@ unit trainer : base_human {
 	dialog trainer
 }
 
-unit clerk : base_human {
+unit clerk : baseHuman {
 	level 3
 	flags | {aiClerk aiStay dontEat limitedRot}
 	gold {150 250}
@@ -1525,9 +1501,9 @@ unit innkeeper : merchant {
 	dialog innkeeper
 }
 
-unit mage_seller : base_human {
+unit mageSeller : baseHuman {
 	level 10
-	profile ai_mage
+	profile aiMage
 	flags | {aiStay aiGuard dontEat limitedRot mage mpBar}
 	items mage
 	trader {
@@ -1540,7 +1516,7 @@ unit mage_seller : base_human {
 	dialog mageSeller
 }
 
-unit cleric_seller : base_human {
+unit clericSeller : baseHuman {
 	level 10
 	profile cleric
 	flags | {aiStay aiGuard dontEat limitedRot mpBar}
@@ -1557,7 +1533,7 @@ unit cleric_seller : base_human {
 	dialog clericSeller
 }
 
-unit arena_master : base_human {
+unit arenaMaster : baseHuman {
 	level 15
 	flags | {aiGuard aiStay limitedRot dontEat talkAtCompetition}
 	items guard
@@ -1565,14 +1541,14 @@ unit arena_master : base_human {
 	dialog arenaMaster
 }
 
-unit viewer : base_human {
+unit viewer : baseHuman {
 	level 3
 	flags | {aiGuard aiStay limitedRot dontEat}
 	gold {30 60}
 	dialog viewer
 }
 
-unit captive : base_human {
+unit captive : baseHuman {
 	level 4
 	flags | {aiWanders hero specificName peaceful}
 	items {
@@ -1587,7 +1563,7 @@ unit captive : base_human {
 	dialog captive
 }
 
-unit traveler : base_human {
+unit traveler : baseHuman {
 	level {4 8}
 	flags | contest25
 	items {
@@ -1602,7 +1578,29 @@ unit traveler : base_human {
 	dialog traveler
 }
 
-unit artur_drwal : base_human {
+unit messenger : baseHuman {
+	level 4
+	flags | aiWanders
+	items {
+		clothes
+		random {!-1shortBlade !-1axe !-1blunt !-1longBlade}
+		random 1 3 !normalFood
+	}
+	gold {40 80}
+}
+
+unit lumberjack : baseHuman {
+	level 5
+	items {
+		!lightArmor
+		random {hatchet battleAxe}
+		random 1 3 !normalFood
+	}
+	gold {25 50}
+	dialog woodcutter
+}
+
+unit lumberjackLeader : baseHuman {
 	level 6
 	flags | {aiStay hero specificName contest50}
 	items {
@@ -1615,33 +1613,11 @@ unit artur_drwal : base_human {
 	dialog qSawmill
 }
 
-unit messenger : base_human {
-	level 4
-	flags | aiWanders
-	items {
-		clothes
-		random {!-1shortBlade !-1axe !-1blunt !-1longBlade}
-		random 1 3 !normalFood
-	}
-	gold {40 80}
-}
-
-unit poslaniec_tartak : messenger {
+unit lumberjackMessenger : messenger {
 	dialog qSawmill
 }
 
-unit drwal : base_human {
-	level 5
-	items {
-		!lightArmor
-		random {hatchet battleAxe}
-		random 1 3 !normalFood
-	}
-	gold {25 50}
-	dialog woodcutter
-}
-
-unit inwestor : base_human {
+unit qMineInvestor : baseHuman {
 	level 10
 	flags | {aiStay hero specificName}
 	items {
@@ -1654,11 +1630,11 @@ unit inwestor : base_human {
 	dialog qMine
 }
 
-unit poslaniec_kopalnia : messenger {
+unit qMineMessenger : messenger {
 	dialog qMine
 }
 
-unit gornik : base_human {
+unit miner : baseHuman {
 	level 5
 	flags | miner
 	items {
@@ -1670,7 +1646,7 @@ unit gornik : base_human {
 	dialog miner
 }
 
-unit gornik_szef : gornik {
+unit qMineLeader : miner {
 	level 6
 	flags | {aiStay ~miner limitedRot}
 	hp 600
@@ -1678,9 +1654,9 @@ unit gornik_szef : gornik {
 	dialog qMine
 }
 
-unit pijak : base_human {
+unit drunkard : baseHuman {
 	level {3 20}
-	profile ai_fighter
+	profile aiFighter
 	flags | {contest drunkmanAfterContest}
 	items {
 		clothes
@@ -1691,7 +1667,7 @@ unit pijak : base_human {
 	dialog drunkman
 }
 
-unit mistrz_agentow : base_human {
+unit qBanditsMaster : baseHuman {
 	level 12
 	flags | {aiStay hero specificName backstab dontEat}
 	items rogue
@@ -1699,13 +1675,35 @@ unit mistrz_agentow : base_human {
 	dialog qBandits
 }
 
-unit guard_q_bandyci : base_guard {
+unit qBanditsGuard : baseGuard {
 	flags | aiTrain
-	items q_guard
+	items {
+		3 potionHealth2
+		if chance 33 {
+			!lightArmor
+			random {!-1longBlade !-1axe !-1blunt !-1shortBlade}
+			!bow
+		}
+		else if chance 50 {
+			!mediumArmor
+			random {!longBlade !axe !blunt !shortBlade}
+			random {!-2bow !-2shield}
+		}
+		else {
+			!heavyArmor
+			random {!longBlade !axe !blunt}
+			!shield
+		}
+		if level 9
+			chance 50 potionHealth2
+		else
+			chance 50 potionHealth
+		random 1 3 !normalFood
+	}
 	dialog qBandits
 }
 
-unit agent : base_human {
+unit qBanditsAgent : baseHuman {
 	level 8
 	flags | {aiStay dontEat hero specificName}
 	items rogue
@@ -1713,13 +1711,13 @@ unit agent : base_human {
 	dialog qBandits
 }
 
-unit q_magowie_uczony : mayor {
+unit qMagesScholar : mayor {
 	dialog qMages
 }
 
-unit q_magowie_stary : base_human {
+unit qMagesOld : baseHuman {
 	level 15
-	profile ai_mage
+	profile aiMage
 	flags | {mage hero drunkMage}
 	items mage
 	gold {150 300}
@@ -1732,12 +1730,12 @@ unit q_magowie_stary : base_human {
 	}
 }
 
-unit q_orkowie_straznik : base_guard {
+unit qOrcsGuard : baseGuard {
 	flags | dontEat
 	dialog qOrcs
 }
 
-unit q_gobliny_szlachcic : mayor {
+unit qGoblinsNoble : mayor {
 	level 14
 	flags | {hero specificName}
 	hp 1400
@@ -1746,13 +1744,41 @@ unit q_gobliny_szlachcic : mayor {
 	dialog qGoblins
 }
 
-unit q_gobliny_poslaniec : messenger {
+unit qGoblinsNoble2 : baseHuman {
+	level 14
+	flags | {archer hero specificName boss sitOnThrone rootedRes}
+	hp 1400
+	attack -60 // too good weapon
+	items {
+		assassinDagger
+		angelBow
+		!lightArmor
+		potionHealth3
+		2 potionHealth2
+		potionDexterity
+		random 1 3 !normalFood
+	}
+	gold {1000 2000}
+	dialog qGoblins
+	group goblins
+}
+
+unit qGoblinsBodyguard : baseHuman {
+	level 8
+	flags | aiTrain
+	items guard
+	gold {80 160}
+	dialog bodyguard
+	group goblins
+}
+
+unit qGoblinsMessenger : messenger {
 	dialog qGoblins
 }
 
-unit q_gobliny_mag : base_human {
+unit qGoblinsMage : baseHuman {
 	level 10
-	profile ai_mage
+	profile aiMage
 	flags | {mage mpBar}
 	items mage
 	gold {100 200}
@@ -1760,7 +1786,7 @@ unit q_gobliny_mag : base_human {
 	dialog qGoblins
 }
 
-unit q_zlo_kaplan : base_human {
+unit qEvilCleric : baseHuman {
 	level {5 20}
 	profile cleric
 	flags | {hero aiStay aiTrain specificName fastLearner}
@@ -1781,9 +1807,9 @@ unit q_zlo_kaplan : base_human {
 	class cleric
 }
 
-unit q_zlo_mag : base_human {
+unit qEvilMage : baseHuman {
 	level 10
-	profile ai_mage
+	profile aiMage
 	flags | {mage mpBar}
 	items mage
 	gold {100 200}
@@ -1791,9 +1817,9 @@ unit q_zlo_mag : base_human {
 	dialog qEvil
 }
 
-unit hunter : base_human {
+unit hunter : baseHuman {
 	level 5
-	profile ai_archer
+	profile aiArcher
 	flags | {archer aiTrain}
 	class hunter
 	items {
@@ -1809,20 +1835,102 @@ unit hunter : base_human {
 	dialog hunter
 }
 
-unit hunter_leader : hunter {
+unit hunterLeader : hunter {
 	level 10
 	gold {100 200}
 	dialog hunterLeader
 }
 
+unit tomashu : baseHuman {
+	level 25
+	flags | {dontEscape secret immortal sitOnThrone melee magicRes50 backstabRes poisonRes dontEat stunRes rootedRes dontTalk}
+	profile aiFighter
+	hp 2500
+	items {
+		forbiddenSword
+		blackArmor
+		adamantineShield
+		dragonBow
+		3 potionHealth3
+		5 krystal
+		amuletHealth
+	}
+	gold 666
+	abilities {
+		{mysticBall 0}
+	}
+	dialog tomashu
+	appearance {
+		beard 4
+		mustache -1
+		hair 0
+		hairColor 0x000000
+		height 1.1
+	}
+}
+
+unit xwokloiz : baseHuman {
+	level 8
+	def 25
+	flags | {aiStay hero}
+	items {
+		studdedArmorHq
+		hatchet
+		longBow
+		random 1 3 !normalFood
+		alchemistHerb
+		random 3 5 healingHerb
+		2 potionHealth
+	}
+	gold {10 50}
+	dialog "alchemistApprentice/xwokloiz"
+}
+
+unit qMainAcademyTrainer : trainer {
+	dialog "main/trainer"
+}
+
+unit qMainMessenger : messenger {
+	dialog "main/messenger"
+}
+
+unit qMainIllVillager : villager {
+	dialog "main/illVillager"
+	flags {human aiStay dontEat dontEscape}
+	tex {
+		null
+		"head_ill.jpg"
+		null
+	}
+	idleDialog illIdle
+}
+
+unit qMainVillagerDef : villager {
+	dialog "mainVillage3/villager"
+	flags {human aiStay}
+}
+
+unit qMainOldman : villager {
+	dialog "mainVillage4/oldman"
+	flags {human aiStay hero peaceful specificName}
+	items {
+		dagger
+		oldRobe
+		random 1 3 !normalFood
+	}
+	appearance {
+		hairColor 0xDED5D0
+	}
+}
+
 //------------------------------------------------------------------------------
 // GOBLINS
 //------------------------------------------------------------------------------
-unit base_goblin {
+unit baseGoblin {
 	mesh "goblin.qmsh"
 	mat body
 	flags {humanoid coward orcFood}
-	profile ai_fighter
+	profile aiFighter
 	group goblins
 	walkSpeed 1.75
 	runSpeed 6
@@ -1851,7 +1959,7 @@ unit base_goblin {
 	idleDialog goblinIdle
 }
 
-unit goblin : base_goblin {
+unit goblin : baseGoblin {
 	level {3 4}
 	def 25
 	flags | aiTrain
@@ -1870,9 +1978,9 @@ unit goblin : base_goblin {
 	gold {{15 30} {20 40}}
 }
 
-unit goblin_hunter : base_goblin {
+unit goblinHunter : baseGoblin {
 	level {4 5}
-	profile ai_archer
+	profile aiArcher
 	def 30
 	flags | {archer aiTrain}
 	items {
@@ -1885,7 +1993,7 @@ unit goblin_hunter : base_goblin {
 	gold {{20 40} {25 50}}
 }
 
-unit goblin_fighter : base_goblin {
+unit goblinFighter : baseGoblin {
 	level {4 5}
 	def 30
 	flags | aiTrain
@@ -1899,7 +2007,7 @@ unit goblin_fighter : base_goblin {
 	gold {{20 40} {25 50}}
 }
 
-unit goblin_chief : base_goblin {
+unit goblinChief : baseGoblin {
 	level {6 7}
 	def 40
 	items {
@@ -1912,35 +2020,7 @@ unit goblin_chief : base_goblin {
 	gold {{60 120} {70 140}}
 }
 
-unit q_gobliny_szlachcic2 : base_human {
-	level 14
-	flags | {archer hero specificName boss sitOnThrone rootedRes}
-	hp 1400
-	attack -60 // too good weapon
-	items {
-		assassinDagger
-		angelBow
-		!lightArmor
-		potionHealth3
-		2 potionHealth2
-		potionDexterity
-		random 1 3 !normalFood
-	}
-	gold {1000 2000}
-	dialog qGoblins
-	group goblins
-}
-
-unit q_gobliny_ochroniarz : base_human {
-	level 8
-	flags | aiTrain
-	items guard
-	gold {80 160}
-	dialog bodyguard
-	group goblins
-}
-
-unit tut_goblin : goblin {
+unit qTutorialGoblin : goblin {
 	flags | {aiStay aiGuard ~aiTrain}
 	items {
 		if chance 5 {
@@ -1957,12 +2037,12 @@ unit tut_goblin : goblin {
 //------------------------------------------------------------------------------
 // ORCS
 //------------------------------------------------------------------------------
-unit base_orc {
+unit baseOrc {
 	mesh "ork.qmsh"
 	mat body
 	flags {humanoid orcFood}
 	group orcs
-	profile ai_fighter
+	profile aiFighter
 	walkSpeed 1.5
 	runSpeed 5
 	rotSpeed 4
@@ -1991,84 +2071,7 @@ unit base_orc {
 	idleDialog orcIdle
 }
 
-unit base_gorush : base_orc {
-	flags | {hero aiTrain specificName tournament peaceful}
-	dialog qOrcs2
-	gold {10 30}
-	group citizens
-	idleDialog citizenIdle
-}
-
-unit q_orkowie_gorush : base_gorush {
-	level 10
-	flags | contest50
-	def 50
-	items {
-		potionHealth
-		orcLeatherArmor
-		woodenShield
-		orcAxe
-		shortBow
-		random 0 2 !orcFood
-	}
-	class warrior
-}
-
-unit q_orkowie_gorush_woj : base_gorush {
-	level 15
-	flags | {melee contest sitOnThrone}
-	def 100
-	items {
-		potionHealth2
-		orcChainmail
-		steelShield
-		crystalAxe
-		longBow
-		random 3 5 !orcFood
-		ringStrength
-	}
-	class warrior
-}
-
-unit q_orkowie_gorush_lowca : base_gorush {
-	level 15
-	flags | {archer contest50 sitOnThrone}
-	def 75
-	items {
-		potionHealth2
-		elvenBow
-		ironShield
-		orcAxe
-		orcLeatherArmor
-		random 3 5 !orcFood
-		ringDexterity
-	}
-	class hunter
-}
-
-unit q_orkowie_gorush_szaman : base_gorush {
-	level 15
-	flags | {mage sitOnThrone}
-	def 60
-	items {
-		potionHealth
-		orcShamanArmor
-		shamanOrcHammer
-		ironShield
-		random 3 5 !orcFood
-		ringMage
-	}
-	profile ai_shaman
-	abilities orc_shaman
-	tex {
-		"ork_szaman.jpg"
-		null
-		null
-	}
-	class mage
-}
-
-unit orc : base_orc {
+unit orc : baseOrc {
 	level {5 7}
 	def 51
 	flags | aiTrain
@@ -2082,27 +2085,9 @@ unit orc : base_orc {
 	gold {{25 50} {35 70}}
 }
 
-unit q_orkowie_orc : orc {
-	group citizens
-	dialog qOrcs2
-}
-
-unit q_orkowie_slaby : base_orc {
-	level 4
-	def 40
-	flags | {coward peaceful}
-	items {
-		random {!-2longBlade !-2axe !-2blunt}
-		random 0 2 !orcFood
-	}
-	gold {20 40}
-	group citizens
-	dialog qOrcs2
-}
-
-unit orc_hunter : base_orc {
+unit orcHunter : baseOrc {
 	level {8 10}
-	profile ai_archer
+	profile aiArcher
 	flags | {archer aiTrain}
 	def 73
 	items {
@@ -2116,12 +2101,7 @@ unit orc_hunter : base_orc {
 	gold {{40 80} {50 100}}
 }
 
-unit q_orkowie_orc_hunter : orc_hunter {
-	group citizens
-	dialog qOrcs2
-}
-
-unit orc_fighter : base_orc {
+unit orcFighter : baseOrc {
 	level {8 10}
 	flags | {aiTrain melee}
 	def 52
@@ -2135,23 +2115,9 @@ unit orc_fighter : base_orc {
 	gold {{40 80} {50 100}}
 }
 
-unit q_orkowie_orc_fighter : orc_fighter {
-	group citizens
-	dialog qOrcs2
-}
-
-unit q_orkowie_kowal : q_orkowie_orc_fighter {
-	flags | aiStay
-	trader {
-		stock orcBlacksmith
-		groups {weapon bow shield armor}
-	}
-	gold {250 500}
-}
-
-unit orc_warius : base_orc {
+unit orcWarius : baseOrc {
 	level {9 12}
-	profile ai_tank
+	profile aiTank
 	def 55
 	flags | {aiTrain melee}
 	items {
@@ -2164,12 +2130,7 @@ unit orc_warius : base_orc {
 	gold {{45 90}{60 120}}
 }
 
-unit q_orkowie_orc_warius : orc_warius {
-	group citizens
-	dialog qOrcs2
-}
-
-unit orc_chief : base_orc {
+unit orcChief : baseOrc {
 	level {10 14}
 	flags | melee
 	def 65
@@ -2183,14 +2144,9 @@ unit orc_chief : base_orc {
 	gold {{100 200} {140 280}}
 }
 
-unit q_orkowie_orc_chief : orc_chief {
-	group citizens
-	dialog qOrcs2
-}
-
-unit orc_shaman : base_orc {
+unit orcShaman : baseOrc {
 	level {8 10}
-	profile ai_shaman
+	profile aiShaman
 	def 60
 	flags | {mage mpBar}
 	items {
@@ -2200,39 +2156,11 @@ unit orc_shaman : base_orc {
 		random 1 3 !orcFood
 	}
 	gold {{40 80} {50 100}}
-	abilities orc_shaman
+	abilities orcShaman
 	tex {
 		"ork_szaman.jpg"
 		null
 		null
-	}
-}
-
-unit q_orkowie_orc_shaman : orc_shaman {
-	group citizens
-	dialog qOrcs2
-}
-
-unit q_orkowie_boss : base_orc {
-	level 16
-	flags | {melee boss sitOnThrone yell guarded rootedRes}
-	hp 1600
-	attack -40
-	def 110
-	items {
-		orcChainmail
-		ripperAxe
-		3 potionHealth3
-		adamantineShield
-		potionStrength
-		random 3 5 !orcFood
-		ringStrength2
-	}
-	gold {1000 2000}
-	sounds {
-		seeEnemy "snarl.mp3"
-		pain "ogre5.wav"
-		death "ogre3.wav"
 	}
 }
 
@@ -2278,10 +2206,162 @@ unit ogre {
 	idleDialog ogreIdle
 }
 
+unit baseGorush : baseOrc {
+	flags | {hero aiTrain specificName tournament peaceful}
+	dialog qOrcs2
+	gold {10 30}
+	group citizens
+	idleDialog citizenIdle
+}
+
+unit qOrcsGorush : baseGorush {
+	level 10
+	flags | contest50
+	def 50
+	items {
+		potionHealth
+		orcLeatherArmor
+		woodenShield
+		orcAxe
+		shortBow
+		random 0 2 !orcFood
+	}
+	class warrior
+}
+
+unit qOrcsGorushWarrior : baseGorush {
+	level 15
+	flags | {melee contest sitOnThrone}
+	def 100
+	items {
+		potionHealth2
+		orcChainmail
+		steelShield
+		crystalAxe
+		longBow
+		random 3 5 !orcFood
+		ringStrength
+	}
+	class warrior
+}
+
+unit qOrcsGorushHunter : baseGorush {
+	level 15
+	flags | {archer contest50 sitOnThrone}
+	def 75
+	items {
+		potionHealth2
+		elvenBow
+		ironShield
+		orcAxe
+		orcLeatherArmor
+		random 3 5 !orcFood
+		ringDexterity
+	}
+	class hunter
+}
+
+unit qOrcsGorushShaman : baseGorush {
+	level 15
+	flags | {mage sitOnThrone}
+	def 60
+	items {
+		potionHealth
+		orcShamanArmor
+		shamanOrcHammer
+		ironShield
+		random 3 5 !orcFood
+		ringMage
+	}
+	profile aiShaman
+	abilities orcShaman
+	tex {
+		"ork_szaman.jpg"
+		null
+		null
+	}
+	class mage
+}
+
+unit qOrcsWeak : baseOrc {
+	level 4
+	def 40
+	flags | {coward peaceful}
+	items {
+		random {!-2longBlade !-2axe !-2blunt}
+		random 0 2 !orcFood
+	}
+	gold {20 40}
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsOrc : orc {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsHunter : orcHunter {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsFighter : orcFighter {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsWarius : orcWarius {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsChief : orcChief {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsShaman : orcShaman {
+	group citizens
+	dialog qOrcs2
+}
+
+unit qOrcsBlacksmith : qOrcsFighter {
+	flags | aiStay
+	trader {
+		stock orcBlacksmith
+		groups {weapon bow shield armor}
+	}
+	gold {250 500}
+}
+
+unit qOrcsBoss : baseOrc {
+	level 16
+	flags | {melee boss sitOnThrone yell guarded rootedRes}
+	hp 1600
+	attack -40
+	def 110
+	items {
+		orcChainmail
+		ripperAxe
+		3 potionHealth3
+		adamantineShield
+		potionStrength
+		random 3 5 !orcFood
+		ringStrength2
+	}
+	gold {1000 2000}
+	sounds {
+		seeEnemy "snarl.mp3"
+		pain "ogre5.wav"
+		death "ogre3.wav"
+	}
+}
+
 //------------------------------------------------------------------------------
 // UNDEAD & EVIL
 //------------------------------------------------------------------------------
-unit base_zombie {
+unit baseZombie {
 	mesh "zombie.qmsh"
 	mat body
 	flags {fixedStats undead dontEscape slow pierceRes25 bluntRes25 dontOpen poisonRes noPowerAttack ignoreBlock backstabRes dontEat stunRes dontTalk}
@@ -2312,14 +2392,14 @@ unit base_zombie {
 	attackRange 1
 }
 
-unit zombie : base_zombie {
+unit zombie : baseZombie {
 	level 6
 	hp 720
 	attack 120
 	def 144
 }
 
-unit zombie_rotting : base_zombie {
+unit zombieRotting : baseZombie {
 	level 9
 	hp 1080
 	attack 180
@@ -2334,7 +2414,7 @@ unit zombie_rotting : base_zombie {
 	}
 }
 
-unit zombie_ancient : base_zombie {
+unit zombieAncient : baseZombie {
 	level 12
 	flags | magicRes25
 	hp 1440
@@ -2350,7 +2430,7 @@ unit zombie_ancient : base_zombie {
 	}
 }
 
-unit base_skeleton {
+unit baseSkeleton {
 	mesh "skeleton.qmsh"
 	mat bone
 	flags {fixedStats humanoid undead dontEscape pierceRes25 bluntWeak25 poisonRes bloodless backstabRes dontEat dontTalk}
@@ -2385,7 +2465,7 @@ unit base_skeleton {
 	attackRange 1
 }
 
-unit skeleton : base_skeleton {
+unit skeleton : baseSkeleton {
 	level 6
 	hp 600
 	attack 70 // 120
@@ -2396,7 +2476,7 @@ unit skeleton : base_skeleton {
 	}
 }
 
-unit skeleton_archer : base_skeleton {
+unit skeletonArcher : baseSkeleton {
 	level 7
 	flags | archer
 	hp 700
@@ -2409,7 +2489,7 @@ unit skeleton_archer : base_skeleton {
 	}
 }
 
-unit skeleton_fighter : base_skeleton {
+unit skeletonFighter : baseSkeleton {
 	level 7
 	flags | melee
 	hp 700
@@ -2421,7 +2501,7 @@ unit skeleton_fighter : base_skeleton {
 	}
 }
 
-unit skeleton_mage : base_skeleton {
+unit skeletonMage : baseSkeleton {
 	level 7
 	flags | {mage mpBar}
 	hp 600
@@ -2438,9 +2518,9 @@ unit skeleton_mage : base_skeleton {
 	}
 }
 
-unit necromancer : base_human {
+unit necromancer : baseHuman {
 	level {5 8}
-	profile ai_mage
+	profile aiMage
 	flags | {mage mpBar}
 	items {
 		necromancerRobe
@@ -2477,7 +2557,7 @@ unit necromancer3 : necromancer {
 	gold {{130 260}{150 300}}
 }
 
-unit base_undead : base_human {
+unit baseUndead : baseHuman {
 	level {8 12}
 	flags | {undead dontEscape bluntRes25 poisonRes dontEat dontTalk}
 	gold {{40 80} {60 120}}
@@ -2498,7 +2578,7 @@ unit base_undead : base_human {
 	}
 }
 
-unit undead_guard : base_undead {
+unit undeadGuard : baseUndead {
 	flags | melee
 	items {
 		!shield
@@ -2507,7 +2587,7 @@ unit undead_guard : base_undead {
 	}
 }
 
-unit undead_archer : base_undead {
+unit undeadArcher : baseUndead {
 	flags | archer
 	items {
 		!bow
@@ -2516,7 +2596,7 @@ unit undead_archer : base_undead {
 	}
 }
 
-unit evil_cleric : base_human {
+unit evilCleric : baseHuman {
 	level {8 12}
 	flags | aiTrain
 	items {
@@ -2546,7 +2626,7 @@ unit evil_cleric : base_human {
 	}
 }
 
-unit evil_cleric2 : evil_cleric {
+unit evilCleric2 : evilCleric {
 	level {13 16}
 	items {
 		!blunt
@@ -2558,7 +2638,7 @@ unit evil_cleric2 : evil_cleric {
 	gold {{130 260}{160 320}}
 }
 
-unit q_zlo_boss : base_human {
+unit qEvilBoss : baseHuman {
 	level 20
 	flags | {dontEscape poisonRes melee boss xar magicRes25 backstabRes dontEat stunRes rootedRes dontTalk}
 	hp 2000
@@ -2600,15 +2680,15 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 // BANDITS
 //------------------------------------------------------------------------------
-unit base_bandit : base_human {
+unit baseBandit : baseHuman {
 	dialog bandit
 	idleDialog banditIdle
 	group bandits
 }
 
-unit thief : base_bandit {
+unit thief : baseBandit {
 	level {3 5}
-	profile ai_assassin
+	profile aiAssassin
 	flags | aiTrain
 	items {
 		!shortBlade
@@ -2621,7 +2701,7 @@ unit thief : base_bandit {
 	gold {{15 30} {25 50}}
 }
 
-unit bandit : base_bandit {
+unit bandit : baseBandit {
 	level {6 8}
 	flags | aiTrain
 	items {
@@ -2641,9 +2721,9 @@ unit bandit : base_bandit {
 	gold {{30 60} {40 80}}
 }
 
-unit bandit_archer : base_bandit {
+unit banditArcher : baseBandit {
 	level {6 8}
-	profile ai_archer
+	profile aiArcher
 	flags | {archer aiTrain}
 	items {
 		random {!-2longBlade !-2axe !-2blunt !-2shortBlade}
@@ -2656,7 +2736,7 @@ unit bandit_archer : base_bandit {
 	gold {{30 60} {40 80}}
 }
 
-unit bandit_chief : base_bandit {
+unit banditChief : baseBandit {
 	level {7 10}
 	items {
 		!mediumArmor
@@ -2670,9 +2750,9 @@ unit bandit_chief : base_bandit {
 	gold {{70 140} {100 200}}
 }
 
-unit ruffian : base_bandit {
+unit ruffian : baseBandit {
 	level {8 10}
-	profile ai_tank
+	profile aiTank
 	flags | aiTrain
 	items {
 		random {!axe !blunt}
@@ -2684,9 +2764,9 @@ unit ruffian : base_bandit {
 	gold {{40 80} {50 100}}
 }
 
-unit assassin : base_bandit {
+unit assassin : baseBandit {
 	level {9 11}
-	profile ai_assassin
+	profile aiAssassin
 	flags | {aiTrain backstab}
 	items {
 		if chance 75 {
@@ -2704,14 +2784,14 @@ unit assassin : base_bandit {
 	gold {{45 90} {55 110}}
 }
 
-unit ruffian_hegemon : ruffian {
+unit ruffianHegemon : ruffian {
 	level {10 12}
-	profile ai_tank
+	profile aiTank
 	flags | ~aiTrain
 	gold {{100 200} {120 240}}
 }
 
-unit q_bandyci_szef : base_bandit {
+unit qBanditsBoss : baseBandit {
 	level 15
 	hp 750
 	attack -30 // too good weapon
@@ -2733,9 +2813,9 @@ unit q_bandyci_szef : base_bandit {
 //------------------------------------------------------------------------------
 // MAGES & GOLEMS
 //------------------------------------------------------------------------------
-unit mage : base_human {
+unit mage : baseHuman {
 	level {5 8}
-	profile ai_mage
+	profile aiMage
 	flags | {mage mpBar}
 	items {
 		!wand
@@ -2796,7 +2876,7 @@ unit mage3 : mage {
 	gold {{130 260}{150 300}}
 }
 
-unit mage_guard : base_human {
+unit mageGuard : baseHuman {
 	level {5 8}
 	flags | aiTrain
 	items {
@@ -2824,7 +2904,7 @@ unit mage_guard : base_human {
 	group mages
 }
 
-unit base_golem {
+unit baseGolem {
 	mesh "golem.qmsh"
 	flags {fixedStats dontEscape pierceRes25 slashRes25 dontSuffer poisonRes bloodless ignoreBlock dontEat backstabRes stunRes rootedRes dontTalk construct}
 	stamina 150
@@ -2851,7 +2931,7 @@ unit base_golem {
 	attackRange 1.2
 }
 
-unit golem_stone : base_golem {
+unit golemStone : baseGolem {
 	level 8
 	mat rock
 	flags | {bluntWeak25 magicRes25}
@@ -2861,7 +2941,7 @@ unit golem_stone : base_golem {
 	blood rock
 }
 
-unit golem_iron : base_golem {
+unit golemIron : baseGolem {
 	level 12
 	mat metal
 	flags | magicRes25
@@ -2881,7 +2961,7 @@ unit golem_iron : base_golem {
 	}
 }
 
-unit golem_adamantine : golem_iron {
+unit golemAdamantine : golemIron {
 	level 20
 	flags | {bluntRes25 magicRes50 ~magicRes25}
 	hp 2400
@@ -2894,9 +2974,9 @@ unit golem_adamantine : golem_iron {
 	}
 }
 
-unit q_magowie_boss : base_human {
+unit qMagesBoss : baseHuman {
 	level 18
-	profile ai_mage
+	profile aiMage
 	flags | {mage boss guarded mpBar rootedRes}
 	hp 1440
 	def 150
@@ -2987,7 +3067,7 @@ unit worg : wolf {
 	}
 }
 
-unit white_wolf_sum : wolf {
+unit whiteWolfSummoned : wolf {
 	level {5 15}
 	hp 500+100
 	attack 100+20
@@ -3002,7 +3082,7 @@ unit white_wolf_sum : wolf {
 	flags | {hero specificName}
 }
 
-unit dire_wolf : wolf {
+unit direWolf : wolf {
 	level 10
 	hp 2000
 	attack 200
@@ -3027,7 +3107,7 @@ unit dire_wolf : wolf {
 	attackRange 1.8
 }
 
-unit spider_base {
+unit spiderBase {
 	mesh "pajak.qmsh"
 	mat body
 	flags {fixedStats poisonAttack dontOpen poisonRes noPowerAttack ignoreBlock dontEat slight dontTalk}
@@ -3052,7 +3132,7 @@ unit spider_base {
 	}
 }
 
-unit spider : spider_base {
+unit spider : spiderBase {
 	flags | slight
 	level 2
 	hp 150
@@ -3066,7 +3146,7 @@ unit spider : spider_base {
 	}
 }
 
-unit spider_big : spider_base {
+unit spiderBig : spiderBase {
 	level 3
 	hp 250
 	stamina 300
@@ -3150,7 +3230,7 @@ unit bear {
 	attackRange 1.5
 }
 
-unit bear_black : bear {
+unit bearBlack : bear {
 	tex {
 		"bear_black.jpg"
 	}
@@ -3197,7 +3277,7 @@ unit slime {
 	attackRange 0.4
 }
 
-unit wild_hunter : base_human {
+unit wildHunter : baseHuman {
 	level {6 10}
 	flags {human archer}
 	items {
@@ -3219,7 +3299,7 @@ unit wild_hunter : base_human {
 	idleDialog wildHunterIdle
 }
 
-unit q_szaleni_szaleniec : wild_hunter {
+unit qCraziesMadman : wildHunter {
 	level 15
 	items {
 		potionHealth2
@@ -3237,7 +3317,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 //------------------------------------------------------------------------------
 // CRAZIES
 //------------------------------------------------------------------------------
-unit base_crazy : base_human {
+unit baseCrazy : baseHuman {
 	level {5 20}
 	flags | {crazy hero tournament aiWanders}
 	dialog crazy
@@ -3245,40 +3325,40 @@ unit base_crazy : base_human {
 	group crazies
 	gold {{50 100}{200 400}}
 	appearance {
-		hairColor random_color
+		hairColor randomColor
 	}
 }
 
-unit crazy_mage : base_crazy {
+unit crazyMage : baseCrazy {
 	profile mage
 	flags | {mage contest25}
 	items mage
-	abilities mage_hero
+	abilities mageHero
 	class mage
 }
 
-unit crazy_warrior : base_crazy {
+unit crazyWarrior : baseCrazy {
 	profile warrior
 	flags | {aiTrain contest melee}
 	class warrior
 }
 
-unit crazy_hunter : base_crazy {
+unit crazyHunter : baseCrazy {
 	profile hunter
 	flags | {archer aiTrain contest50}
 	class hunter
 }
 
-unit crazy_rogue : base_crazy {
+unit crazyRogue : baseCrazy {
 	profile rogue
 	flags | {aiTrain contest50 melee50 backstab}
 	class rogue
 }
 
-unit crazy_cook : base_crazy {
+unit crazyCook : baseCrazy {
 	level 8
 	flags {crazy human}
-	profile ai_fighter
+	profile aiFighter
 	items {
 		fryingPan
 		!lightArmor
@@ -3293,44 +3373,40 @@ unit crazy_cook : base_crazy {
 //------------------------------------------------------------------------------
 // HEROES
 //------------------------------------------------------------------------------
-unit base_hero : base_human {
+unit baseHero : baseHuman {
 	level {5 20}
 	flags | {hero aiWanders tournament}
 	dialog hero
 	gold {{50 100}{200 400}}
 }
 
-unit hero_mage : base_hero {
+unit heroMage : baseHero {
 	profile mage
 	flags | {mage contest25}
 	items mage
-	abilities mage_hero
+	abilities mageHero
 	class mage
 }
 
-unit hero_warrior : base_hero {
+unit heroWarrior : baseHero {
 	profile warrior
 	flags | {aiTrain contest melee}
 	class warrior
 }
 
-unit hero_hunter : base_hero {
+unit heroHunter : baseHero {
 	profile hunter
 	flags | {archer aiTrain contest50}
 	class hunter
 }
 
-unit hero_rogue : base_hero {
+unit heroRogue : baseHero {
 	profile rogue
 	flags | {aiTrain contest50 melee50 backstab}
 	class rogue
 }
 
-unit hero_tomir : hero_warrior {
-	flags | {fastLearner loner}
-}
-
-unit hero_cleric : base_hero {
+unit heroCleric : baseHero {
 	profile cleric
 	flags | {aiTrain contest50}
 	class cleric
@@ -3340,36 +3416,13 @@ unit hero_cleric : base_hero {
 	}
 }
 
+unit heroTomir : heroWarrior {
+	flags | {fastLearner loner}
+}
+
 //------------------------------------------------------------------------------
 // OTHER
 //------------------------------------------------------------------------------
-unit tomashu : base_human {
-	level 25
-	flags | {dontEscape secret immortal sitOnThrone melee magicRes50 backstabRes poisonRes dontEat stunRes rootedRes dontTalk}
-	profile ai_fighter
-	hp 2500
-	items {
-		forbiddenSword
-		blackArmor
-		adamantineShield
-		dragonBow
-		3 potionHealth3
-		5 krystal
-		amuletHealth
-	}
-	gold 666
-	abilities {
-		{mysticBall 0}
-	}
-	dialog tomashu
-	appearance {
-		beard 4
-		mustache -1
-		hair 0
-		hairColor 0x000000
-		height 1.1
-	}
-}
 
 unit unk {
 	mesh "unk.qmsh"
@@ -3404,69 +3457,12 @@ unit unk {
 	attackRange 1.2
 }
 
-//------------------------------------------------------------------------------
-// Quest units
-//------------------------------------------------------------------------------
-unit xwokloiz : base_human {
-	level 8
-	def 25
-	flags | {aiStay hero}
-	items {
-		studdedArmorHq
-		hatchet
-		longBow
-		random 1 3 !normalFood
-		alchemistHerb
-		random 3 5 healingHerb
-		2 potionHealth
-	}
-	gold {10 50}
-	dialog "alchemistApprentice/xwokloiz"
-}
-
-unit q_main_academy : trainer {
-	dialog "main/trainer"
-}
-
-unit q_main_messenger : messenger {
-	dialog "main/messenger"
-}
-
-unit q_main_ill_villager : villager {
-	dialog "main/illVillager"
-	flags {human aiStay dontEat dontEscape}
-	tex {
-		null
-		"head_ill.jpg"
-		null
-	}
-	idleDialog illIdle
-}
-
-unit q_main_villager_def : villager {
-	dialog "mainVillage3/villager"
-	flags {human aiStay}
-}
-
-unit q_main_oldman : villager {
-	dialog "mainVillage4/oldman"
-	flags {human aiStay hero peaceful specificName}
-	items {
-		dagger
-		oldRobe
-		random 1 3 !normalFood
-	}
-	appearance {
-		hairColor 0xDED5D0
-	}
-}
-
-unit q_main_ill_villager_attack : q_main_ill_villager {
+unit qMainIllVillagerAttack : qMainIllVillager {
 	level 5
 	group undead
 }
 
-unit q_main_plague_villager : q_main_ill_villager_attack {
+unit qMainPlagueVillager : qMainIllVillagerAttack {
 	flags {human dontEat dontEscape}
 	attack 20
 	def 20
@@ -3491,7 +3487,7 @@ unit q_main_plague_villager : q_main_ill_villager_attack {
 	idleDialog plagueIdle
 }
 
-unit q_main_plague_soltys : q_main_plague_villager {
+unit qMainPlagueSoltys : qMainPlagueVillager {
 	items {
 		random {clothes3 clothes3b}
 		random {shortSword rapier longSword scimitar}
@@ -3501,7 +3497,7 @@ unit q_main_plague_soltys : q_main_plague_villager {
 	gold {125 250}
 }
 
-unit q_main_plague_alchemist : q_main_plague_villager {
+unit qMainPlagueAlchemist : qMainPlagueVillager {
 	gold {500 1000}
 	items {
 		random {clothes2 clothes2b}
@@ -3513,7 +3509,7 @@ unit q_main_plague_alchemist : q_main_plague_villager {
 	}
 }
 
-unit q_main_plague_guard : q_main_plague_villager {
+unit qMainPlagueGuard : qMainPlagueVillager {
 	level 7
 	gold {60 120}
 	items {
@@ -3547,9 +3543,9 @@ group empty {
 
 group goblins {
 	goblin 10
-	goblin_hunter 7
-	goblin_fighter 7
-	goblin_chief leader 2
+	goblinHunter 7
+	goblinFighter 7
+	goblinChief leader 2
 
 	orcFood 1
 	haveCamps 1
@@ -3559,11 +3555,11 @@ group goblins {
 
 group orcs {
 	orc 8
-	orc_hunter 6
-	orc_fighter 6
-	orc_warius 4
-	orc_chief leader 2
-	orc_shaman 3
+	orcHunter 6
+	orcFighter 6
+	orcWarius 4
+	orcChief leader 2
+	orcShaman 3
 	ogre 2
 
 	orcFood 1
@@ -3580,31 +3576,31 @@ group ogres {
 group bandits {
 	thief 3
 	bandit 4
-	bandit_archer 3
-	bandit_chief leader 1
+	banditArcher 3
+	banditChief leader 1
 	ruffian 2
 	assassin 2
-	ruffian_hegemon leader 1
+	ruffianHegemon leader 1
 
 	haveCamps 1
 	encounterChance 3
 }
 
 group crazies {
-	crazy_mage 1
-	crazy_warrior 2
-	crazy_hunter 2
-	crazy_rogue 2
+	crazyMage 1
+	crazyWarrior 2
+	crazyHunter 2
+	crazyRogue 2
 }
 
 group undead {
 	skeleton 8
-	skeleton_archer 6
-	skeleton_fighter 6
-	skeleton_mage 2
+	skeletonArcher 6
+	skeletonFighter 6
+	skeletonMage 2
 	zombie 10
-	zombie_rotting 8
-	zombie_ancient 6
+	zombieRotting 8
+	zombieAncient 6
 
 	foodMod -2
 }
@@ -3613,16 +3609,16 @@ group necromancers {
 	necromancer leader 3
 	necromancer2 leader 3
 	necromancer3 leader 3
-	undead_guard 6
-	undead_archer 6
+	undeadGuard 6
+	undeadArcher 6
 	group undead
 
 	foodMod -1
 }
 
 group evil {
-	evil_cleric leader 3
-	evil_cleric2 leader 3
+	evilCleric leader 3
+	evilCleric2 leader 3
 	group undead
 
 	foodMod -1
@@ -3632,18 +3628,18 @@ group mages {
 	mage leader 1
 	mage2 leader 1
 	mage3 leader 1
-	mage_guard 2
+	mageGuard 2
 }
 
 group golems {
-	golem_stone 1
-	golem_iron 1
+	golemStone 1
+	golemIron 1
 
 	foodMod -2
 	gender 1
 }
 
-group mages_and_golems {
+group magesAndGolems {
 	group mages
 	group golems
 
@@ -3657,7 +3653,7 @@ group wolfs {
 
 group spiders {
 	spider 5
-	spider_big 3
+	spiderBig 3
 }
 
 group rats {
@@ -3666,7 +3662,7 @@ group rats {
 
 group bears {
 	bear 3
-	bear_black 2
+	bearBlack 2
 }
 
 group animals {
@@ -3678,38 +3674,38 @@ group animals {
 
 group hunters {
 	group animals
-	wild_hunter 2
+	wildHunter 2
 }
 
 group heroes {
-	hero_mage 1
-	hero_warrior 2
-	hero_hunter 2
-	hero_rogue 2
-	hero_cleric 1
+	heroMage 1
+	heroWarrior 2
+	heroHunter 2
+	heroRogue 2
+	heroCleric 1
 }
 
-group evil_heroes {
-	hero_mage 1
-	hero_warrior 2
-	hero_hunter 2
-	hero_rogue 2
+group evilHeroes {
+	heroMage 1
+	heroWarrior 2
+	heroHunter 2
+	heroRogue 2
 }
 
 group tournament {
-	hero_warrior 3
-	hero_hunter 2
-	hero_rogue 2
-	hero_mage 1
-	hero_cleric 1
+	heroWarrior 3
+	heroHunter 2
+	heroRogue 2
+	heroMage 1
+	heroCleric 1
 }
 
-group merchant_guards {
-	guard_merchant 1
+group merchantGuards {
+	guardMerchant 1
 }
 
-group wagon_guards {
-	guard_wagon 1
+group wagonGuards {
+	guardWagon 1
 }
 
 group unk {
@@ -3718,20 +3714,20 @@ group unk {
 	foodMod -2
 }
 
-group q_magowie_golems {
-	golem_stone 1
+group qMagesGolems {
+	golemStone 1
 }
 
 group challange {
 	list {
 		orcs
-		mages_and_golems
+		magesAndGolems
 		evil
 	}
 	special 2
 }
 
-group arena_easy {
+group arenaEasy {
 	list {
 		animals
 		hunters
@@ -3742,7 +3738,7 @@ group arena_easy {
 	}
 }
 
-group arena_medium {
+group arenaMedium {
 	list {
 		hunters
 		bears
@@ -3750,20 +3746,20 @@ group arena_medium {
 		orcs
 		mages
 		necromancers
-		mages_and_golems
+		magesAndGolems
 		undead
 		evil
 		golems
 	}
 }
 
-group arena_hard {
+group arenaHard {
 	list {
 		orcs
 		mages
 		crazies
 		necromancers
-		mages_and_golems
+		magesAndGolems
 		evil
 		ogres
 	}
@@ -3804,12 +3800,12 @@ group random {
 }
 
 group plague {
-	q_main_plague_villager 2
-	q_main_plague_guard 1
+	qMainPlagueVillager 2
+	qMainPlagueGuard 1
 }
 
-group plague_villagers {
-	q_main_villager_def 1
+group plagueVillagers {
+	qMainVillagerDef 1
 }
 
 //------------------------------------------------------------------------------
@@ -3817,4 +3813,108 @@ group plague_villagers {
 // alias unit_id other_id
 //------------------------------------------------------------------------------
 // removed in V_0_16
-alias golem_stone q_magowie_golem
+alias golemStone q_magowie_golem
+// pre V_DEV
+alias playerWarrior base_warrior
+alias playerHunter base_hunter
+alias playerRogue base_rogue
+alias playerCleric base_cleric
+alias playerMage base_mage
+alias travelingMerchant traveling_merchant
+alias foodSeller food_seller
+alias qTutorialCitizen tut_czlowiek
+alias guardWagon guard_wagon
+alias guardMerchant guard_merchant
+alias guardMove guard_move
+alias guardCaptain guard_captain
+alias mageSeller mage_seller
+alias clericSeller cleric_seller
+alias arenaMaster arena_master
+alias lumberjack drwal
+alias lumberjackLeader artur_drwal
+alias lumberjackMessenger poslaniec_tartak
+alias qMineInvestor inwestor
+alias qMineMessenger poslaniec_kopalnia
+alias miner gornik
+alias qMineLeader gornik_szef
+alias drunkard pijak
+alias qBanditsMaster mistrz_agentow
+alias qBanditsAgent agent
+alias qBanditsGuard guard_q_bandyci
+alias qMagesScholar q_magowie_uczony
+alias qMagesOld q_magowie_stary
+alias qOrcsGuard q_orkowie_straznik
+alias qGoblinsNoble q_gobliny_szlachcic
+alias qGoblinsNoble2 q_gobliny_szlachcic2
+alias qGoblinsBodyguard q_gobliny_ochroniarz
+alias qGoblinsMessenger q_gobliny_poslaniec
+alias qGoblinsMage q_gobliny_mag
+alias qEvilCleric q_zlo_kaplan
+alias qEvilMage q_zlo_mag
+alias hunterLeader hunter_leader
+alias qMainAcademyTrainer q_main_academy
+alias qMainMessenger q_main_messenger
+alias qMainIllVillager q_main_ill_villager
+alias qMainVillagerDef q_main_villager_def
+alias qMainOldman q_main_oldman
+alias goblinHunter goblin_hunter
+alias goblinFighter goblin_fighter
+alias goblinChief goblin_chief
+alias qTutorialGoblin tut_goblin
+alias orcHunter orc_hunter
+alias orcFighter orc_fighter
+alias orcWarius orc_warius
+alias orcChief orc_chief
+alias orcShaman orc_shaman
+alias qOrcsGorush q_orkowie_gorush
+alias qOrcsGorushWarrior q_orkowie_gorush_woj
+alias qOrcsGorushHunter q_orkowie_gorush_lowca
+alias qOrcsGorushShaman q_orkowie_gorush_szaman
+alias qOrcsWeak q_orkowie_slaby
+alias qOrcsOrc q_orkowie_orc
+alias qOrcsHunter q_orkowie_orc_hunter
+alias qOrcsFighter q_orkowie_orc_fighter
+alias qOrcsWarius q_orkowie_orc_warius
+alias qOrcsShaman q_orkowie_orc_shaman
+alias qOrcsBlacksmith q_orkowie_kowal
+alias qOrcsBoss q_orkowie_boss
+alias zombieRotting zombie_rotting
+alias zombieAncient zombie_ancient
+alias skeletonArcher skeleton_archer
+alias skeletonFighter skeleton_fighter
+alias skeletonMage skeleton_mage
+alias undeadGuard undead_guard
+alias undeadArcher undead_archer
+alias evilCleric evil_cleric
+alias evilCleric2 evil_cleric2
+alias qEvilBoss q_zlo_boss
+alias banditArcher bandit_archer
+alias banditChief bandit_chief
+alias ruffianHegemon ruffian_hegemon
+alias qBanditsBoss q_bandyci_szef
+alias mageGuard mage_guard
+alias golemStone golem_stone
+alias golemIron golem_iron
+alias golemAdamantine golem_adamantine
+alias qMagesBoss q_magowie_boss
+alias whiteWolfSummoned white_wolf_sum
+alias direWolf dire_wolf
+alias spiderBig spider_big
+alias bearBlack bear_black
+alias qCraziesMadman q_szaleni_szaleniec
+alias crazyMage crazy_mage
+alias crazyWarrior crazy_warrior
+alias crazyHunter crazy_hunter
+alias crazyRogue crazy_rogue
+alias heroMage hero_mage
+alias heroWarrior hero_warrior
+alias heroHunter hero_hunter
+alias heroRogue hero_rogue
+alias heroCleric hero_cleric
+alias heroTomir hero_tomir
+alias qMainIllVillagerAttack q_main_ill_villager_attack
+alias qMainPlagueVillager q_main_plague_villager
+alias qMainPlagueGuard q_main_plague_guard
+alias qMainPlagueSoltys q_main_plague_soltys
+alias qMainPlagueAlchemist q_main_plague_alchemist
+groupAlias magesAndGolems mages_and_golems

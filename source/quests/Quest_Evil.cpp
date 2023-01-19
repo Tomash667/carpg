@@ -60,13 +60,13 @@ GameDialog* Quest_Evil::GetDialog(int type2)
 
 	const string& id = DialogContext::current->talker->data->id;
 
-	if(id == "q_zlo_kaplan")
+	if(id == "qEvilCleric")
 		return GameDialog::TryGet("qEvilCleric");
-	else if(id == "q_zlo_mag")
+	else if(id == "qEvilMage")
 		return GameDialog::TryGet("qEvilMage");
-	else if(id == "q_zlo_boss")
+	else if(id == "qEvilBoss")
 		return GameDialog::TryGet("qEvilBoss");
-	else if(id == "guard_captain")
+	else if(id == "guardCaptain")
 		return GameDialog::TryGet("qEvilCaptain");
 	else if(id == "mayor" || id == "soltys")
 		return GameDialog::TryGet("qEvilMayor");
@@ -211,7 +211,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			changed = false;
 			done = false;
-			unitToSpawn = UnitData::Get("q_zlo_boss");
+			unitToSpawn = UnitData::Get("qEvilBoss");
 			unitSpawnRoom = RoomTarget::Treasury;
 			unitEventHandler = this;
 			unitDontAttack = true;
@@ -257,7 +257,7 @@ void Quest_Evil::SetProgress(int prog2)
 			assert(bestPe);
 			bestPe->destroy = true;
 			// talking
-			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
+			Unit* unit = team->FindTeamMember("qEvilCleric");
 			if(unit)
 				unit->OrderAutoTalk();
 
@@ -485,7 +485,7 @@ Quest::LoadResult Quest_Evil::Load(GameReader& f)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 		else if(prog == Progress::AllPortalsClosed)
 		{
-			unitToSpawn = UnitData::Get("q_zlo_boss");
+			unitToSpawn = UnitData::Get("qEvilBoss");
 			unitSpawnRoom = RoomTarget::Treasury;
 			unitDontAttack = true;
 			unitAutoTalk = true;
@@ -633,8 +633,8 @@ void Quest_Evil::WarpEvilBossToAltar()
 {
 	LocationPart& locPart = *gameLevel->localPart;
 
-	// find bossa
-	Unit* u = locPart.FindUnit(UnitData::Get("q_zlo_boss"));
+	// find boss
+	Unit* u = locPart.FindUnit(UnitData::Get("qEvilBoss"));
 	assert(u);
 
 	// find blood altar
@@ -650,7 +650,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 
 		for(int i = 0; i < 2; ++i)
 		{
-			Unit* u2 = gameLevel->SpawnUnitNearLocation(locPart, u->pos, *UnitData::Get("zombie_ancient"));
+			Unit* u2 = gameLevel->SpawnUnitNearLocation(locPart, u->pos, *UnitData::Get("zombieAncient"));
 			if(u2)
 			{
 				u2->dontAttack = true;

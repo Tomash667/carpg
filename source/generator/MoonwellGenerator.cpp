@@ -109,7 +109,7 @@ void MoonwellGenerator::GenerateObjects()
 //=================================================================================================
 void MoonwellGenerator::GenerateUnits()
 {
-	UnitData* udHunter = UnitData::Get("wild_hunter");
+	UnitData* udHunter = UnitData::Get("wildHunter");
 	const int level = gameLevel->GetDifficultyLevel();
 	TmpUnitGroupList tmp;
 	tmp.Fill(loc->group, level);

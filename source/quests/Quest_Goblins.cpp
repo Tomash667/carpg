@@ -42,17 +42,17 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 
 	const string& id = DialogContext::current->talker->data->id;
 
-	if(id == "q_gobliny_szlachcic")
+	if(id == "qGoblinsNoble")
 		return GameDialog::TryGet("qGoblinsNobleman");
-	else if(id == "q_gobliny_mag")
+	else if(id == "qGoblinsMage")
 		return GameDialog::TryGet("qGoblinsMage");
 	else if(id == "innkeeper")
 		return GameDialog::TryGet("qGoblinsInnkeeper");
-	else if(id == "q_gobliny_szlachcic2")
+	else if(id == "qGoblinsNoble2")
 		return GameDialog::TryGet("qGoblinsBoss");
 	else
 	{
-		assert(id == "q_gobliny_poslaniec");
+		assert(id == "qGoblinsMessenger");
 		return GameDialog::TryGet("qGoblinsMessenger");
 	}
 }
@@ -67,7 +67,7 @@ bool TeamHaveOldBow()
 void DodajStraznikow()
 {
 	// find nobleman
-	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
+	UnitData* ud = UnitData::Get("qGoblinsNoble2");
 	Unit* u = gameLevel->localPart->FindUnit(ud);
 	assert(u);
 
@@ -95,7 +95,7 @@ void DodajStraznikow()
 	}
 
 	// spawn bodyguards
-	UnitData* ud2 = UnitData::Get("q_gobliny_ochroniarz");
+	UnitData* ud2 = UnitData::Get("qGoblinsBodyguard");
 	for(int i = 0; i < 3; ++i)
 	{
 		Unit* u2 = gameLevel->SpawnUnitInsideRoom(*room, *ud2, 10);
@@ -234,7 +234,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.activeQuest = this;
 			targetLoc = &target;
 			done = false;
-			unitToSpawn = UnitData::Get("q_gobliny_szlachcic2");
+			unitToSpawn = UnitData::Get("qGoblinsNoble2");
 			unitSpawnRoom = RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unitDontAttack = true;
@@ -335,7 +335,7 @@ Quest::LoadResult Quest_Goblins::Load(GameReader& f)
 		}
 		else if(prog == Progress::TalkedWithInnkeeper)
 		{
-			unitToSpawn = UnitData::Get("q_gobliny_szlachcic2");
+			unitToSpawn = UnitData::Get("qGoblinsNoble2");
 			unitSpawnRoom = RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unitDontAttack = true;

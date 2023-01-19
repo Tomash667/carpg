@@ -160,7 +160,7 @@ void SecretLocationGenerator::GenerateObjects()
 void SecretLocationGenerator::GenerateUnits()
 {
 	LocationPart& locPart = *gameLevel->localPart;
-	UnitData* golem = UnitData::Get("golem_adamantine");
+	UnitData* golem = UnitData::Get("golemAdamantine");
 	static vector<Vec2> poss;
 
 	poss.push_back(Vec2(128.f, 64.f));

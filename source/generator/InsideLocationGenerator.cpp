@@ -143,7 +143,7 @@ void InsideLocationGenerator::OnEnter()
 					if(gameLevel->location == questMgr->questOrcs2->targetLoc && questMgr->questOrcs2->orcsState == Quest_Orcs2::State::GenerateOrcs)
 					{
 						questMgr->questOrcs2->orcsState = Quest_Orcs2::State::GeneratedOrcs;
-						UnitData* ud = UnitData::Get("q_orkowie_slaby");
+						UnitData* ud = UnitData::Get("qOrcsWeak");
 						for(Room* room : lvl.rooms)
 						{
 							if(!room->IsCorridor() && Rand() % 2 == 0)
@@ -154,7 +154,7 @@ void InsideLocationGenerator::OnEnter()
 							}
 						}
 
-						UnitData* orcSmith = UnitData::Get("q_orkowie_kowal");
+						UnitData* orcSmith = UnitData::Get("qOrcsBlacksmith");
 						Unit* u = gameLevel->SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orcSmith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dontAttack = true;

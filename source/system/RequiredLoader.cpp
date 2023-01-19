@@ -137,7 +137,7 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 		else
 		{
 			bool needLeader = false;
-			if(id == "with_leader")
+			if(id == "withLeader")
 			{
 				needLeader = true;
 				t.Next();

@@ -34,7 +34,7 @@ GameDialog* Quest_Sawmill::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(DialogContext::current->talker->data->id == "artur_drwal")
+		if(DialogContext::current->talker->data->id == "lumberjackLeader")
 			return GameDialog::TryGet("qSawmillTalk");
 		else
 			return GameDialog::TryGet("qSawmillMessenger");
@@ -222,8 +222,8 @@ void Quest_Sawmill::GenerateSawmill(bool inProgress)
 			sawmillObjsPtrs[i] = BaseObject::Get(sawmillObjs[i]);
 	}
 
-	UnitData& ud = *UnitData::Get("artur_drwal");
-	UnitData& ud2 = *UnitData::Get("drwal");
+	UnitData& ud = *UnitData::Get("lumberjackLeader");
+	UnitData& ud2 = *UnitData::Get("lumberjack");
 
 	if(inProgress)
 	{

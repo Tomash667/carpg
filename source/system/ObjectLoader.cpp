@@ -461,15 +461,15 @@ void ObjectLoader::ParseAlias(const string& id)
 	ObjectGroup* group = nullptr;
 	BaseObject* obj = BaseObject::TryGet(id, &group);
 	if(!obj)
-		t.Throw("Missing object '%s'.", id.c_str());
+		t.Throw("Missing object.");
 	if(group)
-		t.Throw("Can't create alias for group '%s'.", id.c_str()); // YAGNI
+		t.Throw("Can't create alias for group."); // YAGNI
 	t.Next();
 
-	const string& aliasId = t.MustGetItemKeyword();
-	int hash = Hash(aliasId);
+	const string& alias = t.MustGetItemKeyword();
+	int hash = Hash(alias);
 	if(BaseObject::TryGet(hash))
-		t.Throw("Alias or object already exists.");
+		t.Throw("Alias or object '%s' already exists.", alias.c_str());
 
 	BaseObject::hashes[hash] = obj;
 }

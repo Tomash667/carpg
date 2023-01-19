@@ -34,6 +34,7 @@ class UnitLoader : public ContentLoader
 	void ParseIdles(Ptr<IdlePack>& pack);
 	void ParseAlias(const string& id);
 	void ParseGroup(const string& id);
+	void ParseGroupAlias(const string& id);
 	void ProcessDialogRequests();
 
 	vector<DialogRequest> dialogRequests;

@@ -337,15 +337,15 @@ void Arena::StartArenaCombat(int level)
 	{
 	default:
 	case 1:
-		listId = "arena_easy";
+		listId = "arenaEasy";
 		SpawnArenaViewers(1);
 		break;
 	case 2:
-		listId = "arena_medium";
+		listId = "arenaMedium";
 		SpawnArenaViewers(3);
 		break;
 	case 3:
-		listId = "arena_hard";
+		listId = "arenaHard";
 		SpawnArenaViewers(5);
 		break;
 	}

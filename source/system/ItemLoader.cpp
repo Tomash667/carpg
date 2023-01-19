@@ -663,7 +663,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			while(!t.IsSymbol('}'))
 			{
 				bool onAttack = false;
-				if(t.IsItem("on_attack"))
+				if(t.IsItem("onAttack"))
 				{
 					onAttack = true;
 					t.Next();
@@ -1344,13 +1344,13 @@ void ItemLoader::ParseAlias(const string& id)
 {
 	Item* item = Item::TryGet(id);
 	if(!item)
-		t.Throw("Missing item '%s'.", id.c_str());
+		t.Throw("Missing item.");
 	t.Next();
 
 	const string& alias = t.MustGetItemKeyword();
 	Item* item2 = Item::TryGet(alias);
 	if(item2)
-		t.Throw("Can't create alias '%s', already exists.", alias.c_str());
+		t.Throw("Alias or item '%s' already exists.", alias.c_str());
 
 	itemAliases[alias] = item;
 }

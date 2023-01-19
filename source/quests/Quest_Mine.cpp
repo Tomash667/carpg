@@ -44,9 +44,9 @@ GameDialog* Quest_Mine::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(DialogContext::current->talker->data->id == "inwestor")
+		if(DialogContext::current->talker->data->id == "qMineInvestor")
 			return GameDialog::TryGet("qMineInvestor");
-		else if(DialogContext::current->talker->data->id == "poslaniec_kopalnia")
+		else if(DialogContext::current->talker->data->id == "qMineMessenger")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
 				return GameDialog::TryGet("qMineMessenger");
@@ -1011,10 +1011,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 		}
 		pt -= DirToPos(lvl.prevEntryDir);
 		const Vec3 lookAt(2.f * lvl.prevEntryPt.x + 1, 0, 2.f * lvl.prevEntryPt.y + 1);
-		gameLevel->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("gornik_szef"), &lookAt, -2);
+		gameLevel->SpawnUnitNearLocation(cave, Vec3(2.f * pt.x + 1, 0, 2.f * pt.y + 1), *UnitData::Get("qMineLeader"), &lookAt, -2);
 
 		// miners
-		UnitData& miner = *UnitData::Get("gornik");
+		UnitData& miner = *UnitData::Get("miner");
 		for(int i = 0; i < 10; ++i)
 		{
 			for(int j = 0; j < 15; ++j)
@@ -1033,8 +1033,8 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	// position units
 	if(!positionUnits && mineState3 >= State3::GeneratedInBuild)
 	{
-		UnitData* miner = UnitData::Get("gornik"),
-			*minerLeader = UnitData::Get("gornik_szef");
+		UnitData* miner = UnitData::Get("miner"),
+			*minerLeader = UnitData::Get("qMineLeader");
 		for(vector<Unit*>::iterator it = cave.units.begin(), end = cave.units.end(); it != end; ++it)
 		{
 			Unit* u = *it;
@@ -1111,7 +1111,7 @@ void Quest_Mine::OnProgress(int d)
 				// player invested in mine, inform him about finishing
 				if(gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 				{
-					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("qMineMessenger"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						world->AddNews(Format(game->txMineBuilt, targetLoc->name.c_str()));
@@ -1141,7 +1141,7 @@ void Quest_Mine::OnProgress(int d)
 		days += d;
 		if(days >= daysRequired && gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 		{
-			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
+			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("qMineMessenger"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				messenger = u;
