@@ -365,7 +365,7 @@ quest main {
 	dialog trainer {
 		0 "Gratulacje! Ukoñczy³eœ szkolenie w akademii!"
 		1 "Co zamierzasz teraz zrobiæ? Jakieœ plany na przysz³oœæ?"
-		2 "Witaj ponownie $player_name$! Jak mogê ci pomóc?"
+		2 "Witaj ponownie $playerName$! Jak mogê ci pomóc?"
 		3 "Rekrutuj bohaterów"
 		4 "Koniec rozmowy"
 		5 "Twoja dru¿yna jest ju¿ wystarczaj¹co liczna."
@@ -374,7 +374,7 @@ quest main {
 	}
 	
 	dialog messenger {
-		0 "$player_name$! Tu jesteœ!"
+		0 "$playerName$! Tu jesteœ!"
 		1 "Ukoñczy³eœ to szkolenie w akademii? To dobrze..."
 		2 "Musisz natychmiast wróciæ do $(village.name)."
 		3 "Jest coraz gorzej, musisz porozmawiaæ z so³tysem."
@@ -384,7 +384,7 @@ quest main {
 	}
 	
 	dialog soltys {
-		0 "Dobrze ¿e przyszed³eœ $player_name$. Musimy porozmawiaæ o zarazie..."
+		0 "Dobrze ¿e przyszed³eœ $playerName$. Musimy porozmawiaæ o zarazie..."
 		1 "Zaraza"
 		2 "Kilku mieszkañców naszej wioski ostatnio zachorowa³o."
 		3 "Musimy z nimi porozmawiaæ i ustaliæ czy to jest ta zaraza czy jakaœ normalna choroba."

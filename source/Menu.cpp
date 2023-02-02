@@ -2108,7 +2108,7 @@ void Game::OnCreateCharacter(int id)
 			DialogInfo info;
 			info.event = DialogEvent(this, &Game::OnPlayTutorial);
 			info.haveTick = true;
-			info.name = "tutorial_dialog";
+			info.name = "tutorialDialog";
 			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;
@@ -2131,7 +2131,7 @@ void Game::OnPlayTutorial(int id)
 		skipTutorial = false;
 	else
 	{
-		gui->GetDialog("tutorial_dialog")->visible = false;
+		gui->GetDialog("tutorialDialog")->visible = false;
 		SaveOptions();
 		if(id == BUTTON_YES)
 			questMgr->questTutorial->Start();

@@ -93,7 +93,7 @@ void QuestLoader::InitTokenizer()
 	t.AddKeywords<QuestCategory>(G_QUEST_CATEGORY, {
 		{ "mayor", QuestCategory::Mayor },
 		{ "captain", QuestCategory::Captain },
-		{ "random", QuestCategory::Random },
+		{ "traveler", QuestCategory::Traveler },
 		{ "unique", QuestCategory::Unique }
 		});
 

@@ -36,8 +36,8 @@ dialog merchant {
 	10 "End dialog"
 	11 "Training"
 	12 "I offer training in persuasion or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
-	13 "$train_lab/persuasion$"
-	14 "$train_lab/cha$"
+	13 "$trainLab/persuasion$"
+	14 "$trainLab/cha$"
 	15 "Cancel"
 }
 
@@ -77,7 +77,7 @@ dialog alchemist {
 	10 "I see that you know a thing or two about alchemy. I have special prices for you."
 	11 "Training"
 	12 "I can teach you how to brew potions better. The training lasts 10 days and costs 200 gold. Are you still interested?"
-	13 "$train_lab/alchemy$"
+	13 "$trainLab/alchemy$"
 	14 "Cancel"
 }
 
@@ -162,21 +162,21 @@ dialog trainer {
 	2 "Training lasts 10 days and costs 200 gold pieces."
 	3 "What do you want to train?"
 	4 "Attribute"
-	5 "$train_lab/str$"
-	6 "$train_lab/end$"
-	7 "$train_lab/dex$"
+	5 "$trainLab/str$"
+	6 "$trainLab/end$"
+	7 "$trainLab/dex$"
 	8 "Cancel"
 	9 "Skill"
-	10 "$train_lab/oneHandedWeapon$"
-	11 "$train_lab/shortBlade$"
-	12 "$train_lab/longBlade$"
-	13 "$train_lab/blunt$"
-	14 "$train_lab/axe$"
-	15 "$train_lab/bow$"
-	16 "$train_lab/shield$"
-	17 "$train_lab/lightArmor$"
-	18 "$train_lab/mediumArmor$"
-	19 "$train_lab/heavyArmor$"
+	10 "$trainLab/oneHandedWeapon$"
+	11 "$trainLab/shortBlade$"
+	12 "$trainLab/longBlade$"
+	13 "$trainLab/blunt$"
+	14 "$trainLab/axe$"
+	15 "$trainLab/bow$"
+	16 "$trainLab/shield$"
+	17 "$trainLab/lightArmor$"
+	18 "$trainLab/mediumArmor$"
+	19 "$trainLab/heavyArmor$"
 	20 "Feat"
 	21 "Hmm... Currently, I can't teach you any new feats."
 	22 "What do you do here?"
@@ -423,7 +423,7 @@ dialog hero {
 	29 {
 		"Welcome back."
 		"Hello."
-		"Welcome $player_name$."
+		"Welcome $playerName$."
 	}
 	30 "Show wanted poster"
 	31 {
@@ -443,7 +443,7 @@ dialog hero {
 	36 "Yes"
 	37 "It's time for our first adventure!"
 	38 "No"
-	39 "If you want I can join you for $join_cost$ gp and part of profits. What do you think?"
+	39 "If you want I can join you for $joinCost$ gp and part of profits. What do you think?"
 	40 "Yes"
 	41 {
 		"It's time for another adventure!"
@@ -483,7 +483,7 @@ dialog heroGetItem {
 //==============================================================================
 dialog heroBuyItem {
 	0 "This item $item$ is better than what I have currently."
-	1 "I'll buy it from you for $item_value$ gold pieces. What do you say?"
+	1 "I'll buy it from you for $itemValue$ gold pieces. What do you say?"
 	2 "Yes"
 	3 "Thanks."
 	4 "No"
@@ -591,7 +591,7 @@ dialog crazy {
 	29 {
 		"Hello manling, call me $name$."
 		"I am $name$, you want something?"
-		"I know you $player_name$. I am $name$."
+		"I know you $playerName$. I am $name$."
 	}
 	30 {
 		"And it's you again."
@@ -615,7 +615,7 @@ dialog crazy {
 		"Your team is full, you can join me?"
 		"As someone die come back for me."
 	}
-	37 "If you want I can join you for $join_cost$ gp and part of profits. What do you think?"
+	37 "If you want I can join you for $joinCost$ gp and part of profits. What do you think?"
 	38 "Yes"
 	39 {
 		"Time for some organized bashing!"
@@ -665,7 +665,7 @@ dialog crazyGetItem {
 //==============================================================================
 dialog crazyBuyItem {
 	0 "I do not know how you do this but $item$ is just what I needed."
-	1 "I've got $item_value$ gold pieces that could become yours. So what, the exchange?"
+	1 "I've got $itemValue$ gold pieces that could become yours. So what, the exchange?"
 	2 "Yes"
 	3 "At last we meet. Already my favorite item!"
 	4 "No"
@@ -832,7 +832,7 @@ dialog craziesEncounter {
 		"We meet again $rhero$! I gone rip out your guts!"
 		"I guess you thought that I won't find you $rhero$? As you can see you were wrong!"
 		"Voices tell me to kill you!"
-		"Now is the winter of your life $player_name$!"
+		"Now is the winter of your life $playerName$!"
 		"It's an end to your life!"
 	}
 	1 "Stop!"
@@ -851,13 +851,13 @@ dialog craziesEncounter {
 	10 {
 		"Okay, I forgive you this time"
 		"Eh, then you can go."
-		"Remember that I forgave your life $player_name$!"
+		"Remember that I forgave your life $playerName$!"
 	}
-	11 "Welcome the great and powerful $player_name$!"
+	11 "Welcome the great and powerful $playerName$!"
 	12 "I got a gift for you. Take the $(crazy_give_item.name)."
 	13 {
-		"Hello $player_name$, at last we meet!"
-		"Long time looking for you $player_name$, but in the end our paths have crossed."
+		"Hello $playerName$, at last we meet!"
+		"Long time looking for you $playerName$, but in the end our paths have crossed."
 		"Xnopa human!"
 		"Who are you?! What do you want from me?!"
 		"..."
@@ -885,9 +885,9 @@ dialog craziesEncounter {
 dialog tomashu {
 	0 "Good job! Maybe someday you will be one of the planar adventurers."
 	1 "Take this sword."
-	2 "Welcome, I've been waiting for you long time $player_name$."
+	2 "Welcome, I've been waiting for you long time $playerName$."
 	3 "It wasn't easy for you to get here probably."
-	4 "Welcome back $player_name$."
+	4 "Welcome back $playerName$."
 	5 "I guess you have some questions for me?"
 	6 "What is this place?"
 	7 "That's my temporary domain."
@@ -1852,13 +1852,13 @@ dialog mageSeller {
 	6 "End dialog"
 	7 "Training"
 	8 "I will help you broaden your horizons. What do you want to know?"
-	9 "$train_lab/int$"
-	10 "$train_lab/mysticMagic$"
-	11 "$train_lab/concentration$"
+	9 "$trainLab/int$"
+	10 "$trainLab/mysticMagic$"
+	11 "$trainLab/concentration$"
 	12 "Cancel"
-	13 "$train_lab/fireball$"
-	14 "$train_lab/thunderBolt$"
-	15 "$train_lab/fireTrap$"
+	13 "$trainLab/fireball$"
+	14 "$trainLab/thunderBolt$"
+	15 "$trainLab/fireTrap$"
 }
 
 //==============================================================================
@@ -1869,9 +1869,9 @@ dialog clericSeller {
 	}
 	1 "Training"
 	2 "If you want I can teach you something about the magic of the gods."
-	3 "$train_lab/wis$"
-	4 "$train_lab/godsMagic$"
-	5 "$train_lab/concentration$"
+	3 "$trainLab/wis$"
+	4 "$trainLab/godsMagic$"
+	5 "$trainLab/concentration$"
 	6 "Cancel"
 	7 "What you do here?"
 	8 "I am a priest, a follower of Imnos. I look after this shrine and help those who deserve it."
@@ -2071,8 +2071,8 @@ dialog hunterLeader {
 		"Hello!"
 	}
 	1 "End dialog"
-	2 "$train_lab/entanglingArrow$"
-	3 "$train_lab/bearTrap$"
+	2 "$trainLab/entanglingArrow$"
+	3 "$trainLab/bearTrap$"
 }
 
 //==============================================================================

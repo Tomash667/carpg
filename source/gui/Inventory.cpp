@@ -771,7 +771,7 @@ void InventoryPanel::Update(float dt)
 					{
 						DialogInfo di;
 						di.event = delegate<void(int)>(this, &InventoryPanel::OnTakeItem);
-						di.name = "takeover_item";
+						di.name = "takeoverItem";
 						di.parent = this;
 						di.pause = false;
 						di.text = base.txBuyTeamDialog;

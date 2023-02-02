@@ -351,7 +351,7 @@ quest main {
 	dialog trainer {
 		0 "Congratulations! You completed training at the academy!"
 		1 "What are you going to do now? Any plans for the future?"
-		2 "Welcome back $player_name$! How can I help you?"
+		2 "Welcome back $playerName$! How can I help you?"
 		3 "Recruit heroes"
 		4 "End dialog"
 		5 "Your team is already numerous enough."
@@ -360,7 +360,7 @@ quest main {
 	}
 	
 	dialog messenger {
-		0 "$player_name$! Here you are!"
+		0 "$playerName$! Here you are!"
 		1 "Did you finish this training at the academy? That's good..."
 		2 "You must immediately return to the $(village.name)."
 		3 "It's getting worse, you need to talk to the village mayor."
@@ -370,7 +370,7 @@ quest main {
 	}
 	
 	dialog soltys {
-		0 "It's good that you came $player_name$. We need to talk about the plague..."
+		0 "It's good that you came $playerName$. We need to talk about the plague..."
 		1 "Plague"
 		2 "Several inhabitants of our village have recently fallen ill."
 		3 "We need to talk to them and determine if this is the disease or any normal illness."

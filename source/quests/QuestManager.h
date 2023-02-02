@@ -61,7 +61,7 @@ public:
 	Quest* CreateQuest(QuestInfo* info);
 	Quest* GetMayorQuest();
 	Quest* GetCaptainQuest();
-	Quest* GetAdventurerQuest();
+	Quest* GetTravelerQuest();
 	void AddQuestItemRequest(const Item** item, cstring name, int questId, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Clear();
@@ -145,7 +145,7 @@ private:
 	vector<Quest*> upgradeQuests;
 	vector<pair<Quest2*, int>> timers;
 	int questCounter, force;
-	QuestList* questsMayor, *questsCaptain, *questsRandom;
+	QuestList* questsMayor, *questsCaptain, *questsTraveler;
 	std::map<string, QuestHandler*> specialHandlers, specialIfHandlers, formatStrHandlers;
 	string tmpStr;
 	vector<pair<int, string>> questRumors;

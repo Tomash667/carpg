@@ -23,15 +23,15 @@
 //=================================================================================================
 void Arena::Init()
 {
-	questMgr->RegisterSpecialHandler(this, "use_arena");
-	questMgr->RegisterSpecialHandler(this, "arena_combat");
-	questMgr->RegisterSpecialHandler(this, "pvp_gather");
-	questMgr->RegisterSpecialHandler(this, "start_pvp");
+	questMgr->RegisterSpecialHandler(this, "useArena");
+	questMgr->RegisterSpecialHandler(this, "arenaCombat");
+	questMgr->RegisterSpecialHandler(this, "pvpGather");
+	questMgr->RegisterSpecialHandler(this, "startPvp");
 	questMgr->RegisterSpecialHandler(this, "pvp");
-	questMgr->RegisterSpecialIfHandler(this, "arena_can_combat");
-	questMgr->RegisterSpecialIfHandler(this, "is_arena_free");
-	questMgr->RegisterSpecialIfHandler(this, "have_player");
-	questMgr->RegisterSpecialIfHandler(this, "waiting_for_pvp");
+	questMgr->RegisterSpecialIfHandler(this, "arenaCanCombat");
+	questMgr->RegisterSpecialIfHandler(this, "isArenaFree");
+	questMgr->RegisterSpecialIfHandler(this, "havePlayer");
+	questMgr->RegisterSpecialIfHandler(this, "waitingForPvp");
 }
 
 //=================================================================================================
@@ -68,11 +68,11 @@ void Arena::Reset()
 //=================================================================================================
 bool Arena::Special(DialogContext& ctx, cstring msg)
 {
-	if(strcmp(msg, "use_arena") == 0)
+	if(strcmp(msg, "useArena") == 0)
 		free = false;
-	else if(strncmp(msg, "arena_combat/", 13) == 0)
-		StartArenaCombat(msg[13] - '0');
-	else if(strcmp(msg, "pvp_gather") == 0)
+	else if(strncmp(msg, "arenaCombat/", 12) == 0)
+		StartArenaCombat(msg[12] - '0');
+	else if(strcmp(msg, "pvpGather") == 0)
 	{
 		nearPlayers.clear();
 		for(Unit& unit : team->activeMembers)
@@ -84,7 +84,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		for(uint i = 0, size = nearPlayers.size(); i != size; ++i)
 			nearPlayersStr[i] = Format(txPvpWith, nearPlayers[i]->player->name.c_str());
 	}
-	else if(strcmp(msg, "start_pvp") == 0)
+	else if(strcmp(msg, "startPvp") == 0)
 	{
 		// walka z towarzyszem
 		StartPvp(ctx.pc, ctx.talker);
@@ -135,16 +135,16 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 //=================================================================================================
 bool Arena::SpecialIf(DialogContext& ctx, cstring msg)
 {
-	if(strcmp(msg, "arena_can_combat") == 0)
+	if(strcmp(msg, "arenaCanCombat") == 0)
 		return !world->IsSameWeek(gameLevel->cityCtx->arenaTime);
-	if(strcmp(msg, "is_arena_free") == 0)
+	if(strcmp(msg, "isArenaFree") == 0)
 		return free;
-	else if(strncmp(msg, "have_player/", 12) == 0)
+	else if(strncmp(msg, "havePlayer/", 11) == 0)
 	{
-		int id = int(msg[12] - '1');
+		int id = int(msg[11] - '1');
 		return id < (int)nearPlayers.size();
 	}
-	else if(strcmp(msg, "waiting_for_pvp") == 0)
+	else if(strcmp(msg, "waitingForPvp") == 0)
 		return pvpResponse.ok;
 	assert(0);
 	return false;

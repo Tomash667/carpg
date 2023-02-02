@@ -483,4 +483,4 @@ object torchOff
 //------------------------------------------------------------------------------
 questList mayor
 questList captain
-questList notNone random
+questList notNone traveler

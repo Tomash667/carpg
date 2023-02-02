@@ -161,7 +161,7 @@ void MainMenu::UpdateCheckVersion()
 			// show dialog box with question about updating
 			DialogInfo info;
 			info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
-			info.name = "new_version";
+			info.name = "newVersion";
 			info.order = DialogOrder::Top;
 			info.parent = nullptr;
 			info.pause = false;

@@ -63,7 +63,7 @@ cstring Quest2::FormatString(const string& str)
 		assert(talker->IsHero());
 		return talker->hero->name.c_str();
 	}
-	else if(str == "player_name")
+	else if(str == "playerName")
 		return DialogContext::current->pc->name.c_str();
 	else
 	{

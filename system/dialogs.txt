@@ -206,7 +206,7 @@ dialog mayor
 	}
 	choice 7
 	{
-		if special "mayor_quest_failed"
+		if special "mayorQuestFailed"
 		{
 			talk 13
 			choice 14
@@ -214,7 +214,7 @@ dialog mayor
 				if script "Team::PersuasionCheck(25)"
 				{
 					talk 15
-					special "mayor_quest"
+					special "mayorQuest"
 					restart
 				}
 				else
@@ -229,7 +229,7 @@ dialog mayor
 		}
 		else
 		{
-			special "mayor_quest"
+			special "mayorQuest"
 			restart
 		}
 	}
@@ -263,13 +263,13 @@ dialog citizen
 	}
 	choice 2
 	{
-		special "near_loc"
+		special "nearLoc"
 		restart
 	}
 	choice 3
 	{
-		if special "is_drunk"
-			special "gossip_drunk"
+		if special "isDrunk"
+			special "gossipDrunk"
 		else
 			special "gossip"
 		restart
@@ -389,7 +389,7 @@ dialog trainer
 		}
 		choice 20
 		{
-			special "show_perks"
+			special "showPerks"
 			if choices 0
 			{
 				talk 21
@@ -505,12 +505,12 @@ dialog guardCaptain
 	}
 	choice 10
 	{
-		if special "have_unique_quest"
+		if special "haveUniqueQuest"
 		{
 			talk 11
 			restart
 		}
-		else if special "captain_quest_failed"
+		else if special "captainQuestFailed"
 		{
 			talk 17
 			choice 18
@@ -518,7 +518,7 @@ dialog guardCaptain
 				if script "Team::PersuasionCheck(25)"
 				{
 					talk 19
-					special "captain_quest"
+					special "captainQuest"
 					restart
 				}
 				else
@@ -533,7 +533,7 @@ dialog guardCaptain
 		}
 		else
 		{
-			special "captain_quest"
+			special "captainQuest"
 			restart
 		}
 	}
@@ -611,7 +611,7 @@ dialog innkeeper
 	choice 12
 	{
 		talk 13
-		special "rest_pick"
+		special "restPick"
 		restart
 	}
 	choice 14
@@ -719,12 +719,12 @@ dialog arenaMaster
 		talk 7
 		end
 	}
-	if not special "is_arena_free"
+	if not special "isArenaFree"
 	{
 		talk 8
 		end
 	}
-	if special "waiting_for_pvp"
+	if special "waitingForPvp"
 	{
 		talk 9
 		end
@@ -746,23 +746,23 @@ dialog arenaMaster
 	}
 	choice 14
 	{
-		if special "arena_can_combat"
+		if special "arenaCanCombat"
 		{
 			talk 15
 			talk 16
 			choice 17
 			{
-				special "arena_combat/1"
+				special "arenaCombat/1"
 				end
 			}
 			choice 18
 			{
-				special "arena_combat/2"
+				special "arenaCombat/2"
 				end
 			}
 			choice 19
 			{
-				special "arena_combat/3"
+				special "arenaCombat/3"
 				end
 			}
 			escape choice 20
@@ -783,8 +783,8 @@ dialog arenaMaster
 				talk 23
 			if script "Team::HaveNpcMember()"
 				talk 24
-			special "pvp_gather"
-			if special "have_player/1"
+			special "pvpGather"
+			if special "havePlayer/1"
 			{
 				choice 25
 				{
@@ -792,7 +792,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/2"
+			if special "havePlayer/2"
 			{
 				choice 26
 				{
@@ -800,7 +800,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/3"
+			if special "havePlayer/3"
 			{
 				choice 27
 				{
@@ -808,7 +808,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/4"
+			if special "havePlayer/4"
 			{
 				choice 28
 				{
@@ -816,7 +816,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/5"
+			if special "havePlayer/5"
 			{
 				choice 29
 				{
@@ -824,7 +824,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/6"
+			if special "havePlayer/6"
 			{
 				choice 30
 				{
@@ -832,7 +832,7 @@ dialog arenaMaster
 					end
 				}
 			}
-			if special "have_player/7"
+			if special "havePlayer/7"
 			{
 				choice 31
 				{
@@ -947,7 +947,7 @@ dialog hero
 	{
 		if once
 			talk 0
-		if special "is_near_arena"
+		if special "isNearArena"
 		{
 			choice 1
 			{
@@ -958,11 +958,11 @@ dialog hero
 				}
 				if script "target.GetHpp() >= 0.75f"
 				{
-					if special "is_arena_free"
+					if special "isArenaFree"
 					{
-						special "use_arena"
+						special "useArena"
 						talk 3
-						special "start_pvp"
+						special "startPvp"
 						end
 					}
 					else
@@ -1008,22 +1008,22 @@ dialog hero
 		choice 12
 		{
 			talk 13
-			special "give_item"
+			special "giveItem"
 			end
 		}
 		choice 14
 		{
 			talk 15
-			special "share_items"
+			special "shareItems"
 			end
 		}
-		if special "is_not_mage"
+		if special "isNotMage"
 		{
-			if special "prefer_melee"
+			if special "preferMelee"
 			{
 				choice 16
 				{
-					special "go_ranged"
+					special "goRanged"
 					talk 17
 					restart
 				}
@@ -1032,7 +1032,7 @@ dialog hero
 			{
 				choice 18
 				{
-					special "go_melee"
+					special "goMelee"
 					talk 19
 					restart
 				}
@@ -1049,7 +1049,7 @@ dialog hero
 					{
 						if script "pc.unit.gold >= target.hero.investment"
 						{
-							special "kick_npc"
+							special "kickNpc"
 							talk 56
 							end
 						}
@@ -1066,7 +1066,7 @@ dialog hero
 				talk 21
 				choice 22
 				{
-					special "kick_npc"
+					special "kickNpc"
 					talk 23
 					end
 				}
@@ -1102,7 +1102,7 @@ dialog hero
 			choice 30
 			{
 				talk 31
-				special "force_attack"
+				special "forceAttack"
 				end
 			}
 		}
@@ -1156,13 +1156,13 @@ dialog hero
 			else
 			{
 			recruit:
-				if special "is_free_recruit"
+				if special "isFreeRecruit"
 				{
 					talk 34
 					talk 35
 					choice 36
 					{
-						special "recruit_free"
+						special "recruitFree"
 						talk 37
 						end
 					}
@@ -1173,7 +1173,7 @@ dialog hero
 				talk 39
 				choice 40
 				{
-					if special "can_join"
+					if special "canJoin"
 					{
 						special "recruit"
 						talk 41
@@ -1192,7 +1192,7 @@ dialog hero
 		}
 		choice 44
 		{
-			special "hero_about"
+			special "heroAbout"
 			restart
 		}
 		escape choice 45
@@ -1208,13 +1208,13 @@ dialog heroGetItem
 	talk 1
 	choice 2
 	{
-		special "give_item_credit"
+		special "giveItemCredit"
 		talk 3
 		end
 	}
 	choice 4
 	{
-		special "share_decline"
+		special "shareDecline"
 		talk 5
 		end
 	}
@@ -1228,13 +1228,13 @@ dialog heroBuyItem
 	talk 1
 	choice 2
 	{
-		special "sell_item"
+		special "sellItem"
 		talk 3
 		end
 	}
 	choice 4
 	{
-		special "share_decline"
+		special "shareDecline"
 		talk 5
 		end
 	}
@@ -1258,7 +1258,7 @@ dialog crazy
 	{
 		if once
 			talk 0
-		if special "is_near_arena"
+		if special "isNearArena"
 		{
 			choice 1
 			{
@@ -1269,11 +1269,11 @@ dialog crazy
 				}
 				if script "target.GetHpp() >= 0.75f"
 				{
-					if special "is_arena_free"
+					if special "isArenaFree"
 					{
-						special "use_arena"
+						special "useArena"
 						talk 3
-						special "start_pvp"
+						special "startPvp"
 						end
 					}
 					else
@@ -1319,22 +1319,22 @@ dialog crazy
 		choice 12
 		{
 			talk 13
-			special "give_item"
+			special "giveItem"
 			end
 		}
 		choice 14
 		{
 			talk 15
-			special "share_items"
+			special "shareItems"
 			end
 		}
-		if special "is_not_mage"
+		if special "isNotMage"
 		{
-			if special "prefer_melee"
+			if special "preferMelee"
 			{
 				choice 16
 				{
-					special "go_ranged"
+					special "goRanged"
 					talk 17
 					restart
 				}
@@ -1343,7 +1343,7 @@ dialog crazy
 			{
 				choice 18
 				{
-					special "go_melee"
+					special "goMelee"
 					talk 19
 					restart
 				}
@@ -1360,7 +1360,7 @@ dialog crazy
 					{
 						if script "pc.unit.gold >= target.hero.investment"
 						{
-							special "kick_npc"
+							special "kickNpc"
 							talk 59
 							end
 						}
@@ -1377,7 +1377,7 @@ dialog crazy
 				talk 21
 				choice 22
 				{
-					special "kick_npc"
+					special "kickNpc"
 					if rand 3
 					{
 						talk 23
@@ -1419,7 +1419,7 @@ dialog crazy
 			choice 31
 			{
 				talk 32
-				special "force_attack"
+				special "forceAttack"
 				end
 			}
 		}
@@ -1483,7 +1483,7 @@ dialog crazy
 				talk 37
 				choice 38
 				{
-					if special "can_join"
+					if special "canJoin"
 					{
 						special "recruit"
 						talk 39
@@ -1504,7 +1504,7 @@ dialog crazy
 		{
 			if rand 2
 				talk 43
-			special "hero_about"
+			special "heroAbout"
 			restart
 		}
 		if special "crazies_not_asked"
@@ -1539,7 +1539,7 @@ dialog crazyGetItem
 	talk 1
 	choice 2
 	{
-		special "give_item_credit"
+		special "giveItemCredit"
 		talk 3
 		end
 	}
@@ -1547,12 +1547,12 @@ dialog crazyGetItem
 	{
 		if rand 5
 		{
-			special "give_item_credit"
+			special "giveItemCredit"
 			talk 5
 		}
 		else
 		{
-			special "share_decline"
+			special "shareDecline"
 			talk 6
 		}
 		end
@@ -1567,7 +1567,7 @@ dialog crazyBuyItem
 	talk 1
 	choice 2
 	{
-		special "sell_item"
+		special "sellItem"
 		talk 3
 		end
 	}
@@ -1575,12 +1575,12 @@ dialog crazyBuyItem
 	{
 		if rand 5
 		{
-			special "sell_item"
+			special "sellItem"
 			talk 5
 		}
 		else
 		{
-			special "share_decline"
+			special "shareDecline"
 			talk 6
 		}
 		end
@@ -1692,28 +1692,28 @@ dialog crazyMageEncounter
 	choice 1
 	{
 		talk 2
-		if special "is_bald"
+		if special "isBald"
 		{
 			talk 3
 			end
 		}
 		if rand 3
 		{
-			if special "is_ginger"
+			if special "isGinger"
 			{
 				talk 4
-				special "random_hair"
+				special "randomHair"
 			}
 			else
 			{
 				talk 5
-				special "ginger_hair"
+				special "gingerHair"
 			}
 		}
 		else
 		{
 			talk 4
-			special "random_hair"
+			special "randomHair"
 		}
 		talk 7
 		end
@@ -1777,7 +1777,7 @@ dialog captive
 					talk 8
 					end
 				}
-				special "captive_escape"
+				special "captiveEscape"
 				talk 9
 				end
 			}
@@ -1809,13 +1809,13 @@ dialog captive
 			talk 14
 			choice 15
 			{
-				special "captive_join"
+				special "captiveJoin"
 				talk 16
 				end
 			}
 			choice 17
 			{
-				special "captive_escape"
+				special "captiveEscape"
 				talk 18
 				end
 			}
@@ -1840,19 +1840,19 @@ dialog guardsEncounter
 //==============================================================================
 dialog traveler
 {
-	if special "dont_have_quest"
+	if special "dontHaveQuest"
 	{
 		talk 0
-		special "item_quest"
+		special "travelerQuest"
 		end
 	}
 	talk 1
-	if special "have_unaccepted_quest"
+	if special "haveUnacceptedQuest"
 	{
-		special "item_quest"
+		special "travelerQuest"
 		end
 	}
-	if special "have_completed_quest"
+	if special "haveCompletedQuest"
 		end
 	if choices 0
 	{
@@ -3904,14 +3904,14 @@ dialog qRescueCaptiveTalk
 	talk 2
 	choice 3
 	{
-		special "captive_join"
+		special "captiveJoin"
 		setQuestProgress 2
 		talk 4
 		end2
 	}
 	choice 5
 	{
-		special "captive_escape"
+		special "captiveEscape"
 		setQuestProgress 2
 		talk 6
 		end2
@@ -4167,7 +4167,7 @@ dialog tomir
 		talk 6
 		choice 7
 		{
-			special "recruit_free"
+			special "recruitFree"
 			talk 8
 			end
 		}
@@ -4393,7 +4393,7 @@ dialog citizenIdle
 		random
 		{
 			chance 10
-				if special "is_guard"
+				if special "isGuard"
 					talk 0
 				else
 					talk 0, 1
@@ -4405,16 +4405,16 @@ dialog citizenIdle
 	}
 	else
 	{
-		if special "is_drunk_inside_inn"
+		if special "isDrunkInsideInn"
 		{
-			if special "is_drunk_before_contest"
+			if special "isDrunkBeforeContest"
 				talk 2
 			else if rand 3
 				talk 3
 		}
 		if rand 2
 		{
-			if special "is_guard"
+			if special "isGuard"
 				talk 0
 			else
 				talk 0, 1
@@ -4436,7 +4436,7 @@ dialog mageIdle
 //==============================================================================
 dialog drunkMageIdle
 {
-	if special "is_drunkmage"
+	if special "isDrunkmage"
 		talk 0
 	next "citizenIdle"
 	end

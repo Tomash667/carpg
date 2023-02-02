@@ -48,8 +48,8 @@ dialog merchant {
 	10 "Koniec rozmowy"
 	11 "Szkolenie"
 	12 "Mogê ciê nauczyæ perswazji albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
-	13 "$train_lab/persuasion$"
-	14 "$train_lab/cha$"
+	13 "$trainLab/persuasion$"
+	14 "$trainLab/cha$"
 	15 "Anuluj"
 }
 
@@ -89,7 +89,7 @@ dialog alchemist {
 	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
 	11 "Szkolenie"
 	12 "Mogê ciê nauczyæ jak lepiej warzyæ mikstury. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Nadal jesteœ zainteresowany?"
-	13 "$train_lab/alchemy$"
+	13 "$trainLab/alchemy$"
 	14 "Anuluj"
 }
 
@@ -174,21 +174,21 @@ dialog trainer {
 	2 "Trening trwa 10 dni i kosztuje 200 sztuk z³ota."
 	3 "Co chcesz trenowaæ?"
 	4 "Atrybut"
-	5 "$train_lab/str$"
-	6 "$train_lab/end$"
-	7 "$train_lab/dex$"
+	5 "$trainLab/str$"
+	6 "$trainLab/end$"
+	7 "$trainLab/dex$"
 	8 "Anuluj"
 	9 "Umiejêtnoœæ"
-	10 "$train_lab/oneHandedWeapon$"
-	11 "$train_lab/shortBlade$"
-	12 "$train_lab/longBlade$"
-	13 "$train_lab/blunt$"
-	14 "$train_lab/axe$"
-	15 "$train_lab/bow$"
-	16 "$train_lab/shield$"
-	17 "$train_lab/lightArmor$"
-	18 "$train_lab/mediumArmor$"
-	19 "$train_lab/heavyArmor$"
+	10 "$trainLab/oneHandedWeapon$"
+	11 "$trainLab/shortBlade$"
+	12 "$trainLab/longBlade$"
+	13 "$trainLab/blunt$"
+	14 "$trainLab/axe$"
+	15 "$trainLab/bow$"
+	16 "$trainLab/shield$"
+	17 "$trainLab/lightArmor$"
+	18 "$trainLab/mediumArmor$"
+	19 "$trainLab/heavyArmor$"
 	20 "Atut"
 	21 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
 	22 "Czym siê zajmujesz?"
@@ -435,7 +435,7 @@ dialog hero {
 	29 {
 		"Witaj ponownie."
 		"Witaj."
-		"Witaj $player_name$."
+		"Witaj $playerName$."
 	}
 	30 "Poka¿ list goñczy"
 	31 {
@@ -455,7 +455,7 @@ dialog hero {
 	36 "Tak"
 	37 "Czas na nasz¹ pierwsz¹ przygodê!"
 	38 "Nie"
-	39 "Do³¹czê do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
+	39 "Do³¹czê do ciebie za $joinCost$ sz i udzia³ w zyskach. Co ty na to?"
 	40 "Tak"
 	41 {
 		"Czas na kolejn¹ przygodê!"
@@ -495,7 +495,7 @@ dialog heroGetItem {
 //==============================================================================
 dialog heroBuyItem {
 	0 "Ten przedmiot $item$ jest lepszy ni¿ to co mam aktualnie."
-	1 "Odkupie go od ciebie za $item_value$ sztuk z³ota. Co ty na to?"
+	1 "Odkupie go od ciebie za $itemValue$ sztuk z³ota. Co ty na to?"
 	2 "Tak"
 	3 "Dziêki."
 	4 "Nie"
@@ -603,7 +603,7 @@ dialog crazy {
 	29 {
 		"Witaj cz³eczyno, mówi¹ na mnie $name$."
 		"Jestem $name$, chcesz czegoœ?"
-		"Znam ciê $player_name$. Jestem $name$."
+		"Znam ciê $playerName$. Jestem $name$."
 	}
 	30 {
 		"A to znowu ty."
@@ -627,7 +627,7 @@ dialog crazy {
 		"Twoja dru¿yna jest pe³na, mo¿e ty do³¹czysz do mnie?"
 		"Jak ktoœ umrze to po mnie wróæ."
 	}
-	37 "Do³¹czê do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
+	37 "Do³¹czê do ciebie za $joinCost$ sz i udzia³ w zyskach. Co ty na to?"
 	38 "Tak"
 	39 {
 		"Czas na jakieœ zorganizowane mordobicie!"
@@ -677,7 +677,7 @@ dialog crazyGetItem {
 //==============================================================================
 dialog crazyBuyItem {
 	0 "Nie wiem jak ci siê to uda³o ale $item$ to to czego w³aœnie potrzebuje."
-	1 "Mam tu $item_value$ sztuk z³ota które mog¹ staæ siê twoje. To co, wymiana?"
+	1 "Mam tu $itemValue$ sztuk z³ota które mog¹ staæ siê twoje. To co, wymiana?"
 	2 "Tak"
 	3 "Nareszcie siê spotykamy. Ju¿ jesteœ moim ulubionym przedmiotem!"
 	4 "Nie"
@@ -844,7 +844,7 @@ dialog craziesEncounter {
 		"Znowu siê spotykamy $rhero$! Wyprujê ci flaki!"
 		"Pewnie myœla³eœ ¿e ciê nie znajdê $rhero$? Jak widaæ myli³eœ siê!"
 		"G³osy mówi¹ mi ¿ebym ciê zabi³!"
-		"Nadesz³a zima twojego ¿ycia $player_name$!"
+		"Nadesz³a zima twojego ¿ycia $playerName$!"
 		"Nadszed³ kres twojego ¿ycia!"
 	}
 	1 "Staæ!"
@@ -863,13 +863,13 @@ dialog craziesEncounter {
 	10 {
 		"Dobra, tym razem ci odpuszczê."
 		"Eh, w takim razie mo¿esz przejœæ."
-		"Zapamiêtaj ¿e darowa³em ci ¿ycie $player_name$!"
+		"Zapamiêtaj ¿e darowa³em ci ¿ycie $playerName$!"
 	}
-	11 "Witaj wielki i potê¿ny $player_name$!"
+	11 "Witaj wielki i potê¿ny $playerName$!"
 	12 "Mam dla ciebie dar. WeŸ ten $(crazy_give_item.name)."
 	13 {
-		"Witaj $player_name$, nareszcie siê spotykamy!"
-		"D³ugo ciê szuka³em $player_name$, ale w koñcu nasze drogi siê skrzy¿owa³y."
+		"Witaj $playerName$, nareszcie siê spotykamy!"
+		"D³ugo ciê szuka³em $playerName$, ale w koñcu nasze drogi siê skrzy¿owa³y."
 		"Xnopa cz³owieku!"
 		"Kim jesteœ?! Czego ode mnie chcesz?!"
 		"..."
@@ -897,9 +897,9 @@ dialog craziesEncounter {
 dialog tomashu {
 	0 "Dobra robota! Mo¿e kiedyœ zostaniesz jednym z planarnych poszukiwaczy przygód."
 	1 "WeŸ ten miecz."
-	2 "Witaj, d³ugo na ciebie czeka³em $player_name$."
+	2 "Witaj, d³ugo na ciebie czeka³em $playerName$."
 	3 "Zapewne nie ³atwo by³o ci siê tu dostaæ."
-	4 "Witaj ponownie $player_name$."
+	4 "Witaj ponownie $playerName$."
 	5 "Pewnie masz do mnie jakieœ pytania?"
 	6 "Co to za miejsce?"
 	7 "To moja tymczasowa domena."
@@ -1864,13 +1864,13 @@ dialog mageSeller {
 	6 "Koniec rozmowy"
 	7 "Szkolenie"
 	8 "Pomogê ci poszerzyæ twoje horyzonty. Co chcesz wiedzieæ?"
-	9 "$train_lab/int$"
-	10 "$train_lab/mysticMagic$"
-	11 "$train_lab/concentration$"
+	9 "$trainLab/int$"
+	10 "$trainLab/mysticMagic$"
+	11 "$trainLab/concentration$"
 	12 "Anuluj"
-	13 "$train_lab/fireball$"
-	14 "$train_lab/thunderBolt$"
-	15 "$train_lab/fireTrap$"
+	13 "$trainLab/fireball$"
+	14 "$trainLab/thunderBolt$"
+	15 "$trainLab/fireTrap$"
 }
 
 //==============================================================================
@@ -1881,9 +1881,9 @@ dialog clericSeller {
 	}
 	1 "Szkolenie"
 	2 "Jeœli chcesz mogê ciê nauczyæ czegoœ o magii bogów."
-	3 "$train_lab/wis$"
-	4 "$train_lab/godsMagic$"
-	5 "$train_lab/concentration$"
+	3 "$trainLab/wis$"
+	4 "$trainLab/godsMagic$"
+	5 "$trainLab/concentration$"
 	6 "Anuluj"
 	7 "Czym siê zajmujesz?"
 	8 "Jestem kap³anem, wyznawc¹ Imnosa. Opiekujê siê t¹ kapliczk¹ i pomagam tym którzy na to zas³uguj¹."
@@ -2083,8 +2083,8 @@ dialog hunterLeader {
 		"Witaj!"
 	}
 	1 "Koniec rozmowy"
-	2 "$train_lab/entanglingArrow$"
-	3 "$train_lab/bearTrap$"
+	2 "$trainLab/entanglingArrow$"
+	3 "$trainLab/bearTrap$"
 }
 
 //==============================================================================

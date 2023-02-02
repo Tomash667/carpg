@@ -156,7 +156,7 @@ void GameMenu::Event(GuiEvent e)
 					if(id == BUTTON_YES)
 						game->ExitToMenu();
 				};
-				info.name = "exit_to_menu";
+				info.name = "exitToMenu";
 				info.parent = nullptr;
 				info.pause = true;
 				info.text = game->hardcoreMode ? txExitToMenuDialogHardcore : txExitToMenuDialog;

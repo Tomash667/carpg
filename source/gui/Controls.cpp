@@ -405,7 +405,7 @@ void Controls::Event(GuiEvent e)
 				changed = true;
 			}
 		};
-		info.name = "reset_ctrls";
+		info.name = "resetControls";
 		info.order = DialogOrder::Top;
 		info.parent = this;
 		info.pause = false;

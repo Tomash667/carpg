@@ -1066,7 +1066,7 @@ quest killAnimals
 //=============================================================================
 quest findArtifact
 {
-	type random
+	type traveler
 	progress {
 		P_FINDART_NONE
 		P_FINDART_STARTED
@@ -1258,7 +1258,7 @@ quest findArtifact
 //=============================================================================
 quest lostArtifact
 {
-	type random
+	type traveler
 	progress {
 		P_LOSTART_NONE
 		P_LOSTART_STARTED
@@ -1445,7 +1445,7 @@ quest lostArtifact
 //=============================================================================
 quest stolenArtifact
 {
-	type random
+	type traveler
 	progress {
 		P_STOLENART_NONE
 		P_STOLENART_STARTED
@@ -2007,7 +2007,7 @@ quest main
 			if script "Team::size < 4"
 			{
 				talk 6
-				special "select_hero"
+				special "selectHero"
 				escape choice 7
 					end
 				showChoices
@@ -3325,7 +3325,7 @@ questList captain {
 	none 1
 }
 
-questList random {
+questList traveler {
 	findArtifact 1
 	lostArtifact 1
 	stolenArtifact 1

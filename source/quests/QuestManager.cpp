@@ -94,8 +94,8 @@ void QuestManager::InitLists()
 {
 	questsMayor = QuestList::TryGet("mayor");
 	questsCaptain = QuestList::TryGet("captain");
-	questsRandom = QuestList::TryGet("random");
-	assert(questsMayor && questsCaptain && questsRandom);
+	questsTraveler = QuestList::TryGet("traveler");
+	assert(questsMayor && questsCaptain && questsTraveler);
 
 	uniqueQuests = 8;
 	for(QuestScheme* scheme : QuestScheme::schemes)
@@ -242,9 +242,9 @@ QuestInfo* QuestManager::GetRandomQuest(QuestCategory category)
 {
 	if(force == Q_FORCE_NONE)
 	{
-		if(category == QuestCategory::Random)
+		if(category == QuestCategory::Traveler)
 		{
-			Warn("Can't force none random quest - unsupported.");
+			Warn("Can't force none traveler quest - unsupported.");
 			force = Q_FORCE_DISABLED;
 		}
 		else
@@ -280,8 +280,8 @@ QuestInfo* QuestManager::GetRandomQuest(QuestCategory category)
 	case QuestCategory::Captain:
 		list = questsCaptain;
 		break;
-	case QuestCategory::Random:
-		list = questsRandom;
+	case QuestCategory::Traveler:
+		list = questsTraveler;
 		break;
 	default:
 		assert(0);
@@ -304,9 +304,9 @@ Quest* QuestManager::GetCaptainQuest()
 }
 
 //=================================================================================================
-Quest* QuestManager::GetAdventurerQuest()
+Quest* QuestManager::GetTravelerQuest()
 {
-	return CreateQuest(GetRandomQuest(QuestCategory::Random));
+	return CreateQuest(GetRandomQuest(QuestCategory::Traveler));
 }
 
 //=================================================================================================
@@ -1162,7 +1162,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 				if(questSawmill->days >= 30 && gameLevel->cityCtx)
 				{
 					questSawmill->days = 29;
-					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("lumberjackMessenger"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						questSawmill->messenger = u;
@@ -1241,7 +1241,7 @@ void QuestManager::RemoveQuestUnits(bool onLeave)
 	{
 		if(questSawmill->messenger)
 		{
-			gameLevel->RemoveUnit(UnitData::Get("poslaniec_tartak"), onLeave);
+			gameLevel->RemoveUnit(UnitData::Get("lumberjackMessenger"), onLeave);
 			questSawmill->messenger = nullptr;
 		}
 

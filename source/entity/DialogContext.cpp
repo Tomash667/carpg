@@ -893,7 +893,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	if(questMgr->HandleSpecial(*this, msg, result))
 		return result;
 
-	if(strcmp(msg, "mayor_quest") == 0)
+	if(strcmp(msg, "mayorQuest") == 0)
 	{
 		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questMayorTime > 30
@@ -949,7 +949,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			return true;
 		}
 	}
-	else if(strcmp(msg, "captain_quest") == 0)
+	else if(strcmp(msg, "captainQuest") == 0)
 	{
 		bool haveQuest = true;
 		if(world->GetWorldtime() - gameLevel->cityCtx->questCaptainTime > 30
@@ -1005,11 +1005,11 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			return true;
 		}
 	}
-	else if(strcmp(msg, "item_quest") == 0)
+	else if(strcmp(msg, "travelerQuest") == 0)
 	{
 		if(talker->questId == -1)
 		{
-			Quest* quest = questMgr->GetAdventurerQuest();
+			Quest* quest = questMgr->GetTravelerQuest();
 			talker->questId = quest->id;
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
@@ -1019,7 +1019,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 	}
-	else if(strcmp(msg, "rest_pick") == 0)
+	else if(strcmp(msg, "restPick") == 0)
 	{
 		if(isLocal)
 			gameGui->levelGui->ShowRestDialog();
@@ -1028,9 +1028,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		mode = WAIT_DIALOG;
 		return true;
 	}
-	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
+	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossipDrunk") == 0)
 	{
-		bool drunkman = (strcmp(msg, "gossip_drunk") == 0);
+		bool drunkman = (strcmp(msg, "gossipDrunk") == 0);
 		if(!drunkman && (Rand() % 3 == 0 || (input->Down(Key::Shift) && game->devmode)))
 		{
 			int what = Rand() % 3;
@@ -1301,7 +1301,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			pc->playerInfo->updateFlags |= PlayerInfo::UF_LEARNING_POINTS;
 		}
 	}
-	else if(strcmp(msg, "near_loc") == 0)
+	else if(strcmp(msg, "nearLoc") == 0)
 	{
 		const vector<Location*>& locations = world->GetLocations();
 		if(updateLocations == 1)
@@ -1373,7 +1373,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		++dialogPos;
 		return true;
 	}
-	else if(strcmp(msg, "hero_about") == 0)
+	else if(strcmp(msg, "heroAbout") == 0)
 	{
 		Class* clas = talker->GetClass();
 		if(clas)
@@ -1394,14 +1394,14 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(Net::IsOnline() && !isLocal)
 			pc->playerInfo->UpdateGold();
 	}
-	else if(strcmp(msg, "recruit_free") == 0)
+	else if(strcmp(msg, "recruitFree") == 0)
 	{
 		team->AddMember(talker, HeroType::Normal);
 		--team->freeRecruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
 	}
-	else if(strcmp(msg, "give_item") == 0)
+	else if(strcmp(msg, "giveItem") == 0)
 	{
 		Unit* t = talker;
 		t->busy = Unit::Busy_Trading;
@@ -1415,7 +1415,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			pc->playerInfo->PushChange(NetChangePlayer::START_GIVE);
 		return true;
 	}
-	else if(strcmp(msg, "share_items") == 0)
+	else if(strcmp(msg, "shareItems") == 0)
 	{
 		Unit* t = talker;
 		t->busy = Unit::Busy_Trading;
@@ -1429,7 +1429,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			pc->playerInfo->PushChange(NetChangePlayer::START_SHARE);
 		return true;
 	}
-	else if(strcmp(msg, "kick_npc") == 0)
+	else if(strcmp(msg, "kickNpc") == 0)
 	{
 		team->RemoveMember(talker);
 		if(gameLevel->IsSafeSettlement())
@@ -1442,19 +1442,19 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		team->CheckCredit(false);
 		talker->temporary = true;
 	}
-	else if(strcmp(msg, "give_item_credit") == 0)
+	else if(strcmp(msg, "giveItemCredit") == 0)
 		team->TeamShareGiveItemCredit(*this);
-	else if(strcmp(msg, "sell_item") == 0)
+	else if(strcmp(msg, "sellItem") == 0)
 		team->TeamShareSellItem(*this);
-	else if(strcmp(msg, "share_decline") == 0)
+	else if(strcmp(msg, "shareDecline") == 0)
 		team->TeamShareDecline(*this);
-	else if(strcmp(msg, "force_attack") == 0)
+	else if(strcmp(msg, "forceAttack") == 0)
 	{
 		talker->dontAttack = false;
 		talker->attackTeam = true;
 		talker->ai->changeAiMode = true;
 	}
-	else if(strcmp(msg, "ginger_hair") == 0)
+	else if(strcmp(msg, "gingerHair") == 0)
 	{
 		pc->unit->humanData->hairColor = gHairColors[8];
 		if(Net::IsServer())
@@ -1463,7 +1463,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			c.unit = pc->unit;
 		}
 	}
-	else if(strcmp(msg, "random_hair") == 0)
+	else if(strcmp(msg, "randomHair") == 0)
 	{
 		if(Rand() % 2 == 0)
 		{
@@ -1489,12 +1489,12 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			c.unit = pc->unit;
 		}
 	}
-	else if(strcmp(msg, "captive_join") == 0)
+	else if(strcmp(msg, "captiveJoin") == 0)
 	{
 		team->AddMember(talker, HeroType::Visitor);
 		talker->dontAttack = true;
 	}
-	else if(strcmp(msg, "captive_escape") == 0)
+	else if(strcmp(msg, "captiveEscape") == 0)
 	{
 		if(talker->hero->teamMember)
 			team->RemoveMember(talker);
@@ -1530,17 +1530,17 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		++dialogPos;
 		return true;
 	}
-	else if(strcmp(msg, "go_melee") == 0)
+	else if(strcmp(msg, "goMelee") == 0)
 	{
 		assert(talker->IsHero());
 		talker->hero->melee = true;
 	}
-	else if(strcmp(msg, "go_ranged") == 0)
+	else if(strcmp(msg, "goRanged") == 0)
 	{
 		assert(talker->IsHero());
 		talker->hero->melee = false;
 	}
-	else if(strcmp(msg, "show_perks") == 0)
+	else if(strcmp(msg, "showPerks") == 0)
 	{
 		LocalVector<Perk*> toPick;
 		PerkContext ctx(pc, false);
@@ -1569,7 +1569,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			choices.push_back(choice);
 		}
 	}
-	else if(strcmp(msg, "select_hero") == 0)
+	else if(strcmp(msg, "selectHero") == 0)
 	{
 		LocalVector<Class*> available;
 		for(Class* clas : Class::classes)
@@ -1614,32 +1614,28 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	if(questMgr->HandleSpecialIf(*this, msg, result))
 		return result;
 
-	if(strcmp(msg, "is_drunk") == 0)
+	if(strcmp(msg, "isDrunk") == 0)
 		return IsSet(talker->data->flags, F_AI_DRUNKMAN) && talker->locPart->partType == LocationPart::Type::Building;
-	else if(strcmp(msg, "is_inside_dungeon") == 0)
-		return gameLevel->localPart->partType == LocationPart::Type::Inside;
-	else if(strcmp(msg, "is_team_full") == 0)
-		return team->GetActiveTeamSize() >= team->GetMaxSize();
-	else if(strcmp(msg, "can_join") == 0)
+	else if(strcmp(msg, "canJoin") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
-	else if(strcmp(msg, "is_near_arena") == 0)
+	else if(strcmp(msg, "isNearArena") == 0)
 		return gameLevel->cityCtx && IsSet(gameLevel->cityCtx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, gameLevel->cityCtx->arenaPos) < 5.f;
-	else if(strcmp(msg, "is_ginger") == 0)
+	else if(strcmp(msg, "isGinger") == 0)
 		return pc->unit->humanData->hairColor.Equal(gHairColors[8]);
-	else if(strcmp(msg, "is_bald") == 0)
+	else if(strcmp(msg, "isBald") == 0)
 		return pc->unit->humanData->hair == -1;
-	else if(strcmp(msg, "dont_have_quest") == 0)
+	else if(strcmp(msg, "dontHaveQuest") == 0)
 		return talker->questId == -1;
-	else if(strcmp(msg, "have_unaccepted_quest") == 0)
+	else if(strcmp(msg, "haveUnacceptedQuest") == 0)
 		return questMgr->FindUnacceptedQuest(talker->questId);
-	else if(strcmp(msg, "have_completed_quest") == 0)
+	else if(strcmp(msg, "haveCompletedQuest") == 0)
 	{
 		Quest* quest = questMgr->FindQuest(talker->questId, false);
 		return quest && !quest->IsActive();
 	}
-	else if(strcmp(msg, "is_free_recruit") == 0)
+	else if(strcmp(msg, "isFreeRecruit") == 0)
 		return talker->level <= 8 && team->freeRecruits > 0 && !talker->hero->otherTeam;
-	else if(strcmp(msg, "have_unique_quest") == 0)
+	else if(strcmp(msg, "haveUniqueQuest") == 0)
 	{
 		return (((questMgr->questOrcs2->orcsState == Quest_Orcs2::State::Accepted || questMgr->questOrcs2->orcsState == Quest_Orcs2::State::OrcJoined)
 			&& questMgr->questOrcs->startLoc == gameLevel->location)
@@ -1647,27 +1643,27 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 			&& questMgr->questMages2->magesState < Quest_Mages2::State::Completed
 			&& questMgr->questMages2->startLoc == gameLevel->location));
 	}
-	else if(strcmp(msg, "is_not_mage") == 0)
+	else if(strcmp(msg, "isNotMage") == 0)
 	{
 		Class* clas = talker->GetClass();
 		return !clas || clas->id != "mage";
 	}
-	else if(strcmp(msg, "prefer_melee") == 0)
+	else if(strcmp(msg, "preferMelee") == 0)
 		return talker->hero->melee;
-	else if(strcmp(msg, "is_drunk_inside_inn") == 0)
+	else if(strcmp(msg, "isDrunkInsideInn") == 0)
 	{
 		return (IsSet(talker->data->flags, F_AI_DRUNKMAN) || IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
 			&& talker->locPart->partType == LocationPart::Type::Building && talker->locPart == gameLevel->cityCtx->FindInn();
 	}
-	else if(strcmp(msg, "is_drunk_before_contest") == 0)
+	else if(strcmp(msg, "isDrunkBeforeContest") == 0)
 		return IsSet(talker->data->flags3, F3_DRUNKMAN_AFTER_CONTEST) && questMgr->questContest->state >= Quest_Contest::CONTEST_TODAY;
-	else if(strcmp(msg, "is_drunkmage") == 0)
+	else if(strcmp(msg, "isDrunkmage") == 0)
 		return IsSet(talker->data->flags3, F3_DRUNK_MAGE) && questMgr->questMages2->magesState < Quest_Mages2::State::MageCured;
-	else if(strcmp(msg, "is_guard") == 0)
+	else if(strcmp(msg, "isGuard") == 0)
 		return IsSet(talker->data->flags2, F2_GUARD);
-	else if(strcmp(msg, "mayor_quest_failed") == 0)
+	else if(strcmp(msg, "mayorQuestFailed") == 0)
 		return gameLevel->cityCtx->questMayor == CityQuestState::Failed;
-	else if(strcmp(msg, "captain_quest_failed") == 0)
+	else if(strcmp(msg, "captainQuestFailed") == 0)
 		return gameLevel->cityCtx->questCaptain == CityQuestState::Failed;
 	else
 	{
@@ -1692,7 +1688,7 @@ cstring DialogContext::FormatString(const string& strPart)
 		assert(talker->IsHero());
 		return talker->hero->name.c_str();
 	}
-	else if(strPart == "join_cost")
+	else if(strPart == "joinCost")
 	{
 		assert(talker->IsHero());
 		return Format("%d", talker->hero->JoinCost());
@@ -1702,12 +1698,12 @@ cstring DialogContext::FormatString(const string& strPart)
 		assert(teamShareId != -1);
 		return teamShareItem->name.c_str();
 	}
-	else if(strPart == "item_value")
+	else if(strPart == "itemValue")
 	{
 		assert(teamShareId != -1);
 		return Format("%d", teamShareItem->value / 2);
 	}
-	else if(strPart == "player_name")
+	else if(strPart == "playerName")
 		return pc->name.c_str();
 	else if(strPart == "rhero")
 	{
@@ -1722,9 +1718,9 @@ cstring DialogContext::FormatString(const string& strPart)
 		int id = int(strPart[7] - '1');
 		return game->arena->nearPlayersStr[id].c_str();
 	}
-	else if(strncmp(strPart.c_str(), "train_lab/", 10) == 0)
+	else if(strncmp(strPart.c_str(), "trainLab/", 9) == 0)
 	{
-		cstring s = strPart.c_str() + 10;
+		cstring s = strPart.c_str() + 9;
 		if(Ability* ability = Ability::Get(s))
 		{
 			talkMsg = ability->name.c_str();

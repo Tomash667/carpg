@@ -6,7 +6,7 @@ enum class QuestCategory
 	NotSet = -1,
 	Mayor = 0,
 	Captain,
-	Random,
+	Traveler,
 	Unique
 };
 

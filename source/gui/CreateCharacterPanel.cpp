@@ -586,7 +586,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 						if(id == BUTTON_YES)
 							mode = Mode::PickAppearance;
 					};
-					di.name = "create_char_warn";
+					di.name = "createCharWarn";
 					di.order = DialogOrder::Top;
 					di.parent = this;
 					di.pause = false;

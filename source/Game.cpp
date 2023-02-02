@@ -445,7 +445,7 @@ void Game::PostconfigureGame()
 		else
 		{
 			DialogInfo info;
-			info.name = "have_errors";
+			info.name = "haveErrors";
 			info.text = text;
 			info.type = DIALOG_OK;
 			info.img = img;
