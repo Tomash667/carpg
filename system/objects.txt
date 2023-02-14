@@ -611,6 +611,12 @@ usable barricade {
 	sound "thud.wav"
 }
 
+usable metalDoor {
+	mesh "metalDoor.qmsh"
+	flags {destroyable physicsPtr}
+	sound "thud.wav"
+}
+
 //==============================================================================
 // ALIASES
 //==============================================================================

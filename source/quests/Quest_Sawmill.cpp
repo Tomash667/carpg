@@ -286,7 +286,7 @@ void Quest_Sawmill::OnProgress(int d)
 		if(days >= 30 && gameLevel->IsSafeSettlement() && game->gameState == GS_LEVEL)
 		{
 			days = 29;
-			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+			Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("lumberjackMessenger"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				messenger = u;

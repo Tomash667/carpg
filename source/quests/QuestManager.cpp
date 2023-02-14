@@ -1162,7 +1162,7 @@ void QuestManager::GenerateQuestUnits(bool onEnter)
 				if(questSawmill->days >= 30 && gameLevel->cityCtx)
 				{
 					questSawmill->days = 29;
-					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
+					Unit* u = gameLevel->SpawnUnitNearLocation(*team->leader->locPart, team->leader->pos, *UnitData::Get("lumberjackMessenger"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						questSawmill->messenger = u;
@@ -1241,7 +1241,7 @@ void QuestManager::RemoveQuestUnits(bool onLeave)
 	{
 		if(questSawmill->messenger)
 		{
-			gameLevel->RemoveUnit(UnitData::Get("poslaniec_tartak"), onLeave);
+			gameLevel->RemoveUnit(UnitData::Get("lumberjackMessenger"), onLeave);
 			questSawmill->messenger = nullptr;
 		}
 

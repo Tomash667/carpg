@@ -58,7 +58,6 @@ void ObjectLoader::Cleanup()
 {
 	DeleteElements(BaseObject::items);
 	DeleteElements(ObjectGroup::items);
-	DeleteElements(BaseUsable::usables);
 	DeleteElements(variantObjects);
 }
 
@@ -165,7 +164,7 @@ void ObjectLoader::Finalize()
 	CalculateCrc();
 
 	Info("Loaded objects (%u), usables (%u) - crc %p.",
-		BaseObject::items.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
+		BaseObject::items.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
 }
 
 //=================================================================================================
@@ -374,6 +373,7 @@ void ObjectLoader::ParseUsable(const string& id)
 
 	BaseUsable* u = use.Pin();
 	BaseObject::hashes[u->hash] = u;
+	BaseObject::items.push_back(u);
 	BaseUsable::usables.push_back(u);
 }
 
