@@ -99,9 +99,9 @@ struct RaytestClosestUnitCallback : public btCollisionWorld::RayResultCallback
 //-----------------------------------------------------------------------------
 struct RaytestTerrainCallback : public btCollisionWorld::RayResultCallback
 {
-	RaytestTerrainCallback()
+	RaytestTerrainCallback(int flags = CG_TERRAIN)
 	{
-		m_collisionFilterMask = CG_TERRAIN;
+		m_collisionFilterMask = flags;
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)

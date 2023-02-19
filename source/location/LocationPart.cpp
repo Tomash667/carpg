@@ -1003,7 +1003,7 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 					c.pos = hitpoint;
 				}
 
-				if(unit.IsPlayer())
+				if(unit.IsPlayer() && !IsSet(base.useFlags, BaseUsable::RESISTANT))
 				{
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 

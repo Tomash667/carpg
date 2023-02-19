@@ -613,8 +613,8 @@ usable barricade {
 
 usable metalDoor {
 	mesh "metalDoor.qmsh"
-	flags {destroyable physicsPtr}
-	sound "thud.wav"
+	flags {destroyable physicsPtr resistant}
+	sound "metal_sheet_03.mp3"
 }
 
 //==============================================================================

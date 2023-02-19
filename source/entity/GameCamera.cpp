@@ -424,6 +424,14 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 			if(RayToPlane(pos, dir, floor, &t) && t < minT && t > 0.f)
 				minT = t;
 		}
+		else
+		{
+			RaytestTerrainCallback callback(CG_TERRAIN | CG_BUILDING);
+			phyWorld->rayTest(ToVector3(pos), ToVector3(pos + dir), callback);
+			float t = callback.getFraction();
+			if(t < minT && t > 0.f)
+				minT = t;
+		}
 
 		// xsphere
 		if(building.xsphereRadius > 0.f)
@@ -469,7 +477,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 		}
 	}
 
-	// objects
+	// colliders
 	for(vector<CollisionObject>::iterator it = locPart.lvlPart->colliders.begin(), end = locPart.lvlPart->colliders.end(); it != end; ++it)
 	{
 		if(!it->camCollider)
@@ -477,12 +485,12 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 
 		if(it->type == CollisionObject::SPHERE)
 		{
-			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, 0, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < minT && t > 0.f)
+			if(RayToCylinder(pos, pos + dir, Vec3(it->pos.x, -32.f, it->pos.z), Vec3(it->pos.x, 32.f, it->pos.z), it->radius, t) && t < minT && t > 0.f)
 				minT = t;
 		}
 		else if(it->type == CollisionObject::RECTANGLE)
 		{
-			Box box(it->pos.x - it->w, 0.f, it->pos.z - it->h, it->pos.x + it->w, 32.f, it->pos.z + it->h);
+			Box box(it->pos.x - it->w, -32.f, it->pos.z - it->h, it->pos.x + it->w, 32.f, it->pos.z + it->h);
 			if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
 				minT = t;
 		}
@@ -500,7 +508,7 @@ float GameCamera::HandleCollisions(const Vec3& pos, const Vec3& dir)
 				h = it->h;
 			}
 
-			Box box(it->pos.x - w, 0.f, it->pos.z - h, it->pos.x + w, 32.f, it->pos.z + h);
+			Box box(it->pos.x - w, -32.f, it->pos.z - h, it->pos.x + w, 32.f, it->pos.z + h);
 			if(RayToBox(pos, dir, box, &t) && t < minT && t > 0.f)
 				minT = t;
 		}

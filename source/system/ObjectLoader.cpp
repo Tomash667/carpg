@@ -120,7 +120,8 @@ void ObjectLoader::InitTokenizer()
 		{ "container", BaseUsable::CONTAINER },
 		{ "isBench", BaseUsable::IS_BENCH },
 		{ "alchemy", BaseUsable::ALCHEMY },
-		{ "destroyable", BaseUsable::DESTROYABLE }
+		{ "destroyable", BaseUsable::DESTROYABLE },
+		{ "resistant", BaseUsable::RESISTANT }
 		});
 }
 

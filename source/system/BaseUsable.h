@@ -14,7 +14,8 @@ struct BaseUsable : public BaseObject
 		CONTAINER = 1 << 2,
 		IS_BENCH = 1 << 3, // hardcoded to use variant in city
 		ALCHEMY = 1 << 4,
-		DESTROYABLE = 1 << 5
+		DESTROYABLE = 1 << 5, // can be destroyed with attack
+		RESISTANT = 1 << 6, // use with DESTROYABLE, can be destroyed by script
 	};
 
 	string anim, name;

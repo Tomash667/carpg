@@ -1062,7 +1062,7 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			continue;
 
 		char c = pt.name[2];
-		if(c == 'o' || c == 'r' || c == 'p' || c == 's' || c == 'c' || c == 'l' || c == 'e')
+		if(CharInStr(c, "orpscle"))
 		{
 			uint poss = pt.name.find_first_of('_', 4);
 			if(poss == string::npos)
