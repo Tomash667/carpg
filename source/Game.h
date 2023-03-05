@@ -140,6 +140,7 @@ public:
 	void ListEntry(EntryType type, const Int2& pt, GameDirection dir);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
+	void ListVisibleLights(FrustumPlanes& frustum);
 	void GatherDrawBatchLights(SceneNode* node);
 	void GatherDrawBatchLights(SceneNode* node, float x, float z, float radius, int sub, array<Light*, 3>& lights);
 	void DrawScene();

@@ -39,6 +39,7 @@ enum OBJ_FLAGS
 	OBJ_CAM_COLLIDERS = 1 << 20, // spawn camera coliders from mesh attach points
 	OBJ_USABLE = 1 << 21, // object is usable
 	OBJ_NO_CULLING = 1 << 22, // no mesh backface culling
+	OBJ_TORCH_CEILING_EFFECT = 1 << 23, // object has larger fire effect (requires OBJ_LIGHT)
 };
 
 //-----------------------------------------------------------------------------

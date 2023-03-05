@@ -218,7 +218,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* playerInfo;
-	float moveTick, lastDmg, lastDmgPoison, dmgc, poisonDmgc, idleTimer;
+	float moveTick, lastDmg, lastDmgPoison, dmgc, poisonDmgc, idleTimer, buildingUndergroundValue;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	Key actionKey;
 	NextAction nextAction;
@@ -233,7 +233,7 @@ struct PlayerController : public HeroPlayerCommon
 		};
 	} nextActionData;
 	WeaponType lastWeapon;
-	bool godmode, nocd, noclip, invisible, isLocal, recalculateLevel, leavingEvent, alwaysRun, lastRing;
+	bool godmode, nocd, noclip, invisible, isLocal, recalculateLevel, leavingEvent, alwaysRun, lastRing, buildingUndergroundState;
 	int id, freeDays, learningPoints, exp, expNeed, expLevel;
 	PlayerAction action;
 	union
@@ -256,7 +256,8 @@ struct PlayerController : public HeroPlayerCommon
 	//----------------------
 	int goldGet; // used in AddGold
 
-	PlayerController() : dialogCtx(nullptr), statFlags(0), playerInfo(nullptr), isLocal(false), lastRing(false) {}
+	PlayerController() : dialogCtx(nullptr), statFlags(0), playerInfo(nullptr), isLocal(false), lastRing(false), buildingUndergroundState(false),
+		buildingUndergroundValue(0.f) {}
 	~PlayerController();
 
 	void Rest(int days, bool resting, bool travel = false);
@@ -355,4 +356,5 @@ public:
 	Vec3 RaytestTarget(float range);
 	bool ShouldUseRaytest() const;
 	void ReadBook(int index);
+	void CheckBuildingUnderground(bool instant);
 };

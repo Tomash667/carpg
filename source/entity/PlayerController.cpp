@@ -15,6 +15,7 @@
 #include "GameMessages.h"
 #include "GameResources.h"
 #include "GroundItem.h"
+#include "InsideBuilding.h"
 #include "Inventory.h"
 #include "Level.h"
 #include "LevelGui.h"
@@ -2224,6 +2225,26 @@ void PlayerController::Update(float dt)
 	if(lastDmgPoison == 0.f && poisonDmgc < 0.1f)
 		poisonDmgc = 0.f;
 
+	// building underground
+	if(buildingUndergroundState)
+	{
+		if(buildingUndergroundValue < 1)
+		{
+			buildingUndergroundValue = min(buildingUndergroundValue + dt * 3, 1.f);
+			unit->locPart->SetBuildingUndergroundValue(buildingUndergroundValue);
+			game->SetMusic(MusicType::Dungeon);
+		}
+	}
+	else
+	{
+		if(buildingUndergroundValue > 0)
+		{
+			buildingUndergroundValue = max(buildingUndergroundValue - dt * 3, 0.f);
+			unit->locPart->SetBuildingUndergroundValue(buildingUndergroundValue);
+			game->SetMusic(MusicType::City);
+		}
+	}
+
 	if(recalculateLevel)
 	{
 		recalculateLevel = false;
@@ -2483,13 +2504,15 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					if(Net::IsLocal())
 						TrainMove(speed);
 
-					// revealing minimap
 					if(!gameLevel->location->outside)
 					{
+						// revealing minimap
 						Int2 newTile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(newTile != prevTile)
 							FOV::DungeonReveal(newTile, gameLevel->minimapReveal);
 					}
+					else
+						CheckBuildingUnderground(false);
 				}
 
 				if(run && abs(u.speed - u.prevSpeed) < 0.25f && move >= 9)
@@ -3474,6 +3497,30 @@ void PlayerController::ReadBook(int index)
 				c.id = index;
 			}
 			gameGui->book->Show(&book);
+		}
+	}
+}
+
+//=================================================================================================
+void PlayerController::CheckBuildingUnderground(bool instant)
+{
+	if(unit->locPart->partType == LocationPart::Type::Building)
+	{
+		// check building underground
+		InsideBuilding& insideBuilding = static_cast<InsideBuilding&>(*unit->locPart);
+		if(insideBuilding.underground[0] < 900.f)
+		{
+			if(unit->pos.y < insideBuilding.underground[0])
+			{
+				buildingUndergroundState = true;
+				if(instant)
+				{
+					buildingUndergroundValue = 1.f;
+					insideBuilding.SetBuildingUndergroundValue(1.f);
+				}
+			}
+			else if(unit->pos.y > insideBuilding.underground[1])
+				buildingUndergroundState = false;
 		}
 	}
 }

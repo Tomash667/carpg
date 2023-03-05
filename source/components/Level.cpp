@@ -727,7 +727,12 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 			u->container = new ItemContainer;
 			const Item* item = Book::GetRandom();
 			if(item)
+			{
 				u->container->items.push_back({ item, 1, 1 });
+				if(ready)
+					gameRes->PreloadItem(item);
+			}
+
 			if(Rand() % 2 == 0)
 			{
 				uint level;
@@ -816,6 +821,8 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			ParticleEffect* effect;
 			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
 				effect = gameRes->peCampfire;
+			else if(IsSet(obj->flags, OBJ_TORCH_CEILING_EFFECT))
+				effect = gameRes->peTorchCeiling;
 			else if(IsSet(flags, SOE_MAGIC_LIGHT))
 				effect = gameRes->peMagicTorch;
 			else
@@ -833,7 +840,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			{
 				GameLight& light = Add1(locPart.lights);
 				light.startPos = pe->pos;
-				light.range = 5;
+				light.range = IsSet(obj->flags, OBJ_TORCH_CEILING_EFFECT) ? 10.f : 5.f;
 				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					light.startColor = Vec3(0.8f, 0.8f, 1.f);
 				else
@@ -1423,6 +1430,12 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 					}
 					else if(outPoint)
 						*outPoint = pos;
+				}
+				else if(token == "underground")
+				{
+					assert(inside);
+					inside->underground[0] = pos.y - pt.size.y;
+					inside->underground[1] = pos.y + pt.size.y;
 				}
 				else
 					assert(0);

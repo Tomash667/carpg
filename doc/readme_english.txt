@@ -347,6 +347,7 @@ BottledByte - Bug reports and coding.
 🗃 Models:
 	* https://opengameart.org
 		* CDmir - chest
+		* cemkalyoncu - Izchak's torches
 		* Clint Bellanger - naraphim sword
 		* Enetheru - windmill
 		* Grefuntor - slime
@@ -358,7 +359,7 @@ BottledByte - Bug reports and coding.
 		* p0ss - long sword
 		* rubberduck - shrine
 		* sandsound - morningstar
-		* System G6 - shield
+		* System G6 - shield, bucket
 		* TiZiana - vodka, gray potion
 		* Wind astella - battle axe
 	* kaangvl - fish
@@ -370,6 +371,7 @@ BottledByte - Bug reports and coding.
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
 	* Class icons - https://game-icons.net/
+	* p0ss - rusted metal texture pack
 🎧 Music:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project

@@ -45,6 +45,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	drawBatch.scene = lvlPart.scene;
 	drawBatch.camera = &gameLevel->camera;
 	drawBatch.gatherLights = !drawBatch.scene->useLightDir && sceneMgr->useLighting;
+	if(drawBatch.gatherLights)
+		ListVisibleLights(frustum);
 	ClearGrass();
 	if(locPart.partType == LocationPart::Type::Outside)
 	{
@@ -1597,11 +1599,13 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 
 	if(drawBatch.locPart->masks.empty())
 	{
-		for(Light& light : drawBatch.locPart->lights)
+		for(Light* light : drawBatch.visibleLights)
 		{
-			float dist = Distance(x, z, light.pos.x, light.pos.z);
-			if(dist < light.range + radius)
-				best.Add(&light, dist);
+			float dist = Distance(x, z, light->pos.x, light->pos.z);
+			if(dist < radius)
+				best.Add(light, Distance(light->pos.x, light->pos.z, drawBatch.camera->from.x, drawBatch.camera->from.z));
+			else if(dist < light->range + radius)
+				best.Add(light, dist);
 		}
 	}
 	else
@@ -1609,19 +1613,19 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 		const Vec2 objPos(x, z);
 		const bool isSplit = (node && IsSet(node->mesh->head.flags, Mesh::F_SPLIT));
 
-		for(GameLight& light : drawBatch.locPart->lights)
+		for(Light* light : drawBatch.visibleLights)
 		{
 			Vec2 lightPos;
 			float dist;
 			bool ok = true, masked = false;
 			if(!isSplit)
 			{
-				dist = Distance(x, z, light.pos.x, light.pos.z);
-				if(dist > light.range + radius || !best.CanAdd(dist))
+				dist = Distance(x, z, light->pos.x, light->pos.z);
+				if(dist > light->range + radius || !best.CanAdd(dist))
 					continue;
 				if(!IsZero(dist))
 				{
-					lightPos = light.pos.XZ();
+					lightPos = light->pos.XZ();
 					float rangeSum = 0.f;
 
 					// are there any masks between object and light?
@@ -1666,9 +1670,9 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 			else
 			{
 				const Vec2 subSize = node->mesh->splits[sub].box.SizeXZ();
-				lightPos = light.pos.XZ();
+				lightPos = light->pos.XZ();
 				dist = DistanceRectangleToPoint(objPos, subSize, lightPos);
-				if(dist > light.range + radius || !best.CanAdd(dist))
+				if(dist > light->range + radius || !best.CanAdd(dist))
 					continue;
 				if(!IsZero(dist))
 				{
@@ -1719,19 +1723,19 @@ void Game::GatherDrawBatchLights(SceneNode* node, float x, float z, float radius
 
 			if(masked)
 			{
-				float range = light.range - Vec2::Distance(lightPos, light.pos.XZ());
+				float range = light->range - Vec2::Distance(lightPos, light->pos.XZ());
 				if(range > 0)
 				{
 					Light* tmpLight = DrawBatch::lightPool.Get();
-					tmpLight->color = light.color;
-					tmpLight->pos = Vec3(lightPos.x, light.pos.y, lightPos.y);
+					tmpLight->color = light->color;
+					tmpLight->pos = Vec3(lightPos.x, light->pos.y, lightPos.y);
 					tmpLight->range = range;
 					best.Add(tmpLight, dist);
 					drawBatch.tmpLights.push_back(tmpLight);
 				}
 			}
 			else
-				best.Add(&light, dist);
+				best.Add(light, dist);
 		}
 	}
 
@@ -1893,4 +1897,14 @@ void Game::UvModChanged()
 {
 	gameLevel->terrain->uvMod = uvMod;
 	gameLevel->terrain->RebuildUv();
+}
+
+//=================================================================================================
+void Game::ListVisibleLights(FrustumPlanes& frustum)
+{
+	for(Light& light : drawBatch.locPart->lights)
+	{
+		if(frustum.SphereToFrustum(light.pos, light.range))
+			drawBatch.visibleLights.push_back(&light);
+	}
 }

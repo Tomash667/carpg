@@ -43,6 +43,7 @@ GameResources::~GameResources()
 	delete peSpellHit;
 	delete peElectroHit;
 	delete peTorch;
+	delete peTorchCeiling;
 	delete peMagicTorch;
 	delete peCampfire;
 	delete peAltarBlood;
@@ -150,6 +151,9 @@ void GameResources::InitEffects()
 	peTorch->alpha = Vec2(0.8f, 0.f);
 	peTorch->size = Vec2(0.5f, 0.f);
 	peTorch->mode = 1;
+
+	peTorchCeiling = new ParticleEffect(*peTorch);
+	peTorchCeiling->size = Vec2(1.f, 0.f);
 
 	peMagicTorch = new ParticleEffect(*peTorch);
 	peMagicTorch->tex = resMgr->Get<Texture>("flare2.png");

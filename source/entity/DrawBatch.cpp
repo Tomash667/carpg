@@ -24,5 +24,6 @@ void DrawBatch::Clear()
 	Area2::Free(areas2);
 	dungeonParts.clear();
 	dungeonPartGroups.clear();
+	visibleLights.clear();
 	lightPool.Free(tmpLights);
 }

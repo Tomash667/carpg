@@ -103,7 +103,8 @@ void ObjectLoader::InitTokenizer()
 		{ "waterEffect", OBJ_WATER_EFFECT },
 		{ "multiplePhysics", OBJ_MULTI_PHYSICS },
 		{ "cameraColliders", OBJ_CAM_COLLIDERS },
-		{ "noCulling", OBJ_NO_CULLING }
+		{ "noCulling", OBJ_NO_CULLING },
+		{ "torchCeilingEffect", OBJ_TORCH_CEILING_EFFECT }
 		});
 
 	t.AddKeywords(G_USABLE_PROPERTY, {

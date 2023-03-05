@@ -51,7 +51,7 @@ struct DrawBatch : public SceneBatch
 	vector<Area2*> areas2;
 	vector<DungeonPart> dungeonParts;
 	vector<DungeonPartGroup> dungeonPartGroups;
-	vector<Light*> tmpLights;
+	vector<Light*> visibleLights, tmpLights;
 	SceneNode* tmpGlow;
 
 	void Clear();

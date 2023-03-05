@@ -622,8 +622,7 @@ void Game::DrawGame()
 		if(usePostfx || useGlow)
 			postfxShader->SetTarget();
 
-		Scene* scene = gameLevel->localPart->lvlPart->scene;
-		render->Clear(scene->clearColor);
+		render->Clear(locPart.lvlPart->scene->clearColor);
 
 		// draw level
 		DrawScene();
@@ -1731,7 +1730,7 @@ void Game::CutsceneEnded(bool cancel)
 //=================================================================================================
 bool Game::CutsceneShouldSkip()
 {
-	return cfg.GetBool("skipcutscene");
+	return cfg.GetBool("skipCutscene");
 }
 
 //=================================================================================================
@@ -2547,14 +2546,24 @@ void Game::ExitToMap()
 void Game::SetMusic(MusicType type)
 {
 	if(type == MusicType::Default)
-		type = gameLevel->boss ? MusicType::Boss : gameLevel->GetLocationMusic();
+	{
+		if(gameLevel->boss)
+			type = MusicType::Boss;
+		else if(pc->buildingUndergroundState)
+			type = MusicType::Dungeon;
+		else
+			type = gameLevel->GetLocationMusic();
+	}
 
 	if(soundMgr->IsDisabled() || type == musicType)
 		return;
 
 	const bool delayed = musicType == MusicType::Intro && type == MusicType::Title;
 	musicType = type;
-	soundMgr->PlayMusic(musicLists[(int)type], delayed);
+	MusicList* musicList = musicLists[(int)type];
+	if(!musicList->IsLoaded())
+		gameRes->LoadMusic(type, false, true);
+	soundMgr->PlayMusic(musicList, delayed);
 }
 
 void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)

@@ -847,6 +847,7 @@ void Game::LoadGame(GameReader& f)
 		LocationGenerator* locGen = locGenFactory->Get(gameLevel->location);
 		locGen->OnLoad();
 
+		pc->CheckBuildingUnderground(true);
 		RemoveUnusedAiAndCheck();
 	}
 

@@ -278,6 +278,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 🗃 Modele:
 	* https://opengameart.org
 		* CDmir - chest
+		* cemkalyoncu - Izchak's torches
 		* Clint Bellanger - naraphim sword
 		* Enetheru - windmill
 		* Grefuntor - slime
@@ -289,7 +290,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 		* p0ss - long sword
 		* rubberduck - shrine
 		* sandsound - morningstar
-		* System G6 - shield
+		* System G6 - shield, bucket
 		* TiZiana - vodka, gray potion
 		* Wind astella - battle axe
 	* kaangvl - fish
@@ -301,6 +302,7 @@ BottledByte - Zgłaszanie błedów i usprawnienia w kodzie.
 	* texturelib.com
 	* SwordAxeIcon by Raindropmemory
 	* Ikony klas - https://game-icons.net/
+	* p0ss - rusted metal texture pack
 🎧 Muzyka:
 	* Łukasz Xwokloiz
 	* Celestial Aeon Project

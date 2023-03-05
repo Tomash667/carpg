@@ -36,6 +36,7 @@ void InsideBuilding::Save(GameWriter& f)
 	f << region1;
 	f << region2;
 	f << enterY;
+	f << underground;
 	f << canEnter;
 	f << (navmesh != nullptr);
 
@@ -59,6 +60,8 @@ void InsideBuilding::Load(GameReader& f)
 	f >> region1;
 	f >> region2;
 	f >> enterY;
+	if(LOAD_VERSION >= V_DEV)
+		f >> underground;
 	if(LOAD_VERSION >= V_0_20)
 		f >> canEnter;
 	if(LOAD_VERSION >= V_DEV)
@@ -86,6 +89,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 	f << top;
 	f << xsphereRadius;
 	f << enterY;
+	f << underground;
 	f << canEnter;
 	f << (navmesh != nullptr);
 }
@@ -104,6 +108,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	f >> top;
 	f >> xsphereRadius;
 	f >> enterY;
+	f >> underground;
 	f >> canEnter;
 	bool haveNavmesh = f.Read<bool>();
 	if(!f)

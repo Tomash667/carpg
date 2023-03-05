@@ -60,6 +60,12 @@ object torchOff {
 	flags nearWall
 }
 
+object torchCeiling {
+	mesh "torchCeiling.qmsh"
+	centerY -2.58
+	flags { light torchCeilingEffect }
+}
+
 object tanningRack {
 	mesh "tanning_rack.qmsh"
 	flags nearWall
@@ -479,6 +485,11 @@ object vaultDoor {
 object scarecrow {
 	mesh "scarecrow.qmsh"
 	cylinder { 0.53 1.92 }
+}
+
+object bucket {
+	mesh "bucket.qmsh"
+	cylinder { 0.275 0.495 }
 }
 
 //==============================================================================
