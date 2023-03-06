@@ -281,14 +281,15 @@ inline SkillId GetArmorTypeSkill(ARMOR_TYPE armorType)
 {
 	switch(armorType)
 	{
-	default:
-		assert(0);
 	case AT_LIGHT:
 		return SkillId::LIGHT_ARMOR;
 	case AT_MEDIUM:
 		return SkillId::MEDIUM_ARMOR;
 	case AT_HEAVY:
 		return SkillId::HEAVY_ARMOR;
+	default:
+		assert(0);
+		return SkillId::NONE;
 	}
 }
 
@@ -358,7 +359,7 @@ struct Ring : public Item
 };
 
 //-----------------------------------------------------------------------------
-// Eatible item (food, drink, potion)
+// Edible  item (food, drink, potion)
 struct Consumable : public Item
 {
 	enum class Subtype

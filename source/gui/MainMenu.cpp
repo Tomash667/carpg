@@ -280,6 +280,8 @@ void MainMenu::OnNewVersion(int id)
 			si.cb = sizeof(STARTUPINFO);
 			PROCESS_INFORMATION pi = { 0 };
 			CreateProcess(nullptr, (char*)Format("updater.exe %s", exe), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
 			game->Quit();
 		}
 		else

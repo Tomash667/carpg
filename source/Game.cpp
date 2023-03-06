@@ -1007,7 +1007,7 @@ void Game::RestartGame()
 	HANDLE mutex = CreateMutex(nullptr, TRUE, RESTART_MUTEX_NAME);
 	DWORD lastError = GetLastError();
 	bool alreadyRunning = (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED);
-	if(alreadyRunning)
+	if(mutex && alreadyRunning)
 	{
 		WaitForSingleObject(mutex, INFINITE);
 		CloseHandle(mutex);
@@ -1023,6 +1023,8 @@ void Game::RestartGame()
 	if(!EndsWith(cmdLine, "-restart"))
 		cmdLine += " -restart";
 	CreateProcess(nullptr, (char*)cmdLine.c_str(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
 	Quit();
 }

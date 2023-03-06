@@ -112,6 +112,8 @@ bool DoWork(cstring exe, int resumeVer)
             string cmdLine = GetCommandLine();
             cmdLine += Format(" -resume %d", update.ver);
             CreateProcess(nullptr, (char*)cmdLine.c_str(), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
             exit(0);
         }
 
