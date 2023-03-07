@@ -857,11 +857,11 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 			pe->Init();
 			locPart.lvlPart->pes.push_back(pe);
 		}
-		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
+
+		if(obj->effect)
 		{
-			// water
 			ParticleEmitter* pe = new ParticleEmitter;
-			gameRes->peWater->Apply(pe);
+			obj->effect->Apply(pe);
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
 			pe->Init();

@@ -312,6 +312,7 @@ object magicThing {
 object moonwell {
 	mesh "moonwell.qmsh"
 	cylinder { 1.031 0.755 }
+	effect water
 	flags waterEffect
 }
 

@@ -3,6 +3,7 @@
 
 #include "BaseUsable.h"
 #include "GameDialog.h"
+#include "GameResources.h"
 #include "Item.h"
 
 #include <Mesh.h>
@@ -35,7 +36,8 @@ enum ObjectProperty
 	OP_FLAGS,
 	OP_ALPHA,
 	OP_VARIANTS,
-	OP_EXTRA_DIST
+	OP_EXTRA_DIST,
+	OP_EFFECT
 };
 
 enum UsableProperty
@@ -78,7 +80,8 @@ void ObjectLoader::InitTokenizer()
 		{ "flags", OP_FLAGS },
 		{ "alpha", OP_ALPHA },
 		{ "variants", OP_VARIANTS },
-		{ "extraDist", OP_EXTRA_DIST }
+		{ "extraDist", OP_EXTRA_DIST },
+		{ "effect", OP_EFFECT }
 		});
 
 	t.AddKeywords(G_OBJECT_FLAGS, {
@@ -100,7 +103,6 @@ void ObjectLoader::InitTokenizer()
 		{ "bloodEffect", OBJ_BLOOD_EFFECT },
 		{ "blocksCamera", OBJ_PHY_BLOCKS_CAM },
 		{ "rotatePhysics", OBJ_PHY_ROT },
-		{ "waterEffect", OBJ_WATER_EFFECT },
 		{ "multiplePhysics", OBJ_MULTI_PHYSICS },
 		{ "cameraColliders", OBJ_CAM_COLLIDERS },
 		{ "noCulling", OBJ_NO_CULLING },
@@ -266,6 +268,15 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			t.Throw("Invalid extra distance.");
 		t.Next();
 		break;
+	case OP_EFFECT:
+		{
+			const string& id = t.MustGetItem();
+			obj->effect = gameRes->GetParticleEffect(id);
+			if(!obj->effect)
+				t.Throw("Missing particle effect '%s'.", id.c_str());
+			t.Next();
+			break;
+		}
 	}
 }
 
