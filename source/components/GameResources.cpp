@@ -180,7 +180,6 @@ void GameResources::InitEffects()
 	effect->alpha = Vec2(0.8f, 0.f);
 	effect->size = Vec2(0.5f, 0.f);
 	particleEffects.push_back(effect);
-	peAltarBlood = effect;
 
 	effect = new ParticleEffect;
 	effect->id = "water";

@@ -100,7 +100,6 @@ void ObjectLoader::InitTokenizer()
 		{ "physicsPtr", OBJ_PHYSICS_PTR },
 		{ "building", OBJ_BUILDING },
 		{ "doublePhysics", OBJ_DOUBLE_PHYSICS },
-		{ "bloodEffect", OBJ_BLOOD_EFFECT },
 		{ "blocksCamera", OBJ_PHY_BLOCKS_CAM },
 		{ "rotatePhysics", OBJ_PHY_ROT },
 		{ "multiplePhysics", OBJ_MULTI_PHYSICS },

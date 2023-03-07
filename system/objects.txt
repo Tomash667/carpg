@@ -78,8 +78,9 @@ object altar {
 
 object bloodyAltar {
 	mesh "krwawy_oltarz.qmsh"
+	effect altarBlood
 	centerY 0.782
-	flags { nearWall important bloodEffect blocksCamera }
+	flags { nearWall important blocksCamera }
 }
 
 object tent {
