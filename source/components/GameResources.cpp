@@ -23,9 +23,7 @@
 GameResources* gameRes;
 
 //=================================================================================================
-GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr), peHit(nullptr), peSpellHit(nullptr), peElectroHit(nullptr), peTorch(nullptr),
-peMagicTorch(nullptr), peCampfire(nullptr), peAltarBlood(nullptr), peWater(nullptr), peMagicfire(nullptr), peSmoke(nullptr), peSpawn(nullptr),
-peRaise(nullptr), peHeal(nullptr), peSpellOther(nullptr), peSpellBall(nullptr), peBlood(nullptr)
+GameResources::GameResources() : scene(nullptr), node(nullptr), camera(nullptr)
 {
 }
 
@@ -39,23 +37,7 @@ GameResources::~GameResources()
 		delete item.second;
 	for(Texture* tex : overrideItemTextures)
 		delete tex;
-	delete peHit;
-	delete peSpellHit;
-	delete peElectroHit;
-	delete peTorch;
-	delete peTorchCeiling;
-	delete peMagicTorch;
-	delete peCampfire;
-	delete peAltarBlood;
-	delete peWater;
-	delete peMagicfire;
-	delete peSmoke;
-	delete peSpawn;
-	delete peRaise;
-	delete peHeal;
-	delete peSpellOther;
-	delete peSpellBall;
-	delete peBlood;
+	DeleteElements(particleEffects);
 }
 
 //=================================================================================================
@@ -89,232 +71,281 @@ void GameResources::Init()
 //=================================================================================================
 void GameResources::InitEffects()
 {
-	peHit = new ParticleEffect;
-	peHit->tex = resMgr->Get<Texture>("iskra.png");
-	peHit->life = 5.f;
-	peHit->particleLife = 0.5f;
-	peHit->emissionInterval = 0.f;
-	peHit->emissions = 1;
-	peHit->spawn = Int2(10, 15);
-	peHit->maxParticles = 15;
-	peHit->speedMin = Vec3(-1, 0, -1);
-	peHit->speedMax = Vec3(1, 1, 1);
-	peHit->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-	peHit->posMax = Vec3(0.1f, 0.1f, 0.1f);
-	peHit->alpha = Vec2(0.9f, 0.f);
-	peHit->size = Vec2(0.3f, 0.f);
+	ParticleEffect* effect = new ParticleEffect;
+	effect->id = "hit";
+	effect->tex = resMgr->Get<Texture>("iskra.png");
+	effect->life = 5.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(10, 15);
+	effect->maxParticles = 15;
+	effect->speedMin = Vec3(-1, 0, -1);
+	effect->speedMax = Vec3(1, 1, 1);
+	effect->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+	effect->posMax = Vec3(0.1f, 0.1f, 0.1f);
+	effect->alpha = Vec2(0.9f, 0.f);
+	effect->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(effect);
+	peHit = effect;
 
-	peSpellHit = new ParticleEffect;
-	//peSpellHit->tex = ability->texParticle;
-	peSpellHit->life = -1;
-	peSpellHit->particleLife = 0.5f;
-	peSpellHit->emissionInterval = 0.1f;
-	peSpellHit->emissions = -1;
-	peSpellHit->spawn = Int2(3, 4);
-	peSpellHit->maxParticles = 50;
-	peSpellHit->speedMin = Vec3(-1, -1, -1);
-	peSpellHit->speedMax = Vec3(1, 1, 1);
-	//peSpellHit->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//peSpellHit->posMax = Vec3(ability->size, ability->size, ability->size);
-	peSpellHit->alpha = Vec2(1.f, 0.f);
-	//peSpellHit->size = Vec2(ability->sizeParticle, 0.f);
-	peSpellHit->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "spellHit";
+	//effect->tex = ability->texParticle;
+	effect->life = -1;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(3, 4);
+	effect->maxParticles = 50;
+	effect->speedMin = Vec3(-1, -1, -1);
+	effect->speedMax = Vec3(1, 1, 1);
+	//effect->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+	//effect->posMax = Vec3(ability->size, ability->size, ability->size);
+	effect->alpha = Vec2(1.f, 0.f);
+	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peSpellHit = effect;
 
-	peElectroHit = new ParticleEffect;
-	//peElectroHit->tex = ability->texParticle;
-	peElectroHit->life = 0.f;
-	peElectroHit->particleLife = 0.5f;
-	peElectroHit->emissionInterval = 0.f;
-	peElectroHit->emissions = 1;
-	peElectroHit->spawn = Int2(8, 12);
-	peElectroHit->maxParticles = 12;
-	peElectroHit->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-	peElectroHit->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//peElectroHit->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//peElectroHit->posMax = Vec3(ability->size, ability->size, ability->size);
-	peElectroHit->alpha = Vec2(1.f, 0.f);
-	//peElectroHit->size = Vec2(ability->sizeParticle, 0.f);
-	peElectroHit->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "electroHit";
+	//effect->tex = ability->texParticle;
+	effect->life = 0.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(8, 12);
+	effect->maxParticles = 12;
+	effect->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+	effect->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+	//effect->posMin = Vec3(-ability->size, -ability->size, -ability->size);
+	//effect->posMax = Vec3(ability->size, ability->size, ability->size);
+	effect->alpha = Vec2(1.f, 0.f);
+	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peElectroHit = effect;
 
-	peTorch = new ParticleEffect;
-	peTorch->tex = resMgr->Get<Texture>("flare.png");
-	peTorch->life = -1;
-	peTorch->particleLife = 0.5f;
-	peTorch->emissionInterval = 0.1f;
-	peTorch->emissions = -1;
-	peTorch->spawn = Int2(1, 3);
-	peTorch->maxParticles = 50;
-	peTorch->posMin = Vec3(0, 0, 0);
-	peTorch->posMax = Vec3(0, 0, 0);
-	peTorch->speedMin = Vec3(-1, 3, -1);
-	peTorch->speedMax = Vec3(1, 4, 1);
-	peTorch->alpha = Vec2(0.8f, 0.f);
-	peTorch->size = Vec2(0.5f, 0.f);
-	peTorch->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "torch";
+	effect->tex = resMgr->Get<Texture>("flare.png");
+	effect->life = -1;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(1, 3);
+	effect->maxParticles = 50;
+	effect->posMin = Vec3(0, 0, 0);
+	effect->posMax = Vec3(0, 0, 0);
+	effect->speedMin = Vec3(-1, 3, -1);
+	effect->speedMax = Vec3(1, 4, 1);
+	effect->alpha = Vec2(0.8f, 0.f);
+	effect->size = Vec2(0.5f, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peTorch = effect;
 
-	peTorchCeiling = new ParticleEffect(*peTorch);
-	peTorchCeiling->size = Vec2(1.f, 0.f);
+	effect = new ParticleEffect(*effect);
+	effect->id = "torchCeiling";
+	effect->size = Vec2(1.f, 0.f);
+	particleEffects.push_back(effect);
+	peTorchCeiling = effect;
 
-	peMagicTorch = new ParticleEffect(*peTorch);
-	peMagicTorch->tex = resMgr->Get<Texture>("flare2.png");
+	effect = new ParticleEffect(*effect);
+	effect->id = "magicTorch";
+	effect->tex = resMgr->Get<Texture>("flare2.png");
+	particleEffects.push_back(effect);
+	peMagicTorch = effect;
 
-	peCampfire = new ParticleEffect(*peTorch);
-	peCampfire->size = Vec2(0.7f, 0.f);
+	effect = new ParticleEffect(*effect);
+	effect->id = "campfire";
+	effect->size = Vec2(0.7f, 0.f);
+	particleEffects.push_back(effect);
+	peCampfire = effect;
 
-	peAltarBlood = new ParticleEffect;
-	peAltarBlood->tex = resMgr->Get<Texture>("krew.png");
-	peAltarBlood->life = -1;
-	peAltarBlood->particleLife = 0.5f;
-	peAltarBlood->emissionInterval = 0.1f;
-	peAltarBlood->emissions = -1;
-	peAltarBlood->spawn = Int2(1, 3);
-	peAltarBlood->maxParticles = 50;
-	peAltarBlood->posMin = Vec3(0, 0, 0);
-	peAltarBlood->posMax = Vec3(0, 0, 0);
-	peAltarBlood->speedMin = Vec3(-1, 4, -1);
-	peAltarBlood->speedMax = Vec3(1, 6, 1);
-	peAltarBlood->alpha = Vec2(0.8f, 0.f);
-	peAltarBlood->size = Vec2(0.5f, 0.f);
+	effect = new ParticleEffect;
+	effect->id = "altarBlood";
+	effect->tex = resMgr->Get<Texture>("krew.png");
+	effect->life = -1;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(1, 3);
+	effect->maxParticles = 50;
+	effect->posMin = Vec3(0, 0, 0);
+	effect->posMax = Vec3(0, 0, 0);
+	effect->speedMin = Vec3(-1, 4, -1);
+	effect->speedMax = Vec3(1, 6, 1);
+	effect->alpha = Vec2(0.8f, 0.f);
+	effect->size = Vec2(0.5f, 0.f);
+	particleEffects.push_back(effect);
+	peAltarBlood = effect;
 
-	peWater = new ParticleEffect;
-	peWater->tex = resMgr->Get<Texture>("water.png");
-	peWater->life = -1;
-	peWater->particleLife = 3.f;
-	peWater->emissionInterval = 0.1f;
-	peWater->emissions = -1;
-	peWater->spawn = Int2(4, 8);
-	peWater->maxParticles = 500;
-	peWater->posMin = Vec3(0, 0, 0);
-	peWater->posMax = Vec3(0, 0, 0);
-	peWater->speedMin = Vec3(-0.6f, 4, -0.6f);
-	peWater->speedMax = Vec3(0.6f, 7, 0.6f);
-	peWater->alpha = Vec2(0.8f, 0.f);
-	peWater->size = Vec2(0.05f, 0.f);
+	effect = new ParticleEffect;
+	effect->id = "water";
+	effect->tex = resMgr->Get<Texture>("water.png");
+	effect->life = -1;
+	effect->particleLife = 3.f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(4, 8);
+	effect->maxParticles = 500;
+	effect->posMin = Vec3(0, 0, 0);
+	effect->posMax = Vec3(0, 0, 0);
+	effect->speedMin = Vec3(-0.6f, 4, -0.6f);
+	effect->speedMax = Vec3(0.6f, 7, 0.6f);
+	effect->alpha = Vec2(0.8f, 0.f);
+	effect->size = Vec2(0.05f, 0.f);
+	particleEffects.push_back(effect);
+	peWater = effect;
 
-	peMagicfire = new ParticleEffect;
-	peMagicfire->tex = resMgr->Get<Texture>("flare2.png");
-	peMagicfire->life = -1;
-	peMagicfire->particleLife = 0.5f;
-	peMagicfire->emissionInterval = 0.1f;
-	peMagicfire->emissions = -1;
-	peMagicfire->spawn = Int2(2, 4);
-	peMagicfire->maxParticles = 50;
-	peMagicfire->posMin = Vec3(0, 0, 0);
-	peMagicfire->posMax = Vec3(0, 0, 0);
-	peMagicfire->speedMin = Vec3(-1, 3, -1);
-	peMagicfire->speedMax = Vec3(1, 4, 1);
-	peMagicfire->alpha = Vec2(1.0f, 0.f);
-	peMagicfire->size = Vec2(1.0f, 0.f);
-	peMagicfire->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "magicfire";
+	effect->tex = resMgr->Get<Texture>("flare2.png");
+	effect->life = -1;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(2, 4);
+	effect->maxParticles = 50;
+	effect->posMin = Vec3(0, 0, 0);
+	effect->posMax = Vec3(0, 0, 0);
+	effect->speedMin = Vec3(-1, 3, -1);
+	effect->speedMax = Vec3(1, 4, 1);
+	effect->alpha = Vec2(1.0f, 0.f);
+	effect->size = Vec2(1.0f, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
 
-	peSmoke = new ParticleEffect;
-	peSmoke->tex = resMgr->Get<Texture>("smoke.png");
-	peSmoke->life = -1;
-	peSmoke->particleLife = 2.5f;
-	peSmoke->emissionInterval = 0.1f;
-	peSmoke->emissions = -1;
-	peSmoke->spawn = Int2(2, 4);
-	peSmoke->maxParticles = 100;
-	peSmoke->posMin = Vec3(-0.5f, 0, -0.5f);
-	peSmoke->posMax = Vec3(0.5f, 0, 0.5f);
-	peSmoke->speedMin = Vec3(-0.5f, 3, -0.5f);
-	peSmoke->speedMax = Vec3(0.5f, 4, 0.5f);
-	peSmoke->alpha = Vec2(0.25f, 0.f);
-	peSmoke->size = Vec2(1.0f, 5.f);
-	peSmoke->gravity = false;
+	effect = new ParticleEffect;
+	effect->id = "smoke";
+	effect->tex = resMgr->Get<Texture>("smoke.png");
+	effect->life = -1;
+	effect->particleLife = 2.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = -1;
+	effect->spawn = Int2(2, 4);
+	effect->maxParticles = 100;
+	effect->posMin = Vec3(-0.5f, 0, -0.5f);
+	effect->posMax = Vec3(0.5f, 0, 0.5f);
+	effect->speedMin = Vec3(-0.5f, 3, -0.5f);
+	effect->speedMax = Vec3(0.5f, 4, 0.5f);
+	effect->alpha = Vec2(0.25f, 0.f);
+	effect->size = Vec2(1.0f, 5.f);
+	effect->gravity = false;
+	particleEffects.push_back(effect);
 
-	peSpawn = new ParticleEffect;
-	peSpawn->tex = resMgr->Get<Texture>("spawn_fog.png");
-	peSpawn->life = 5.f;
-	peSpawn->particleLife = 0.5f;
-	peSpawn->emissionInterval = 0.1f;
-	peSpawn->emissions = 5;
-	peSpawn->spawn = Int2(10, 15);
-	peSpawn->maxParticles = 15 * 5;
-	peSpawn->speedMin = Vec3(-1, 0, -1);
-	peSpawn->speedMax = Vec3(1, 1, 1);
-	peSpawn->posMin = Vec3(-0.75f, 0, -0.75f);
-	peSpawn->posMax = Vec3(0.75f, 1.f, 0.75f);
-	peSpawn->alpha = Vec2(0.5f, 0.f);
-	peSpawn->size = Vec2(0.3f, 0.f);
+	effect = new ParticleEffect;
+	effect->id = "spawn";
+	effect->tex = resMgr->Get<Texture>("spawn_fog.png");
+	effect->life = 5.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.1f;
+	effect->emissions = 5;
+	effect->spawn = Int2(10, 15);
+	effect->maxParticles = 15 * 5;
+	effect->speedMin = Vec3(-1, 0, -1);
+	effect->speedMax = Vec3(1, 1, 1);
+	effect->posMin = Vec3(-0.75f, 0, -0.75f);
+	effect->posMax = Vec3(0.75f, 1.f, 0.75f);
+	effect->alpha = Vec2(0.5f, 0.f);
+	effect->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(effect);
+	peSpawn = effect;
 
-	peRaise = new ParticleEffect;
-	//peRaise->tex = ability->texParticle;
-	peRaise->life = 0.f;
-	peRaise->particleLife = 1.f;
-	peRaise->emissionInterval = 0.f;
-	peRaise->emissions = 1;
-	peRaise->spawn = Int2(16, 25);
-	peRaise->maxParticles = 25;
-	peRaise->speedMin = Vec3(0, 4, 0);
-	peRaise->speedMax = Vec3(0, 5, 0);
-	//peRaise->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//peRaise->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-	peRaise->alpha = Vec2(1.f, 0.f);
-	//peRaise->size = Vec2(ability->sizeParticle, 0.f);
+	effect = new ParticleEffect;
+	effect->id = "raise";
+	//effect->tex = ability->texParticle;
+	effect->life = 0.f;
+	effect->particleLife = 1.f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(16, 25);
+	effect->maxParticles = 25;
+	effect->speedMin = Vec3(0, 4, 0);
+	effect->speedMax = Vec3(0, 5, 0);
+	//effect->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+	//effect->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	effect->alpha = Vec2(1.f, 0.f);
+	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	particleEffects.push_back(effect);
+	peRaise = effect;
 
-	peHeal = new ParticleEffect;
-	//peHeal->tex = ability->texParticle;
-	peHeal->life = 0.f;
-	peHeal->particleLife = 0.5f;
-	peHeal->emissionInterval = 0.f;
-	peHeal->emissions = 1;
-	peHeal->spawn = Int2(16, 25);
-	peHeal->maxParticles = 25;
-	peHeal->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-	peHeal->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//peHeal->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//peHeal->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-	peHeal->alpha = Vec2(0.9f, 0.f);
-	//peHeal->size = Vec2(ability->sizeParticle, 0.f);
-	peHeal->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "heal";
+	//effect->tex = ability->texParticle;
+	effect->life = 0.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(16, 25);
+	effect->maxParticles = 25;
+	effect->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+	effect->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+	//effect->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
+	//effect->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
+	effect->alpha = Vec2(0.9f, 0.f);
+	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peHeal = effect;
 
-	peSpellOther = new ParticleEffect;
-	//peSpellOther->tex = ability->texParticle;
-	peSpellOther->life = 0.f;
-	peSpellOther->particleLife = 0.5f;
-	peSpellOther->emissionInterval = 0.f;
-	peSpellOther->emissions = 1;
-	peSpellOther->spawn = Int2(12);
-	peSpellOther->maxParticles = 12;
-	peSpellOther->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
-	peSpellOther->speedMax = Vec3(0.5f, 3.0f, 0.5f);
-	peSpellOther->posMin = Vec3(-0.5f, 0, -0.5f);
-	peSpellOther->posMax = Vec3(0.5f, 0, 0.5f);
-	peSpellOther->alpha = Vec2(1.f, 0.f);
-	//peSpellOther->size = Vec2(ability->sizeParticle / 2, 0.f);
-	peSpellOther->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "spellOther";
+	//effect->tex = ability->texParticle;
+	effect->life = 0.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(12);
+	effect->maxParticles = 12;
+	effect->speedMin = Vec3(-0.5f, 1.5f, -0.5f);
+	effect->speedMax = Vec3(0.5f, 3.0f, 0.5f);
+	effect->posMin = Vec3(-0.5f, 0, -0.5f);
+	effect->posMax = Vec3(0.5f, 0, 0.5f);
+	effect->alpha = Vec2(1.f, 0.f);
+	//effect->size = Vec2(ability->sizeParticle / 2, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peSpellOther = effect;
 
-	peSpellBall = new ParticleEffect;
-	//peSpellBall->tex = ability.texParticle;
-	peSpellBall->life = 0.f;
-	peSpellBall->particleLife = 0.5f;
-	peSpellBall->emissionInterval = 0.f;
-	peSpellBall->emissions = 1;
-	peSpellBall->spawn = Int2(8, 12);
-	peSpellBall->maxParticles = 12;
-	peSpellBall->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
-	peSpellBall->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//peSpellBall->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-	//peSpellBall->posMax = Vec3(ability.size, ability.size, ability.size);
-	peSpellBall->alpha = Vec2(1.f, 0.f);
-	//peSpellBall->size = Vec2(ability.size / 2, 0.f);
-	peSpellBall->mode = 1;
+	effect = new ParticleEffect;
+	effect->id = "spellBall";
+	//effect->tex = ability.texParticle;
+	effect->life = 0.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(8, 12);
+	effect->maxParticles = 12;
+	effect->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
+	effect->speedMax = Vec3(1.5f, 1.5f, 1.5f);
+	//effect->posMin = Vec3(-ability.size, -ability.size, -ability.size);
+	//effect->posMax = Vec3(ability.size, ability.size, ability.size);
+	effect->alpha = Vec2(1.f, 0.f);
+	//effect->size = Vec2(ability.size / 2, 0.f);
+	effect->mode = 1;
+	particleEffects.push_back(effect);
+	peSpellBall = effect;
 
-	peBlood = new ParticleEffect;
-	//peBlood->tex = gameRes->tBlood[type];
-	peBlood->life = 5.f;
-	peBlood->particleLife = 0.5f;
-	peBlood->emissionInterval = 0.f;
-	peBlood->emissions = 1;
-	peBlood->spawn = Int2(10, 15);
-	peBlood->maxParticles = 15;
-	peBlood->speedMin = Vec3(-1, 0, -1);
-	peBlood->speedMax = Vec3(1, 1, 1);
-	peBlood->posMin = Vec3(-0.1f, -0.1f, -0.1f);
-	peBlood->posMax = Vec3(0.1f, 0.1f, 0.1f);
-	peBlood->alpha = Vec2(0.9f, 0.f);
-	peBlood->size = Vec2(0.3f, 0.f);
+	effect = new ParticleEffect;
+	effect->id = "blood";
+	//effect->tex = gameRes->tBlood[type];
+	effect->life = 5.f;
+	effect->particleLife = 0.5f;
+	effect->emissionInterval = 0.f;
+	effect->emissions = 1;
+	effect->spawn = Int2(10, 15);
+	effect->maxParticles = 15;
+	effect->speedMin = Vec3(-1, 0, -1);
+	effect->speedMax = Vec3(1, 1, 1);
+	effect->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+	effect->posMax = Vec3(0.1f, 0.1f, 0.1f);
+	effect->alpha = Vec2(0.9f, 0.f);
+	effect->size = Vec2(0.3f, 0.f);
+	particleEffects.push_back(effect);
+	peBlood = effect;
 }
 
 //=================================================================================================
@@ -387,13 +418,11 @@ void GameResources::LoadData()
 	tBloodSplat[BLOOD_YELLOW] = resMgr->Load<Texture>("krew_slad4.png");
 	tLightingLine = resMgr->Load<Texture>("lighting_line.png");
 	tVignette = resMgr->Load<Texture>("vignette.jpg");
-	resMgr->Load(peHit->tex);
-	resMgr->Load(peTorch->tex);
-	resMgr->Load(peMagicTorch->tex);
-	resMgr->Load(peAltarBlood->tex);
-	resMgr->Load(peWater->tex);
-	resMgr->Load(peSmoke->tex);
-	resMgr->Load(peSpawn->tex);
+	for(ParticleEffect* effect : particleEffects)
+	{
+		if(effect->tex)
+			resMgr->Load(effect->tex);
+	}
 
 	// preload terrain textures
 	resMgr->AddTaskCategory(txLoadTerrainTextures);
@@ -999,4 +1028,15 @@ void GameResources::LoadTrap(BaseTrap* trap)
 		resMgr->Load(trap->sound3);
 
 	trap->state = ResourceState::Loaded;
+}
+
+//=================================================================================================
+ParticleEffect* GameResources::GetParticleEffect(const string& id)
+{
+	for(ParticleEffect* effect : particleEffects)
+	{
+		if(effect->id == id)
+			return effect;
+	}
+	return nullptr;
 }
