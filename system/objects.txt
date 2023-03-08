@@ -52,6 +52,7 @@ object torch {
 	cylinder { 0.0675 2.18 }
 	centerY 2.2
 	light 5
+	lightColor { 1.0 0.9 0.9 }
 	extraDist 0.5
 	flags { nearWall important }
 }
@@ -67,6 +68,7 @@ object torchCeiling {
 	effect torchCeiling
 	centerY -2.58
 	light 10
+	lightColor { 1.0 0.9 0.9 }
 }
 
 object tanningRack {
@@ -167,6 +169,7 @@ object campfire {
 	cylinder { 1.0735 0.43 }
 	centerY 0.4
 	light 5
+	lightColor { 1.0 0.9 0.9 }
 	flags tmpPhysics
 }
 
@@ -314,6 +317,7 @@ object magicThing {
 	cylinder { 0.561 0.844 }
 	centerY 0.844
 	light 5
+	lightColor { 0.8 0.8 1.0 }
 }
 
 object moonwell {

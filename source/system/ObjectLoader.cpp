@@ -38,7 +38,8 @@ enum ObjectProperty
 	OP_VARIANTS,
 	OP_EXTRA_DIST,
 	OP_EFFECT,
-	OP_LIGHT
+	OP_LIGHT,
+	OP_LIGHT_COLOR
 };
 
 enum UsableProperty
@@ -83,7 +84,8 @@ void ObjectLoader::InitTokenizer()
 		{ "variants", OP_VARIANTS },
 		{ "extraDist", OP_EXTRA_DIST },
 		{ "effect", OP_EFFECT },
-		{ "light", OP_LIGHT }
+		{ "light", OP_LIGHT },
+		{ "lightColor", OP_LIGHT_COLOR }
 		});
 
 	t.AddKeywords(G_OBJECT_FLAGS, {
@@ -280,6 +282,13 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 		if(obj->light < 0.f)
 			t.Throw("Invalid light value.");
 		t.Next();
+		break;
+	case OP_LIGHT_COLOR:
+		{
+			Color color;
+			t.Parse(color);
+			obj->lightColor = color;
+		}
 		break;
 	}
 }

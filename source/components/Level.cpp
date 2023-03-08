@@ -831,10 +831,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		light.startPos = pos;
 		light.startPos.y += obj->centery;
 		light.range = obj->light;
-		if(IsSet(flags, SOE_MAGIC_LIGHT))
-			light.startColor = Vec3(0.8f, 0.8f, 1.f);
-		else
-			light.startColor = Vec3(1.f, 0.9f, 0.9f);
+		light.startColor = obj->lightColor;
 	}
 
 	// physics

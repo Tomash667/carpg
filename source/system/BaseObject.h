@@ -91,6 +91,7 @@ struct BaseObject : public ContentItem<BaseObject>
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery, light;
+	Vec3 lightColor;
 	Vec2 size;
 	btCollisionShape* shape;
 	ParticleEffect* effect;
@@ -101,7 +102,7 @@ struct BaseObject : public ContentItem<BaseObject>
 	float extraDist; // extra distance from wall
 
 	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), light(0), shape(nullptr), effect(nullptr), matrix(nullptr), flags(0), nextObj(nullptr),
-		variants(nullptr), extraDist(0.f)
+		variants(nullptr), extraDist(0.f), lightColor(Vec3::One)
 	{
 	}
 	virtual ~BaseObject();
