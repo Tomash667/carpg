@@ -84,8 +84,7 @@ public:
 	enum SpawnObjectExtrasFlags
 	{
 		SOE_DONT_SPAWN_PARTICLES = 1 << 0,
-		SOE_MAGIC_LIGHT = 1 << 1,
-		SOE_DONT_CREATE_LIGHT = 1 << 2
+		SOE_DONT_CREATE_LIGHT = 1 << 1
 	};
 	void SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3& pos, float rot, void* userPtr, float scale = 1.f, int flags = 0);
 	enum ProcessBuildingObjectFlags

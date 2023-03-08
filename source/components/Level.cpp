@@ -1560,15 +1560,6 @@ void Level::RecreateObjects(bool spawnParticles)
 		if(!spawnParticles)
 			flags |= Level::SOE_DONT_SPAWN_PARTICLES;
 
-		// dotyczy tylko pochodni
-		if(locPart.partType == LocationPart::Type::Inside)
-		{
-			InsideLocation* inside = (InsideLocation*)location;
-			BaseLocation& base = gBaseLocations[inside->target];
-			if(IsSet(base.options, BLO_MAGIC_LIGHT))
-				flags |= Level::SOE_MAGIC_LIGHT;
-		}
-
 		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;

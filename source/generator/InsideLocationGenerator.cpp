@@ -438,11 +438,6 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		}
 	}
 
-	// dotyczy tylko pochodni
-	int flags = 0;
-	if(IsSet(base.options, BLO_MAGIC_LIGHT))
-		flags = Level::SOE_MAGIC_LIGHT;
-
 	bool required = false;
 	if(base.required.value)
 		required = true;
@@ -519,7 +514,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
 				BaseObject* base = roomObj.isGroup ? roomObj.group->GetRandom() : roomObj.obj;
-				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &roomObj, onWall, blocks, flags);
+				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, &roomObj, onWall, blocks, 0);
 				if(!e)
 				{
 					if(IsSet(base->flags, OBJ_IMPORTANT) || IsSet(roomObj.flags, RoomType::Obj::F_REQUIRED))
@@ -566,7 +561,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			{
 				AddRoomColliders(lvl, room, blocks);
 
-				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, onWall, blocks, flags);
+				ObjectEntity e = GenerateDungeonObject(lvl, room, base, nullptr, onWall, blocks, 0);
 				if(e)
 				{
 					GenerateDungeonTreasure(lvl.chests, chestLvl);

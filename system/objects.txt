@@ -63,6 +63,11 @@ object torchOff {
 	flags nearWall
 }
 
+object magicTorch : torch {
+	effect magicTorch
+	lightColor { 1.0 0.9 0.9 }
+}
+
 object torchCeiling {
 	mesh "torchCeiling.qmsh"
 	effect torchCeiling
@@ -313,7 +318,7 @@ object portal {
 
 object magicThing {
 	mesh "magiczne_cos.qmsh"
-	effect torch
+	effect magicTorch
 	cylinder { 0.561 0.844 }
 	centerY 0.844
 	light 5

@@ -51,7 +51,7 @@ room library {
 
 room magic {
 	objects {
-		torch
+		magicTorch
 		magicThing {
 			flags inMiddle
 		}
