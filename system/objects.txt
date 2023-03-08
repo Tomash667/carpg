@@ -48,10 +48,12 @@ object bowTarget {
 
 object torch {
 	mesh "pochodnia.qmsh"
+	effect torch
 	cylinder { 0.0675 2.18 }
 	centerY 2.2
+	light 5
 	extraDist 0.5
-	flags { nearWall light important }
+	flags { nearWall important }
 }
 
 object torchOff {
@@ -62,8 +64,9 @@ object torchOff {
 
 object torchCeiling {
 	mesh "torchCeiling.qmsh"
+	effect torchCeiling
 	centerY -2.58
-	flags { light torchCeilingEffect }
+	light 10
 }
 
 object tanningRack {
@@ -160,9 +163,11 @@ object paintingElf {
 
 object campfire {
 	mesh "ognisko.qmsh"
+	effect campfire
 	cylinder { 1.0735 0.43 }
 	centerY 0.4
-	flags { tmpPhysics light campfireEffect }
+	light 5
+	flags tmpPhysics
 }
 
 object campfireOff {
@@ -305,16 +310,16 @@ object portal {
 
 object magicThing {
 	mesh "magiczne_cos.qmsh"
+	effect torch
 	cylinder { 0.561 0.844 }
 	centerY 0.844
-	flags light
+	light 5
 }
 
 object moonwell {
 	mesh "moonwell.qmsh"
-	cylinder { 1.031 0.755 }
 	effect water
-	flags waterEffect
+	cylinder { 1.031 0.755 }
 }
 
 object moonwellPhy {

@@ -144,25 +144,21 @@ void GameResources::InitEffects()
 	effect->size = Vec2(0.5f, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peTorch = effect;
 
 	effect = new ParticleEffect(*effect);
 	effect->id = "torchCeiling";
 	effect->size = Vec2(1.f, 0.f);
 	particleEffects.push_back(effect);
-	peTorchCeiling = effect;
 
 	effect = new ParticleEffect(*effect);
 	effect->id = "magicTorch";
 	effect->tex = resMgr->Get<Texture>("flare2.png");
 	particleEffects.push_back(effect);
-	peMagicTorch = effect;
 
 	effect = new ParticleEffect(*effect);
 	effect->id = "campfire";
 	effect->size = Vec2(0.7f, 0.f);
 	particleEffects.push_back(effect);
-	peCampfire = effect;
 
 	effect = new ParticleEffect;
 	effect->id = "altarBlood";

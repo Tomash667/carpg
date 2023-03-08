@@ -37,7 +37,8 @@ enum ObjectProperty
 	OP_ALPHA,
 	OP_VARIANTS,
 	OP_EXTRA_DIST,
-	OP_EFFECT
+	OP_EFFECT,
+	OP_LIGHT
 };
 
 enum UsableProperty
@@ -81,7 +82,8 @@ void ObjectLoader::InitTokenizer()
 		{ "alpha", OP_ALPHA },
 		{ "variants", OP_VARIANTS },
 		{ "extraDist", OP_EXTRA_DIST },
-		{ "effect", OP_EFFECT }
+		{ "effect", OP_EFFECT },
+		{ "light", OP_LIGHT }
 		});
 
 	t.AddKeywords(G_OBJECT_FLAGS, {
@@ -91,9 +93,7 @@ void ObjectLoader::InitTokenizer()
 		{ "isChest", OBJ_IS_CHEST },
 		{ "onWall", OBJ_ON_WALL },
 		{ "preload", OBJ_PRELOAD },
-		{ "light", OBJ_LIGHT },
 		{ "tableSpawner", OBJ_TABLE_SPAWNER },
-		{ "campfireEffect", OBJ_CAMPFIRE_EFFECT },
 		{ "important", OBJ_IMPORTANT },
 		{ "tmpPhysics", OBJ_TMP_PHYSICS },
 		{ "scaleable", OBJ_SCALEABLE },
@@ -104,8 +104,7 @@ void ObjectLoader::InitTokenizer()
 		{ "rotatePhysics", OBJ_PHY_ROT },
 		{ "multiplePhysics", OBJ_MULTI_PHYSICS },
 		{ "cameraColliders", OBJ_CAM_COLLIDERS },
-		{ "noCulling", OBJ_NO_CULLING },
-		{ "torchCeilingEffect", OBJ_TORCH_CEILING_EFFECT }
+		{ "noCulling", OBJ_NO_CULLING }
 		});
 
 	t.AddKeywords(G_USABLE_PROPERTY, {
@@ -276,6 +275,12 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 			t.Next();
 			break;
 		}
+	case OP_LIGHT:
+		obj->light = t.MustGetFloat();
+		if(obj->light < 0.f)
+			t.Throw("Invalid light value.");
+		t.Next();
+		break;
 	}
 }
 

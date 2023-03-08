@@ -22,22 +22,19 @@ enum OBJ_FLAGS
 	OBJ_IS_CHEST = 1 << 3, // object is chest
 	OBJ_ON_WALL = 1 << 4, // object is created on wall, ignoring size
 	OBJ_PRELOAD = 1 << 5, // force preload mesh
-	OBJ_LIGHT = 1 << 6, // object has torch light and flame
-	OBJ_TABLE_SPAWNER = 1 << 7, // generate Random table and chairs
-	OBJ_CAMPFIRE_EFFECT = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
-	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
-	OBJ_TMP_PHYSICS = 1 << 10, // temporary physics, only used on spawning units
-	OBJ_SCALEABLE = 1 << 11, // object can be scaled, need different physics handling
-	OBJ_PHYSICS_PTR = 1 << 12, // btCollisionObject user pointer points to Object
-	OBJ_BUILDING = 1 << 13, // object is building
-	OBJ_DOUBLE_PHYSICS = 1 << 14, // object have 2 physics colliders (only works with box for now)
-	OBJ_PHY_BLOCKS_CAM = 1 << 15, // object physics blocks camera
-	OBJ_PHY_ROT = 1 << 16, // object physics can be rotated
-	OBJ_MULTI_PHYSICS = 1 << 17, // object have multiple colliders (only workd with box for now)
-	OBJ_CAM_COLLIDERS = 1 << 18, // spawn camera coliders from mesh attach points
-	OBJ_USABLE = 1 << 19, // object is usable
-	OBJ_NO_CULLING = 1 << 20, // no mesh backface culling
-	OBJ_TORCH_CEILING_EFFECT = 1 << 21, // object has larger fire effect (requires OBJ_LIGHT)
+	OBJ_TABLE_SPAWNER = 1 << 6, // generate Random table and chairs
+	OBJ_IMPORTANT = 1 << 7, // try more times to generate this object
+	OBJ_TMP_PHYSICS = 1 << 8, // temporary physics, only used on spawning units
+	OBJ_SCALEABLE = 1 << 9, // object can be scaled, need different physics handling
+	OBJ_PHYSICS_PTR = 1 << 10, // btCollisionObject user pointer points to Object
+	OBJ_BUILDING = 1 << 11, // object is building
+	OBJ_DOUBLE_PHYSICS = 1 << 12, // object have 2 physics colliders (only works with box for now)
+	OBJ_PHY_BLOCKS_CAM = 1 << 13, // object physics blocks camera
+	OBJ_PHY_ROT = 1 << 14, // object physics can be rotated
+	OBJ_MULTI_PHYSICS = 1 << 15, // object have multiple colliders (only workd with box for now)
+	OBJ_CAM_COLLIDERS = 1 << 16, // spawn camera coliders from mesh attach points
+	OBJ_USABLE = 1 << 17, // object is usable
+	OBJ_NO_CULLING = 1 << 18, // no mesh backface culling
 };
 
 //-----------------------------------------------------------------------------
@@ -93,7 +90,7 @@ struct BaseObject : public ContentItem<BaseObject>
 
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;
-	float r, h, centery;
+	float r, h, centery, light;
 	Vec2 size;
 	btCollisionShape* shape;
 	ParticleEffect* effect;
@@ -103,8 +100,8 @@ struct BaseObject : public ContentItem<BaseObject>
 	VariantObject* variants;
 	float extraDist; // extra distance from wall
 
-	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), effect(nullptr), matrix(nullptr), flags(0), nextObj(nullptr), variants(nullptr),
-		extraDist(0.f)
+	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), light(0), shape(nullptr), effect(nullptr), matrix(nullptr), flags(0), nextObj(nullptr),
+		variants(nullptr), extraDist(0.f)
 	{
 	}
 	virtual ~BaseObject();
