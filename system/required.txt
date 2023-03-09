@@ -418,6 +418,8 @@ object table
 object table2
 object chest
 usable stool
+usable torch
+usable magicTorch
 // MoonwellGenerator
 object moonwell
 object moonwellPhy

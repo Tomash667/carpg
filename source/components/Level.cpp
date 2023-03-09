@@ -791,6 +791,70 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 
 		return chest;
 	}
+	else if(IsSet(base->flags, OBJ_TORCH))
+	{
+		BaseObject* magicTorch = BaseObject::Get("magicTorch");
+
+		// table & stools
+		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
+		BaseUsable* stool = BaseUsable::Get("stool");
+
+		// table
+		Object* o = new Object;
+		o->mesh = table->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = 1;
+		o->base = table;
+		locPart.objects.push_back(o);
+		SpawnObjectExtras(locPart, table, pos, rot, o);
+
+		// stools
+		int count = Random(2, 4);
+		int d[4] = { 0,1,2,3 };
+		for(int i = 0; i < 4; ++i)
+			std::swap(d[Rand() % 4], d[Rand() % 4]);
+
+		for(int i = 0; i < count; ++i)
+		{
+			float sdir, slen;
+			switch(d[i])
+			{
+			case 0:
+				sdir = 0.f;
+				slen = table->size.y + 0.3f;
+				break;
+			case 1:
+				sdir = PI / 2;
+				slen = table->size.x + 0.3f;
+				break;
+			case 2:
+				sdir = PI;
+				slen = table->size.y + 0.3f;
+				break;
+			case 3:
+				sdir = PI * 3 / 2;
+				slen = table->size.x + 0.3f;
+				break;
+			default:
+				assert(0);
+				break;
+			}
+
+			sdir += rot;
+
+			Usable* u = new Usable;
+			u->Register();
+			u->base = stool;
+			u->pos = pos + Vec3(sin(sdir) * slen, 0, cos(sdir) * slen);
+			u->rot = sdir;
+			locPart.usables.push_back(u);
+
+			SpawnObjectExtras(locPart, stool, u->pos, u->rot, u);
+		}
+
+		return o;
+	}
 	else
 	{
 		// normal object

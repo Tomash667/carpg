@@ -10,9 +10,6 @@
     <Filter Include="events">
       <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="generator">
-      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
-    </Filter>
     <Filter Include="helpers">
       <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
     </Filter>
@@ -94,6 +91,9 @@
     <Filter Include="system\music">
       <UniqueIdentifier>{00d584fe-653a-4b7f-8f35-d9695daf20a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="events\generator">
+      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -130,7 +130,7 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="generator\CityGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="location\Camp.cpp">
       <Filter>location</Filter>
@@ -349,22 +349,22 @@
       <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="generator\LocationGeneratorFactory.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\LocationGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\EncounterGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\ForestGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\DungeonGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\CaveGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="entity\Room.cpp">
       <Filter>entity</Filter>
@@ -373,22 +373,22 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="generator\LabyrinthGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\InsideLocationGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\OutsideLocationGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\MoonwellGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\CampGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="generator\SecretLocationGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="location\Cave.cpp">
       <Filter>location</Filter>
@@ -397,7 +397,7 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="generator\TutorialLocationGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="helpers\ItemHelper.cpp">
       <Filter>helpers</Filter>
@@ -442,7 +442,7 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="generator\DungeonMapGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="Ai.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -496,7 +496,7 @@
       <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="generator\AcademyGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="net\PacketLogger.cpp">
       <Filter>net</Filter>
@@ -559,7 +559,7 @@
       <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="generator\HillsGenerator.cpp">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClCompile>
     <ClCompile Include="quests\Quest_DeliverLetter.cpp">
       <Filter>quests\mayor</Filter>
@@ -729,7 +729,7 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="generator\CityGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="location\Camp.h">
       <Filter>location</Filter>
@@ -990,22 +990,22 @@
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="generator\LocationGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\LocationGeneratorFactory.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\EncounterGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\ForestGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\DungeonGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\CaveGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="entity\Tile.h">
       <Filter>entity</Filter>
@@ -1014,25 +1014,25 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="generator\LabyrinthGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\InsideLocationGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="entity\OutsideObject.h">
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="generator\OutsideLocationGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\MoonwellGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\CampGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="generator\SecretLocationGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="location\Cave.h">
       <Filter>location</Filter>
@@ -1047,7 +1047,7 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="generator\TutorialLocationGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="helpers\ItemHelper.h">
       <Filter>helpers</Filter>
@@ -1104,7 +1104,7 @@
       <Filter>system\quests</Filter>
     </ClInclude>
     <ClInclude Include="generator\DungeonMapGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameCommon.h" />
@@ -1158,7 +1158,7 @@
       <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="generator\AcademyGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="net\PacketLogger.h">
       <Filter>net</Filter>
@@ -1224,7 +1224,7 @@
       <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="generator\HillsGenerator.h">
-      <Filter>generator</Filter>
+      <Filter>events\generator</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_DeliverLetter.h">
       <Filter>quests\mayor</Filter>

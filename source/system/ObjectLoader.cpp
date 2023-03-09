@@ -106,7 +106,8 @@ void ObjectLoader::InitTokenizer()
 		{ "rotatePhysics", OBJ_PHY_ROT },
 		{ "multiplePhysics", OBJ_MULTI_PHYSICS },
 		{ "cameraColliders", OBJ_CAM_COLLIDERS },
-		{ "noCulling", OBJ_NO_CULLING }
+		{ "noCulling", OBJ_NO_CULLING },
+		{ "torch", OBJ_TORCH }
 		});
 
 	t.AddKeywords(G_USABLE_PROPERTY, {
