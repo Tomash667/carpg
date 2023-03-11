@@ -13,6 +13,8 @@ struct InsideBuilding final : public LocationPart
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
+	void SetSceneParams();
+	void SetUndergroundValue(float value);
 
 	Vec2 offset;
 	Vec3 insideSpawn, outsideSpawn, xspherePos;

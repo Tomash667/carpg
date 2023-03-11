@@ -1090,15 +1090,3 @@ void LocationPart::DestroyUsable(Usable* usable)
 	usable->RemoveAllEventHandlers();
 	delete usable;
 }
-
-void LocationPart::SetBuildingUndergroundValue(float value)
-{
-	assert(InRange(value, 0.f, 1.f) && partType == Type::Building);
-
-	Scene* scene = lvlPart->scene;
-	scene->clearColor = Color::Lerp(Color::White, Color::Black, value);
-	scene->fogColor = Color::Lerp(Color(0.9f, 0.85f, 0.8f), Color::Black, value);
-	scene->ambientColor = Color::Lerp(Color(0.5f, 0.5f, 0.5f), Color(0.3f, 0.3f, 0.3f), value);
-	scene->fogRange = Vec2::Lerp(Vec2(40, 80), Vec2(10, 20), value);
-	lvlPart->drawRange = Lerp(80.f, 20.f, value);
-}

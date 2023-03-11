@@ -1595,47 +1595,51 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 //=================================================================================================
 void Level::RecreateObjects(bool spawnParticles)
 {
+	for(LocationPart& locPart : locParts)
+		RecreateObjects(locPart, spawnParticles);
+}
+
+//=================================================================================================
+void Level::RecreateObjects(LocationPart& locPart, bool spawnParticles)
+{
 	static BaseObject* chest = BaseObject::Get("chest");
 
-	for(LocationPart& locPart : locParts)
+	int flags = Level::SOE_DONT_CREATE_LIGHT;
+	if(!spawnParticles)
+		flags |= Level::SOE_DONT_SPAWN_PARTICLES;
+
+	// dotyczy tylko pochodni
+	if(locPart.partType == LocationPart::Type::Inside)
 	{
-		int flags = Level::SOE_DONT_CREATE_LIGHT;
-		if(!spawnParticles)
-			flags |= Level::SOE_DONT_SPAWN_PARTICLES;
-
-		// dotyczy tylko pochodni
-		if(locPart.partType == LocationPart::Type::Inside)
-		{
-			InsideLocation* inside = (InsideLocation*)location;
-			BaseLocation& base = gBaseLocations[inside->target];
-			if(IsSet(base.options, BLO_MAGIC_LIGHT))
-				flags |= Level::SOE_MAGIC_LIGHT;
-		}
-
-		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
-		{
-			Object& obj = **it;
-			BaseObject* baseObj = obj.base;
-
-			if(!baseObj)
-				continue;
-
-			if(IsSet(baseObj->flags, OBJ_BUILDING))
-			{
-				const float rot = obj.rot.y;
-				const GameDirection dir = RotToDir(rot);
-				ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, PBOF_RECREATE);
-			}
-			else
-				SpawnObjectExtras(locPart, baseObj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
-		}
-
-		for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
-			SpawnObjectExtras(locPart, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
-
-		for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
-			SpawnObjectExtras(locPart, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
+		InsideLocation* inside = (InsideLocation*)location;
+		BaseLocation& base = gBaseLocations[inside->target];
+		if(IsSet(base.options, BLO_MAGIC_LIGHT))
+			flags |= Level::SOE_MAGIC_LIGHT;
 	}
+
+	for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
+	{
+		Object& obj = **it;
+		BaseObject* baseObj = obj.base;
+
+		if(!baseObj)
+			continue;
+
+		if(IsSet(baseObj->flags, OBJ_BUILDING))
+		{
+			const float rot = obj.rot.y;
+			const GameDirection dir = RotToDir(rot);
+			ProcessBuildingObjects(locPart, nullptr, nullptr, baseObj->mesh, nullptr, rot, dir, obj.pos, nullptr, nullptr, PBOF_RECREATE);
+		}
+		else
+			SpawnObjectExtras(locPart, baseObj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+	}
+
+	for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
+		SpawnObjectExtras(locPart, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
+
+	for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
+		SpawnObjectExtras(locPart, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
 }
 
 //=================================================================================================
@@ -4133,6 +4137,7 @@ bool Level::Read(BitStreamReader& f, bool loadedResources)
 	isOpen = true;
 	Apply();
 	game->locGenFactory->Get(location)->OnLoad();
+	game->pc->CheckBuildingUnderground(true);
 	location->RequireLoadingResources(&loadedResources);
 
 	// apply usable users
@@ -4141,21 +4146,22 @@ bool Level::Read(BitStreamReader& f, bool loadedResources)
 	// music
 	MusicType music;
 	f.ReadCasted<byte>(music);
+	f >> boss;
 	if(!f)
 	{
 		Error("Read level: Broken music.");
 		return false;
 	}
-	gameRes->LoadMusic(music, false, true);
-	f >> boss;
-	if(boss)
-	{
-		gameRes->LoadMusic(MusicType::Boss, false, true);
-		game->SetMusic(MusicType::Boss);
-	}
-	else
-		game->SetMusic(music);
 
+	if(boss)
+		music = MusicType::Boss;
+	else if(game->pc->buildingUndergroundState)
+		music = MusicType::Dungeon;
+
+	gameRes->LoadMusic(music, false, true);
+	game->SetMusic(music);
+
+	// level parts
 	if(net->mpLoad)
 	{
 		for(LocationPart& locPart : locParts)
@@ -5120,16 +5126,9 @@ void Level::CreateInsideBuilding(CityBuilding& cityBuilding)
 	pos.y = terrain->GetH(pos.x, pos.z);
 	inside->outsideSpawn = pos;
 	inside->exitRegion = Box2d(inside->offset.x - 1, inside->offset.y - 6, inside->offset.x + 1, inside->offset.y - 4);
+	inside->SetSceneParams();
 	city->insideBuildings.push_back(inside);
 	locParts.push_back(*inside);
-
-	Scene* scene = inside->lvlPart->scene;
-	scene->clearColor = Color::White;
-	scene->fogRange = Vec2(40, 80);
-	scene->fogColor = Color(0.9f, 0.85f, 0.8f);
-	scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
-	scene->useLightDir = false;
-	inside->lvlPart->drawRange = 80.f;
 
 	Mesh* insideMesh = building.insideMesh;
 	insideMesh->EnsureIsLoaded();
@@ -5156,10 +5155,7 @@ void Level::CreateInsideBuilding(CityBuilding& cityBuilding)
 	}
 
 	if(Net::IsServer())
-	{
-		NetChange& c = Net::PushChange(NetChange::CREATE_INSIDE_BUILDING);
-		c.id = GetIndex(city->buildings, [&](const CityBuilding& b) { return &b == &cityBuilding; });
-	}
+		Net::PushChange(NetChange::CREATE_INSIDE_BUILDING);
 }
 
 //=================================================================================================
@@ -5191,4 +5187,18 @@ void Level::CreateInsideBuildingPhysics(InsideBuilding& insideBuilding)
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
 	cobj->getWorldTransform().setOrigin(ToVector3(pos));
 	phyWorld->addCollisionObject(cobj, CG_TERRAIN);
+}
+
+//=================================================================================================
+void Level::CreateInsideBuildingClient(InsideBuilding* insideBuilding)
+{
+	insideBuilding->SetSceneParams();
+	cityCtx->insideBuildings.push_back(insideBuilding);
+	locParts.push_back(*insideBuilding);
+	RecreateObjects(*insideBuilding, true);
+	if(!insideBuilding->building->navmesh.empty())
+		CreateInsideBuildingPhysics(*insideBuilding);
+
+	for(Usable* usable : insideBuilding->usables)
+		usable->base->EnsureIsLoaded();
 }

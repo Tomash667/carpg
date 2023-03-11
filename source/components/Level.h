@@ -96,6 +96,7 @@ public:
 	void ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* insideMesh, float rot, GameDirection dir,
 		const Vec3& shift, Building* building, CityBuilding* cityBuilding, int flags = 0, Vec3* outPoint = nullptr);
 	void RecreateObjects(bool spawnParticles = true);
+	void RecreateObjects(LocationPart& locPart, bool spawnParticles);
 	ObjectEntity SpawnObjectNearLocation(LocationPart& locPart, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LocationPart& locPart, BaseObject* obj, const Vec2& pos, const Vec2& rotTarget, float range = 2.f, float margin = 0.3f,
@@ -234,6 +235,7 @@ public:
 	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
 	void CreateInsideBuilding(CityBuilding& cityBuilding);
 	void CreateInsideBuildingPhysics(InsideBuilding& insideBuilding);
+	void CreateInsideBuildingClient(InsideBuilding* insideBuilding);
 
 	Location* location; // same as world->currentLocation
 	int locationIndex; // same as world->currentLocationIndex

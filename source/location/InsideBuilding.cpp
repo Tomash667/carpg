@@ -8,10 +8,12 @@
 #include "GameCommon.h"
 #include "GroundItem.h"
 #include "Level.h"
+#include "LevelPart.h"
 #include "Navmesh.h"
 #include "Object.h"
 
 #include <ParticleSystem.h>
+#include <Scene.h>
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
@@ -134,4 +136,37 @@ bool InsideBuilding::Read(BitStreamReader& f)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void InsideBuilding::SetSceneParams()
+{
+	Scene* scene = lvlPart->scene;
+	scene->clearColor = Color::White;
+	scene->fogRange = Vec2(40, 80);
+	scene->fogColor = Color(0.9f, 0.85f, 0.8f);
+	scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
+	if(top > 0.f)
+		scene->useLightDir = false;
+	else
+	{
+		scene->lightColor = Color::White;
+		scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
+		scene->useLightDir = true;
+	}
+	lvlPart->drawRange = 80.f;
+}
+
+//=================================================================================================
+void InsideBuilding::SetUndergroundValue(float value)
+{
+	assert(InRange(value, 0.f, 1.f));
+	assert(top > 0.f); // YAGNI
+
+	Scene* scene = lvlPart->scene;
+	scene->clearColor = Color::Lerp(Color::White, Color::Black, value);
+	scene->fogColor = Color::Lerp(Color(0.9f, 0.85f, 0.8f), Color::Black, value);
+	scene->ambientColor = Color::Lerp(Color(0.5f, 0.5f, 0.5f), Color(0.3f, 0.3f, 0.3f), value);
+	scene->fogRange = Vec2::Lerp(Vec2(40, 80), Vec2(10, 20), value);
+	lvlPart->drawRange = Lerp(80.f, 20.f, value);
 }

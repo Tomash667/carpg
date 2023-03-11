@@ -2231,7 +2231,7 @@ void PlayerController::Update(float dt)
 		if(buildingUndergroundValue < 1)
 		{
 			buildingUndergroundValue = min(buildingUndergroundValue + dt * 3, 1.f);
-			unit->locPart->SetBuildingUndergroundValue(buildingUndergroundValue);
+			static_cast<InsideBuilding*>(unit->locPart)->SetUndergroundValue(buildingUndergroundValue);
 			game->SetMusic(MusicType::Dungeon);
 		}
 	}
@@ -2240,7 +2240,7 @@ void PlayerController::Update(float dt)
 		if(buildingUndergroundValue > 0)
 		{
 			buildingUndergroundValue = max(buildingUndergroundValue - dt * 3, 0.f);
-			unit->locPart->SetBuildingUndergroundValue(buildingUndergroundValue);
+			static_cast<InsideBuilding*>(unit->locPart)->SetUndergroundValue(buildingUndergroundValue);
 			game->SetMusic(MusicType::City);
 		}
 	}
@@ -3516,7 +3516,7 @@ void PlayerController::CheckBuildingUnderground(bool instant)
 				if(instant)
 				{
 					buildingUndergroundValue = 1.f;
-					insideBuilding.SetBuildingUndergroundValue(1.f);
+					insideBuilding.SetUndergroundValue(1.f);
 				}
 			}
 			else if(unit->pos.y > insideBuilding.underground[1])

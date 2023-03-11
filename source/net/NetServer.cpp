@@ -3065,7 +3065,6 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CLEAN_LEVEL:
 		case NetChange::REMOVE_ITEM:
 		case NetChange::DESTROY_USABLE:
-		case NetChange::CREATE_INSIDE_BUILDING:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3330,6 +3329,9 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::HIT_OBJECT:
 			f << c.id;
 			f << c.pos;
+			break;
+		case NetChange::CREATE_INSIDE_BUILDING:
+			gameLevel->cityCtx->insideBuildings.back()->Write(f);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);

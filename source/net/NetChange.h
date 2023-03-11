@@ -206,7 +206,7 @@ struct NetChange
 		HIT_OBJECT, // hit object effect [int(id)-usable id or -1 for normal objects, Vec3(pos)]
 		DESTROY_USABLE, // destroy usable [int(id)-usable id]
 		PICK_REST, // response to pick rest days dialog [int(id)-days]
-		CREATE_INSIDE_BUILDING, // create inside building [int(id)-city building index]
+		CREATE_INSIDE_BUILDING, // create inside building [auto:inside building data]
 
 		MAX
 	} type;

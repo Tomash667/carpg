@@ -2947,22 +2947,7 @@ void CityGenerator::RespawnBuildingPhysics()
 void CityGenerator::SetBuildingsParams()
 {
 	for(InsideBuilding* insideBuilding : city->insideBuildings)
-	{
-		Scene* scene = insideBuilding->lvlPart->scene;
-		scene->clearColor = Color::White;
-		scene->fogRange = Vec2(40, 80);
-		scene->fogColor = Color(0.9f, 0.85f, 0.8f);
-		scene->ambientColor = Color(0.5f, 0.5f, 0.5f);
-		if(insideBuilding->top > 0.f)
-			scene->useLightDir = false;
-		else
-		{
-			scene->lightColor = Color::White;
-			scene->lightDir = Vec3(sin(gameLevel->lightAngle), 2.f, cos(gameLevel->lightAngle)).Normalize();
-			scene->useLightDir = true;
-		}
-		insideBuilding->lvlPart->drawRange = 80.f;
-	}
+		insideBuilding->SetSceneParams();
 }
 
 //=================================================================================================

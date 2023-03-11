@@ -409,7 +409,12 @@ void LevelGui::DrawFront()
 			Usable& u = *game->pc->data.beforePlayerPtr.usable;
 			Vec3 textPos = u.pos;
 			textPos.y += u.GetMesh()->head.radius;
-			DrawObjectInfo(u.base->name.c_str(), textPos);
+			cstring text;
+			if(debugInfo)
+				text = Format("%s (%s, %d)", u.base->name.c_str(), u.base->id.c_str(), u.id);
+			else
+				text = u.base->name.c_str();
+			DrawObjectInfo(text, textPos);
 		}
 		break;
 	}
