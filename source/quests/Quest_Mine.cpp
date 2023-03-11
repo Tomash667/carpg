@@ -937,7 +937,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 							CollisionObject& c = Add1(cave.lvlPart->colliders);
 							btCollisionObject* cobj = new btCollisionObject;
 							cobj->setCollisionShape(ironVein->shape);
-							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
+							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_USABLE);
 
 							btTransform& tr = cobj->getWorldTransform();
 							Vec3 pos2 = Vec3::TransformZero(*ironVein->matrix);
@@ -957,7 +957,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 							else
 								c.type = CollisionObject::RECTANGLE;
 
-							phyWorld->addCollisionObject(cobj, CG_OBJECT);
+							phyWorld->addCollisionObject(cobj, CG_USABLE);
 						}
 					}
 #undef P

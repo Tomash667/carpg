@@ -876,7 +876,7 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		c.owner = userPtr;
 		c.camCollider = IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
-		int group = CG_OBJECT;
+		int group = obj->IsUsable() ? CG_USABLE : CG_OBJECT;
 		if(IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			group |= CG_CAMERA_COLLIDER;
 
@@ -965,13 +965,15 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 		c.pos = pos;
 		c.radius = obj->r * scale;
 
+		const int group = obj->IsUsable() ? CG_USABLE : CG_OBJECT;
+
 		btCollisionObject* cobj = new btCollisionObject;
 		btCylinderShape* shape = new btCylinderShape(btVector3(obj->r * scale, obj->h * scale, obj->r * scale));
 		shapes.push_back(shape);
 		cobj->setCollisionShape(shape);
-		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 		cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2 * scale, pos.z));
-		phyWorld->addCollisionObject(cobj, CG_OBJECT);
+		phyWorld->addCollisionObject(cobj, group);
 	}
 	else if(IsSet(obj->flags, OBJ_TMP_PHYSICS))
 	{
@@ -1018,13 +1020,13 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 
 			btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 			shapes.push_back(shape);
-			btCollisionObject* co = new btCollisionObject;
-			co->setCollisionShape(shape);
-			co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
-			co->getWorldTransform().setOrigin(ToVector3(pos2));
-			phyWorld->addCollisionObject(co, CG_CAMERA_COLLIDER);
+			btCollisionObject* cobj = new btCollisionObject;
+			cobj->setCollisionShape(shape);
+			cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
+			cobj->getWorldTransform().setOrigin(ToVector3(pos2));
+			phyWorld->addCollisionObject(cobj, CG_CAMERA_COLLIDER);
 			if(roti != 0)
-				co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+				cobj->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 
 			float w = pt.size.x, h = pt.size.z;
 			if(roti == 1 || roti == 3)

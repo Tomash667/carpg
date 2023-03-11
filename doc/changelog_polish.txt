@@ -6,6 +6,7 @@ Wersja 0.21 (???):
 + aktualizacja bibliotek: AngelScript 2.35.1, DirectXMath 3.18
 - poprawki do startowych przedmiotów i lepszych przedmiotów dla npc
 - crash po użyciu komendy "warp" do tego samego budynku
+- crash po trafieniu barykady z łuku
 
 --------------------------------------------------------------------------------
 Wersja 0.20 (2023-01-07):

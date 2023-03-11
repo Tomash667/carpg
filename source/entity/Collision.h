@@ -11,6 +11,7 @@ enum COLLISION_GROUP
 	CG_COLLIDER = 1 << 12,
 	CG_CAMERA_COLLIDER = 1 << 13,
 	CG_BARRIER = 1 << 14, // blocks only units
+	CG_USABLE = 1 << 15,
 	// 1<<15 is max!
 };
 
