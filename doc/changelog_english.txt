@@ -7,6 +7,7 @@ Version 0.21 (???):
 - fix start items and npc better items
 - crash when using "warp" command when inside target building
 - crash when shooting at barricade
+- crash when using some console commands without selected unit
 
 --------------------------------------------------------------------------------
 Version 0.20 (2023-01-07):

@@ -177,7 +177,7 @@ struct LocalPlayerData
 {
 	BeforePlayer beforePlayer;
 	BeforePlayerPtr beforePlayerPtr;
-	Unit* selectedUnit; // unit marked with 'select' command
+	Entity<Unit> selectedUnit;
 	Entity<Unit> abilityTarget;
 	Vec3 abilityPoint;
 	float rotBuf, abilityRot, grayout, rangeRatio;
@@ -185,6 +185,7 @@ struct LocalPlayerData
 	Ability* abilityReady;
 	bool autowalk, abilityOk;
 
+	// called on new game or load
 	void Reset()
 	{
 		beforePlayer = BP_NONE;

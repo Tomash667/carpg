@@ -7,6 +7,7 @@ Wersja 0.21 (???):
 - poprawki do startowych przedmiotów i lepszych przedmiotów dla npc
 - crash po użyciu komendy "warp" do tego samego budynku
 - crash po trafieniu barykady z łuku
+- crash niektórych komend w konsoli gdy nie wybrano jednostki
 
 --------------------------------------------------------------------------------
 Wersja 0.20 (2023-01-07):

@@ -3332,8 +3332,6 @@ void Game::DeleteUnit(Unit* unit)
 		gameGui->levelGui->RemoveUnitView(unit);
 		if(pc->data.beforePlayer == BP_UNIT && pc->data.beforePlayerPtr.unit == unit)
 			pc->data.beforePlayer = BP_NONE;
-		if(unit == pc->data.selectedUnit)
-			pc->data.selectedUnit = nullptr;
 		if(Net::IsClient())
 		{
 			if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)
@@ -3420,8 +3418,6 @@ void Game::RemoveUnit(Unit* unit)
 	gameGui->levelGui->RemoveUnitView(unit);
 	if(pc->data.beforePlayer == BP_UNIT && pc->data.beforePlayerPtr.unit == unit)
 		pc->data.beforePlayer = BP_NONE;
-	if(unit == pc->data.selectedUnit)
-		pc->data.selectedUnit = nullptr;
 	if(Net::IsClient())
 	{
 		if(pc->action == PlayerAction::LootUnit && pc->actionUnit == unit)

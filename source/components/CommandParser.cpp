@@ -367,7 +367,7 @@ void CommandParser::ParseScript()
 	}
 
 	cstring code = t.GetTextRest();
-	Unit* targetUnit = game->pc->data.GetTargetUnit();
+	Unit* targetUnit = game->pc->data.selectedUnit;
 	if(Net::IsLocal())
 	{
 		string& output = scriptMgr->OpenOutput();
@@ -854,7 +854,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					slot = t.GetInt();
 					if(slot < 1 || slot > 11)
-						t.Throw("Invalid slot %d.", slot);
+					{
+						Msg("Invalid slot %d.", slot);
+						break;
+					}
 					if(t.Next())
 						text = t.MustGetString();
 				}
@@ -885,7 +888,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					slot = t.GetInt();
 					if(slot < 1 || slot > 11)
-						t.Throw("Invalid slot %d.", slot);
+					{
+						Msg("Invalid slot %d.", slot);
+						break;
+					}
 				}
 				else
 					t.StartUnexpected().Add(tokenizer::T_INT).Add(tokenizer::T_STRING).Throw();
@@ -1424,8 +1430,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		{
 			Msg("Use 'list effect' to get list of existing effects. Some examples:");
 			Msg("addEffect regeneration 5 - add permanent regeneration 5 hp/sec");
-			Msg("addEffect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
-			Msg("addEffect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
+			Msg("addEffect meleeAttack 30 perk strongBack - add 30 melee attack assigned to perk");
+			Msg("addEffect magicResistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
 			Msg("addEffect attribute str 5 item weapon - add +5 strength assigned to weapon");
 		}
 		else
@@ -1435,7 +1441,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 			const string& effectId = t.MustGetItem();
 			e.effect = EffectInfo::TryGet(effectId);
 			if(e.effect == EffectId::None)
-				t.Throw("Invalid effect '%s'.", effectId.c_str());
+			{
+				Msg("Invalid effect '%s'.", effectId.c_str());
+				break;
+			}
 			t.Next();
 
 			EffectInfo& info = EffectInfo::effects[(int)e.effect];
@@ -1448,14 +1457,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				{
 					Attribute* attrib = Attribute::Find(value);
 					if(!attrib)
-						t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
+					{
+						Msg("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
+						break;
+					}
 					e.value = (int)attrib->attribId;
 				}
 				else
 				{
 					const Skill* skill = Skill::Find(value);
 					if(!skill)
-						t.Throw("Invalid skill '%s' for effect '%s'.", value.c_str(), info.id);
+					{
+						Msg("Invalid skill '%s' for effect '%s'.", value.c_str(), info.id);
+						break;
+					}
 					e.value = (int)skill->skillId;
 				}
 				t.Next();
@@ -1478,7 +1493,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					const string& perkId = t.MustGetItem();
 					Perk* perk = Perk::Get(perkId);
 					if(!perk)
-						t.Throw("Invalid perk source '%s'.", perkId.c_str());
+					{
+						Msg("Invalid perk source '%s'.", perkId.c_str());
+						break;
+					}
 					e.sourceId = perk->hash;
 					e.time = 0;
 				}
@@ -1496,11 +1514,17 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					const string slotId = t.MustGetItem();
 					e.sourceId = ItemSlotInfo::Find(slotId);
 					if(e.sourceId == SLOT_INVALID)
-						t.Throw("Invalid item source '%s'.", slotId.c_str());
+					{
+						Msg("Invalid item source '%s'.", slotId.c_str());
+						break;
+					}
 					e.time = 0;
 				}
 				else
-					t.Throw("Invalid effect source '%s'.", sourceName.c_str());
+				{
+					Msg("Invalid effect source '%s'.", sourceName.c_str());
+					break;
+				}
 			}
 			else
 			{
@@ -1509,12 +1533,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				e.time = 0;
 			}
 
-			if(Net::IsLocal())
-				game->pc->data.selectedUnit->AddEffect(e);
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(Net::IsLocal())
+				unit->AddEffect(e);
 			else
 			{
 				PushGenericCmd(CMD_ADD_EFFECT)
-					<< game->pc->data.selectedUnit->id
+					<< unit->id
 					<< (char)e.effect
 					<< (char)e.source
 					<< e.sourceId
@@ -1611,12 +1638,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				}
 			}
 
-			if(Net::IsLocal())
-				RemoveEffect(game->pc->data.selectedUnit, effect, source, sourceId, value);
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(Net::IsLocal())
+				RemoveEffect(unit, effect, source, sourceId, value);
 			else
 			{
 				PushGenericCmd(CMD_REMOVE_EFFECT)
-					<< game->pc->data.selectedUnit->id
+					<< unit->id
 					<< (char)effect
 					<< (char)source
 					<< (char)sourceId
@@ -1625,15 +1655,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_LIST_EFFECTS:
-		if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
-			ListEffects(game->pc->data.selectedUnit);
-		else
-			PushGenericCmd(CMD_LIST_EFFECTS) << game->pc->data.selectedUnit->id;
+		{
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(Net::IsLocal() || unit->IsLocalPlayer())
+				ListEffects(unit);
+			else
+				PushGenericCmd(CMD_LIST_EFFECTS) << unit->id;
+		}
 		break;
 	case CMD_ADD_PERK:
-		if(!game->pc->data.selectedUnit->player)
-			Msg("Only players have perks.");
-		else if(!t.Next())
+		if(!t.Next())
 			Msg("Perk id required. Use 'list perks' to display list.");
 		else
 		{
@@ -1679,21 +1712,24 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				value = (int)skill->skillId;
 			}
 
-			if(Net::IsLocal())
-				AddPerk(game->pc->data.selectedUnit->player, perk, value);
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(!unit->IsPlayer())
+				Msg("Only players have perks.");
+			else if(Net::IsLocal())
+				AddPerk(unit->player, perk, value);
 			else
 			{
 				PushGenericCmd(CMD_ADD_PERK)
-					<< game->pc->data.selectedUnit->id
+					<< unit->id
 					<< perk->hash
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_REMOVE_PERK:
-		if(!game->pc->data.selectedUnit->player)
-			Msg("Only players have perks.");
-		else if(!t.Next())
+		if(!t.Next())
 			Msg("Perk id required. Use 'list perks' to display list.");
 		else
 		{
@@ -1739,24 +1775,34 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 				value = (int)skill->skillId;
 			}
 
-			if(Net::IsLocal())
-				RemovePerk(game->pc->data.selectedUnit->player, perk, value);
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(!unit->IsPlayer())
+				Msg("Only players have perks.");
+			else if(Net::IsLocal())
+				RemovePerk(unit->player, perk, value);
 			else
 			{
 				PushGenericCmd(CMD_REMOVE_PERK)
-					<< game->pc->data.selectedUnit->id
+					<< unit->id
 					<< perk->hash
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_LIST_PERKS:
-		if(!game->pc->data.selectedUnit->player)
-			Msg("Only players have perks.");
-		else if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
-			ListPerks(game->pc->data.selectedUnit->player);
-		else
-			PushGenericCmd(CMD_LIST_PERKS) << game->pc->data.selectedUnit->id;
+		{
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(!unit->IsPlayer())
+				Msg("Only players have perks.");
+			else if(Net::IsLocal() || unit->IsLocalPlayer())
+				ListPerks(unit->player);
+			else
+				PushGenericCmd(CMD_LIST_PERKS) << unit->id;
+		}
 		break;
 	case CMD_SELECT:
 		{
@@ -1799,32 +1845,44 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 					break;
 				}
 			}
-			Msg("Currently selected: %s %p [%d]", game->pc->data.selectedUnit->data->id.c_str(), game->pc->data.selectedUnit,
-				Net::IsOnline() ? game->pc->data.selectedUnit->id : -1);
+
+			Unit* unit = game->pc->data.selectedUnit;
+			if(unit)
+				Msg("Currently selected: %s (%s, %d)", unit->GetName(), unit->data->id.c_str(), unit->id);
+			else
+				Msg("Currently selected: none");
 		}
 		break;
 	case CMD_LIST_STATS:
-		if(Net::IsLocal() || game->pc->data.selectedUnit->IsLocalPlayer())
-			ListStats(game->pc->data.selectedUnit);
-		else
-			PushGenericCmd(CMD_LIST_STATS) << game->pc->data.selectedUnit->id;
+		{
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(Net::IsLocal() || unit->IsLocalPlayer())
+				ListStats(unit);
+			else
+				PushGenericCmd(CMD_LIST_STATS) << unit->id;
+		}
 		break;
 	case CMD_ADD_LEARNING_POINTS:
-		if(!game->pc->data.selectedUnit->IsPlayer())
-			Msg("Only players have learning points.");
-		else
 		{
 			int count = 1;
 			if(t.Next())
 				count = t.MustGetInt();
 			if(count < 1)
 				break;
-			if(Net::IsLocal())
-				game->pc->data.selectedUnit->player->AddLearningPoint(count);
+
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(!unit->IsPlayer())
+				Msg("Only players have learning points.");
+			else if(Net::IsLocal())
+				unit->player->AddLearningPoint(count);
 			else
 			{
 				PushGenericCmd(CMD_ADD_LEARNING_POINTS)
-					<< game->pc->data.selectedUnit->id
+					<< unit->id
 					<< count;
 			}
 		}
@@ -1860,10 +1918,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, PARSE_SOURCE source)
 		}
 		break;
 	case CMD_REMOVE_UNIT:
-		if(game->pc->data.selectedUnit->IsPlayer())
-			Msg("Can't remove player unit.");
-		else
-			gameLevel->RemoveUnit(game->pc->data.selectedUnit);
+		{
+			Unit* unit = game->pc->data.selectedUnit;
+			if(!unit)
+				Msg("No unit selected.");
+			else if(unit->IsPlayer())
+				Msg("Can't remove player unit.");
+			else
+				gameLevel->RemoveUnit(unit);
+		}
 		break;
 	case CMD_ADD_EXP:
 		if(t.Next())

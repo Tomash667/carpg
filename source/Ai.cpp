@@ -617,11 +617,15 @@ void Game::UpdateAi(float dt)
 				case ORDER_MOVE:
 					useIdle = false;
 					if(Vec3::Distance2d(u.pos, u.order->pos) < u.order->range)
+					{
 						u.OrderNext();
+						break;
+					}
 					moveType = MovePoint;
 					targetPos = u.order->pos;
 					lookAt = LookAtWalk;
-					tryPhase = true;
+					if(u.IsHero())
+						tryPhase = true;
 					switch(u.order->moveType)
 					{
 					default:
@@ -2638,7 +2642,6 @@ void Game::UpdateAi(float dt)
 				u.prevPos = u.pos;
 
 				const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
-				bool small;
 
 				if(moveType == KeepDistanceCheck)
 				{
@@ -2648,6 +2651,7 @@ void Game::UpdateAi(float dt)
 					u.pos = u.prevPos;
 				}
 
+				bool small;
 				if(move != 0 && gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small))
 				{
 					u.Moved();
@@ -2848,7 +2852,6 @@ void Game::UpdateAi(float dt)
 							speed = dist;
 					}
 					const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
-					bool small;
 
 					if(moveType == KeepDistanceCheck)
 					{
@@ -2860,12 +2863,11 @@ void Game::UpdateAi(float dt)
 
 					if(move != 0)
 					{
-						int moveState = 0;
-						if(gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small))
-							moveState = 1;
-						else if(tryPhase && u.hero->phase)
+						bool small;
+						int moveState = gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small);
+						if(moveState != 3 && tryPhase && u.hero->phase)
 						{
-							moveState = 2;
+							moveState = 4;
 							u.pos += dir;
 							small = false;
 						}
@@ -2923,13 +2925,14 @@ void Game::UpdateAi(float dt)
 									u.animation = ANI_WALK;
 							}
 
-							if(tryPhase && moveState == 1)
+							if(tryPhase && moveState == 3)
 							{
 								u.hero->phase = false;
 								u.hero->phaseTimer = 0.f;
 							}
 						}
-						else if(tryPhase)
+
+						if(tryPhase && moveState != 3)
 						{
 							u.hero->phaseTimer += dt;
 							if(u.hero->phaseTimer >= 2.f)
