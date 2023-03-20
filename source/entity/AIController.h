@@ -91,10 +91,11 @@ struct AIController
 		PFS_NOT_USING,
 		PFS_GLOBAL_DONE,
 		PFS_GLOBAL_NOT_USED,
-		PFS_MANUAL_WALK,
 		PFS_WALKING,
+		PFS_WALKING_LOCAL,
 		PFS_LOCAL_TRY_WALK,
-		PFS_WALKING_LOCAL
+		PFS_MANUAL_WALK,
+		PFS_MANUAL_WALK_NOT_USED
 	};
 
 	Unit* unit;
@@ -138,8 +139,10 @@ struct AIController
 	bool changeAiMode; // tymczasowe u serwera
 
 	// pathfinding
+	vector<Vec3> pfNavPath;
 	vector<Int2> pfPath, pfLocalPath;
 	PathFindingState pfState;
+	Vec2 pfNavTargetPos;
 	Int2 pfTargetTile, pfLocalTargetTile;
 	int pfLocalTry;
 	float pfTimer;

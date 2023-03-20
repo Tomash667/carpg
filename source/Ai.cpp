@@ -10,6 +10,7 @@
 #include "InsideLocation.h"
 #include "Level.h"
 #include "LevelGui.h"
+#include "Navmesh.h"
 #include "Pathfinding.h"
 #include "QuestManager.h"
 #include "Quest_Contest.h"
@@ -100,11 +101,7 @@ enum AI_ACTION
 
 inline float RandomRot(float baseRot, float randomAngle)
 {
-	if(Rand() % 2 == 0)
-		baseRot += Random(randomAngle);
-	else
-		baseRot -= Random(randomAngle);
-	return Clip(baseRot);
+	return Clip(baseRot - randomAngle + Random(randomAngle * 2));
 }
 
 //=================================================================================================
@@ -2661,152 +2658,78 @@ void Game::UpdateAi(float dt)
 			}
 			else if(move == 1)
 			{
-				// movement towards the point (pathfinding)
-				const Int2 myTile(u.pos / 2);
-				const Int2 targetTile(targetPos / 2);
-				const Int2 myLocalTile(u.pos.x * 4, u.pos.z * 4);
-
-				if(myTile != targetTile)
-				{
-					// check is it time to use pathfinding
-					if(ai.pfState == AIController::PFS_NOT_USING
-						|| Int2::Distance(ai.pfTargetTile, targetTile) > 1
-						|| ((ai.pfState == AIController::PFS_WALKING || ai.pfState == AIController::PFS_MANUAL_WALK)
-						&& targetTile != ai.pfTargetTile && ai.pfTimer <= 0.f))
-					{
-						ai.pfTimer = Random(0.2f, 0.4f);
-						if(pathfinding->FindPath(locPart, myTile, targetTile, ai.pfPath, !IsSet(u.data->flags, F_DONT_OPEN), ai.cityWander && gameLevel->cityCtx != nullptr))
-						{
-							// path found
-							ai.pfState = AIController::PFS_GLOBAL_DONE;
-						}
-						else
-						{
-							// path not found, use local search
-							ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
-						}
-						ai.pfTargetTile = targetTile;
-					}
-				}
-				else
-				{
-					// start tile and target tile is same, use local pathfinding
-					ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
-				}
-
 				// open doors when ai moves next to them
 				if(!IsSet(u.data->flags, F_DONT_OPEN))
 				{
 					for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 					{
 						Door& door = **it;
-						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
+						if(door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
 							door.Open();
 					}
 				}
 
-				// local pathfinding
-				Vec3 moveTarget;
-				if(ai.pfState == AIController::PFS_GLOBAL_DONE
-					|| ai.pfState == AIController::PFS_GLOBAL_NOT_USED
-					|| ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
+				// movement towards the point (pathfinding)
+				if(locPart.partType == LocationPart::Type::Building && static_cast<InsideBuilding&>(locPart).navmesh)
 				{
-					Int2 localTile;
-					bool isEndPoint;
-
-					if(ai.pfState == AIController::PFS_GLOBAL_DONE)
+					// navmesh pathfinding
+					Navmesh* navmesh = static_cast<InsideBuilding&>(locPart).navmesh;
+					const Vec2 targetPos2d = targetPos.XZ();
+					if(ai.pfState == AIController::PFS_NOT_USING
+						|| (ai.pfNavTargetPos != targetPos2d && ai.pfTimer <= 0.f))
 					{
-						const Int2& pt = ai.pfPath.back();
-						localTile.x = (2 * pt.x + 1) * 4;
-						localTile.y = (2 * pt.y + 1) * 4;
-						isEndPoint = (ai.pfPath.size() == 1);
-					}
-					else if(ai.pfState == AIController::PFS_GLOBAL_NOT_USED)
-					{
-						localTile.x = int(targetPos.x * 4);
-						localTile.y = int(targetPos.z * 4);
-						if(Int2::Distance(myLocalTile, localTile) > 32)
+						if(ai.pfState != AIController::PFS_WALKING || navmesh->GetRegion(targetPos2d) != navmesh->GetRegion(ai.pfNavTargetPos))
 						{
-							moveTarget = Vec3(targetPos.x, 0, targetPos.z);
-							goto skipLocalpf;
+							if(navmesh->FindPath(u.pos.XZ(), targetPos2d, ai.pfNavPath) && ai.pfNavPath.size() != 1u)
+								ai.pfState = AIController::PFS_GLOBAL_DONE;
+							else
+								ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
 						}
-						else
-							isEndPoint = true;
+						ai.pfTimer = Random(0.2f, 0.4f);
+						ai.pfNavTargetPos = targetPos2d;
 					}
+
+					Vec3 moveTarget;
+					if(Any(ai.pfState, AIController::PFS_GLOBAL_DONE, AIController::PFS_WALKING, AIController::PFS_MANUAL_WALK))
+						moveTarget = ai.pfNavPath.back();
 					else
-					{
-						const Int2& pt = ai.pfPath[ai.pfPath.size() - ai.pfLocalTry - 1];
-						localTile.x = (2 * pt.x + 1) * 4;
-						localTile.y = (2 * pt.y + 1) * 4;
-						isEndPoint = (ai.pfLocalTry + 1 == ai.pfPath.size());
-					}
+						moveTarget = targetPos;
 
-					int ret = pathfinding->FindLocalPath(locPart, ai.pfLocalPath, myLocalTile, localTile, &u, pathUnitIgnore, pathObjIgnore, isEndPoint);
-					ai.pfLocalTargetTile = localTile;
-					if(ret == 0)
+					// local pathfinding
+					const Int2 myLocalTile(u.pos.x * 4, u.pos.z * 4);
+					if(ai.pfState == AIController::PFS_GLOBAL_DONE
+						|| ai.pfState == AIController::PFS_GLOBAL_NOT_USED)
 					{
-						// local path found
-						assert(!ai.pfLocalPath.empty());
-						if(ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
-						{
-							for(int i = 0; i < ai.pfLocalTry; ++i)
-								ai.pfPath.pop_back();
-							ai.pfState = AIController::PFS_WALKING;
-						}
-						else if(ai.pfState == AIController::PFS_GLOBAL_DONE)
-							ai.pfState = AIController::PFS_WALKING;
-						else
-							ai.pfState = AIController::PFS_WALKING_LOCAL;
+						Int2 localTile(int(moveTarget.x * 4), int(moveTarget.z * 4));
+						int ret = pathfinding->FindLocalPath(locPart, ai.pfLocalPath, myLocalTile, localTile, &u, pathUnitIgnore, pathObjIgnore,
+							Pathfinding::MODE_SMART);
 						ai.pfLocalTargetTile = localTile;
+						if(ret == 0)
+						{
+							// local path found
+							if(ai.pfState == AIController::PFS_GLOBAL_DONE)
+								ai.pfState = AIController::PFS_WALKING;
+							else
+								ai.pfState = AIController::PFS_WALKING_LOCAL;
+							ai.pfLocalTargetTile = localTile;
+							const Int2& pt = ai.pfLocalPath.back();
+							moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
+						}
+						else
+						{
+							if(ai.pfState == AIController::PFS_GLOBAL_DONE)
+								ai.pfState = AIController::PFS_MANUAL_WALK;
+							else
+								ai.pfState = AIController::PFS_MANUAL_WALK_NOT_USED;
+						}
+					}
+					else if(ai.pfState == AIController::PFS_WALKING
+						|| ai.pfState == AIController::PFS_WALKING_LOCAL)
+					{
 						const Int2& pt = ai.pfLocalPath.back();
 						moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
 					}
-					else if(ret == 4)
-					{
-						// walk point is blocked, at next frame try to skip it and use next path tile
-						// if that fails mark tile as blocked and recalculate global path
-						if(ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
-						{
-							++ai.pfLocalTry;
-							if(ai.pfLocalTry == 4 || ai.pfPath.size() == ai.pfLocalTry)
-							{
-								ai.pfState = AIController::PFS_MANUAL_WALK;
-								moveTarget = Vec3(0.25f * localTile.x + 0.125f, 0, 0.25f * localTile.y + 0.125f);
-							}
-							else
-								move = 0;
-						}
-						else if(ai.pfPath.size() > 1u)
-						{
-							ai.pfState = AIController::PFS_LOCAL_TRY_WALK;
-							ai.pfLocalTry = 1;
-							move = 0;
-						}
-						else
-						{
-							ai.pfState = AIController::PFS_MANUAL_WALK;
-							moveTarget = Vec3(0.25f * localTile.x + 0.125f, 0, 0.25f * localTile.y + 0.125f);
-						}
-					}
-					else
-					{
-						ai.pfState = AIController::PFS_MANUAL_WALK;
-						moveTarget = targetPos;
-					}
-				}
-				else if(ai.pfState == AIController::PFS_MANUAL_WALK)
-					moveTarget = targetPos;
-				else if(ai.pfState == AIController::PFS_WALKING
-					|| ai.pfState == AIController::PFS_WALKING_LOCAL)
-				{
-					const Int2& pt = ai.pfLocalPath.back();
-					moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
-				}
 
-			skipLocalpf:
-
-				if(move != 0)
-				{
 					// character movement
 					bool run;
 					if(!u.CanRun())
@@ -2840,18 +2763,11 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_SHOOT || u.action == A_CAST)
 						u.speed /= 2;
 					u.prevSpeed = Clamp((u.prevSpeed + (u.speed - u.prevSpeed) * dt * 3), 0.f, u.speed);
-					float speed = u.prevSpeed * dt;
-					const float angle = Vec3::LookAtAngle(u.pos, moveTarget) + PI;
-
 					u.prevPos = u.pos;
 
-					if(moveTarget == targetPos)
-					{
-						float dist = Vec3::Distance2d(u.pos, targetPos);
-						if(dist < speed)
-							speed = dist;
-					}
-					const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
+					float speed = u.prevSpeed * dt;
+					const float angle = Vec3::LookAtAngle(u.pos, moveTarget) + PI;
+					const Vec3 dir(sin(angle)* speed, 0, cos(angle)* speed);
 
 					if(moveType == KeepDistanceCheck)
 					{
@@ -2882,35 +2798,62 @@ void Game::UpdateAi(float dt)
 								lookPtValid = true;
 							}
 
-							if(ai.pfState == AIController::PFS_WALKING)
-							{
-								const Int2 newTile(u.pos / 2);
-								if(newTile != myTile)
-								{
-									if(newTile == ai.pfPath.back())
-									{
-										ai.pfPath.pop_back();
-										if(ai.pfPath.empty())
-											ai.pfState = AIController::PFS_NOT_USING;
-									}
-									else
-										ai.pfState = AIController::PFS_NOT_USING;
-								}
-							}
-
-							if(ai.pfState == AIController::PFS_WALKING_LOCAL || ai.pfState == AIController::PFS_WALKING)
+							// local pathfinding - moved to next tile
+							if(Any(ai.pfState, AIController::PFS_WALKING, AIController::PFS_WALKING_LOCAL))
 							{
 								const Int2 newTile(u.pos.x * 4, u.pos.z * 4);
-								if(newTile != myLocalTile)
+								if(newTile != myLocalTile && newTile == ai.pfLocalPath.back())
 								{
-									if(newTile == ai.pfLocalPath.back())
+									ai.pfLocalPath.pop_back();
+									if(ai.pfLocalPath.empty())
 									{
-										ai.pfLocalPath.pop_back();
-										if(ai.pfLocalPath.empty())
-											ai.pfState = AIController::PFS_NOT_USING;
+										if(ai.pfState == AIController::PFS_WALKING)
+										{
+											// finished local path, move to next navmesh point or rerun if done
+											if(newTile == Int2(ai.pfNavPath.back().x * 4, ai.pfNavPath.back().z * 4))
+											{
+												ai.pfNavPath.pop_back();
+												while(!ai.pfNavPath.empty())
+												{
+													if(newTile == Int2(ai.pfNavPath.back().x * 4, ai.pfNavPath.back().z * 4))
+														ai.pfNavPath.pop_back();
+													else
+														break;
+												}
+
+												if(ai.pfNavPath.empty())
+													ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
+												else
+													ai.pfState = AIController::PFS_GLOBAL_DONE;
+											}
+											else
+												ai.pfState = AIController::PFS_GLOBAL_DONE;
+										}
+										else
+										{
+											// finished local path, need to rerun or manualy move to exact position
+											ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
+										}
 									}
+								}
+							}
+							else if(ai.pfState == AIController::PFS_MANUAL_WALK)
+							{
+								if(Vec3::Distance2d(u.pos, ai.pfNavPath.back()) <= 0.125f)
+								{
+									ai.pfNavPath.pop_back();
+									while(!ai.pfNavPath.empty())
+									{
+										if(Vec3::Distance2d(u.pos, ai.pfNavPath.back()) <= 0.125f)
+											ai.pfNavPath.pop_back();
+										else
+											break;
+									}
+
+									if(ai.pfNavPath.empty())
+										ai.pfState = AIController::PFS_MANUAL_WALK_NOT_USED;
 									else
-										ai.pfState = AIController::PFS_NOT_USING;
+										ai.pfState = AIController::PFS_GLOBAL_DONE;
 								}
 							}
 
@@ -2937,6 +2880,271 @@ void Game::UpdateAi(float dt)
 							u.hero->phaseTimer += dt;
 							if(u.hero->phaseTimer >= 2.f)
 								u.hero->phase = true;
+						}
+					}
+				}
+				else
+				{
+					const Int2 myTile(u.pos / 2);
+					const Int2 targetTile(targetPos / 2);
+					const Int2 myLocalTile(u.pos.x * 4, u.pos.z * 4);
+
+					if(myTile != targetTile)
+					{
+						// check is it time to use pathfinding
+						if(ai.pfState == AIController::PFS_NOT_USING
+							|| Int2::Distance(ai.pfTargetTile, targetTile) > 1
+							|| ((ai.pfState == AIController::PFS_WALKING || ai.pfState == AIController::PFS_MANUAL_WALK)
+								&& targetTile != ai.pfTargetTile && ai.pfTimer <= 0.f))
+						{
+							ai.pfTimer = Random(0.2f, 0.4f);
+							if(pathfinding->FindPath(locPart, myTile, targetTile, ai.pfPath, !IsSet(u.data->flags, F_DONT_OPEN), ai.cityWander && gameLevel->cityCtx != nullptr))
+							{
+								// path found
+								ai.pfState = AIController::PFS_GLOBAL_DONE;
+							}
+							else
+							{
+								// path not found, use local search
+								ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
+							}
+							ai.pfTargetTile = targetTile;
+						}
+					}
+					else
+					{
+						// start tile and target tile is same, use local pathfinding
+						ai.pfState = AIController::PFS_GLOBAL_NOT_USED;
+					}
+
+					// local pathfinding
+					Vec3 moveTarget;
+					if(ai.pfState == AIController::PFS_GLOBAL_DONE
+						|| ai.pfState == AIController::PFS_GLOBAL_NOT_USED
+						|| ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
+					{
+						Int2 localTile;
+						bool isEndPoint;
+
+						if(ai.pfState == AIController::PFS_GLOBAL_DONE)
+						{
+							const Int2& pt = ai.pfPath.back();
+							localTile.x = (2 * pt.x + 1) * 4;
+							localTile.y = (2 * pt.y + 1) * 4;
+							isEndPoint = (ai.pfPath.size() == 1);
+						}
+						else if(ai.pfState == AIController::PFS_GLOBAL_NOT_USED)
+						{
+							localTile.x = int(targetPos.x * 4);
+							localTile.y = int(targetPos.z * 4);
+							if(Int2::Distance(myLocalTile, localTile) > 32)
+							{
+								moveTarget = Vec3(targetPos.x, 0, targetPos.z);
+								goto skipLocalpf;
+							}
+							else
+								isEndPoint = true;
+						}
+						else
+						{
+							const Int2& pt = ai.pfPath[ai.pfPath.size() - ai.pfLocalTry - 1];
+							localTile.x = (2 * pt.x + 1) * 4;
+							localTile.y = (2 * pt.y + 1) * 4;
+							isEndPoint = (ai.pfLocalTry + 1 == ai.pfPath.size());
+						}
+
+						int ret = pathfinding->FindLocalPath(locPart, ai.pfLocalPath, myLocalTile, localTile, &u, pathUnitIgnore, pathObjIgnore,
+							isEndPoint ? Pathfinding::MODE_END_POINT : Pathfinding::MODE_NORMAL);
+						ai.pfLocalTargetTile = localTile;
+						if(ret == 0)
+						{
+							// local path found
+							assert(!ai.pfLocalPath.empty());
+							if(ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
+							{
+								for(int i = 0; i < ai.pfLocalTry; ++i)
+									ai.pfPath.pop_back();
+								ai.pfState = AIController::PFS_WALKING;
+							}
+							else if(ai.pfState == AIController::PFS_GLOBAL_DONE)
+								ai.pfState = AIController::PFS_WALKING;
+							else
+								ai.pfState = AIController::PFS_WALKING_LOCAL;
+							ai.pfLocalTargetTile = localTile;
+							const Int2& pt = ai.pfLocalPath.back();
+							moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
+						}
+						else if(ret == 4)
+						{
+							// walk point is blocked, at next frame try to skip it and use next path tile
+							// if that fails mark tile as blocked and recalculate global path
+							if(ai.pfState == AIController::PFS_LOCAL_TRY_WALK)
+							{
+								++ai.pfLocalTry;
+								if(ai.pfLocalTry == 4 || ai.pfPath.size() == ai.pfLocalTry)
+								{
+									ai.pfState = AIController::PFS_MANUAL_WALK;
+									moveTarget = Vec3(0.25f * localTile.x + 0.125f, 0, 0.25f * localTile.y + 0.125f);
+								}
+								else
+									move = 0;
+							}
+							else if(ai.pfPath.size() > 1u)
+							{
+								ai.pfState = AIController::PFS_LOCAL_TRY_WALK;
+								ai.pfLocalTry = 1;
+								move = 0;
+							}
+							else
+							{
+								ai.pfState = AIController::PFS_MANUAL_WALK;
+								moveTarget = Vec3(0.25f * localTile.x + 0.125f, 0, 0.25f * localTile.y + 0.125f);
+							}
+						}
+						else
+						{
+							ai.pfState = AIController::PFS_MANUAL_WALK;
+							moveTarget = targetPos;
+						}
+					}
+					else if(ai.pfState == AIController::PFS_MANUAL_WALK)
+						moveTarget = targetPos;
+					else if(ai.pfState == AIController::PFS_WALKING
+						|| ai.pfState == AIController::PFS_WALKING_LOCAL)
+					{
+						const Int2& pt = ai.pfLocalPath.back();
+						moveTarget = Vec3(0.25f * pt.x + 0.125f, 0, 0.25f * pt.y + 0.125f);
+					}
+
+				skipLocalpf:
+					if(move != 0)
+					{
+						// character movement
+						bool run;
+						if(!u.CanRun())
+							run = false;
+						else if(u.action == A_ATTACK && u.act.attack.run)
+							run = true;
+						else
+						{
+							switch(runType)
+							{
+							case Walk:
+								run = false;
+								break;
+							case Run:
+								run = true;
+								break;
+							case WalkIfNear:
+								run = (Vec3::Distance(u.pos, targetPos) >= 1.5f);
+								break;
+							case WalkIfNear2:
+								run = (Vec3::Distance(u.pos, targetPos) >= 3.f);
+								break;
+							default:
+								assert(0);
+								run = true;
+								break;
+							}
+						}
+
+						u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
+						if(u.action == A_SHOOT || u.action == A_CAST)
+							u.speed /= 2;
+						u.prevSpeed = Clamp((u.prevSpeed + (u.speed - u.prevSpeed) * dt * 3), 0.f, u.speed);
+						float speed = u.prevSpeed * dt;
+						const float angle = Vec3::LookAtAngle(u.pos, moveTarget) + PI;
+
+						u.prevPos = u.pos;
+
+						if(moveTarget == targetPos)
+						{
+							float dist = Vec3::Distance2d(u.pos, targetPos);
+							if(dist < speed)
+								speed = dist;
+						}
+						const Vec3 dir(sin(angle) * speed, 0, cos(angle) * speed);
+
+						if(moveType == KeepDistanceCheck)
+						{
+							u.pos += dir;
+							if(!u.CanShootAtUnit(*enemy, targetPos, IsSet(u.data->flags, F_MAGE)))
+								move = 0;
+							u.pos = u.prevPos;
+						}
+
+						if(move != 0)
+						{
+							bool small;
+							int moveState = gameLevel->CheckMove(u.pos, dir, u.GetRadius(), &u, &small);
+							if(moveState != 3 && tryPhase && u.hero->phase)
+							{
+								moveState = 4;
+								u.pos += dir;
+								small = false;
+							}
+
+							if(moveState)
+							{
+								u.Moved();
+
+								if(lookAt == LookAtWalk)
+								{
+									lookPos = u.pos + dir;
+									lookPtValid = true;
+								}
+
+								if(ai.pfState == AIController::PFS_WALKING)
+								{
+									const Int2 newTile(u.pos / 2);
+									if(newTile != myTile)
+									{
+										if(newTile == ai.pfPath.back())
+										{
+											ai.pfPath.pop_back();
+											if(ai.pfPath.empty())
+												ai.pfState = AIController::PFS_NOT_USING;
+										}
+										else
+											ai.pfState = AIController::PFS_NOT_USING;
+									}
+								}
+
+								if(ai.pfState == AIController::PFS_WALKING_LOCAL || ai.pfState == AIController::PFS_WALKING)
+								{
+									const Int2 newTile(u.pos.x * 4, u.pos.z * 4);
+									if(newTile != myLocalTile && newTile == ai.pfLocalPath.back())
+									{
+										ai.pfLocalPath.pop_back();
+										if(ai.pfLocalPath.empty())
+											ai.pfState = AIController::PFS_NOT_USING;
+									}
+								}
+
+								if(u.animation != ANI_PLAY && !small)
+								{
+									if(run)
+									{
+										u.animation = ANI_RUN;
+										u.running = abs(u.speed - u.prevSpeed) < 0.25;
+									}
+									else
+										u.animation = ANI_WALK;
+								}
+
+								if(tryPhase && moveState == 3)
+								{
+									u.hero->phase = false;
+									u.hero->phaseTimer = 0.f;
+								}
+							}
+
+							if(tryPhase && moveState != 3)
+							{
+								u.hero->phaseTimer += dt;
+								if(u.hero->phaseTimer >= 2.f)
+									u.hero->phase = true;
+							}
 						}
 					}
 				}

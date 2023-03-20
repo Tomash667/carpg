@@ -69,6 +69,7 @@ bool Navmesh::GetHeight(const Vec2& pos, float& height)
 }
 
 //=================================================================================================
+// Resulting path is reversed
 bool Navmesh::FindPath(const Vec2& from, const Vec2& to, vector<Vec3>& path)
 {
 	Region* regionFrom = GetRegion(from);
@@ -79,7 +80,6 @@ bool Navmesh::FindPath(const Vec2& from, const Vec2& to, vector<Vec3>& path)
 	path.clear();
 	if(regionFrom == regionTo)
 	{
-		path.push_back(from.XZ(regionFrom->GetHeight(from)));
 		path.push_back(to.XZ(regionFrom->GetHeight(to)));
 		return true;
 	}
@@ -151,8 +151,6 @@ bool Navmesh::FindPath(const Vec2& from, const Vec2& to, vector<Vec3>& path)
 		prevRegion = region;
 		region = regions[region->prev];
 	}
-	path.push_back(from.XZ(regionFrom->GetHeight(from)));
-	std::reverse(path.begin(), path.end());
 	return true;
 }
 

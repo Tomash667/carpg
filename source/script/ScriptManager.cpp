@@ -948,6 +948,7 @@ void ScriptManager::RegisterGame()
 		.Method("Unit@ FindQuestUnit(Quest@)", asFUNCTION(LocationHelper::FindQuestUnit));
 
 	ForType("LocationPart")
+		.Method("array<Usable@>@ GetUsables()", asMETHOD(LocationPart, GetUsables))
 		.Method("bool RemoveItemFromChest(Item@)", asMETHOD(LocationPart, RemoveItemFromChest))
 		.Method("bool RemoveItemFromUnit(Item@)", asMETHOD(LocationPart, RemoveItemFromUnit))
 		.Method("bool RemoveGroundItem(Item@)", asMETHODPR(LocationPart, RemoveGroundItem, (const Item*), bool));
@@ -1038,6 +1039,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Object@ FindObject(Room@, BaseObject@)", asMETHOD(Level, FindObjectInRoom))
 		.AddFunction("Chest@ GetRandomChest(Room@)", asMETHOD(Level, GetRandomChest))
 		.AddFunction("Chest@ GetTreasureChest()", asMETHOD(Level, GetTreasureChest))
+		.AddFunction("Usable@ FindUsable(int, LocationPart@ = null)", asMETHOD(Level, FindUsable))
 		.AddFunction("array<Room@>@ FindPath(Room@, Room@)", asMETHOD(Level, FindPath))
 		.AddFunction("array<Unit@>@ GetUnits()", asMETHODPR(Level, GetUnits, (), CScriptArray*))
 		.AddFunction("array<Unit@>@ GetUnits(Room@)", asMETHODPR(Level, GetUnits, (Room&), CScriptArray*))

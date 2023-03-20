@@ -50,23 +50,6 @@ void AIController::Save(GameWriter& f)
 	f << alertTargetPos;
 	f << startPos;
 	f << inCombat;
-	f << pfState;
-	if(pfState != PFS_NOT_USING)
-	{
-		f << pfTimer;
-		if(pfState == PFS_WALKING || pfState == PFS_LOCAL_TRY_WALK)
-		{
-			f.WriteVector2(pfPath);
-			f << pfTargetTile;
-			if(pfState == PFS_LOCAL_TRY_WALK)
-				f << pfLocalTry;
-		}
-		if(pfState == PFS_WALKING || pfState == PFS_WALKING_LOCAL)
-		{
-			f.WriteVector1(pfLocalPath);
-			f << pfLocalTargetTile;
-		}
-	}
 	f << nextAttack;
 	f << timer;
 	f << ignore;
@@ -148,21 +131,24 @@ void AIController::Load(GameReader& f)
 	f >> alertTargetPos;
 	f >> startPos;
 	f >> inCombat;
-	f >> pfState;
-	if(pfState != PFS_NOT_USING)
+	if(LOAD_VERSION < V_DEV)
 	{
-		f >> pfTimer;
-		if(pfState == PFS_WALKING || pfState == PFS_LOCAL_TRY_WALK)
+		f >> pfState;
+		if(pfState != PFS_NOT_USING)
 		{
-			f.ReadVector2(pfPath);
-			f >> pfTargetTile;
-			if(pfState == PFS_LOCAL_TRY_WALK)
-				f >> pfLocalTry;
-		}
-		if(pfState == PFS_WALKING || pfState == PFS_WALKING_LOCAL)
-		{
-			f.ReadVector1(pfLocalPath);
-			f >> pfLocalTargetTile;
+			f >> pfTimer;
+			if(pfState == PFS_WALKING || pfState == PFS_LOCAL_TRY_WALK)
+			{
+				f.ReadVector2(pfPath);
+				f >> pfTargetTile;
+				if(pfState == PFS_LOCAL_TRY_WALK)
+					f >> pfLocalTry;
+			}
+			if(pfState == PFS_WALKING || pfState == PFS_WALKING_LOCAL)
+			{
+				f.ReadVector1(pfLocalPath);
+				f >> pfLocalTargetTile;
+			}
 		}
 	}
 	f >> nextAttack;
@@ -190,7 +176,7 @@ void AIController::Load(GameReader& f)
 		{
 			int roomId = f.Read<int>();
 			if(roomId != -1)
-				st.escape.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
+				st.escape.room = static_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 			else
 				st.escape.room = nullptr;
 		}
@@ -202,7 +188,7 @@ void AIController::Load(GameReader& f)
 	case SearchEnemy:
 		{
 			int roomId = f.Read<int>();
-			st.search.room = reinterpret_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
+			st.search.room = static_cast<InsideLocation*>(gameLevel->location)->GetLevelData().rooms[roomId];
 		}
 		break;
 	}
@@ -238,6 +224,7 @@ void AIController::Load(GameReader& f)
 	else
 		scanTimer = Random(0.f, 0.2f);
 	changeAiMode = false;
+	pfState = PFS_NOT_USING;
 }
 
 //=================================================================================================

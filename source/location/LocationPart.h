@@ -72,6 +72,7 @@ public:
 	bool CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	Explo* CreateExplo(Ability* ability, const Vec3& pos);
 	void DestroyUsable(Usable* usable);
+	CScriptArray* GetUsables();
 
 	// ground items
 	vector<GroundItem*>& GetGroundItems() { return groundItems; }

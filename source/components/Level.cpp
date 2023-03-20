@@ -45,7 +45,6 @@
 #include "UnitGroup.h"
 #include "World.h"
 
-#include <angelscript.h>
 #include <ParticleSystem.h>
 #include <Render.h>
 #include <ResourceManager.h>

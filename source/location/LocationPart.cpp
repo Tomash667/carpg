@@ -19,12 +19,14 @@
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "Room.h"
+#include "ScriptManager.h"
 #include "Trap.h"
 #include "Unit.h"
 
 #include <ParticleSystem.h>
 #include <Scene.h>
 #include <SceneNode.h>
+#include <scriptarray/scriptarray.h>
 #include <SoundManager.h>
 #include <Terrain.h>
 
@@ -1089,4 +1091,16 @@ void LocationPart::DestroyUsable(Usable* usable)
 	RemoveElement(usables, usable);
 	usable->RemoveAllEventHandlers();
 	delete usable;
+}
+
+//=================================================================================================
+CScriptArray* LocationPart::GetUsables()
+{
+	asITypeInfo* type = scriptMgr->GetEngine()->GetTypeInfoByDecl("array<Usable@>");
+	CScriptArray* array = CScriptArray::Create(type);
+
+	for(Usable* usable : usables)
+		array->InsertLast(usable);
+
+	return array;
 }

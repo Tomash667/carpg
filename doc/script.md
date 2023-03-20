@@ -419,6 +419,7 @@ Part of location - dungeon level, outside, inside of building.
 
 Methods:
 
+* array<Usable@>@ GetUsables() - return all usables.
 * bool RemoveItemFromChest(Item@) - return true if removed item.
 * bool RemoveItemFromUnit(Item@) - remove single item from alive enemy, return true if removed.
 * bool RemoveGroundItem(Item@) - remove single item from ground, return true if removed.
@@ -623,6 +624,7 @@ Methods:
 
 * void AddEventHandler(Quest@, EVENT) - add event handler to usable.
 * void RemoveEventHandler(Quest@, EVENT = EVENT_ANY) - remove event handler from usable.
+* void Destroy() - destroy usable.
 
 Game components
 -------------------------------------------------------------------------------------------------------------
@@ -678,6 +680,7 @@ Static methods:
 * Object@ FindObject(Room@, BaseObject@) - return first object inside room or null.
 * Chest@ GetRandomChest(Room@) - get random chest in room.
 * Chest@ GetTreasureChest() - get silver chest in treasure room.
+* Usable@ FindUsable(int id) - get usable by id.
 * array<Room@>@ FindPath(Room@ from, Room@ to) - find path from room to room.
 * array<Unit@>@ GetUnits() - return all units in main level part.
 * array<Unit@>@ GetUnits(Room@) - return all units inside room.

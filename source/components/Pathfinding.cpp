@@ -486,8 +486,8 @@ bool Pathfinding::FindPath(LocationPart& locPart, const Int2& startTile, const I
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& myTile, const Int2& targetTile, const Unit* me, const Unit* other,
-	const void* usable, bool isEndPoint)
+int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& myTile, Int2 targetTile, const Unit* me, const Unit* other,
+	const void* usable, Mode mode)
 {
 	assert(me);
 
@@ -498,9 +498,40 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	if(myTile == targetTile)
 		return 3;
 
-	int dist = Int2::Distance(myTile, targetTile);
-	if(dist >= 32)
-		return 1;
+	Int2 dir = targetTile - myTile;
+	if(abs(dir.x) >= 31 || abs(dir.y) >= 31)
+	{
+		if(mode == MODE_SMART)
+		{
+			if(dir.x >= 31)
+			{
+				float ratio = 30.f / dir.x;
+				dir.x = 30;
+				dir.y = int(ratio * dir.y);
+			}
+			else if(dir.x <= -31)
+			{
+				float ratio = 30.f / -dir.x;
+				dir.x = -30;
+				dir.y = int(ratio * dir.y);
+			}
+			else if(dir.y >= 31)
+			{
+				float ratio = 30.f / dir.y;
+				dir.y = 30;
+				dir.x = int(ratio * dir.x);
+			}
+			else
+			{
+				float ratio = 30.f / -dir.y;
+				dir.y = -30;
+				dir.x = int(ratio * dir.x);
+			}
+			targetTile = myTile + dir;
+		}
+		else
+			return 1;
+	}
 
 	// center
 	const Int2 centerTile((myTile + targetTile) / 2);
@@ -563,14 +594,34 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 		}
 	}
 
-	const Int2 targetRel(targetTile.x - minx, targetTile.y - miny),
-		myRel(myTile.x - minx, myTile.y - miny);
-
-	// target tile is blocked
-	if(!isEndPoint && localPfMap[targetRel(w)])
-		return 4;
+	// target tile is blocked?
+	Int2 targetRel(targetTile.x - minx, targetTile.y - miny);
+	if(localPfMap[targetRel(w)])
+	{
+		if(mode == MODE_NORMAL)
+			return 4;
+		else if(mode == MODE_SMART)
+		{
+			const Vec2 dirNormal = Vec2((float)dir.x, (float)dir.y).Normalized();
+			float i = 1;
+			while(true)
+			{
+				const Int2 newTargetTile = targetTile - Int2(dirNormal * i);
+				if(newTargetTile == myTile)
+					return 4;
+				targetRel = Int2(newTargetTile.x - minx, newTargetTile.y - miny);
+				if(!localPfMap[targetRel(w)])
+				{
+					targetTile = newTargetTile;
+					break;
+				}
+				++i;
+			}
+		}
+	}
 
 	// mark my tile as free
+	const Int2 myRel(myTile.x - minx, myTile.y - miny);
 	localPfMap[myRel(w)] = false;
 	const Int2 neis[8] = {
 		Int2(-1,-1),
@@ -618,7 +669,7 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 	AStarSort sorter(aMap, w);
 	Point newPt;
 
-	const int MAX_STEPS = 100;
+	const int MAX_STEPS = 255;
 	int steps = 0;
 
 	// begin search of path
@@ -641,7 +692,7 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 			const Int2& pt1 = cDir[i] + pt.pt;
 			const Int2& pt2 = cDir2[i] + pt.pt;
 
-			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !localPfMap[pt1(w)])
+			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w && pt1.y < h && !localPfMap[pt1(w)])
 			{
 				apt.prev = pt.pt;
 				apt.cost = prevApt.cost + 10;
@@ -659,7 +710,7 @@ int Pathfinding::FindLocalPath(LocationPart& locPart, vector<Int2>& path, const 
 				}
 			}
 
-			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !localPfMap[pt2(w)])
+			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w && pt2.y < h && !localPfMap[pt2(w)])
 			{
 				apt.prev = pt.pt;
 				apt.cost = prevApt.cost + 15;

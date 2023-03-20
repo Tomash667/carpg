@@ -17,8 +17,15 @@ class Pathfinding
 	};
 
 public:
+	enum Mode
+	{
+		MODE_NORMAL,
+		MODE_END_POINT,
+		MODE_SMART
+	};
+
 	bool FindPath(LocationPart& locPart, const Int2& startTile, const Int2& targetTile, vector<Int2>& path, bool canOpenDoors = true, bool wandering = false, vector<Int2>* blocked = nullptr);
-	int FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& myTile, const Int2& targetTile, const Unit* me, const Unit* other, const void* usable = nullptr, bool isEndPoint = false);
+	int FindLocalPath(LocationPart& locPart, vector<Int2>& path, const Int2& myTile, Int2 targetTile, const Unit* me, const Unit* other, const void* usable = nullptr, Mode mode = MODE_NORMAL);
 	void Draw(BasicShader* shader);
 	void SetTarget(Unit* target) { marked = target; }
 	bool IsDebugDraw() const { return marked != nullptr; }
