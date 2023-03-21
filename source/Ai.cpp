@@ -613,6 +613,12 @@ void Game::UpdateAi(float dt)
 					break;
 				case ORDER_MOVE:
 					useIdle = false;
+					if(u.usable != nullptr)
+					{
+						if(u.busy != Unit::Busy_Talking && (u.action != A_USE_USABLE || u.animationState != AS_USE_USABLE_MOVE_TO_ENDPOINT))
+							u.StopUsingUsable();
+						break;
+					}
 					if(Vec3::Distance2d(u.pos, u.order->pos) < u.order->range)
 					{
 						u.OrderNext();
