@@ -26,6 +26,7 @@ public:
 	void LoadMusic(MusicType type, bool newLoadScreen = true, bool instant = false);
 	void LoadCommonMusic();
 	void LoadTrap(BaseTrap* trap);
+	ParticleEffect* GetParticleEffect(const string& id);
 
 	TexturePtr tBlack, tWarning, tError;
 	TexturePtr tBlood[BLOOD_MAX], tBloodSplat[BLOOD_MAX], tLightingLine, tVignette;
@@ -38,8 +39,8 @@ public:
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[11], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
 		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel, sCoughs;
-	ParticleEffect* peHit, *peSpellHit, *peElectroHit, *peTorch, *peTorchCeiling, *peMagicTorch, *peCampfire, *peAltarBlood, *peWater, *peMagicfire, *peSmoke,
-		*peSpawn, *peRaise, *peHeal, *peSpellOther, *peSpellBall, *peBlood;
+	ParticleEffect* peHit, *peSpellHit, *peElectroHit, *peTorch, *peTorchCeiling, *peMagicTorch, *peCampfire, *peAltarBlood, *peWater, *peSpawn, *peRaise,
+		*peHeal, *peSpellOther, *peSpellBall, *peBlood;
 
 private:
 	void InitEffects();
@@ -55,6 +56,7 @@ private:
 	Camera* camera;
 	ItemTextureMap itemTextureMap;
 	vector<Texture*> overrideItemTextures;
+	vector<ParticleEffect*> particleEffects;
 	RenderTarget* rtItem;
 	Texture* missingItemTexture;
 	cstring txLoadGuiTextures, txLoadTerrainTextures, txLoadParticles, txLoadModels, txLoadSounds, txLoadMusic;

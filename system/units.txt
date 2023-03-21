@@ -3875,6 +3875,7 @@ alias qOrcsOrc q_orkowie_orc
 alias qOrcsHunter q_orkowie_orc_hunter
 alias qOrcsFighter q_orkowie_orc_fighter
 alias qOrcsWarius q_orkowie_orc_warius
+alias qOrcsChief q_orkowie_orc_chief
 alias qOrcsShaman q_orkowie_orc_shaman
 alias qOrcsBlacksmith q_orkowie_kowal
 alias qOrcsBoss q_orkowie_boss

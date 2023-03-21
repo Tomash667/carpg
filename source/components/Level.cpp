@@ -1466,30 +1466,22 @@ void Level::ProcessBuildingObjects(LocationPart& locPart, City* city, InsideBuil
 			}
 			break;
 		case 'e': // effect
-			if(game->inLoad)
-				break;
-			if(token == "magicfire")
+			if(!game->inLoad)
 			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peMagicfire->Apply(pe);
-				pe->pos = pos;
-				if(locPart.partType == LocationPart::Type::Outside)
-					pe->pos.y += terrain->GetH(pos);
-				pe->Init();
-				locPart.lvlPart->pes.push_back(pe);
+				ParticleEffect* effect = gameRes->GetParticleEffect(token);
+				if(effect)
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					effect->Apply(pe);
+					pe->pos = pos;
+					if(locPart.partType == LocationPart::Type::Outside)
+						pe->pos.y += terrain->GetH(pos);
+					pe->Init();
+					locPart.lvlPart->pes.push_back(pe);
+				}
+				else
+					assert(0);
 			}
-			else if(token == "smoke")
-			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peSmoke->Apply(pe);
-				pe->pos = pos;
-				if(locPart.partType == LocationPart::Type::Outside)
-					pe->pos.y += terrain->GetH(pos);
-				pe->Init();
-				locPart.lvlPart->pes.push_back(pe);
-			}
-			else
-				assert(0);
 			break;
 		}
 	}
