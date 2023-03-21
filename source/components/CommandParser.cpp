@@ -56,7 +56,6 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&net->mpInterp, "mpInterp", "interpolation interval (mpInterp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&net->mpUseInterp, "mpUseInterp", "set use of interpolation (mpUseInterp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&game->usePostfx, "usePostfx", "use post effects (usePostfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game->useGlow, "useGlow", "use glow (useGlow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->uvMod, "uvMod", "terrain uv mod (uvMod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(&game->settings.grassRange, "grassRange", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&game->devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));

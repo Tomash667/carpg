@@ -3,6 +3,9 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.21 (???):
 ! nie można wczytywać już zapisów z wersji 0.10 lub starszej
++ podziemia budynku w mieście
++ lepsze wyszukiwanie ścieżek
++ usunięcie starej opcji poświaty
 + aktualizacja bibliotek: AngelScript 2.35.1, DirectXMath 3.18
 - poprawki do startowych przedmiotów i lepszych przedmiotów dla npc
 - crash po użyciu komendy "warp" do tego samego budynku

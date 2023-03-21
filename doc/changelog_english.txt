@@ -3,6 +3,9 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.21 (???):
 ! cannot load saves from version 0.10 or older
++ building undergrounds inside city
++ better pathfinding
++ removed old glow mode
 + updated libraries: AngelScript 2.35.1, DirectXMath 3.18
 - fix start items and npc better items
 - crash when using "warp" command when inside target building

@@ -637,9 +637,6 @@ void Game::DrawGame()
 				postfxShader->Prepare();
 			postfxShader->Draw(postEffects);
 		}
-
-		if(drawBatch.tmpGlow)
-			drawBatch.tmpGlow->tint = Vec4::One;
 	}
 	else
 		render->Clear(Color::Black);
@@ -972,7 +969,6 @@ void Game::LoadCfg()
 	inactiveUpdate = cfg.GetBool("inactiveUpdate");
 	skipTutorial = cfg.GetBool("skipTutorial");
 	testing = cfg.GetBool("test");
-	useGlow = cfg.GetBool("useGlow", true);
 	usePostfx = cfg.GetBool("usePostfx", true);
 	settings.grassRange = max(cfg.GetFloat("grassRange", 40.f), 0.f);
 	settings.mouseSensitivity = Clamp(cfg.GetInt("mouseSensitivity", 50), 0, 100);

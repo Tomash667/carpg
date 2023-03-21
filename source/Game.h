@@ -360,7 +360,7 @@ public:
 	bool drawParticleSphere, drawUnitRadius, drawHitbox, drawPhy, drawCol;
 	float portalAnim;
 	// scene
-	bool useGlow, usePostfx;
+	bool usePostfx;
 	DrawBatch drawBatch;
 	int uvMod;
 	QuadTree quadtree;

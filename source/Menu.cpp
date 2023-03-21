@@ -60,7 +60,6 @@ bool Game::CanShowMenu()
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", engine->IsFullscreen());
-	cfg.Add("useGlow", useGlow);
 	cfg.Add("useNormalmap", sceneMgr->useNormalmap);
 	cfg.Add("useSpecularmap", sceneMgr->useSpecularmap);
 	cfg.Add("soundVolume", soundMgr->GetSoundVolume());

@@ -243,7 +243,6 @@ To open console press ~ [to the left from 1]. Some commands are only available i
 	suicide - kill player.
 	tileInfo - display info about map tile.
 	useFog - draw fog (useFog 0/1).
-	useGlow - use glow (useGlow 0/1).
 	useLighting - use lighting (useLighting 0/1).
 	useNormalmap - use normal mapping (useNormalmap 0/1).
 	usePostfx - use post effects (usePostfx 0/1).

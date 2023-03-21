@@ -52,7 +52,6 @@ struct DrawBatch : public SceneBatch
 	vector<DungeonPart> dungeonParts;
 	vector<DungeonPartGroup> dungeonPartGroups;
 	vector<Light*> visibleLights, tmpLights;
-	SceneNode* tmpGlow;
 
 	void Clear();
 };

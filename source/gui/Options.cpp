@@ -71,9 +71,9 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 	size = Int2(560, 495);
 	bts.resize(2);
 
-	Int2 offset(290, 60);
+	Int2 offset(290, 80);
 
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
@@ -82,28 +82,28 @@ Options::Options(const DialogInfo& info) : DialogBox(info)
 		offset.y += 32 + 10;
 	}
 
-	scroll[0].pos = Int2(290, 290);
+	scroll[0].pos = Int2(290, 280);
 	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
 	scroll[0].part = 10;
 	scroll[0].offset = 0;
 	scroll[0].hscrollbar = true;
 
-	scroll[1].pos = Int2(290, 330);
+	scroll[1].pos = Int2(290, 320);
 	scroll[1].size = Int2(250, 16);
 	scroll[1].total = 100;
 	scroll[1].part = 10;
 	scroll[1].offset = 0;
 	scroll[1].hscrollbar = true;
 
-	scroll[2].pos = Int2(290, 370);
+	scroll[2].pos = Int2(290, 360);
 	scroll[2].size = Int2(250, 16);
 	scroll[2].total = 100;
 	scroll[2].part = 10;
 	scroll[2].offset = 0;
 	scroll[2].hscrollbar = true;
 
-	scroll[3].pos = Int2(290, 410);
+	scroll[3].pos = Int2(290, 400);
 	scroll[3].size = Int2(250, 16);
 	scroll[3].total = 100;
 	scroll[3].part = 10;
@@ -160,10 +160,9 @@ void Options::LoadLanguage()
 	txMsNone = s.Get("msNone");
 
 	check[0].text = s.Get("fullscreenMode");
-	check[1].text = s.Get("glow");
-	check[2].text = s.Get("normalMap");
-	check[3].text = s.Get("specularMap");
-	check[4].text = s.Get("vsync");
+	check[1].text = s.Get("normalMap");
+	check[2].text = s.Get("specularMap");
+	check[3].text = s.Get("vsync");
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
@@ -237,7 +236,7 @@ void Options::Draw()
 	gui->DrawText(GameGui::fontBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// controls
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 		check[i].Draw();
 	for(int i = 0; i < 4; ++i)
 		scroll[i].Draw();
@@ -264,19 +263,19 @@ void Options::Draw()
 	//------ Right part
 	// Sound volume (0)
 	r2.Left() = globalPos.x + 290;
-	r2.Top() = globalPos.y + 270;
+	r2.Top() = globalPos.y + 260;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, soundVolume), DTF_SINGLELINE, Color::Black, r2);
 	// Music volume (0)
-	r2.Top() = globalPos.y + 310;
+	r2.Top() = globalPos.y + 300;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, musicVolume), DTF_SINGLELINE, Color::Black, r2);
 	// Mouse sensitivity (0)
-	r2.Top() = globalPos.y + 350;
+	r2.Top() = globalPos.y + 340;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouseSensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Grass range (0)
-	r2.Top() = globalPos.y + 390;
+	r2.Top() = globalPos.y + 380;
 	r2.Bottom() = r2.Top() + 20;
 	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grassRange), DTF_SINGLELINE, Color::Black, r2);
 
@@ -304,7 +303,7 @@ void Options::Update(float dt)
 		language.menu->Update(dt);
 	if(soundDevice.menu->visible)
 		soundDevice.menu->Update(dt);
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		check[i].mouseFocus = focus;
 		check[i].Update(dt);
@@ -358,7 +357,7 @@ void Options::Event(GuiEvent e)
 			SetSoundDevices();
 		}
 		pos = globalPos = (gui->wndSize - size) / 2;
-		for(int i = 0; i < 5; ++i)
+		for(int i = 0; i < 4; ++i)
 			check[i].globalPos = globalPos + check[i].pos;
 		for(int i = 0; i < 4; ++i)
 			scroll[i].globalPos = globalPos + scroll[i].pos;
@@ -404,14 +403,11 @@ void Options::Event(GuiEvent e)
 		case IdControls:
 			gui->ShowDialog((DialogBox*)gameGui->controls);
 			break;
-		case IdGlow:
-			game->useGlow = check[1].checked;
-			break;
 		case IdNormal:
-			sceneMgr->useNormalmap = check[2].checked;
+			sceneMgr->useNormalmap = check[1].checked;
 			break;
 		case IdSpecular:
-			sceneMgr->useSpecularmap = check[3].checked;
+			sceneMgr->useSpecularmap = check[2].checked;
 			break;
 		case IdVsync:
 			render->SetVsync(!render->IsVsyncEnabled());
@@ -424,10 +420,9 @@ void Options::Event(GuiEvent e)
 void Options::SetOptions()
 {
 	check[0].checked = engine->IsFullscreen();
-	check[1].checked = game->useGlow;
-	check[2].checked = sceneMgr->useNormalmap;
-	check[3].checked = sceneMgr->useSpecularmap;
-	check[4].checked = render->IsVsyncEnabled();
+	check[1].checked = sceneMgr->useNormalmap;
+	check[2].checked = sceneMgr->useSpecularmap;
+	check[3].checked = render->IsVsyncEnabled();
 
 	ResolutionItem& currentItem = *res.GetItemCast<ResolutionItem>();
 	const Int2& wndSize = engine->GetWindowSize();

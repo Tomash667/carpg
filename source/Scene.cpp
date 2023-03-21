@@ -126,14 +126,9 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.beforePlayer == BP_USABLE && pc->data.beforePlayerPtr.usable == &use)
 				{
-					if(useGlow)
-					{
-						GlowNode& glow = Add1(drawBatch.glowNodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
+					GlowNode& glow = Add1(drawBatch.glowNodes);
+					glow.node = node;
+					glow.color = Color::White;
 				}
 				drawBatch.Add(node);
 			}
@@ -163,14 +158,9 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.beforePlayer == BP_CHEST && pc->data.beforePlayerPtr.chest == &chest)
 				{
-					if(useGlow)
-					{
-						GlowNode& glow = Add1(drawBatch.glowNodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
+					GlowNode& glow = Add1(drawBatch.glowNodes);
+					glow.node = node;
+					glow.color = Color::White;
 				}
 				drawBatch.Add(node);
 			}
@@ -200,14 +190,9 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					GatherDrawBatchLights(node);
 				if(pc->data.beforePlayer == BP_DOOR && pc->data.beforePlayerPtr.door == &door)
 				{
-					if(useGlow)
-					{
-						GlowNode& glow = Add1(drawBatch.glowNodes);
-						glow.node = node;
-						glow.color = Color::White;
-					}
-					else
-						node->tint = Vec4(2, 2, 2, 1);
+					GlowNode& glow = Add1(drawBatch.glowNodes);
+					glow.node = node;
+					glow.color = Color::White;
 				}
 				drawBatch.Add(node);
 			}
@@ -509,28 +494,18 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 					node->trimesh = reinterpret_cast<SimpleMesh*>(shape->getUserPointer());
 					drawBatch.debugNodes.push_back(node);
 				}
-			default:
 				break;
 			}
 		}
 	}
 
 	// glow
-	drawBatch.tmpGlow = nullptr;
 	if(PlayerController::data.beforePlayer == BP_ITEM)
 	{
 		GroundItem* groundItem = PlayerController::data.beforePlayerPtr.item;
-		if(useGlow)
-		{
-			GlowNode& glow = Add1(drawBatch.glowNodes);
-			glow.node = groundItem->node;
-			glow.color = Color::White;
-		}
-		else
-		{
-			groundItem->node->tint = Vec4(2, 2, 2, 1);
-			drawBatch.tmpGlow = groundItem->node;
-		}
+		GlowNode& glow = Add1(drawBatch.glowNodes);
+		glow.node = groundItem->node;
+		glow.color = Color::White;
 	}
 
 	drawBatch.Process();
@@ -595,18 +570,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		GatherDrawBatchLights(node);
 	if(selected)
 	{
-		if(useGlow)
-		{
-			GlowNode& glow = Add1(drawBatch.glowNodes);
-			glow.node = node;
-			glow.color = pc->unit->GetRelationColor(u);
-		}
-		else
-		{
-			node->tint.x *= 2;
-			node->tint.y *= 2;
-			node->tint.z *= 2;
-		}
+		GlowNode& glow = Add1(drawBatch.glowNodes);
+		glow.node = node;
+		glow.color = pc->unit->GetRelationColor(u);
 	}
 	drawBatch.Add(node);
 	if(u.HaveArmor() && u.GetArmor().armorUnitType == ArmorUnitType::HUMAN && u.GetArmor().mesh)
@@ -624,14 +590,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 	}
@@ -709,14 +670,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 
@@ -759,14 +715,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 
@@ -797,14 +748,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 	}
@@ -850,14 +796,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-				node2->tint = Vec4(2, 2, 2, 1);
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 	}
@@ -876,18 +817,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		node2->lights = node->lights;
 		if(selected)
 		{
-			if(useGlow)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node2;
-				glow.color = pc->unit->GetRelationColor(u);
-			}
-			else
-			{
-				node2->tint.x *= 2;
-				node2->tint.y *= 2;
-				node2->tint.z *= 2;
-			}
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = node2;
+			glow.color = pc->unit->GetRelationColor(u);
 		}
 		drawBatch.Add(node2);
 
@@ -902,18 +834,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(useGlow)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node3;
-					glow.color = pc->unit->GetRelationColor(u);
-				}
-				else
-				{
-					node3->tint.x *= 2;
-					node3->tint.y *= 2;
-					node3->tint.z *= 2;
-				}
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node3;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			drawBatch.Add(node3);
 		}
@@ -929,18 +852,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(useGlow)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node3;
-					glow.color = pc->unit->GetRelationColor(u);
-				}
-				else
-				{
-					node3->tint.x *= 2;
-					node3->tint.y *= 2;
-					node3->tint.z *= 2;
-				}
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node3;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			drawBatch.Add(node3);
 		}
@@ -956,18 +870,9 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 			node3->lights = node->lights;
 			if(selected)
 			{
-				if(useGlow)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node3;
-					glow.color = pc->unit->GetRelationColor(u);
-				}
-				else
-				{
-					node3->tint.x *= 2;
-					node3->tint.y *= 2;
-					node3->tint.z *= 2;
-				}
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node3;
+				glow.color = pc->unit->GetRelationColor(u);
 			}
 			drawBatch.Add(node3);
 		}
