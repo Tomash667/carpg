@@ -212,15 +212,14 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 //=================================================================================================
 void Game::CreateSaveImage()
 {
-	int oldFlags = drawFlags;
 	if(gameState == GS_LEVEL)
-		drawFlags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
+		gui->SetDrawOptions(false, false);
 	else
-		drawFlags = (0xFFFFFFFF & ~DF_MENU);
+		gui->SetDrawOptions(true, false);
 	render->SetRenderTarget(rtSave);
 	DrawGame();
 	render->SetRenderTarget(nullptr);
-	drawFlags = oldFlags;
+	gui->SetDrawOptions(true, true);
 }
 
 //=================================================================================================
@@ -530,7 +529,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << drawCol;
 	f << gameSpeed;
 	f << nextSeed;
-	f << drawFlags;
 	f << pc->unit->id;
 	f << gameLevel->dungeonLevel;
 	f << portalAnim;
@@ -790,7 +788,8 @@ void Game::LoadGame(GameReader& f)
 	f >> drawCol;
 	f >> gameSpeed;
 	f >> nextSeed;
-	f >> drawFlags;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // drawFlags
 	Unit* player;
 	f >> player;
 	pc = player->player;

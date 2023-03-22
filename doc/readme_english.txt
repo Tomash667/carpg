@@ -184,7 +184,6 @@ To open console press ~ [to the left from 1]. Some commands are only available i
 	devmode - developer mode (devmode 0/1).
 	dontWander - citizens don't wander around city (dontWander 0/1).
 	drawCol - draw colliders (drawCol 0/1).
-	drawFlags - set which elements of game draw (drawFlags int).
 	drawHitbox - draw weapons hitbox (drawHitbox 0/1).
 	drawParticleSphere - draw particle extents sphere (drawParticleSphere 0/1).
 	drawPath - draw debug pathfinding, look at target.
@@ -233,7 +232,6 @@ To open console press ~ [to the left from 1]. Some commands are only available i
 	revealMinimap - reveal dungeon minimap.
 	save - save game (save 1-11 [text] or filename).
 	scare - enemies escape.
-	screenshot - save screenshot.
 	select - select and display currently selected target (select [me/show/target] - use target or show by default).
 	setStat - set player statistics, use ? to get list (setStat stat value).
 	skipDays - skip days [skipDays [count]).

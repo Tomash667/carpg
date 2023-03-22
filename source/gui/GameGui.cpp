@@ -268,10 +268,10 @@ void GameGui::Draw()
 }
 
 //=================================================================================================
-void GameGui::Draw(const Matrix& matViewProj, bool drawGui, bool drawDialogs)
+void GameGui::Draw(const Matrix& matViewProj)
 {
 	gui->mViewProj = matViewProj;
-	gui->Draw(drawGui, drawDialogs);
+	gui->Draw();
 }
 
 //=================================================================================================

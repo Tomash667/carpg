@@ -16,7 +16,7 @@ public:
 	void LoadData();
 	void PostInit();
 	void Draw() override;
-	void Draw(const Matrix& matViewProj, bool drawGui, bool drawDialogs);
+	void Draw(const Matrix& matViewProj);
 	void UpdateGui(float dt);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);

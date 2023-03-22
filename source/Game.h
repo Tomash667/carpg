@@ -68,26 +68,6 @@ enum class FALLBACK
 	CUTSCENE_END
 };
 
-enum DRAW_FLAGS
-{
-	DF_TERRAIN = 1 << 0,
-	DF_OBJECTS = 1 << 1,
-	DF_UNITS = 1 << 2,
-	DF_PARTICLES = 1 << 3,
-	DF_SKYBOX = 1 << 4,
-	DF_BULLETS = 1 << 5,
-	DF_BLOOD = 1 << 6,
-	DF_ITEMS = 1 << 7,
-	DF_USABLES = 1 << 8,
-	DF_TRAPS = 1 << 9,
-	DF_AREA = 1 << 10,
-	DF_EXPLOS = 1 << 11,
-	DF_LIGHTINGS = 1 << 12,
-	DF_PORTALS = 1 << 13,
-	DF_GUI = 1 << 14,
-	DF_MENU = 1 << 15,
-};
-
 enum class ActionResult
 {
 	Ignore,
@@ -356,7 +336,6 @@ public:
 	//-----------------------------------------------------------------
 	// DRAWING
 	//-----------------------------------------------------------------
-	int drawFlags;
 	bool drawParticleSphere, drawUnitRadius, drawHitbox, drawPhy, drawCol;
 	float portalAnim;
 	// scene

@@ -66,233 +66,206 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	}
 
 	// terrain
-	if(locPart.partType == LocationPart::Type::Outside && IsSet(drawFlags, DF_TERRAIN))
+	if(locPart.partType == LocationPart::Type::Outside)
 		gameLevel->terrain->ListVisibleParts(drawBatch.terrainParts, frustum);
 
 	// dungeon
-	if(locPart.partType == LocationPart::Type::Inside && IsSet(drawFlags, DF_TERRAIN))
+	if(locPart.partType == LocationPart::Type::Inside)
 		dungeonMeshBuilder->ListVisibleParts(drawBatch, frustum);
 
 	// units
-	if(IsSet(drawFlags, DF_UNITS))
-	{
-		for(Unit* unit : locPart.units)
-			ListDrawObjectsUnit(frustum, *unit);
-	}
+	for(Unit* unit : locPart.units)
+		ListDrawObjectsUnit(frustum, *unit);
 
 	// objects
-	if(IsSet(drawFlags, DF_OBJECTS))
+	if(locPart.partType == LocationPart::Type::Outside)
 	{
-		if(locPart.partType == LocationPart::Type::Outside)
+		for(LevelQuad* quad : levelQuads)
 		{
-			for(LevelQuad* quad : levelQuads)
+			for(QuadObj& obj : quad->objects)
 			{
-				for(QuadObj& obj : quad->objects)
-				{
-					const Object& o = *obj.obj;
-					o.mesh->EnsureIsLoaded();
-					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-						AddObjectToDrawBatch(frustum, o);
-				}
-			}
-		}
-		else
-		{
-			for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
-			{
-				const Object& o = **it;
+				const Object& o = *obj.obj;
 				o.mesh->EnsureIsLoaded();
 				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
 					AddObjectToDrawBatch(frustum, o);
 			}
 		}
 	}
+	else
+	{
+		for(vector<Object*>::iterator it = locPart.objects.begin(), end = locPart.objects.end(); it != end; ++it)
+		{
+			const Object& o = **it;
+			o.mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
+				AddObjectToDrawBatch(frustum, o);
+		}
+	}
 
 	// usable objects
-	if(IsSet(drawFlags, DF_USABLES))
+	for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
 	{
-		for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
+		Usable& use = **it;
+		Mesh* mesh = use.GetMesh();
+		mesh->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
 		{
-			Usable& use = **it;
-			Mesh* mesh = use.GetMesh();
-			mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(mesh);
+			node->center = use.pos;
+			node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			if(pc->data.beforePlayer == BP_USABLE && pc->data.beforePlayerPtr.usable == &use)
 			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(mesh);
-				node->center = use.pos;
-				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-				if(drawBatch.gatherLights)
-					GatherDrawBatchLights(node);
-				if(pc->data.beforePlayer == BP_USABLE && pc->data.beforePlayerPtr.usable == &use)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node;
-					glow.color = Color::White;
-				}
-				drawBatch.Add(node);
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node;
+				glow.color = Color::White;
 			}
+			drawBatch.Add(node);
 		}
 	}
 
 	// chests
-	if(IsSet(drawFlags, DF_USABLES))
+	for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
 	{
-		for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
+		Chest& chest = **it;
+		chest.meshInst->mesh->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
 		{
-			Chest& chest = **it;
-			chest.meshInst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
+			SceneNode* node = SceneNode::Get();
+			if(chest.meshInst->IsActive())
 			{
-				SceneNode* node = SceneNode::Get();
-				if(chest.meshInst->IsActive())
-				{
-					chest.meshInst->SetupBones();
-					node->SetMesh(chest.meshInst);
-				}
-				else
-					node->SetMesh(chest.meshInst->mesh);
-				node->center = chest.pos;
-				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
-				if(drawBatch.gatherLights)
-					GatherDrawBatchLights(node);
-				if(pc->data.beforePlayer == BP_CHEST && pc->data.beforePlayerPtr.chest == &chest)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node;
-					glow.color = Color::White;
-				}
-				drawBatch.Add(node);
+				chest.meshInst->SetupBones();
+				node->SetMesh(chest.meshInst);
 			}
+			else
+				node->SetMesh(chest.meshInst->mesh);
+			node->center = chest.pos;
+			node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			if(pc->data.beforePlayer == BP_CHEST && pc->data.beforePlayerPtr.chest == &chest)
+			{
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node;
+				glow.color = Color::White;
+			}
+			drawBatch.Add(node);
 		}
 	}
 
 	// doors
-	if(IsSet(drawFlags, DF_USABLES))
+	for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 	{
-		for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
+		Door& door = **it;
+		door.meshInst->mesh->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
 		{
-			Door& door = **it;
-			door.meshInst->mesh->EnsureIsLoaded();
-			if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
+			SceneNode* node = SceneNode::Get();
+			if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
+				node->SetMesh(door.meshInst->mesh);
+			else
 			{
-				SceneNode* node = SceneNode::Get();
-				if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
-					node->SetMesh(door.meshInst->mesh);
-				else
-				{
-					door.meshInst->SetupBones();
-					node->SetMesh(door.meshInst);
-				}
-				node->center = door.pos;
-				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
-				if(drawBatch.gatherLights)
-					GatherDrawBatchLights(node);
-				if(pc->data.beforePlayer == BP_DOOR && pc->data.beforePlayerPtr.door == &door)
-				{
-					GlowNode& glow = Add1(drawBatch.glowNodes);
-					glow.node = node;
-					glow.color = Color::White;
-				}
-				drawBatch.Add(node);
+				door.meshInst->SetupBones();
+				node->SetMesh(door.meshInst);
 			}
+			node->center = door.pos;
+			node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			if(pc->data.beforePlayer == BP_DOOR && pc->data.beforePlayerPtr.door == &door)
+			{
+				GlowNode& glow = Add1(drawBatch.glowNodes);
+				glow.node = node;
+				glow.color = Color::White;
+			}
+			drawBatch.Add(node);
 		}
 	}
 
 	// bloods
-	if(IsSet(drawFlags, DF_BLOOD))
+	for(Blood& blood : locPart.bloods)
 	{
-		for(Blood& blood : locPart.bloods)
+		if(blood.size > 0.f && frustum.SphereToFrustum(blood.pos, blood.size * blood.scale))
 		{
-			if(blood.size > 0.f && frustum.SphereToFrustum(blood.pos, blood.size * blood.scale))
-			{
-				if(drawBatch.gatherLights)
-					GatherDrawBatchLights(nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
-				drawBatch.bloods.push_back(&blood);
-			}
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(nullptr, blood.pos.x, blood.pos.y, blood.size * blood.scale, 0, blood.lights);
+			drawBatch.bloods.push_back(&blood);
 		}
 	}
 
 	// bullets
-	if(IsSet(drawFlags, DF_BULLETS))
+	for(vector<Bullet*>::iterator it = lvlPart.bullets.begin(), end = lvlPart.bullets.end(); it != end; ++it)
 	{
-		for(vector<Bullet*>::iterator it = lvlPart.bullets.begin(), end = lvlPart.bullets.end(); it != end; ++it)
+		Bullet& bullet = **it;
+		if(bullet.mesh)
 		{
-			Bullet& bullet = **it;
-			if(bullet.mesh)
+			bullet.mesh->EnsureIsLoaded();
+			if(frustum.SphereToFrustum(bullet.pos, bullet.mesh->head.radius))
 			{
-				bullet.mesh->EnsureIsLoaded();
-				if(frustum.SphereToFrustum(bullet.pos, bullet.mesh->head.radius))
-				{
-					SceneNode* node = SceneNode::Get();
-					node->SetMesh(bullet.mesh);
-					node->center = bullet.pos;
-					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
-					if(drawBatch.gatherLights)
-						GatherDrawBatchLights(node);
-					drawBatch.Add(node);
-				}
+				SceneNode* node = SceneNode::Get();
+				node->SetMesh(bullet.mesh);
+				node->center = bullet.pos;
+				node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
+				if(drawBatch.gatherLights)
+					GatherDrawBatchLights(node);
+				drawBatch.Add(node);
 			}
-			else
+		}
+		else
+		{
+			if(frustum.SphereToFrustum(bullet.pos, bullet.texSize))
 			{
-				if(frustum.SphereToFrustum(bullet.pos, bullet.texSize))
-				{
-					Billboard& bb = Add1(drawBatch.billboards);
-					bb.pos = bullet.pos;
-					bb.size = bullet.texSize;
-					bb.tex = bullet.tex;
-				}
+				Billboard& bb = Add1(drawBatch.billboards);
+				bb.pos = bullet.pos;
+				bb.size = bullet.texSize;
+				bb.tex = bullet.tex;
 			}
 		}
 	}
 
 	// traps
-	if(IsSet(drawFlags, DF_TRAPS))
+	for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end; ++it)
 	{
-		for(vector<Trap*>::iterator it = locPart.traps.begin(), end = locPart.traps.end(); it != end; ++it)
+		Trap& trap = **it;
+		trap.base->mesh->EnsureIsLoaded();
+		if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON))
+			&& frustum.SphereToFrustum(trap.pos, trap.base->mesh->head.radius))
 		{
-			Trap& trap = **it;
-			trap.base->mesh->EnsureIsLoaded();
-			if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON))
-				&& frustum.SphereToFrustum(trap.pos, trap.base->mesh->head.radius))
+			SceneNode* node = SceneNode::Get();
+			if(trap.meshInst && trap.meshInst->IsActive())
 			{
-				SceneNode* node = SceneNode::Get();
-				if(trap.meshInst && trap.meshInst->IsActive())
-				{
-					trap.meshInst->SetupBones();
-					node->SetMesh(trap.meshInst);
-				}
-				else
-					node->SetMesh(trap.base->mesh);
-				node->center = trap.pos;
-				node->mat = Matrix::RotationY(trap.rot) * Matrix::Translation(trap.pos);
-				if(drawBatch.gatherLights)
-					GatherDrawBatchLights(node);
-				drawBatch.Add(node);
+				trap.meshInst->SetupBones();
+				node->SetMesh(trap.meshInst);
 			}
+			else
+				node->SetMesh(trap.base->mesh);
+			node->center = trap.pos;
+			node->mat = Matrix::RotationY(trap.rot) * Matrix::Translation(trap.pos);
+			if(drawBatch.gatherLights)
+				GatherDrawBatchLights(node);
+			drawBatch.Add(node);
 		}
 	}
 
 	// explosions
-	if(IsSet(drawFlags, DF_EXPLOS))
+	gameRes->aSpellball->EnsureIsLoaded();
+	for(vector<Explo*>::iterator it = lvlPart.explos.begin(), end = lvlPart.explos.end(); it != end; ++it)
 	{
-		gameRes->aSpellball->EnsureIsLoaded();
-		for(vector<Explo*>::iterator it = lvlPart.explos.begin(), end = lvlPart.explos.end(); it != end; ++it)
+		Explo& explo = **it;
+		if(frustum.SphereToFrustum(explo.pos, explo.size))
 		{
-			Explo& explo = **it;
-			if(frustum.SphereToFrustum(explo.pos, explo.size))
-			{
-				SceneNode* node = SceneNode::Get();
-				node->SetMesh(gameRes->aSpellball);
-				node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-				node->center = explo.pos;
-				node->radius *= explo.size;
-				node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
-				node->texOverride = &explo.ability->texExplode;
-				node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
-				node->addBlend = false;
-				drawBatch.Add(node);
-			}
+			SceneNode* node = SceneNode::Get();
+			node->SetMesh(gameRes->aSpellball);
+			node->flags |= SceneNode::F_NO_LIGHTING | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
+			node->center = explo.pos;
+			node->radius *= explo.size;
+			node->mat = Matrix::Scale(explo.size) * Matrix::Translation(explo.pos);
+			node->texOverride = &explo.ability->texExplode;
+			node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
+			node->addBlend = false;
+			drawBatch.Add(node);
 		}
 	}
 
@@ -317,35 +290,30 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	}
 
 	// particles
-	if(IsSet(drawFlags, DF_PARTICLES))
+	for(vector<ParticleEmitter*>::iterator it = lvlPart.pes.begin(), end = lvlPart.pes.end(); it != end; ++it)
 	{
-		for(vector<ParticleEmitter*>::iterator it = lvlPart.pes.begin(), end = lvlPart.pes.end(); it != end; ++it)
+		ParticleEmitter& pe = **it;
+		if(pe.alive && frustum.SphereToFrustum(pe.pos, pe.radius))
 		{
-			ParticleEmitter& pe = **it;
-			if(pe.alive && frustum.SphereToFrustum(pe.pos, pe.radius))
+			drawBatch.pes.push_back(&pe);
+			if(drawParticleSphere)
 			{
-				drawBatch.pes.push_back(&pe);
-				if(drawParticleSphere)
-				{
-					DebugNode* debugNode = DebugNode::Get();
-					debugNode->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
-					debugNode->shape = MeshShape::Sphere;
-					debugNode->color = Color::Green;
-					drawBatch.debugNodes.push_back(debugNode);
-				}
+				DebugNode* debugNode = DebugNode::Get();
+				debugNode->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * drawBatch.camera->matViewProj;
+				debugNode->shape = MeshShape::Sphere;
+				debugNode->color = Color::Green;
+				drawBatch.debugNodes.push_back(debugNode);
 			}
 		}
-
-		if(lvlPart.tpes.empty())
-			drawBatch.tpes = nullptr;
-		else
-			drawBatch.tpes = &lvlPart.tpes;
 	}
-	else
+
+	if(lvlPart.tpes.empty())
 		drawBatch.tpes = nullptr;
+	else
+		drawBatch.tpes = &lvlPart.tpes;
 
 	// portals
-	if(IsSet(drawFlags, DF_PORTALS) && locPart.partType != LocationPart::Type::Building)
+	if(locPart.partType != LocationPart::Type::Building)
 	{
 		gameRes->aPortal->EnsureIsLoaded();
 		Portal* portal = gameLevel->location->portal;
@@ -366,8 +334,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	}
 
 	// areas
-	if(IsSet(drawFlags, DF_AREA))
-		ListAreas(locPart);
+	ListAreas(locPart);
 
 	// colliders
 	if(drawCol)
@@ -1654,7 +1621,7 @@ void Game::DrawScene()
 	sceneMgr->SetScene(drawBatch.scene, drawBatch.camera);
 
 	// sky
-	if(drawBatch.scene->useLightDir && IsSet(drawFlags, DF_SKYBOX))
+	if(drawBatch.scene->useLightDir)
 		skyboxShader->Draw(*gameRes->aSkybox, *drawBatch.camera);
 
 	// terrain

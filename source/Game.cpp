@@ -105,11 +105,10 @@ extern cstring RESTART_MUTEX_NAME;
 void HumanPredraw(void* ptr, Matrix* mat, int n);
 
 //=================================================================================================
-Game::Game() : quickstart(QUICKSTART_NONE), inactiveUpdate(false), lastScreenshot(0), drawParticleSphere(false), drawUnitRadius(false),
-drawHitbox(false), noai(false), testing(false), gameSpeed(1.f), nextSeed(0), dontWander(false), checkUpdates(true), skipTutorial(false), portalAnim(0),
-musicType(MusicType::Max), endOfGame(false), preparedStream(64 * 1024), paused(false), drawFlags(0xFFFFFFFF), prevGameState(GS_LOAD), rtSave(nullptr),
-rtItemRot(nullptr), usePostfx(true), mpTimeout(10.f), screenshotFormat(ImageFormat::JPG), gameState(GS_LOAD), quickstartSlot(SaveSlot::MAX_SLOTS),
-inLoad(false), tMinimap(nullptr)
+Game::Game() : quickstart(QUICKSTART_NONE), inactiveUpdate(false), lastScreenshot(0), drawParticleSphere(false), drawUnitRadius(false), drawHitbox(false),
+noai(false), testing(false), gameSpeed(1.f), nextSeed(0), dontWander(false), checkUpdates(true), skipTutorial(false), portalAnim(0), musicType(MusicType::Max),
+endOfGame(false), preparedStream(64 * 1024), paused(false), prevGameState(GS_LOAD), rtSave(nullptr), rtItemRot(nullptr), usePostfx(true), mpTimeout(10.f),
+screenshotFormat(ImageFormat::JPG), gameState(GS_LOAD), quickstartSlot(SaveSlot::MAX_SLOTS), inLoad(false), tMinimap(nullptr)
 {
 	dialogContext.isLocal = true;
 	uvMod = Terrain::DEFAULT_UV_MOD;
@@ -642,7 +641,7 @@ void Game::DrawGame()
 		render->Clear(Color::Black);
 
 	// draw gui
-	gameGui->Draw(gameLevel->camera.matViewProj, IsSet(drawFlags, DF_GUI), IsSet(drawFlags, DF_MENU));
+	gameGui->Draw(gameLevel->camera.matViewProj);
 }
 
 //=================================================================================================
@@ -837,10 +836,9 @@ void Game::TakeScreenshot(bool noGui)
 {
 	if(noGui)
 	{
-		int oldFlags = drawFlags;
-		drawFlags = (0xFFFF & ~DF_GUI);
+		gui->SetDrawOptions(false, true);
 		DrawGame();
-		drawFlags = oldFlags;
+		gui->SetDrawOptions(true, true);
 	}
 	else
 		DrawGame();
@@ -2614,7 +2612,6 @@ void Game::ClearGameVars(bool newGame)
 	cutscene = false;
 	gameGui->minimap->city = nullptr;
 	team->Clear(newGame);
-	drawFlags = 0xFFFFFFFF;
 	gameGui->levelGui->Reset();
 	gameGui->journal->Reset();
 	arena->Reset();
