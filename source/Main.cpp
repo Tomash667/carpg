@@ -365,7 +365,7 @@ int AppEntry(char* cmdLine)
 	LogProcessorFeatures();
 
 	// settings
-	Ptr<Game> game;
+	Scoped<Game> game;
 	::game = game.Get();
 	LoadResourcesConfig();
 	LoadConfiguration(cmdLine);

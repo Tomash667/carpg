@@ -31,15 +31,13 @@ enum OBJ_FLAGS
 	OBJ_PHYSICS_PTR = 1 << 12, // btCollisionObject user pointer points to Object
 	OBJ_BUILDING = 1 << 13, // object is building
 	OBJ_DOUBLE_PHYSICS = 1 << 14, // object have 2 physics colliders (only works with box for now)
-	OBJ_BLOOD_EFFECT = 1 << 15, // altar blood effect
-	OBJ_PHY_BLOCKS_CAM = 1 << 16, // object physics blocks camera
-	OBJ_PHY_ROT = 1 << 17, // object physics can be rotated
-	OBJ_WATER_EFFECT = 1 << 18, // object have water particle effect
-	OBJ_MULTI_PHYSICS = 1 << 19, // object have multiple colliders (only workd with box for now)
-	OBJ_CAM_COLLIDERS = 1 << 20, // spawn camera coliders from mesh attach points
-	OBJ_USABLE = 1 << 21, // object is usable
-	OBJ_NO_CULLING = 1 << 22, // no mesh backface culling
-	OBJ_TORCH_CEILING_EFFECT = 1 << 23, // object has larger fire effect (requires OBJ_LIGHT)
+	OBJ_PHY_BLOCKS_CAM = 1 << 15, // object physics blocks camera
+	OBJ_PHY_ROT = 1 << 16, // object physics can be rotated
+	OBJ_MULTI_PHYSICS = 1 << 17, // object have multiple colliders (only workd with box for now)
+	OBJ_CAM_COLLIDERS = 1 << 18, // spawn camera coliders from mesh attach points
+	OBJ_USABLE = 1 << 19, // object is usable
+	OBJ_NO_CULLING = 1 << 20, // no mesh backface culling
+	OBJ_TORCH_CEILING_EFFECT = 1 << 21, // object has larger fire effect (requires OBJ_LIGHT)
 };
 
 //-----------------------------------------------------------------------------
@@ -98,14 +96,15 @@ struct BaseObject : public ContentItem<BaseObject>
 	float r, h, centery;
 	Vec2 size;
 	btCollisionShape* shape;
+	ParticleEffect* effect;
 	Matrix* matrix;
 	int flags;
 	BaseObject* nextObj;
 	VariantObject* variants;
 	float extraDist; // extra distance from wall
 
-	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), nextObj(nullptr),
-		variants(nullptr), extraDist(0.f)
+	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), effect(nullptr), matrix(nullptr), flags(0), nextObj(nullptr), variants(nullptr),
+		extraDist(0.f)
 	{
 	}
 	virtual ~BaseObject();

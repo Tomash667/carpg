@@ -528,12 +528,15 @@ void Quest_Evil::GenerateBloodyAltar()
 	obj->mesh = obj->base->mesh;
 
 	// add particles
-	ParticleEmitter* pe = new ParticleEmitter;
-	gameRes->peAltarBlood->Apply(pe);
-	pe->pos = obj->pos;
-	pe->pos.y += obj->base->centery;
-	pe->Init();
-	lvl.lvlPart->pes.push_back(pe);
+	if(obj->base->effect)
+	{
+		ParticleEmitter* pe = new ParticleEmitter;
+		obj->base->effect->Apply(pe);
+		pe->pos = obj->pos;
+		pe->pos.y += obj->base->centery;
+		pe->Init();
+		lvl.lvlPart->pes.push_back(pe);
+	}
 
 	// add blood
 	vector<Int2> path;
