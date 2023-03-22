@@ -134,7 +134,7 @@ void QuestLoader::ParseQuest(const string& id)
 	if(QuestScheme::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<QuestScheme> quest;
+	Scoped<QuestScheme> quest;
 	quest->id = id;
 	GameDialog* texts = new GameDialog;
 	texts->quest = quest;
@@ -239,7 +239,7 @@ void QuestLoader::ParseQuestList(const string& id)
 	if(QuestList::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<QuestList> list;
+	Scoped<QuestList> list;
 	list->id = id;
 	list->total = 0;
 	t.Next();

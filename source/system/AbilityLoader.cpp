@@ -180,7 +180,7 @@ void AbilityLoader::ParseAbility(const string& id)
 			t.Throw("Id hash collision.");
 	}
 
-	Ptr<Ability> ability;
+	Scoped<Ability> ability;
 	ability->hash = hash;
 	ability->id = id;
 	crc.Update(id);

@@ -68,7 +68,7 @@ void ClassLoader::LoadEntity(int top, const string& id)
 	if(Class::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<Class> clas;
+	Scoped<Class> clas;
 	clas->id = id;
 
 	t.Next();

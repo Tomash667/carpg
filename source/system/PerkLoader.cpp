@@ -127,7 +127,7 @@ void PerkLoader::ParsePerk(const string& id)
 			t.Throw("Id hash collision.");
 	}
 
-	Ptr<Perk> perk;
+	Scoped<Perk> perk;
 	perk->hash = hash;
 	perk->id = id;
 	perk->defined = true;

@@ -158,7 +158,7 @@ void DialogLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 GameDialog* DialogLoader::LoadDialog(const string& id)
 {
-	Ptr<GameDialog> dialog;
+	Scoped<GameDialog> dialog;
 	currentDialog = dialog.Get();
 	dialog->maxIndex = -1;
 	dialog->id = id;

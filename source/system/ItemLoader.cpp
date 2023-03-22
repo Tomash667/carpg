@@ -362,7 +362,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 
 	// create
 	int req = Bit(P_WEIGHT) | Bit(P_VALUE) | Bit(P_AI_VALUE) | Bit(P_MESH) | Bit(P_TEX) | Bit(P_FLAGS);
-	Ptr<Item> item(nullptr);
+	Scoped<Item> item(nullptr);
 	switch(type)
 	{
 	case IT_WEAPON:
@@ -803,7 +803,7 @@ void ItemLoader::ParseItemList(const string& id)
 	if(ItemList::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<ItemList> lis;
+	Scoped<ItemList> lis;
 
 	// id
 	lis->id = id;
@@ -872,7 +872,7 @@ void ItemLoader::ParseStock(const string& id)
 	if(Stock::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<Stock> stock;
+	Scoped<Stock> stock;
 	bool inSet = false, inCity = false, inCityElse;
 
 	// id
@@ -1096,7 +1096,7 @@ void ItemLoader::ParseBookScheme(const string& id)
 	if(BookScheme::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<BookScheme> scheme;
+	Scoped<BookScheme> scheme;
 
 	// id
 	scheme->id = id;
@@ -1254,7 +1254,7 @@ void ItemLoader::ParseRecipe(const string& id)
 			t.Throw("Id must be unique.");
 	}
 
-	Ptr<Recipe> recipe(existingRecipe, false);
+	Scoped<Recipe> recipe(existingRecipe, false);
 	recipe->id = id;
 	recipe->hash = hash;
 	recipe->defined = true;

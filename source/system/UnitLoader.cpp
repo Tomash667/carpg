@@ -533,7 +533,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(StatProfile::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<StatProfile> profile;
+			Scoped<StatProfile> profile;
 			profile->id = id;
 			t.Next();
 			ParseProfile(profile);
@@ -543,7 +543,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(ItemScript::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<ItemScript> script;
+			Scoped<ItemScript> script;
 			script->isSubprofile = false;
 			script->id = id;
 			t.Next();
@@ -554,7 +554,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(AbilityList::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<AbilityList> list;
+			Scoped<AbilityList> list;
 			list->id = id;
 			t.Next();
 			ParseAbilities(list);
@@ -564,7 +564,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(SoundPack::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<SoundPack> pack;
+			Scoped<SoundPack> pack;
 			pack->id = id;
 			t.Next();
 			ParseSounds(pack);
@@ -574,7 +574,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(FrameInfo::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<FrameInfo> frames;
+			Scoped<FrameInfo> frames;
 			frames->id = id;
 			t.Next();
 			ParseFrames(frames);
@@ -584,7 +584,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(TexPack::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<TexPack> pack;
+			Scoped<TexPack> pack;
 			pack->id = id;
 			t.Next();
 			ParseTextures(pack);
@@ -594,7 +594,7 @@ void UnitLoader::LoadEntity(int top, const string& id)
 		{
 			if(IdlePack::TryGet(id))
 				t.Throw("Id must be unique.");
-			Ptr<IdlePack> pack;
+			Scoped<IdlePack> pack;
 			pack->id = id;
 			t.Next();
 			ParseIdles(pack);
@@ -632,7 +632,7 @@ void UnitLoader::ParseUnit(const string& id)
 	if(UnitData::TryGet(id))
 		t.Throw("Id must be unique.");
 
-	Ptr<UnitData> unit;
+	Scoped<UnitData> unit;
 
 	// id
 	unit->id = id;
@@ -702,7 +702,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_PROFILE:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<StatProfile> profile;
+				Scoped<StatProfile> profile;
 				unit->statProfile = profile.Get();
 				ParseProfile(profile);
 			}
@@ -770,7 +770,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_ITEMS:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<ItemScript> script;
+				Scoped<ItemScript> script;
 				script->isSubprofile = false;
 				unit->itemScript = script.Get();
 				ParseItems(script);
@@ -793,7 +793,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_ABILITIES:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<AbilityList> abilities;
+				Scoped<AbilityList> abilities;
 				unit->abilities = abilities.Get();
 				ParseAbilities(abilities);
 			}
@@ -916,7 +916,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_SOUNDS:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<SoundPack> sounds;
+				Scoped<SoundPack> sounds;
 				unit->sounds = sounds.Get();
 				ParseSounds(sounds);
 			}
@@ -932,7 +932,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_FRAMES:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<FrameInfo> frames;
+				Scoped<FrameInfo> frames;
 				unit->frames = frames.Get();
 				ParseFrames(frames);
 			}
@@ -948,7 +948,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_TEX:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<TexPack> tex;
+				Scoped<TexPack> tex;
 				unit->tex = tex.Get();
 				ParseTextures(tex);
 			}
@@ -964,7 +964,7 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_IDLES:
 			if(t.IsSymbol('{'))
 			{
-				Ptr<IdlePack> idles;
+				Scoped<IdlePack> idles;
 				unit->idles = idles.Get();
 				ParseIdles(idles);
 			}
@@ -1128,7 +1128,7 @@ void UnitLoader::ParseUnit(const string& id)
 			break;
 		case P_APPEARANCE:
 			{
-				Ptr<HumanData> human;
+				Scoped<HumanData> human;
 				human->defaultFlags = 0;
 				human->hairType = HumanData::HairColorType::Default;
 				t.AssertSymbol('{');
@@ -1266,7 +1266,7 @@ void UnitLoader::ParseUnit(const string& id)
 }
 
 //=================================================================================================
-void UnitLoader::ParseProfile(Ptr<StatProfile>& profile)
+void UnitLoader::ParseProfile(Scoped<StatProfile>& profile)
 {
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		profile->attrib[i] = 10;
@@ -1281,7 +1281,7 @@ void UnitLoader::ParseProfile(Ptr<StatProfile>& profile)
 	{
 		if(t.IsItem("subprofile"))
 		{
-			Ptr<StatProfile::Subprofile> subprofile;
+			Scoped<StatProfile::Subprofile> subprofile;
 			ParseSubprofile(subprofile);
 			if(profile->GetSubprofile(subprofile->id))
 				t.Throw("Subprofile '%s.%s' already exists.", profile->id.c_str(), subprofile->id.c_str());
@@ -1333,7 +1333,7 @@ void UnitLoader::ParseProfile(Ptr<StatProfile>& profile)
 }
 
 //=================================================================================================
-void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
+void UnitLoader::ParseSubprofile(Scoped<StatProfile::Subprofile>& subprofile)
 {
 	t.Next();
 	subprofile->id = t.GetText();
@@ -1498,7 +1498,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 		case SPK_ITEMS:
 			{
 				t.AssertSymbol('{');
-				Ptr<ItemScript> script;
+				Scoped<ItemScript> script;
 				script->isSubprofile = true;
 				subprofile->itemScript = script.Get();
 				ParseItems(script);
@@ -1557,7 +1557,7 @@ ARMOR_TYPE UnitLoader::GetArmorType()
 }
 
 //=================================================================================================
-void UnitLoader::ParseItems(Ptr<ItemScript>& script)
+void UnitLoader::ParseItems(Scoped<ItemScript>& script)
 {
 	vector<IfState> ifState;
 	bool doneIf = false;
@@ -1994,7 +1994,7 @@ void UnitLoader::AddItem(ItemScript* script)
 }
 
 //=================================================================================================
-void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
+void UnitLoader::ParseAbilities(Scoped<AbilityList>& list)
 {
 	// {
 	t.AssertSymbol('{');
@@ -2056,7 +2056,7 @@ void UnitLoader::ParseAbilities(Ptr<AbilityList>& list)
 }
 
 //=================================================================================================
-void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
+void UnitLoader::ParseSounds(Scoped<SoundPack>& pack)
 {
 	// {
 	t.AssertSymbol('{');
@@ -2105,7 +2105,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 }
 
 //=================================================================================================
-void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
+void UnitLoader::ParseFrames(Scoped<FrameInfo>& frames)
 {
 	// {
 	t.AssertSymbol('{');
@@ -2237,7 +2237,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 }
 
 //=================================================================================================
-void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
+void UnitLoader::ParseTextures(Scoped<TexPack>& pack)
 {
 	// {
 	t.AssertSymbol('{');
@@ -2275,7 +2275,7 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 }
 
 //=================================================================================================
-void UnitLoader::ParseIdles(Ptr<IdlePack>& pack)
+void UnitLoader::ParseIdles(Scoped<IdlePack>& pack)
 {
 	// {
 	t.AssertSymbol('{');
@@ -2313,7 +2313,7 @@ void UnitLoader::ParseAlias(const string& id)
 //=================================================================================================
 void UnitLoader::ParseGroup(const string& id)
 {
-	Ptr<UnitGroup> group;
+	Scoped<UnitGroup> group;
 	group->id = id;
 	if(UnitGroup::TryGet(group->id))
 		t.Throw("Group with that id already exists.");

@@ -79,7 +79,7 @@ void LocationLoader::LoadEntity(int, const string& id)
 	if(existingType)
 		t.Throw("Id must be unique.");
 
-	Ptr<RoomType> type;
+	Scoped<RoomType> type;
 	type->id = id;
 	t.Next();
 

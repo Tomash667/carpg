@@ -222,7 +222,7 @@ void BuildingLoader::ParseBuilding(const string& id)
 	if(existingBuilding)
 		t.Throw("Id must be unique.");
 
-	Ptr<Building> building;
+	Scoped<Building> building;
 	building->id = id;
 	t.Next();
 
@@ -468,7 +468,7 @@ void BuildingLoader::ParseBuildingScript(const string& id)
 	t.AssertSymbol('{');
 	t.Next();
 
-	Ptr<BuildingScript> script;
+	Scoped<BuildingScript> script;
 	script->id = id;
 	DeleteElements(script->variants);
 	script->requiredOffset = (uint)-1;

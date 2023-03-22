@@ -172,7 +172,7 @@ void ObjectLoader::Finalize()
 //=================================================================================================
 void ObjectLoader::ParseObject(const string& id)
 {
-	Ptr<BaseObject> obj;
+	Scoped<BaseObject> obj;
 	obj->id = id;
 	obj->hash = Hash(id);
 	t.Next();
@@ -272,7 +272,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 //=================================================================================================
 void ObjectLoader::ParseUsable(const string& id)
 {
-	Ptr<BaseUsable> use;
+	Scoped<BaseUsable> use;
 	use->id = id;
 	use->hash = Hash(id);
 	t.Next();
@@ -382,7 +382,7 @@ void ObjectLoader::ParseUsable(const string& id)
 //=================================================================================================
 void ObjectLoader::ParseGroup(const string& id)
 {
-	Ptr<ObjectGroup> group;
+	Scoped<ObjectGroup> group;
 	ObjectGroup::EntryList* list = &group->list;
 	list->totalChance = 0;
 	list->parent = nullptr;

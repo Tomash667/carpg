@@ -1106,7 +1106,7 @@ void Game::UpdateAi(float dt)
 									break;
 								}
 							}
-						// nothing to use, play animation
+							[[fallthrough]]; // nothing to use, play animation
 						case AI_ANIMATION:
 							{
 								int id = Rand() % u.data->idles->anims.size();
@@ -1149,7 +1149,7 @@ void Game::UpdateAi(float dt)
 									break;
 								}
 							}
-							// no close units, rotate
+							[[fallthrough]]; // no close units, rotate
 						case AI_ROTATE:
 							ai.timer = Random(2.f, 5.f);
 							ai.st.idle.action = AIController::Idle_Rot;
@@ -1182,9 +1182,7 @@ void Game::UpdateAi(float dt)
 									break;
 								}
 							}
-							// no units nearby - move random
-							if(IsSet(u.data->flags, F_AI_GUARD))
-								break;
+							[[fallthrough]]; // no units nearby - move random
 						case AI_MOVE:
 							if(IsSet(u.data->flags, F_AI_GUARD))
 								break;
