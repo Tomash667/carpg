@@ -4,6 +4,7 @@
 #include "Ability.h"
 #include "BaseTrap.h"
 #include "GameResources.h"
+#include "ParticleEffect.h"
 #include "UnitData.h"
 
 #include <Mesh.h>
@@ -56,7 +57,8 @@ enum Keyword
 	K_TIME,
 	K_COLOR,
 	K_TRAP_ID,
-	K_CAST_TIME
+	K_CAST_TIME,
+	K_PARTICLE_EFFECT
 };
 
 //=================================================================================================
@@ -111,7 +113,8 @@ void AbilityLoader::InitTokenizer()
 		{ "time", K_TIME },
 		{ "color", K_COLOR },
 		{ "trapId", K_TRAP_ID },
-		{ "castTime", K_CAST_TIME }
+		{ "castTime", K_CAST_TIME },
+		{ "particleEffect", K_PARTICLE_EFFECT }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -440,6 +443,16 @@ void AbilityLoader::ParseAbility(const string& id)
 			crc.Update(ability->castTime);
 			t.Next();
 			break;
+		case K_PARTICLE_EFFECT:
+			{
+				const string& id = t.MustGetItem();
+				ability->particleEffect = gameRes->GetParticleEffect(id);
+				if(!ability->particleEffect)
+					t.Throw("Missing particle effect '%s'.", id.c_str());
+				crc.Update(ability->particleEffect->id);
+				t.Next();
+				break;
+			}
 		}
 	}
 

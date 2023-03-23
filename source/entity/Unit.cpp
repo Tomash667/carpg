@@ -6802,10 +6802,13 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				Vec2 bounds(target->GetRadius(), 0);
-				Vec3 pos = target->GetLootCenter();
-				pos.y += 0.5f;
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
+				if(ability.particleEffect)
+				{
+					Vec2 bounds(target->GetRadius(), 0);
+					Vec3 pos = target->GetLootCenter();
+					pos.y += 0.5f;
+					gameLevel->CreateSpellParticleEffect(locPart, ability, pos, bounds);
+				}
 			}
 			else if(ability.effect == Ability::Heal)
 			{
@@ -6821,16 +6824,19 @@ void Unit::CastSpell()
 				}
 
 				// particle effect
-				Vec2 bounds(target->GetRadius(), target->GetHeight());
-				Vec3 pos;
-				if(target->liveState == Unit::FALL || target->liveState == Unit::DEAD)
-					pos = target->GetLootCenter();
-				else
+				if(ability.particleEffect)
 				{
-					pos = target->pos;
-					pos.y += bounds.y / 2;
+					Vec2 bounds(target->GetRadius(), target->GetHeight());
+					Vec3 pos;
+					if(target->liveState == Unit::FALL || target->liveState == Unit::DEAD)
+						pos = target->GetLootCenter();
+					else
+					{
+						pos = target->pos;
+						pos.y += bounds.y / 2;
+					}
+					gameLevel->CreateSpellParticleEffect(locPart, ability, pos, bounds);
 				}
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, pos, bounds);
 			}
 		}
 		break;
@@ -6909,8 +6915,8 @@ void Unit::CastSpell()
 			trap->attack = ability.dmg + ability.dmgBonus * (level + CalculateMagicPower());
 
 			// particle effect
-			if(ability.texParticle)
-				gameLevel->CreateSpellParticleEffect(locPart, &ability, targetPos, Vec2::Zero);
+			if(ability.particleEffect)
+				gameLevel->CreateSpellParticleEffect(locPart, ability, targetPos, Vec2::Zero);
 		}
 		break;
 	}

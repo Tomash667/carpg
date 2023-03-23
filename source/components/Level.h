@@ -232,7 +232,7 @@ public:
 	void StartBossFight(Unit& unit);
 	void EndBossFight();
 	// ---
-	void CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds);
+	void CreateSpellParticleEffect(LocationPart* locPart, const Ability& ability, const Vec3& pos, const Vec2& bounds);
 	void CreateInsideBuilding(CityBuilding& cityBuilding);
 	void CreateInsideBuildingPhysics(InsideBuilding& insideBuilding);
 	void CreateInsideBuildingClient(InsideBuilding* insideBuilding);

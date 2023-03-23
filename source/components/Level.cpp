@@ -5012,34 +5012,18 @@ void Level::EndBossFight()
 }
 
 //=================================================================================================
-void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, const Vec3& pos, const Vec2& bounds)
+void Level::CreateSpellParticleEffect(LocationPart* locPart, const Ability& ability, const Vec3& pos, const Vec2& bounds)
 {
-	assert(ability);
-
 	if(!locPart)
 		locPart = &GetLocationPart(pos);
 
 	ParticleEmitter* pe = new ParticleEmitter;
-	switch(ability->effect)
+	ability.particleEffect->Apply(pe);
+	if(bounds != Vec2::Zero)
 	{
-	case Ability::Raise:
-		gameRes->peRaise->Apply(pe);
 		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
 		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		break;
-	case Ability::Heal:
-		gameRes->peHeal->Apply(pe);
-		pe->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-		pe->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
-		pe->size = Vec2(ability->sizeParticle, 0.f);
-		break;
-	default:
-		gameRes->peSpellOther->Apply(pe);
-		pe->size = Vec2(ability->sizeParticle / 2, 0.f);
-		break;
 	}
-	pe->tex = ability->texParticle;
 	pe->pos = pos;
 	pe->Init();
 	locPart->lvlPart->pes.push_back(pe);
@@ -5047,7 +5031,7 @@ void Level::CreateSpellParticleEffect(LocationPart* locPart, Ability* ability, c
 	if(Net::IsServer())
 	{
 		NetChange& c = Net::PushChange(NetChange::PARTICLE_EFFECT);
-		c.ability = ability;
+		c.ability = &ability;
 		c.pos = pos;
 		c.extraFloats[0] = bounds.x;
 		c.extraFloats[1] = bounds.y;

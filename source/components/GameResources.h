@@ -39,8 +39,7 @@ public:
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[11], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
 		sBody[5], sBone, sSkin, sSlime, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel, sCoughs;
-	Ptr<ParticleEffect> peHit, peSpellHit, peElectroHit, peTorch, peTorchCeiling, peMagicTorch, peCampfire, peSpawn, peRaise, peHeal, peSpellOther, peSpellBall,
-		peBlood;
+	Ptr<ParticleEffect> peHit, peSpellHit, peElectroHit, peTorch, peTorchCeiling, peMagicTorch, peCampfire, peSpawn, peSpellBall, peBlood;
 
 private:
 	void InitEffects();
