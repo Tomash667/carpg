@@ -3103,7 +3103,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					if(!secondary && IsSet(u.GetWeapon().flags, ITEM_WAND) && u.Get(SkillId::MYSTIC_MAGIC) > 0)
 					{
 						// cast magic bolt
-						UseAbility(Ability::Get("magicBolt"), false);
+						UseAbility(Ability::magicBolt, false);
 					}
 					else
 					{

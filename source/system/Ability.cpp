@@ -3,6 +3,7 @@
 
 vector<Ability*> Ability::abilities;
 std::map<int, Ability*> Ability::hashAbilities;
+Ptr<Ability> Ability::bullCharge, Ability::dash, Ability::fireball, Ability::magicBolt, Ability::thunderBolt;
 
 //=================================================================================================
 SkillId Ability::GetSkill() const

@@ -85,6 +85,9 @@ struct Ability
 	bool RequireList() const { return IsSet(flags, IgnoreUnits); }
 	SkillId GetSkill() const;
 
+	// hardcoded
+	static Ptr<Ability> bullCharge, dash, fireball, magicBolt, thunderBolt;
+
 	static vector<Ability*> abilities;
 	static std::map<int, Ability*> hashAbilities;
 	static Ability* Get(int hash);

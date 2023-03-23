@@ -478,6 +478,12 @@ void AbilityLoader::Finalize()
 {
 	content.crc[(int)Content::Id::Abilities] = crc.Get();
 
+	Ability::bullCharge = GetHardcodedAbility("bullCharge");
+	Ability::dash = GetHardcodedAbility("dash");
+	Ability::fireball = GetHardcodedAbility("fireball");
+	Ability::magicBolt = GetHardcodedAbility("magicBolt");
+	Ability::thunderBolt = GetHardcodedAbility("thunderBolt");
+
 	Info("Loaded abilities (%u) - crc %p.", Ability::abilities.size(), content.crc[(int)Content::Id::Abilities]);
 }
 
@@ -495,4 +501,13 @@ void AbilityLoader::ApplyUnits()
 			LoadError("Missing unit '%s'.", ability->unitId.c_str());
 		}
 	}
+}
+
+//=================================================================================================
+Ability* AbilityLoader::GetHardcodedAbility(cstring name)
+{
+	Ability* ability = Ability::Get(name);
+	if(!ability)
+		LoadError("Missing hardcoded ability '%s'.", name);
+	return ability;
 }

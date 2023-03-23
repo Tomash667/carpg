@@ -1,8 +1,7 @@
 #include "Pch.h"
 #include "RequiredLoader.h"
 
-#include "Ability.h"
-#include "BaseUsable.h"
+#include "BaseObject.h"
 #include "Building.h"
 #include "BuildingGroup.h"
 #include "BuildingScript.h"
@@ -20,7 +19,6 @@ enum RequiredType
 	R_STOCK,
 	R_UNIT,
 	R_GROUP,
-	R_ABILITY,
 	R_DIALOG,
 	R_BUILDING_GROUP,
 	R_BUILDING,
@@ -45,7 +43,6 @@ void RequiredLoader::InitTokenizer()
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
-		{ "ability", R_ABILITY },
 		{ "dialog", R_DIALOG },
 		{ "buildingGroup", R_BUILDING_GROUP },
 		{ "building", R_BUILDING },
@@ -155,16 +152,6 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 			else if(needLeader && !group->HaveLeader())
 			{
 				Error("Required unit group '%s' is missing leader.", groupId.c_str());
-				++content.errors;
-			}
-		}
-		break;
-	case R_ABILITY:
-		{
-			Ability* ability = Ability::Get(id);
-			if(!ability)
-			{
-				Error("Missing required ability '%s'.", id.c_str());
 				++content.errors;
 			}
 		}

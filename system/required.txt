@@ -212,16 +212,6 @@ group list arenaHard
 group list random
 
 //------------------------------------------------------------------------------
-// Required abilities
-//------------------------------------------------------------------------------
-ability fireball
-ability magicBolt
-ability thunderBolt
-// pre V_0_13
-ability dash
-ability bull_charge
-
-//------------------------------------------------------------------------------
 // Required perks
 //------------------------------------------------------------------------------
 perk alchemistApprentice

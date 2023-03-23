@@ -19,6 +19,7 @@ private:
 	void ParseAbility(const string& id);
 	void ParseAlias(const string& id);
 	void Finalize() override;
+	Ability* GetHardcodedAbility(cstring name);
 
 	Texture* tPlaceholder;
 };

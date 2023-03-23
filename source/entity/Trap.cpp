@@ -371,7 +371,7 @@ bool Trap::Update(float dt, LocationPart& locPart)
 
 			if(trigger)
 			{
-				Ability* fireball = Ability::Get("fireball");
+				Ability* fireball = Ability::fireball;
 				Vec3 exploPos = pos + Vec3(0, 0.2f, 0);
 				Explo* explo = locPart.CreateExplo(fireball, exploPos);
 				explo->dmg = GetAttack();
