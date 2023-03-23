@@ -172,10 +172,10 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	int persuasion = unit.Get(SkillId::PERSUASION) + unit.Get(AttributeId::CHA) - 50;
 	if(unit.IsPlayer())
 	{
-		if(unit.player->HavePerk(Perk::Get("asocial")))
+		if(unit.player->HavePerk(Perk::asocial))
 			persuasion -= 20;
 		if(unit.player->action == PlayerAction::Trade
-			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::Get("alchemistApprentice")))
+			&& unit.player->actionUnit->data->id == "alchemist" && unit.player->HavePerk(Perk::alchemistApprentice))
 			persuasion += 20;
 	}
 

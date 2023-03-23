@@ -24,8 +24,7 @@ enum RequiredType
 	R_BUILDING,
 	R_BUILDING_SCRIPT,
 	R_OBJECT,
-	R_QUEST_LIST,
-	R_PERK
+	R_QUEST_LIST
 };
 
 //=================================================================================================
@@ -48,8 +47,7 @@ void RequiredLoader::InitTokenizer()
 		{ "building", R_BUILDING },
 		{ "buildingScript", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
-		{ "questList", R_QUEST_LIST },
-		{ "perk", R_PERK }
+		{ "questList", R_QUEST_LIST }
 		});
 }
 
@@ -243,16 +241,6 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 						break;
 					}
 				}
-			}
-		}
-		break;
-	case R_PERK:
-		{
-			Perk* perk = Perk::Get(id);
-			if(!perk)
-			{
-				Error("Missing required perk '%s'.", id.c_str());
-				++content.errors;
 			}
 		}
 		break;

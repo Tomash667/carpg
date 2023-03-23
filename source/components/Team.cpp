@@ -1495,7 +1495,6 @@ void Team::OnTravel(float dist)
 //=================================================================================================
 void Team::CalculatePlayersLevel()
 {
-	Perk* leaderPerk = Perk::Get("leader");
 	bool haveLeaderPerk = false;
 	playersLevel = -1;
 	for(Unit& unit : activeMembers)
@@ -1504,7 +1503,7 @@ void Team::CalculatePlayersLevel()
 		{
 			if(unit.level > playersLevel)
 				playersLevel = unit.level;
-			if(unit.player->HavePerk(leaderPerk))
+			if(unit.player->HavePerk(Perk::leader))
 				haveLeaderPerk = true;
 		}
 	}

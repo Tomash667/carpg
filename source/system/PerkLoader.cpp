@@ -366,5 +366,20 @@ void PerkLoader::Finalize()
 
 	content.crc[(int)Content::Id::Perks] = crc.Get();
 
+	Perk::alchemistApprentice = GetHardcodedPerk("alchemistApprentice");
+	Perk::asocial = GetHardcodedPerk("asocial");
+	Perk::heirloom = GetHardcodedPerk("heirloom");
+	Perk::leader = GetHardcodedPerk("leader");
+	Perk::poor = GetHardcodedPerk("poor");
+
 	Info("Loaded perks (%u) - crc %p.", Perk::perks.size(), crc.Get());
+}
+
+//=================================================================================================
+Perk* PerkLoader::GetHardcodedPerk(cstring name)
+{
+	Perk* perk = Perk::Get(name);
+	if(!perk)
+		LoadError("Missing hardcoded perk '%s'.", name);
+	return perk;
 }

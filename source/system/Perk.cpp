@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 vector<Perk*> Perk::perks;
 std::map<int, Perk*> Perk::hashPerks;
+Ptr<Perk> Perk::alchemistApprentice, Perk::asocial, Perk::heirloom, Perk::leader, Perk::poor;
 
 //=================================================================================================
 ::Perk* old::Convert(Perk perk)

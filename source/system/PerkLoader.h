@@ -17,4 +17,5 @@ private:
 	Perk* ParsePerkId();
 	void ParseAlias(const string& id);
 	void Finalize() override;
+	Perk* GetHardcodedPerk(cstring name);
 };

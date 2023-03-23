@@ -203,9 +203,9 @@ void CreatedCharacter::GetStartingItems(array<const Item*, SLOT_MAX>& items)
 		items[i] = nullptr;
 
 	const bool mageItems = IsSet(clas->flags, Class::F_MAGE_ITEMS);
-	const bool poor = HavePerk(Perk::Get("poor"));
+	const bool poor = HavePerk(Perk::poor);
 
-	if(HavePerk(Perk::Get("heirloom")))
+	if(HavePerk(Perk::heirloom))
 	{
 		SkillId best = SkillId::NONE;
 		int bestValue = 0, bestValue2 = 0;

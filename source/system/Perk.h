@@ -111,6 +111,9 @@ struct Perk
 
 	Perk() : parent(0), flags(0), cost(0), valueType(None), defined(false) {}
 
+	// hardcoded
+	static Ptr<Perk> alchemistApprentice, asocial, heirloom, leader, poor;
+
 	static vector<Perk*> perks;
 	static std::map<int, Perk*> hashPerks;
 	static Perk* Get(int hash);

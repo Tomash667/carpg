@@ -133,11 +133,11 @@ void PlayerController::Init(Unit& _unit, CreatedCharacter* cc)
 		// inventory
 		unit->data->itemScript->Parse(*unit);
 		cc->GetStartingItems(unit->GetEquippedItems());
-		if(HavePerk(Perk::Get("alchemistApprentice")))
+		if(HavePerk(Perk::alchemistApprentice))
 			Stock::Get("alchemistApprentice")->Parse(unit->items);
 		unit->MakeItemsTeam(false);
 		unit->RecalculateWeight();
-		if(HavePerk(Perk::Get("poor")))
+		if(HavePerk(Perk::poor))
 			unit->gold = ::Random(0, 1);
 		else
 			unit->gold += unit->GetBase(SkillId::PERSUASION);
