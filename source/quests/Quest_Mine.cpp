@@ -838,9 +838,6 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 	// generate veins
 	if(generateVeins)
 	{
-		BaseUsable* ironVein = BaseUsable::Get("ironVein"),
-			*goldVein = BaseUsable::Get("goldVein");
-
 		// remove old veins
 		if(mineState3 != State3::None)
 			DeleteElements(cave.usables);
@@ -915,15 +912,16 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 							break;
 						}
 
+						BaseUsable* vein = Rand() % 10 < goldChance ? BaseUsable::goldVein : BaseUsable::ironVein;
 						float rot = Clip(DirToRot(dir) + PI);
-						static float radius = max(ironVein->size.x, ironVein->size.y) * SQRT_2;
+						static float radius = max(vein->size.x, vein->size.y) * SQRT_2;
 
 						Level::IgnoreObjects ignore = { 0 };
 						ignore.ignoreBlocks = true;
 						gameLevel->globalCol.clear();
 						gameLevel->GatherCollisionObjects(cave, gameLevel->globalCol, pos, radius, &ignore);
 
-						Box2d box(pos.x - ironVein->size.x, pos.z - ironVein->size.y, pos.x + ironVein->size.x, pos.z + ironVein->size.y);
+						Box2d box(pos.x - vein->size.x, pos.z - vein->size.y, pos.x + vein->size.x, pos.z + vein->size.y);
 
 						if(!gameLevel->Collide(gameLevel->globalCol, box, 0.f, rot))
 						{
@@ -931,23 +929,23 @@ int Quest_Mine::GenerateMine(CaveGenerator* caveGen, bool first)
 							u->Register();
 							u->pos = pos;
 							u->rot = rot;
-							u->base = (Rand() % 10 < goldChance ? goldVein : ironVein);
+							u->base = vein;
 							cave.usables.push_back(u);
 
 							CollisionObject& c = Add1(cave.lvlPart->colliders);
 							btCollisionObject* cobj = new btCollisionObject;
-							cobj->setCollisionShape(ironVein->shape);
+							cobj->setCollisionShape(vein->shape);
 							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_USABLE);
 
 							btTransform& tr = cobj->getWorldTransform();
-							Vec3 pos2 = Vec3::TransformZero(*ironVein->matrix);
+							Vec3 pos2 = Vec3::TransformZero(*vein->matrix);
 							pos2 += pos;
 							tr.setOrigin(ToVector3(pos2));
 							tr.setRotation(btQuaternion(rot, 0, 0));
 
 							c.pos = pos2;
-							c.w = ironVein->size.x;
-							c.h = ironVein->size.y;
+							c.w = vein->size.x;
+							c.h = vein->size.y;
 							if(NotZero(rot))
 							{
 								c.type = CollisionObject::RECTANGLE_ROT;

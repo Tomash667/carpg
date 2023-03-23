@@ -70,7 +70,7 @@ void WarpToThroneBanditBoss()
 	assert(u);
 
 	// search for throne
-	Usable* use = gameLevel->localPart->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = gameLevel->localPart->FindUsable(BaseUsable::throne);
 	assert(use);
 
 	// warp boss to throne

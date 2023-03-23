@@ -268,7 +268,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// search for throne
-	Usable* use = locPart.FindUsable(BaseUsable::Get("throne"));
+	Usable* use = locPart.FindUsable(BaseUsable::throne);
 	assert(use);
 
 	// warp
@@ -449,7 +449,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 
 			// gorush - move to throne
 			team->RemoveMember(orc);
-			Usable* throne = locPart.FindUsable(BaseUsable::Get("throne"));
+			Usable* throne = locPart.FindUsable(BaseUsable::throne);
 			assert(throne);
 			if(throne)
 			{

@@ -72,7 +72,7 @@ void DodajStraznikow()
 	assert(u);
 
 	// find throne
-	Usable* use = gameLevel->localPart->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = gameLevel->localPart->FindUsable(BaseUsable::throne);
 	assert(use);
 
 	// warp nobleman to throne

@@ -633,7 +633,6 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 	{
 		// table & stools
 		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
-		BaseUsable* stool = BaseUsable::Get("stool");
 
 		// table
 		Object* o = new Object;
@@ -681,12 +680,12 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 
 			Usable* u = new Usable;
 			u->Register();
-			u->base = stool;
+			u->base = BaseUsable::stool;
 			u->pos = pos + Vec3(sin(sdir) * slen, 0, cos(sdir) * slen);
 			u->rot = sdir;
 			locPart.usables.push_back(u);
 
-			SpawnObjectExtras(locPart, stool, u->pos, u->rot, u);
+			SpawnObjectExtras(locPart, u->base, u->pos, u->rot, u);
 		}
 
 		return o;

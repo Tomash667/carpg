@@ -26,7 +26,6 @@ enum RequiredType
 	R_BUILDING,
 	R_BUILDING_SCRIPT,
 	R_OBJECT,
-	R_USABLE,
 	R_QUEST_LIST,
 	R_PERK
 };
@@ -52,7 +51,6 @@ void RequiredLoader::InitTokenizer()
 		{ "building", R_BUILDING },
 		{ "buildingScript", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
-		{ "usable", R_USABLE },
 		{ "questList", R_QUEST_LIST },
 		{ "perk", R_PERK }
 		});
@@ -234,16 +232,6 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 			if(!obj)
 			{
 				Error("Missing required object '%s'.", id.c_str());
-				++content.errors;
-			}
-		}
-		break;
-	case R_USABLE:
-		{
-			auto use = BaseUsable::TryGet(id);
-			if(!use)
-			{
-				Error("Missing required usable object '%s'.", id.c_str());
 				++content.errors;
 			}
 		}

@@ -342,18 +342,13 @@ buildingScript villageDestroyed {
 }
 
 //------------------------------------------------------------------------------
-// Objects / usables
+// Objects
 // some objects are required by building too (not listed here)
 //------------------------------------------------------------------------------
 // Ai
 object meleeTarget
 object bowTarget
 object bloodyAltar
-usable stool
-usable chair
-usable throne
-usable ironVein
-usable goldVein
 // CampGenerator
 object barrel
 object barrels
@@ -417,7 +412,6 @@ object torch
 object table
 object table2
 object chest
-usable stool
 // MoonwellGenerator
 object moonwell
 object moonwellPhy
@@ -434,24 +428,16 @@ object plant
 object rock
 object fern
 object obelisk
-// Quest_Bandits
-usable throne
 // Quest_Evil
 object altar
 object bloodyAltar
 object portal
-// Quest_Goblins
-usable throne
 // Quest_Mine
 object torch
 object rock
 object plant2
 object mushrooms
 object portal
-usable ironVein
-usable goldVein
-// Quest_Orcs
-usable throne
 // Quest_Sawmill
 object barrel
 object barrels

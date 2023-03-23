@@ -6,6 +6,7 @@
 
 //-----------------------------------------------------------------------------
 vector<BaseUsable*> BaseUsable::usables;
+Ptr<BaseUsable> BaseUsable::chair, BaseUsable::goldVein, BaseUsable::ironVein, BaseUsable::stool, BaseUsable::throne;
 
 //=================================================================================================
 BaseUsable& BaseUsable::operator = (BaseObject& o)

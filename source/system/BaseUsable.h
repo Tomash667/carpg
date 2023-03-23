@@ -47,6 +47,9 @@ struct BaseUsable : public BaseObject
 	bool IsContainer() const { return IsSet(useFlags, CONTAINER); }
 	void EnsureIsLoaded();
 
+	// hardcoded
+	static Ptr<BaseUsable> chair, goldVein, ironVein, stool, throne;
+
 	static vector<BaseUsable*> usables;
 	static BaseUsable* TryGet(int hash)
 	{

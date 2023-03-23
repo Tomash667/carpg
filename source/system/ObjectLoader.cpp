@@ -166,6 +166,12 @@ void ObjectLoader::Finalize()
 {
 	CalculateCrc();
 
+	BaseUsable::chair = GetHardcodedUsable("chair");
+	BaseUsable::goldVein = GetHardcodedUsable("goldVein");
+	BaseUsable::ironVein = GetHardcodedUsable("ironVein");
+	BaseUsable::stool = GetHardcodedUsable("stool");
+	BaseUsable::throne = GetHardcodedUsable("throne");
+
 	Info("Loaded objects (%u), usables (%u) - crc %p.",
 		BaseObject::items.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content.crc[(int)Content::Id::Objects]);
 }
@@ -547,4 +553,13 @@ void ObjectLoader::UpdateObjectGroupCrc(Crc& crc, ObjectGroup::EntryList& list)
 		else
 			crc.Update(e.obj->id);
 	}
+}
+
+//=================================================================================================
+BaseUsable* ObjectLoader::GetHardcodedUsable(cstring name)
+{
+	BaseUsable* usable = BaseUsable::TryGet(name);
+	if(!name)
+		LoadError("Missing hardcoded usable '%s'.", name);
+	return usable;
 }

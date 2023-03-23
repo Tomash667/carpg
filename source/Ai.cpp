@@ -109,11 +109,6 @@ void Game::UpdateAi(float dt)
 {
 	static vector<Unit*> closeEnemies;
 
-	BaseUsable* stool = BaseUsable::Get("stool"),
-		*chair = BaseUsable::Get("chair"),
-		*throne = BaseUsable::Get("throne"),
-		*ironVein = BaseUsable::Get("ironVein"),
-		*goldVein = BaseUsable::Get("goldVein");
 	Quest_Tournament* tournament = questMgr->questTournament;
 
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
@@ -805,7 +800,7 @@ void Game::UpdateAi(float dt)
 					}
 					else if(ai.st.idle.action == AIController::Idle_Use)
 					{
-						if(u.usable->base == stool && u.locPart->partType == LocationPart::Type::Building)
+						if(u.usable->base == BaseUsable::stool && u.locPart->partType == LocationPart::Type::Building)
 						{
 							int what;
 							if(u.IsDrunkman())
@@ -924,7 +919,7 @@ void Game::UpdateAi(float dt)
 					else if(IsSet(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 					{
 						// check if unit have required item
-						const Item* reqItem = ironVein->item;
+						const Item* reqItem = BaseUsable::ironVein->item;
 						if(reqItem && !u.HaveItem(reqItem) && u.GetEquippedItem(SLOT_WEAPON) != reqItem)
 							goto normalIdleAction;
 						// find closest ore vein
@@ -933,7 +928,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Usable*>::iterator it2 = locPart.usables.begin(), end2 = locPart.usables.end(); it2 != end2; ++it2)
 						{
 							Usable& use = **it2;
-							if(!use.user && (use.base == ironVein || use.base == goldVein))
+							if(!use.user && (use.base == BaseUsable::ironVein || use.base == BaseUsable::goldVein))
 							{
 								float dist = Vec3::Distance(use.pos, u.pos);
 								if(dist < range)
@@ -1086,7 +1081,7 @@ void Game::UpdateAi(float dt)
 								for(vector<Usable*>::iterator it2 = locPart.usables.begin(), end2 = locPart.usables.end(); it2 != end2; ++it2)
 								{
 									Usable& use = **it2;
-									if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
+									if(!use.user && (use.base != BaseUsable::throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 										&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
 										&& gameLevel->CanSee(locPart, use.pos, u.pos)
 										&& !IsSet(use.base->useFlags, BaseUsable::DESTROYABLE))
@@ -1101,7 +1096,7 @@ void Game::UpdateAi(float dt)
 									ai.st.idle.action = AIController::Idle_WalkUse;
 									ai.st.idle.usable = uses[Rand() % uses.size()];
 									ai.timer = Random(3.f, 6.f);
-									if(ai.st.idle.usable->base == stool && Rand() % 3 == 0)
+									if(ai.st.idle.usable->base == BaseUsable::stool && Rand() % 3 == 0)
 										ai.st.idle.action = AIController::Idle_WalkUseEat;
 									break;
 								}
@@ -1400,7 +1395,7 @@ void Game::UpdateAi(float dt)
 										u.action = A_USE_USABLE;
 										u.animation = ANI_PLAY;
 										bool readPapers = false;
-										if(use.base == chair && IsSet(u.data->flags, F_AI_CLERK))
+										if(use.base == BaseUsable::chair && IsSet(u.data->flags, F_AI_CLERK))
 										{
 											readPapers = true;
 											u.meshInst->Play("czyta_papiery", PLAY_PRIO3, 0);
@@ -1421,11 +1416,11 @@ void Game::UpdateAi(float dt)
 										else
 										{
 											ai.st.idle.action = AIController::Idle_Use;
-											if(u.usable->base == stool && u.locPart->partType == LocationPart::Type::Building && u.IsDrunkman())
+											if(u.usable->base == BaseUsable::stool && u.locPart->partType == LocationPart::Type::Building && u.IsDrunkman())
 												ai.timer = Random(10.f, 20.f);
-											else if(u.usable->base == throne)
+											else if(u.usable->base == BaseUsable::throne)
 												ai.timer = 120.f;
-											else if(u.usable->base == ironVein || u.usable->base == goldVein)
+											else if(u.usable->base == BaseUsable::ironVein || u.usable->base == BaseUsable::goldVein)
 												ai.timer = Random(20.f, 30.f);
 											else
 												ai.timer = Random(5.f, 10.f);

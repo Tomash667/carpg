@@ -24,4 +24,5 @@ private:
 	void ParseAlias(const string& id);
 	void CalculateCrc();
 	void UpdateObjectGroupCrc(Crc& crc, ObjectGroup::EntryList& list);
+	BaseUsable* GetHardcodedUsable(cstring name);
 };
