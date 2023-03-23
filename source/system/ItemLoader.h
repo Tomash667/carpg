@@ -24,4 +24,5 @@ private:
 	void ParseAlias(const string& id);
 	void ParseRecipeAlias(const string& id);
 	void CalculateCrc();
+	Item* GetHardcodedItem(cstring name);
 };

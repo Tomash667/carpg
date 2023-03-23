@@ -5,23 +5,6 @@
 //------------------------------------------------------------------------------
 // Required items
 //------------------------------------------------------------------------------
-item gold
-// CaveGenerator
-item mushroom
-item healCrystal
-item magicCrystal
-// DungeonGenerator
-item goldenCup
-item plate
-item cup
-// InsideLocationGenerator
-item qSecretNote2
-// Menu
-item bookAdventurer
-// OutsideLocationGenerator
-item greenHerb
-item healingHerb
-item manaHerb
 // Quest_Bandits
 item qBanditsParcel
 item qBanditsLetter

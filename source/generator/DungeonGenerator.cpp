@@ -444,8 +444,6 @@ void DungeonGenerator::GenerateDungeonItems()
 	const ItemList& lis = ItemList::Get(group->orcFood ? "orcFood" : "normalFood");
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
-	const Item* plate = Item::Get("plate");
-	const Item* cup = Item::Get("cup");
 	bool spawnGoldenCup = Rand() % 100 == 0;
 
 	// spawn food
@@ -459,7 +457,7 @@ void DungeonGenerator::GenerateDungeonItems()
 			if(spawnGoldenCup)
 			{
 				spawnGoldenCup = false;
-				gameLevel->PickableItemAdd(Item::Get("goldenCup"));
+				gameLevel->PickableItemAdd(Item::goldenCup);
 			}
 			else
 			{
@@ -471,9 +469,9 @@ void DungeonGenerator::GenerateDungeonItems()
 				}
 			}
 			if(Rand() % 3 == 0)
-				gameLevel->PickableItemAdd(plate);
+				gameLevel->PickableItemAdd(Item::plate);
 			if(Rand() % 3 == 0)
-				gameLevel->PickableItemAdd(cup);
+				gameLevel->PickableItemAdd(Item::cup);
 		}
 		else if(obj.base == shelves)
 		{

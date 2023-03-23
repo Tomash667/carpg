@@ -537,11 +537,7 @@ int CaveGenerator::HandleUpdate(int days)
 void CaveGenerator::GenerateCaveItems(int daysSince)
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	const Item* toSpawn[] = {
-		Item::Get("mushroom"),
-		Item::Get("magicCrystal"),
-		Item::Get("healCrystal")
-	};
+	const Item* toSpawn[] = { Item::mushroom, Item::healCrystal, Item::magicCrystal };
 
 	for(int i = 0; i < daysSince * 20; ++i)
 	{

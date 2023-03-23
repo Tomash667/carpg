@@ -340,7 +340,18 @@ void ItemLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ItemLoader::Finalize()
 {
-	Item::gold = Item::Get("gold");
+	Item::bookAdventurer = GetHardcodedItem("bookAdventurer");
+	Item::cup = GetHardcodedItem("cup");
+	Item::gold = GetHardcodedItem("gold");
+	Item::greenHerb = GetHardcodedItem("greenHerb");
+	Item::goldenCup = GetHardcodedItem("goldenCup");
+	Item::healCrystal = GetHardcodedItem("healCrystal");
+	Item::healingHerb = GetHardcodedItem("healingHerb");
+	Item::magicCrystal = GetHardcodedItem("magicCrystal");
+	Item::manaHerb = GetHardcodedItem("manaHerb");
+	Item::mushroom = GetHardcodedItem("mushroom");
+	Item::plate = GetHardcodedItem("plate");
+	Item::qSecretNote2 = GetHardcodedItem("qSecretNote2");
 
 	// check if all recipes are defined
 	for(Recipe* recipe : Recipe::items)
@@ -1522,4 +1533,13 @@ void ItemLoader::CalculateCrc()
 	}
 
 	content.crc[(int)Content::Id::Items] = crc.Get();
+}
+
+//=================================================================================================
+Item* ItemLoader::GetHardcodedItem(cstring name)
+{
+	Item* item = Item::TryGet(name);
+	if(!item)
+		LoadError("Missing hardcoded item '%s'.", name);
+	return item;
 }

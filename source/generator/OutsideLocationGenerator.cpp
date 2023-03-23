@@ -359,9 +359,9 @@ void OutsideLocationGenerator::SpawnForestItems(int countMod)
 		int count;
 	};
 	const ItemToSpawn itemsToSpawn[] = {
-		Item::Get("greenHerb"), greenHerbs,
-		Item::Get("healingHerb"), healingHerbs,
-		Item::Get("manaHerb"), manaHerbs
+		Item::greenHerb, greenHerbs,
+		Item::healingHerb, healingHerbs,
+		Item::manaHerb, manaHerbs
 	};
 	TerrainTile* tiles = outside->tiles;
 	const Vec2 regionSize(2.f, 2.f);

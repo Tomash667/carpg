@@ -135,7 +135,9 @@ struct Item
 	TexturePtr tex, icon;
 	ResourceState state;
 
-	static const Item* gold;
+	// hardcoded
+	static Ptr<const Item> bookAdventurer, cup, gold, goldenCup, greenHerb, healCrystal, healingHerb, magicCrystal, manaHerb, mushroom, plate, qSecretNote2;
+
 	static ItemsMap items;
 	static Item* TryGet(Cstring id);
 	static Item* Get(Cstring id)

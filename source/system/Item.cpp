@@ -9,7 +9,8 @@
 
 #include <ResourceManager.h>
 
-const Item* Item::gold;
+Ptr<const Item> Item::bookAdventurer, Item::cup, Item::gold, Item::goldenCup, Item::greenHerb, Item::healCrystal, Item::healingHerb, Item::magicCrystal,
+	Item::manaHerb, Item::mushroom, Item::plate, Item::qSecretNote2;
 ItemsMap Item::items;
 std::map<string, Item*> itemAliases;
 vector<ItemList*> ItemList::lists;
