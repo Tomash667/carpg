@@ -6,11 +6,13 @@ Wersja 0.21 (???):
 + podziemia budynku w mieście
 + lepsze wyszukiwanie ścieżek
 + usunięcie starej opcji poświaty
++ lepszy menadżer sceny - zniszczone obiekty
 + aktualizacja bibliotek: AngelScript 2.35.1, DirectXMath 3.18
 - poprawki do startowych przedmiotów i lepszych przedmiotów dla npc
 - crash po użyciu komendy "warp" do tego samego budynku
 - crash po trafieniu barykady z łuku
 - crash niektórych komend w konsoli gdy nie wybrano jednostki
+- crash przy wczytywani znikającej zniszczonej barykady
 
 --------------------------------------------------------------------------------
 Wersja 0.20 (2023-01-07):

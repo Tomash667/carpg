@@ -12,7 +12,7 @@
 EntityType<GroundItem>::Impl EntityType<GroundItem>::impl;
 
 //=================================================================================================
-void GroundItem::CreateSceneNode()
+SceneNode* GroundItem::CreateSceneNode()
 {
 	Mesh* mesh;
 	Vec3 nodePos = pos;
@@ -29,6 +29,7 @@ void GroundItem::CreateSceneNode()
 	node->center = pos;
 	node->mat = Matrix::Rotation(rot) * Matrix::Translation(nodePos);
 	node->persistent = true;
+	return node;
 }
 
 //=================================================================================================

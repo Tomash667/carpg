@@ -5,13 +5,31 @@
 #include "BitStreamFunc.h"
 #include "GameFile.h"
 
+#include <SceneNode.h>
+
+//=================================================================================================
+SceneNode* DestroyedObject::CreateSceneNode()
+{
+	node = SceneNode::Get();
+	node->SetMesh(base->mesh);
+	node->center = pos;
+	node->flags |= SceneNode::F_ALPHA_BLEND;
+	node->tint = Vec4(1, 1, 1, timer);
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
+	node->addBlend = true;
+	node->persistent = true;
+	return node;
+}
+
 //=================================================================================================
 bool DestroyedObject::Update(float dt)
 {
 	timer -= dt * 4;
 	if(timer > 0)
+	{
+		node->tint.w = timer;
 		return false;
-	delete this;
+	}
 	return true;
 }
 

@@ -3,7 +3,6 @@
 
 #include "Ability.h"
 #include "City.h"
-#include "DestroyedObject.h"
 #include "DungeonMeshBuilder.h"
 #include "Explo.h"
 #include "GameGui.h"
@@ -265,26 +264,6 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 			node->texOverride = &explo.ability->texExplode;
 			node->tint = Vec4(1, 1, 1, 1.f - explo.size / explo.sizemax);
 			node->addBlend = false;
-			drawBatch.Add(node);
-		}
-	}
-
-	// destroyed objects
-	for(DestroyedObject* obj : lvlPart.destroyedObjects)
-	{
-		Mesh* mesh = obj->base->mesh;
-		mesh->EnsureIsLoaded();
-		if(frustum.SphereToFrustum(obj->pos, mesh->head.radius))
-		{
-			SceneNode* node = SceneNode::Get();
-			node->SetMesh(mesh);
-			node->center = obj->pos;
-			node->flags |= SceneNode::F_ALPHA_BLEND;
-			node->tint = Vec4(1, 1, 1, obj->timer);
-			node->mat = Matrix::RotationY(obj->rot) * Matrix::Translation(obj->pos);
-			node->addBlend = true;
-			if(drawBatch.gatherLights)
-				GatherDrawBatchLights(node);
 			drawBatch.Add(node);
 		}
 	}
