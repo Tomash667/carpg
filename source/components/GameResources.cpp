@@ -148,19 +148,19 @@ void GameResources::InitEffects()
 	particleEffects.push_back(effect);
 	peTorch = effect;
 
-	effect = new ParticleEffect(*effect);
+	effect = new ParticleEffect(*peTorch);
 	effect->id = "torchCeiling";
 	effect->size = Vec2(1.f, 0.f);
 	particleEffects.push_back(effect);
 	peTorchCeiling = effect;
 
-	effect = new ParticleEffect(*effect);
+	effect = new ParticleEffect(*peTorch);
 	effect->id = "magicTorch";
 	effect->tex = resMgr->Get<Texture>("flare2.png");
 	particleEffects.push_back(effect);
 	peMagicTorch = effect;
 
-	effect = new ParticleEffect(*effect);
+	effect = new ParticleEffect(*peTorch);
 	effect->id = "campfire";
 	effect->size = Vec2(0.7f, 0.f);
 	particleEffects.push_back(effect);
@@ -255,9 +255,8 @@ void GameResources::InitEffects()
 	peSpawn = effect;
 
 	effect = new ParticleEffect;
-	effect->id = "raise";
-	//effect->tex = ability->texParticle;
-	effect->tex = nullptr;
+	effect->id = "raiseEffect";
+	effect->tex = resMgr->Get<Texture>("czarna_iskra.png");
 	effect->life = 0.f;
 	effect->particleLife = 1.f;
 	effect->emissionInterval = 0.f;
@@ -266,17 +265,13 @@ void GameResources::InitEffects()
 	effect->maxParticles = 25;
 	effect->speedMin = Vec3(0, 4, 0);
 	effect->speedMax = Vec3(0, 5, 0);
-	//effect->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//effect->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 	effect->alpha = Vec2(1.f, 0.f);
-	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->size = Vec2(0.2f, 0.f);
 	particleEffects.push_back(effect);
-	peRaise = effect;
 
 	effect = new ParticleEffect;
-	effect->id = "heal";
-	//effect->tex = ability->texParticle;
-	effect->tex = nullptr;
+	effect->id = "healEffect";
+	effect->tex = resMgr->Get<Texture>("heal_effect.png");
 	effect->life = 0.f;
 	effect->particleLife = 0.5f;
 	effect->emissionInterval = 0.f;
@@ -285,18 +280,14 @@ void GameResources::InitEffects()
 	effect->maxParticles = 25;
 	effect->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 	effect->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//effect->posMin = Vec3(-bounds.x, -bounds.y / 2, -bounds.x);
-	//effect->posMax = Vec3(bounds.x, bounds.y / 2, bounds.x);
 	effect->alpha = Vec2(0.9f, 0.f);
-	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->size = Vec2(0.1f, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peHeal = effect;
 
 	effect = new ParticleEffect;
-	effect->id = "spellOther";
-	//effect->tex = ability->texParticle;
-	effect->tex = nullptr;
+	effect->id = "fireTrap";
+	effect->tex = resMgr->Get<Texture>("fire_spark.png");
 	effect->life = 0.f;
 	effect->particleLife = 0.5f;
 	effect->emissionInterval = 0.f;
@@ -308,10 +299,14 @@ void GameResources::InitEffects()
 	effect->posMin = Vec3(-0.5f, 0, -0.5f);
 	effect->posMax = Vec3(0.5f, 0, 0.5f);
 	effect->alpha = Vec2(1.f, 0.f);
-	//effect->size = Vec2(ability->sizeParticle / 2, 0.f);
+	effect->size = Vec2(0.0375f, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peSpellOther = effect;
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "bearTrap";
+	effect->tex = resMgr->Get<Texture>("dust.png");
+	particleEffects.push_back(effect);
 
 	effect = new ParticleEffect;
 	effect->id = "spellBall";

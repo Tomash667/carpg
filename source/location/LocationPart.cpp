@@ -49,12 +49,10 @@ void LocationPart::BuildScene()
 
 	Scene* scene = lvlPart->scene;
 
-	// ground items
+	for(DestroyedObject* obj : lvlPart->destroyedObjects)
+		scene->Add(obj->CreateSceneNode());
 	for(GroundItem* groundItem : groundItems)
-	{
-		groundItem->CreateSceneNode();
-		scene->Add(groundItem->node);
-	}
+		scene->Add(groundItem->CreateSceneNode());
 }
 
 //=================================================================================================
@@ -92,7 +90,17 @@ void LocationPart::Update(float dt)
 	LoopAndRemove(lvlPart->pes, [dt](ParticleEmitter* pe) { return pe->Update(dt); });
 	LoopAndRemove(lvlPart->tpes, [dt](TrailParticleEmitter* tpe) { return tpe->Update(dt); });
 	LoopAndRemove(lvlPart->drains, [dt](Drain& drain) { return drain.Update(dt); });
-	LoopAndRemove(lvlPart->destroyedObjects, [dt](DestroyedObject* obj) { return obj->Update(dt); });
+	LoopAndRemove(lvlPart->destroyedObjects, [dt, this](DestroyedObject* obj)
+		{
+			if(obj->Update(dt))
+			{
+				lvlPart->scene->Remove(obj->node);
+				obj->node->Free();
+				delete obj;
+				return true;
+			}
+			return false;
+		});
 
 	// update blood spatters
 	for(Blood& blood : bloods)
@@ -531,11 +539,13 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 {
 	assert(groundItem);
 
+	if(adjustY && partType == LocationPart::Type::Outside)
+		gameLevel->terrain->SetY(groundItem->pos);
+
 	if(gameLevel->ready && lvlPart)
 	{
 		gameRes->PreloadItem(groundItem->item);
-		groundItem->CreateSceneNode();
-		lvlPart->scene->Add(groundItem->node);
+		lvlPart->scene->Add(groundItem->CreateSceneNode());
 
 		if(Net::IsServer())
 		{
@@ -544,8 +554,6 @@ void LocationPart::AddGroundItem(GroundItem* groundItem, bool adjustY)
 		}
 	}
 
-	if(adjustY && partType == LocationPart::Type::Outside)
-		gameLevel->terrain->SetY(groundItem->pos);
 	groundItems.push_back(groundItem);
 }
 
@@ -1063,6 +1071,7 @@ void LocationPart::DestroyUsable(Usable* usable)
 	obj->pos = usable->pos;
 	obj->rot = usable->rot;
 	obj->timer = 1.f;
+	lvlPart->scene->Add(obj->CreateSceneNode());
 	lvlPart->destroyedObjects.push_back(obj);
 
 	// remove collider

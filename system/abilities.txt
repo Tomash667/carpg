@@ -65,6 +65,7 @@ ability raise {
 	cooldown {10 15}
 	range 2.5
 	moveRange 15
+	particleEffect raiseEffect
 	texParticle "czarna_iskra.png" 0.2
 	soundCast "Darkness3.mp3" 1
 }
@@ -128,6 +129,7 @@ ability heal {
 	range 7.5
 	moveRange 15
 	mana 100
+	particleEffect healEffect
 	texParticle "heal_effect.png" 0.1
 	soundCast "heal.mp3" 1
 	icon
@@ -238,7 +240,7 @@ ability fireTrap {
 	width 1.5
 	mana 75
 	cooldown 10
-	texParticle "fire_spark.png" 0.075
+	particleEffect fireTrap
 	soundCast "catching_fire.mp3" 0.5
 	count 3
 	icon
@@ -256,7 +258,7 @@ ability bearTrap {
 	cooldown 12
 	castTime 1
 	stamina 50
-	texParticle "dust.png" 0.075
+	particleEffect bearTrap
 	soundCast "metal_spring_02.mp3" 0.5
 	count 3
 	icon

@@ -237,7 +237,7 @@ struct NetChange
 		float f[3];
 		POD::Vec3 vec3;
 		const Item* item2;
-		Ability* ability;
+		const Ability* ability;
 	};
 	Vec3 pos;
 	union

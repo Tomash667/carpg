@@ -2483,7 +2483,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				if(!f)
 					Error("Update client: Broken PARTICLE_EFFECT.");
 				else if(Ability* ability = Ability::Get(abilityHash))
-					gameLevel->CreateSpellParticleEffect(nullptr, ability, pos, bounds);
+					gameLevel->CreateSpellParticleEffect(nullptr, *ability, pos, bounds);
 				else
 					Error("Update client: PARTICLE_EFFECT, missing ability %d.", abilityHash);
 			}
