@@ -90,7 +90,7 @@ void GameResources::InitEffects()
 	peHit = effect;
 
 	effect = new ParticleEffect;
-	effect->id = "spellHit";
+	effect->id = "spellBall";
 	//effect->tex = ability->texParticle;
 	effect->tex = nullptr;
 	effect->life = -1;
@@ -107,12 +107,11 @@ void GameResources::InitEffects()
 	//effect->size = Vec2(ability->sizeParticle, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peSpellHit = effect;
+	peSpellBall = effect;
 
 	effect = new ParticleEffect;
 	effect->id = "electroHit";
-	//effect->tex = ability->texParticle;
-	effect->tex = nullptr;
+	effect->tex = resMgr->Get<Texture>("blueSpark.png");
 	effect->life = 0.f;
 	effect->particleLife = 0.5f;
 	effect->emissionInterval = 0.f;
@@ -121,13 +120,12 @@ void GameResources::InitEffects()
 	effect->maxParticles = 12;
 	effect->speedMin = Vec3(-1.5f, -1.5f, -1.5f);
 	effect->speedMax = Vec3(1.5f, 1.5f, 1.5f);
-	//effect->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//effect->posMax = Vec3(ability->size, ability->size, ability->size);
+	effect->posMin = Vec3::Zero;
+	effect->posMax = Vec3::Zero;
 	effect->alpha = Vec2(1.f, 0.f);
-	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->size = Vec2(0.05f, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peElectroHit = effect;
 
 	effect = new ParticleEffect;
 	effect->id = "torch";
@@ -309,7 +307,7 @@ void GameResources::InitEffects()
 	particleEffects.push_back(effect);
 
 	effect = new ParticleEffect;
-	effect->id = "spellBall";
+	effect->id = "spellHit";
 	//effect->tex = ability.texParticle;
 	effect->tex = nullptr;
 	effect->life = 0.f;
@@ -326,7 +324,7 @@ void GameResources::InitEffects()
 	//effect->size = Vec2(ability.size / 2, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peSpellBall = effect;
+	peSpellHit = effect;
 
 	effect = new ParticleEffect;
 	effect->id = "blood";

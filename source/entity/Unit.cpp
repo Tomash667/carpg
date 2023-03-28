@@ -6678,14 +6678,13 @@ void Unit::CastSpell()
 			e->ability = &ability;
 			e->startPos = pos;
 
-			Vec3 hitpoint;
-			Unit* hitted;
-
 			targetPos.y += Random(-0.5f, 0.5f);
 			Vec3 dir = targetPos - coord;
 			dir.Normalize();
 			Vec3 target = coord + dir * ability.range;
 
+			Vec3 hitpoint;
+			Unit* hitted;
 			if(gameLevel->RayTest(coord, target, this, hitpoint, hitted))
 			{
 				if(hitted)

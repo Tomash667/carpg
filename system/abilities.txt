@@ -79,7 +79,7 @@ ability thunderBolt {
 	cooldown {7.5 12.5}
 	range 50
 	mana 200
-	texParticle "iskra.png" 0.03
+	particleEffect electroHit
 	soundCast "lighting_bolt.mp3" 3
 	soundHit "zap.mp3" 1
 	icon

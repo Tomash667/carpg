@@ -563,7 +563,7 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		if(ability->texParticle)
 		{
 			pe = new ParticleEmitter;
-			gameRes->peSpellHit->Apply(pe);
+			gameRes->peSpellBall->Apply(pe);
 			pe->tex = ability->texParticle;
 			pe->pos = pos;
 			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);

@@ -134,15 +134,11 @@ bool Electro::Update(float dt)
 				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// add particles
-			if(ability->texParticle)
+			if(ability->particleEffect)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peElectroHit->Apply(pe);
-				pe->tex = ability->texParticle;
+				ability->particleEffect->Apply(pe);
 				pe->pos = targetPos;
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = Vec2(ability->sizeParticle, 0.f);
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
 			}
@@ -191,15 +187,11 @@ bool Electro::Update(float dt)
 				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// particles
-			if(ability->texParticle)
+			if(ability->particleEffect)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				gameRes->peElectroHit->Apply(pe);
-				pe->tex = ability->texParticle;
+				ability->particleEffect->Apply(pe);
 				pe->pos = targetPos;
-				pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-				pe->posMax = Vec3(ability->size, ability->size, ability->size);
-				pe->size = Vec2(ability->sizeParticle, 0.f);
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
 			}

@@ -845,7 +845,7 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		if(ability.texParticle && ability.type == Ability::Ball)
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
-			gameRes->peSpellBall->Apply(pe);
+			gameRes->peSpellHit->Apply(pe);
 			pe->tex = ability.texParticle;
 			pe->pos = pos;
 			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
