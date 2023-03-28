@@ -2,12 +2,19 @@
 #include "Usable.h"
 
 #include "BitStreamFunc.h"
+#include "GameResources.h"
 #include "ItemContainer.h"
+#include "Level.h"
+#include "LevelPart.h"
 #include "Net.h"
 #include "Object.h"
+#include "ParticleEffect.h"
 #include "Quest2.h"
 #include "QuestManager.h"
 #include "Unit.h"
+
+#include <ParticleSystem.h>
+#include <SoundManager.h>
 
 const float Usable::SOUND_DIST = 1.5f;
 EntityType<Usable>::Impl EntityType<Usable>::impl;
@@ -191,4 +198,39 @@ void Usable::FireEvent(ScriptEvent& e)
 		if(event.type == e.type)
 			event.quest->FireEvent(e);
 	}
+}
+
+//=================================================================================================
+void Usable::Destroy()
+{
+	Vec3 hitpoint = GetCenter();
+	LocationPart& locPart = gameLevel->GetLocationPart(hitpoint);
+
+	ParticleEmitter* pe = new ParticleEmitter;
+	gameRes->peHit->Apply(pe);
+	pe->pos = hitpoint;
+	pe->Init();
+	locPart.lvlPart->pes.push_back(pe);
+
+	soundMgr->PlaySound3d(base->sound, hitpoint, HIT_SOUND_DIST);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Net::PushChange(NetChange::HIT_OBJECT);
+		c.id = id;
+		c.pos = hitpoint;
+	}
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Net::PushChange(NetChange::DESTROY_USABLE);
+		c.id = id;
+	}
+
+	// event
+	ScriptEvent event(EVENT_DESTROY);
+	event.onDestroy.usable = this;
+	FireEvent(event);
+
+	locPart.DestroyUsable(this);
 }

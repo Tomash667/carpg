@@ -1840,33 +1840,32 @@ void PlayerController::CheckObjectDistance(const Vec3& pos, void* ptr, float& be
 }
 
 //=================================================================================================
-void PlayerController::UseUsable(Usable* usable, bool afterAction)
+void PlayerController::UseUsable(Usable& usable, bool afterAction)
 {
 	Unit& u = *unit;
-	Usable& use = *usable;
-	BaseUsable& bu = *use.base;
+	BaseUsable& base = *usable.base;
 
 	bool ok = true;
-	if(bu.item)
+	if(base.item)
 	{
-		if(!u.HaveItem(bu.item) && u.GetEquippedItem(SLOT_WEAPON) != bu.item)
+		if(!u.HaveItem(base.item) && u.GetEquippedItem(SLOT_WEAPON) != base.item)
 		{
-			gameGui->messages->AddGameMsg2(Format(game->txNeedItem, bu.item->name.c_str()), 2.f);
+			gameGui->messages->AddGameMsg2(Format(game->txNeedItem, base.item->name.c_str()), 2.f);
 			ok = false;
 		}
-		else if(unit->weaponState != WeaponState::Hidden && (bu.item != &unit->GetWeapon() || unit->HaveShield()))
+		else if(unit->weaponState != WeaponState::Hidden && (base.item != &unit->GetWeapon() || unit->HaveShield()))
 		{
 			if(afterAction)
 				return;
 			u.HideWeapon();
 			nextAction = NA_USE;
-			nextActionData.usable = &use;
+			nextActionData.usable = &usable;
 			if(Net::IsClient())
 				Net::PushChange(NetChange::SET_NEXT_ACTION);
 			ok = false;
 		}
 		else
-			u.usedItem = bu.item;
+			u.usedItem = base.item;
 	}
 
 	if(!ok)
@@ -1874,24 +1873,24 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 
 	if(Net::IsLocal())
 	{
-		u.UseUsable(&use);
+		u.UseUsable(&usable);
 		data.beforePlayer = BP_NONE;
 
-		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
+		if(IsSet(base.useFlags, BaseUsable::CONTAINER))
 		{
 			// loot container
-			gameGui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
+			gameGui->inventory->StartTrade2(I_LOOT_CONTAINER, &usable);
 		}
 		else
 		{
 			u.action = A_USE_USABLE;
 			u.animationState = AS_USE_USABLE_MOVE_TO_OBJECT;
 			u.animation = ANI_PLAY;
-			u.meshInst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.meshInst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 			u.targetPos = u.pos;
-			u.targetPos2 = use.pos;
-			if(use.base->limitRot == 4)
-				u.targetPos2 -= Vec3(sin(use.rot) * 1.5f, 0, cos(use.rot) * 1.5f);
+			u.targetPos2 = usable.pos;
+			if(usable.base->limitRot == 4)
+				u.targetPos2 -= Vec3(sin(usable.rot) * 1.5f, 0, cos(usable.rot) * 1.5f);
 			u.timer = 0.f;
 			u.act.useUsable.rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 		}
@@ -1907,13 +1906,13 @@ void PlayerController::UseUsable(Usable* usable, bool afterAction)
 	else
 	{
 		NetChange& c = Net::PushChange(NetChange::USE_USABLE);
-		c.id = data.beforePlayerPtr.usable->id;
+		c.id = usable.id;
 		c.count = USE_USABLE_START;
 
-		if(IsSet(bu.useFlags, BaseUsable::CONTAINER))
+		if(IsSet(base.useFlags, BaseUsable::CONTAINER))
 		{
 			action = PlayerAction::LootContainer;
-			actionUsable = data.beforePlayerPtr.usable;
+			actionUsable = &usable;
 			chestTrade = &actionUsable->container->items;
 		}
 
@@ -2767,7 +2766,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 		// usable objects in front of player
 		for(Usable* usable : locPart.usables)
 		{
-			if(!usable->user && !IsSet(usable->base->useFlags, BaseUsable::DESTROYABLE))
+			if(!usable->user)
 				CheckObjectDistance(usable->pos, usable, bestDist, BP_USABLE);
 		}
 	}
@@ -2962,8 +2961,11 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 				}
 			}
 		}
-		else if(u.action == A_NONE)
-			UseUsable(data.beforePlayerPtr.usable, false);
+		else if(data.beforePlayer == BP_USABLE)
+		{
+			if(u.action == A_NONE && !IsSet(data.beforePlayerPtr.usable->base->useFlags, BaseUsable::DESTROYABLE))
+				UseUsable(*data.beforePlayerPtr.usable, false);
+		}
 	}
 
 	// attack

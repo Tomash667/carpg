@@ -7255,7 +7255,7 @@ void Unit::Update(float dt)
 					// use usable
 					case NA_USE:
 						if(!player->nextActionData.usable->user)
-							player->UseUsable(player->nextActionData.usable, true);
+							player->UseUsable(*player->nextActionData.usable, true);
 						break;
 					// sell equipped item
 					case NA_SELL:

@@ -32,6 +32,7 @@ struct Usable : EntityType<Usable>
 	void RemoveEventHandler(Quest2* quest, EventType type, bool cleanup = false);
 	void RemoveAllEventHandlers();
 	void FireEvent(ScriptEvent& e);
+	void Destroy();
 };
 
 //-----------------------------------------------------------------------------

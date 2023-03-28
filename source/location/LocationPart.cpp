@@ -1097,6 +1097,9 @@ void LocationPart::DestroyUsable(Usable* usable)
 		}
 	}
 
+	if(PlayerController::data.beforePlayer == BP_USABLE && PlayerController::data.beforePlayerPtr.usable == usable)
+		PlayerController::data.beforePlayer = BP_NONE;
+
 	RemoveElement(usables, usable);
 	usable->RemoveAllEventHandlers();
 	delete usable;

@@ -162,19 +162,18 @@ struct Shortcut
 };
 
 //-----------------------------------------------------------------------------
-union BeforePlayerPtr
-{
-	Unit* unit;
-	Chest* chest;
-	Door* door;
-	GroundItem* item;
-	Usable* usable;
-	void* any;
-};
-
-//-----------------------------------------------------------------------------
 struct LocalPlayerData
 {
+	union BeforePlayerPtr
+	{
+		Unit* unit;
+		Chest* chest;
+		Door* door;
+		GroundItem* item;
+		Usable* usable;
+		void* any;
+	};
+
 	BeforePlayer beforePlayer;
 	BeforePlayerPtr beforePlayerPtr;
 	Entity<Unit> selectedUnit;
@@ -349,7 +348,7 @@ public:
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
 	void CheckObjectDistance(const Vec3& pos, void* ptr, float& bestDist, BeforePlayer type);
-	void UseUsable(Usable* u, bool afterAction);
+	void UseUsable(Usable& useable, bool afterAction);
 	void Update(float dt);
 	void UpdateMove(float dt, bool allowRot);
 	bool WantExitLevel();

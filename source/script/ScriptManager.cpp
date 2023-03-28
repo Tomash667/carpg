@@ -765,7 +765,8 @@ void ScriptManager::RegisterGame()
 	AddType("Usable")
 		.Member("const Vec3 pos", offsetof(Usable, pos))
 		.Method("void AddEventHandler(Quest@, EVENT)", asMETHOD(Usable, AddEventHandler))
-		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Usable, RemoveEventHandler));
+		.Method("void RemoveEventHandler(Quest@, EVENT = EVENT_ANY, bool = false)", asMETHOD(Usable, RemoveEventHandler))
+		.Method("void Destroy()", asMETHOD(Usable, Destroy));
 
 	AddType("UnitOrderBuilder")
 		.Method("UnitOrderBuilder@ WithTimer(float)", asMETHOD(UnitOrderEntry, WithTimer))
