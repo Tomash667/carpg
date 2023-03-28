@@ -354,7 +354,8 @@ void Quest_Contest::Update(float dt)
 	else if(state == CONTEST_IN_PROGRESS)
 	{
 		bool talking = true;
-		cstring nextText = nullptr, nextDrink = nullptr;
+		cstring nextText = nullptr;
+		const Item* nextDrink = nullptr;
 
 		switch(state2)
 		{
@@ -368,42 +369,42 @@ void Quest_Contest::Update(float dt)
 			nextText = txContestTalk[3];
 			break;
 		case 3:
-			nextDrink = "beer";
+			nextDrink = Item::beer;
 			break;
 		case 4:
 			talking = false;
 			nextText = txContestTalk[4];
 			break;
 		case 5:
-			nextDrink = "beer";
+			nextDrink = Item::beer;
 			break;
 		case 6:
 			talking = false;
 			nextText = txContestTalk[5];
 			break;
 		case 7:
-			nextDrink = "beer";
+			nextDrink = Item::beer;
 			break;
 		case 8:
 			talking = false;
 			nextText = txContestTalk[6];
 			break;
 		case 9:
-			nextDrink = "vodka";
+			nextDrink = Item::vodka;
 			break;
 		case 10:
 			talking = false;
 			nextText = txContestTalk[7];
 			break;
 		case 11:
-			nextDrink = "vodka";
+			nextDrink = Item::vodka;
 			break;
 		case 12:
 			talking = false;
 			nextText = txContestTalk[8];
 			break;
 		case 13:
-			nextDrink = "vodka";
+			nextDrink = Item::vodka;
 			break;
 		case 14:
 			talking = false;
@@ -413,14 +414,14 @@ void Quest_Contest::Update(float dt)
 			nextText = txContestTalk[10];
 			break;
 		case 16:
-			nextDrink = "spirit";
+			nextDrink = Item::spirit;
 			break;
 		case 17:
 			talking = false;
 			nextText = txContestTalk[11];
 			break;
 		case 18:
-			nextDrink = "spirit";
+			nextDrink = Item::spirit;
 			break;
 		case 19:
 			talking = false;
@@ -434,7 +435,7 @@ void Quest_Contest::Update(float dt)
 				nextText = txContestTalk[13];
 			}
 			else
-				nextDrink = "spirit";
+				nextDrink = Item::spirit;
 			break;
 		}
 
@@ -448,7 +449,7 @@ void Quest_Contest::Update(float dt)
 				{
 					assert(nextDrink);
 					time = 0.f;
-					const Consumable& drink = Item::Get(nextDrink)->ToConsumable();
+					const Consumable& drink = nextDrink->ToConsumable();
 					for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}

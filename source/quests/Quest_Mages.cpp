@@ -52,7 +52,7 @@ void Quest_Mages::SetProgress(int prog2)
 			targetLoc->SetKnown();
 
 			atLevel = targetLoc->GetLastLevel();
-			itemToGive[0] = Item::Get("qMagesBall");
+			itemToGive[0] = Item::qMagesBall;
 			spawnItem = Quest_Event::Item_InTreasure;
 
 			msgs.push_back(Format(questMgr->txQuest[166], startLoc->name.c_str(), world->GetDate()));
@@ -63,7 +63,7 @@ void Quest_Mages::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			const Item* item = Item::Get("qMagesBall");
+			const Item* item = Item::qMagesBall;
 			DialogContext::current->talker->AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			questMgr->questMages2->scholar = DialogContext::current->talker;
@@ -140,7 +140,7 @@ Quest::LoadResult Quest_Mages::Load(GameReader& f)
 
 	if(!done)
 	{
-		itemToGive[0] = Item::Get("qMagesBall");
+		itemToGive[0] = Item::qMagesBall;
 		spawnItem = Quest_Event::Item_InTreasure;
 	}
 
@@ -206,7 +206,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::MageWantsVodka:
 		{
-			const Item* beer = Item::Get("beer");
+			const Item* beer = Item::beer;
 			DialogContext::current->pc->unit->RemoveItem(beer, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(beer->ToConsumable());
@@ -216,7 +216,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::GivenVodka:
 		{
-			const Item* vodka = Item::Get("vodka");
+			const Item* vodka = Item::vodka;
 			DialogContext::current->pc->unit->RemoveItem(vodka, 1);
 			DialogContext::current->talker->action = A_NONE;
 			DialogContext::current->talker->ConsumeItem(vodka->ToConsumable());
@@ -256,17 +256,16 @@ void Quest_Mages2::SetProgress(int prog2)
 		{
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(questMgr->txQuest[180]);
-			const Item* item = Item::Get("qMagesPotion");
-			DialogContext::current->pc->unit->AddItem2(item, 1u, 0u);
+			DialogContext::current->pc->unit->AddItem2(Item::qMagesPotion, 1u, 0u);
 			DialogContext::current->pc->unit->ModGold(-150);
 		}
 		break;
 	case Progress::MageDrinkPotion:
 		{
-			const Item* mikstura = Item::Get("qMagesPotion");
-			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
+			const Item* potion = Item::qMagesPotion;
+			DialogContext::current->pc->unit->RemoveItem(potion, 1);
 			DialogContext::current->talker->action = A_NONE;
-			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());
+			DialogContext::current->talker->ConsumeItem(potion->ToConsumable());
 			DialogContext::current->Wait(3.f);
 			magesState = State::MageCured;
 			OnUpdate(questMgr->txQuest[181]);

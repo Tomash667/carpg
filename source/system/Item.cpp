@@ -9,8 +9,10 @@
 
 #include <ResourceManager.h>
 
-Ptr<const Item> Item::bookAdventurer, Item::cup, Item::gold, Item::goldenCup, Item::greenHerb, Item::healCrystal, Item::healingHerb, Item::magicCrystal,
-	Item::manaHerb, Item::mushroom, Item::plate, Item::qSecretNote2;
+Ptr<const Item> Item::beer, Item::bookAdventurer, Item::cup, Item::gold, Item::goldenCup, Item::greenHerb, Item::healCrystal, Item::healingHerb, Item::magicCrystal,
+Item::manaHerb, Item::mushroom, Item::parcel, Item::plate,
+Item::qBanditsLetter, Item::qBanditsParcel, Item::qCraziesStone, Item::qEvilBook, Item::qGoblinsBow, Item::qMagesBall, Item::qMagesPotion, Item::qSecretNote2,
+Item::spirit, Item::vodka;
 ItemsMap Item::items;
 std::map<string, Item*> itemAliases;
 vector<ItemList*> ItemList::lists;

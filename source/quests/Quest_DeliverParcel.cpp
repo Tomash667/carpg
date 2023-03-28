@@ -49,7 +49,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			questMgr->questTimeouts2.push_back(this);
 
 			Location& loc = *world->GetLocation(endLoc);
-			Item::Get("parcel")->CreateCopy(parcel);
+			Item::parcel->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(loc) ? questMgr->txForMayor : questMgr->txForSoltys, loc.name.c_str());
 			parcel.questId = id;
@@ -221,7 +221,7 @@ Quest::LoadResult Quest_DeliverParcel::Load(GameReader& f)
 		if(prog >= Progress::Started)
 		{
 			Location& loc = *world->GetLocation(endLoc);
-			Item::Get("parcel")->CreateCopy(parcel);
+			Item::parcel->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(loc) ? questMgr->txForMayor : questMgr->txForSoltys, loc.name.c_str());
 			parcel.questId = id;

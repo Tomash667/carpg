@@ -340,6 +340,7 @@ void ItemLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ItemLoader::Finalize()
 {
+	Item::beer = GetHardcodedItem("beer");
 	Item::bookAdventurer = GetHardcodedItem("bookAdventurer");
 	Item::cup = GetHardcodedItem("cup");
 	Item::gold = GetHardcodedItem("gold");
@@ -350,8 +351,18 @@ void ItemLoader::Finalize()
 	Item::magicCrystal = GetHardcodedItem("magicCrystal");
 	Item::manaHerb = GetHardcodedItem("manaHerb");
 	Item::mushroom = GetHardcodedItem("mushroom");
+	Item::parcel = GetHardcodedItem("parcel");
 	Item::plate = GetHardcodedItem("plate");
+	Item::qBanditsLetter = GetHardcodedItem("qBanditsLetter");
+	Item::qBanditsParcel = GetHardcodedItem("qBanditsParcel");
+	Item::qCraziesStone = GetHardcodedItem("qCraziesStone");
+	Item::qEvilBook = GetHardcodedItem("qEvilBook");
+	Item::qGoblinsBow = GetHardcodedItem("qGoblinsBow");
+	Item::qMagesBall = GetHardcodedItem("qMagesBall");
+	Item::qMagesPotion = GetHardcodedItem("qMagesPotion");
 	Item::qSecretNote2 = GetHardcodedItem("qSecretNote2");
+	Item::spirit = GetHardcodedItem("spirit");
+	Item::vodka = GetHardcodedItem("vodka");
 
 	// check if all recipes are defined
 	for(Recipe* recipe : Recipe::items)

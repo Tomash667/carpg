@@ -5,33 +5,11 @@
 //------------------------------------------------------------------------------
 // Required items
 //------------------------------------------------------------------------------
-// Quest_Bandits
-item qBanditsParcel
-item qBanditsLetter
-// Quest_Contest
-item beer
-item vodka
-item spirit
-// Quest_Crazies
-item qCraziesStone
-// Quest_DeliverParcel
-item parcel
-// Quest_Evil
-item qEvilBook
-// Quest_Goblins
-item qGoblinsBow
-// Quest_Mages
-item qMagesBall
-item beer
-item vodka
-item qMagesPotion
 // Quest_Mine
 item qMineKey
 item angelskinArmor
 // Quest_Orcs
 item qOrcsKey
-// Quest_RetrievePackage
-item parcel
 // Quest_Secret
 item forbiddenSword
 item qSecretNote

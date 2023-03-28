@@ -46,6 +46,5 @@ public:
 	bool checkStone;
 
 private:
-	const Item* stone;
 	int days;
 };

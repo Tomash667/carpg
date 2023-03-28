@@ -30,7 +30,6 @@ void Quest_Crazies::Start()
 	craziesState = State::None;
 	days = 0;
 	checkStone = false;
-	stone = Item::Get("qCraziesStone");
 }
 
 //=================================================================================================
@@ -117,8 +116,6 @@ Quest::LoadResult Quest_Crazies::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	stone = Item::Get("qCraziesStone");
-
 	f >> craziesState;
 	f >> days;
 	f >> checkStone;
@@ -161,7 +158,7 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
 	{
-		ctx.pc->unit->RemoveItem(stone, 1);
+		ctx.pc->unit->RemoveItem(Item::qCraziesStone, 1);
 		ctx.pc->unit->ModGold(10);
 	}
 	else
@@ -185,6 +182,7 @@ void Quest_Crazies::CheckStone()
 {
 	checkStone = false;
 
+	const Item* stone = Item::qCraziesStone;
 	if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
 		// remove item from game, unless it is encounter (because level is reset anyway)

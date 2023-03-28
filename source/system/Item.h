@@ -136,7 +136,7 @@ struct Item
 	ResourceState state;
 
 	// hardcoded
-	static Ptr<const Item> bookAdventurer, cup, gold, goldenCup, greenHerb, healCrystal, healingHerb, magicCrystal, manaHerb, mushroom, plate, qSecretNote2;
+	static Ptr<const Item> beer, bookAdventurer, cup, gold, goldenCup, greenHerb, healCrystal, healingHerb, magicCrystal, manaHerb, mushroom, parcel, plate, qBanditsLetter, qBanditsParcel, qCraziesStone, qEvilBook, qGoblinsBow, qMagesBall, qMagesPotion, qSecretNote2, spirit, vodka;
 
 	static ItemsMap items;
 	static Item* TryGet(Cstring id);

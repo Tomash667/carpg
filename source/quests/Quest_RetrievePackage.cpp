@@ -54,7 +54,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 
 			cstring who = (LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys);
 
-			Item::Get("parcel")->CreateCopy(parcel);
+			Item::parcel->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(questMgr->txQuest[8], who, startLoc->name.c_str());
 			parcel.questId = id;
@@ -193,7 +193,7 @@ Quest::LoadResult Quest_RetrievePackage::Load(GameReader& f)
 
 		if(prog >= Progress::Started)
 		{
-			Item::Get("parcel")->CreateCopy(parcel);
+			Item::parcel->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(questMgr->txQuest[8], LocationHelper::IsCity(startLoc) ? questMgr->txForMayor : questMgr->txForSoltys, startLoc->name.c_str());
 			parcel.questId = id;

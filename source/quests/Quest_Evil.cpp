@@ -145,8 +145,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::GotBook:
 		{
 			OnUpdate(questMgr->txQuest[243]);
-			const Item* item = Item::Get("qEvilBook");
-			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(Item::qEvilBook, 1u, 1u);
 		}
 		break;
 	case Progress::GivenBook:
@@ -194,7 +193,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			// add cleric to team
 			Unit& u = *DialogContext::current->talker;
-			const Item* item = Item::Get("qEvilBook");
+			const Item* item = Item::qEvilBook;
 			u.AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			team->AddMember(&u, HeroType::Free);
