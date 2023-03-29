@@ -209,8 +209,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::TalkedWithMiner:
 		{
 			OnUpdate(questMgr->txQuest[147]);
-			const Item* item = Item::Get("qMineKey");
-			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(Item::qMineKey, 1u, 1u);
 		}
 		break;
 	case Progress::Finished:
@@ -340,7 +339,7 @@ void Quest_Mine::InitSub()
 
 	ItemList& lis = ItemList::Get("ancientArmoryArmors");
 	lis.Get(3, sub.itemToGive);
-	sub.itemToGive[3] = Item::Get("angelskinArmor");
+	sub.itemToGive[3] = Item::angelskinArmor;
 	sub.spawnItem = Quest_Event::Item_InChest;
 	sub.targetLoc = dungeonLoc == -2 ? nullptr : world->GetLocation(dungeonLoc);
 	sub.atLevel = 0;

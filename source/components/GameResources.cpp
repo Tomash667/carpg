@@ -483,7 +483,7 @@ void GameResources::LoadData()
 	PreloadTraps();
 	PreloadAbilities();
 	PreloadObjects();
-	PreloadItem(Item::Get("gold"));
+	PreloadItem(Item::gold);
 
 	// physic meshes
 	vdStairsUp = resMgr->Load<VertexData>("schody_gora.phy");

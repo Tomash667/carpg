@@ -340,19 +340,27 @@ void ItemLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ItemLoader::Finalize()
 {
+	Item::angelskinArmor = GetHardcodedItem("angelskinArmor");
 	Item::beer = GetHardcodedItem("beer");
 	Item::bookAdventurer = GetHardcodedItem("bookAdventurer");
+	Item::clothes = GetHardcodedItem("clothes");
 	Item::cup = GetHardcodedItem("cup");
+	Item::forbiddenSword = GetHardcodedItem("forbiddenSword");
 	Item::gold = GetHardcodedItem("gold");
 	Item::greenHerb = GetHardcodedItem("greenHerb");
 	Item::goldenCup = GetHardcodedItem("goldenCup");
 	Item::healCrystal = GetHardcodedItem("healCrystal");
 	Item::healingHerb = GetHardcodedItem("healingHerb");
+	Item::leatherArmor = GetHardcodedItem("leatherArmor");
+	Item::longSword = GetHardcodedItem("longSword");
 	Item::magicCrystal = GetHardcodedItem("magicCrystal");
 	Item::manaHerb = GetHardcodedItem("manaHerb");
 	Item::mushroom = GetHardcodedItem("mushroom");
 	Item::parcel = GetHardcodedItem("parcel");
 	Item::plate = GetHardcodedItem("plate");
+	Item::potionHealth = GetHardcodedItem("potionHealth");
+	Item::potionHealth2 = GetHardcodedItem("potionHealth2");
+	Item::potionHealth3 = GetHardcodedItem("potionHealth3");
 	Item::qBanditsLetter = GetHardcodedItem("qBanditsLetter");
 	Item::qBanditsParcel = GetHardcodedItem("qBanditsParcel");
 	Item::qCraziesStone = GetHardcodedItem("qCraziesStone");
@@ -360,9 +368,15 @@ void ItemLoader::Finalize()
 	Item::qGoblinsBow = GetHardcodedItem("qGoblinsBow");
 	Item::qMagesBall = GetHardcodedItem("qMagesBall");
 	Item::qMagesPotion = GetHardcodedItem("qMagesPotion");
+	Item::qMineKey = GetHardcodedItem("qMineKey");
+	Item::qOrcsKey = GetHardcodedItem("qOrcsKey");
+	Item::qSecretNote = GetHardcodedItem("qSecretNote");
 	Item::qSecretNote2 = GetHardcodedItem("qSecretNote2");
+	Item::shortBow = GetHardcodedItem("shortBow");
 	Item::spirit = GetHardcodedItem("spirit");
 	Item::vodka = GetHardcodedItem("vodka");
+	Item::wantedPoster = GetHardcodedItem("wantedPoster");
+	Item::woodenShield = GetHardcodedItem("woodenShield");
 
 	// check if all recipes are defined
 	for(Recipe* recipe : Recipe::items)

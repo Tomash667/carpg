@@ -3,32 +3,6 @@
 // Keep save compability in mind when removing any required entity!
 
 //------------------------------------------------------------------------------
-// Required items
-//------------------------------------------------------------------------------
-// Quest_Mine
-item qMineKey
-item angelskinArmor
-// Quest_Orcs
-item qOrcsKey
-// Quest_Secret
-item forbiddenSword
-item qSecretNote
-// Quest_Tournament
-item potionHealth
-item potionHealth2
-item potionHealth3
-// Quest_Tutorial
-item clothes
-// Quest_Wanted
-item wantedPoster
-// TutorialLocationGenerator
-item longSword
-item woodenShield
-item leatherArmor
-item shortBow
-item potionHealth
-
-//------------------------------------------------------------------------------
 // Required item lists
 //------------------------------------------------------------------------------
 list baseItems

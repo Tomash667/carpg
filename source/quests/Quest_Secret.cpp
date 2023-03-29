@@ -92,8 +92,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "secret_reward") == 0)
 	{
 		state = SECRET_REWARD;
-		const Item* item = Item::Get("forbiddenSword");
-		ctx.pc->unit->AddItem2(item, 1u, 1u);
+		ctx.pc->unit->AddItem2(Item::forbiddenSword, 1u, 1u);
 	}
 	else
 		assert(0);

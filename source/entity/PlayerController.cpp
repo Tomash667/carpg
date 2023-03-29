@@ -2887,14 +2887,14 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					door->Open();
 				else
 				{
-					cstring key;
+					const Item* key;
 					switch(door->locked)
 					{
 					case LOCK_MINE:
-						key = "qMineKey";
+						key = Item::qMineKey;
 						break;
 					case LOCK_ORCS:
-						key = "qOrcsKey";
+						key = Item::qOrcsKey;
 						break;
 					case LOCK_UNLOCKABLE:
 					default:
@@ -2903,7 +2903,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					}
 
 					Vec3 center = door->GetCenter();
-					if(key && u.HaveItem(Item::Get(key)))
+					if(key && u.HaveItem(key))
 					{
 						soundMgr->PlaySound3d(gameRes->sUnlock, center, Door::UNLOCK_SOUND_DIST);
 						gameGui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);

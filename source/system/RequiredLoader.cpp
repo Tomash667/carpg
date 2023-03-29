@@ -14,7 +14,6 @@
 
 enum RequiredType
 {
-	R_ITEM,
 	R_LIST,
 	R_STOCK,
 	R_UNIT,
@@ -37,7 +36,6 @@ void RequiredLoader::DoLoading()
 void RequiredLoader::InitTokenizer()
 {
 	t.AddKeywords(0, {
-		{ "item", R_ITEM },
 		{ "list", R_LIST },
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
@@ -56,16 +54,6 @@ void RequiredLoader::LoadEntity(int type, const string& id)
 {
 	switch(type)
 	{
-	case R_ITEM:
-		{
-			const Item* item = Item::TryGet(id);
-			if(!item)
-			{
-				Error("Missing required item '%s'.", id.c_str());
-				++content.errors;
-			}
-		}
-		break;
 	case R_LIST:
 		{
 			const bool leveled = IsPrefix("leveled");

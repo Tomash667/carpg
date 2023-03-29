@@ -220,9 +220,9 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							BaseObject* o = BaseObject::Get("chest");
 							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f * x + 1, 0, 2.f * y + o->size.y), PI);
-							chest->AddItem(Item::Get("longSword"));
-							chest->AddItem(Item::Get("woodenShield"));
-							chest->AddItem(Item::Get("leatherArmor"));
+							chest->AddItem(Item::longSword);
+							chest->AddItem(Item::woodenShield);
+							chest->AddItem(Item::leatherArmor);
 							chest->AddItem(Item::gold, Random(75, 100));
 							chest->handler = &quest;
 							quest.chests[0] = chest;
@@ -244,8 +244,8 @@ void TutorialLocationGenerator::OnEnter()
 						{
 							BaseObject* o = BaseObject::Get("chest");
 							Chest* chest = gameLevel->SpawnObjectEntity(lvl, o, Vec3(2.f * x + 1, 0, 2.f * y + o->size.y), PI);
-							chest->AddItem(Item::Get("shortBow"));
-							chest->AddItem(Item::Get("potionHealth"));
+							chest->AddItem(Item::shortBow);
+							chest->AddItem(Item::potionHealth);
 							chest->AddItem(Item::gold, Random(75, 100));
 							chest->handler = &quest;
 							quest.chests[1] = chest;
