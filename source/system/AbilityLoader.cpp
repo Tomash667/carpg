@@ -58,7 +58,8 @@ enum Keyword
 	K_COLOR,
 	K_TRAP_ID,
 	K_CAST_TIME,
-	K_PARTICLE_EFFECT
+	K_PARTICLE_EFFECT,
+	K_PARTICLE_EFFECT_HIT
 };
 
 //=================================================================================================
@@ -114,7 +115,8 @@ void AbilityLoader::InitTokenizer()
 		{ "color", K_COLOR },
 		{ "trapId", K_TRAP_ID },
 		{ "castTime", K_CAST_TIME },
-		{ "particleEffect", K_PARTICLE_EFFECT }
+		{ "particleEffect", K_PARTICLE_EFFECT },
+		{ "particleEffectHit", K_PARTICLE_EFFECT_HIT }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -450,6 +452,16 @@ void AbilityLoader::ParseAbility(const string& id)
 				if(!ability->particleEffect)
 					t.Throw("Missing particle effect '%s'.", id.c_str());
 				crc.Update(ability->particleEffect->id);
+				t.Next();
+				break;
+			}
+		case K_PARTICLE_EFFECT_HIT:
+			{
+				const string& id = t.MustGetItem();
+				ability->particleEffectHit = gameRes->GetParticleEffect(id);
+				if(!ability->particleEffectHit)
+					t.Throw("Missing particle effect '%s'.", id.c_str());
+				crc.Update(ability->particleEffectHit->id);
 				t.Next();
 				break;
 			}

@@ -2455,10 +2455,10 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						soundMgr->PlaySound3d(ability->soundHit, pos, ability->soundHitDist);
 
 					// particles
-					if(ability->particleEffect)
+					if(ability->particleEffectHit)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
-						ability->particleEffect->Apply(pe);
+						ability->particleEffectHit->Apply(pe);
 						pe->pos = pos;
 						pe->Init();
 						gameLevel->GetLocationPart(pos).lvlPart->pes.push_back(pe);

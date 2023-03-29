@@ -134,10 +134,10 @@ bool Electro::Update(float dt)
 				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// add particles
-			if(ability->particleEffect)
+			if(ability->particleEffectHit)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				ability->particleEffect->Apply(pe);
+				ability->particleEffectHit->Apply(pe);
 				pe->pos = targetPos;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);
@@ -187,10 +187,10 @@ bool Electro::Update(float dt)
 				soundMgr->PlaySound3d(ability->soundHit, targetPos, ability->soundHitDist);
 
 			// particles
-			if(ability->particleEffect)
+			if(ability->particleEffectHit)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				ability->particleEffect->Apply(pe);
+				ability->particleEffectHit->Apply(pe);
 				pe->pos = targetPos;
 				pe->Init();
 				locPart->lvlPart->pes.push_back(pe);

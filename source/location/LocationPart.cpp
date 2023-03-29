@@ -825,35 +825,26 @@ void LocationPart::SpellHitEffect(Bullet& bullet, const Vec3& pos, Unit* hitted)
 		}
 	}
 
-	if(IsSet(ability.flags, Ability::Explode))
+	// particles
+	if(ability.particleEffectHit)
 	{
-		// explosion
-		if(Net::IsLocal())
-		{
-			Explo* explo = CreateExplo(&ability, pos);
-			explo->dmg = (float)ability.dmg;
-			if(bullet.owner)
-				explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmgBonus);
-			explo->owner = bullet.owner;
-			if(hitted)
-				explo->hitted.push_back(hitted);
-		}
+		ParticleEmitter* pe = new ParticleEmitter;
+		ability.particleEffectHit->Apply(pe);
+		pe->pos = pos;
+		pe->Init();
+		lvlPart->pes.push_back(pe);
 	}
-	else
+
+	// explosion
+	if(IsSet(ability.flags, Ability::Explode) && Net::IsLocal())
 	{
-		// particles
-		if(ability.texParticle && ability.type == Ability::Ball)
-		{
-			ParticleEmitter* pe = new ParticleEmitter;
-			gameRes->peSpellHit->Apply(pe);
-			pe->tex = ability.texParticle;
-			pe->pos = pos;
-			pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-			pe->posMax = Vec3(ability.size, ability.size, ability.size);
-			pe->size = Vec2(ability.size / 2, 0.f);
-			pe->Init();
-			lvlPart->pes.push_back(pe);
-		}
+		Explo* explo = CreateExplo(&ability, pos);
+		explo->dmg = (float)ability.dmg;
+		if(bullet.owner)
+			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * ability.dmgBonus);
+		explo->owner = bullet.owner;
+		if(hitted)
+			explo->hitted.push_back(hitted);
 	}
 }
 

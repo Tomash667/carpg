@@ -52,6 +52,7 @@ ability spitPoison {
 	cooldown {5 10}
 	range 20
 	speed 12
+	particleEffectHit spitPoisonHit
 	tex "spit.png" 0.1
 	texParticle "spitp.png" 0.03
 	soundCast "splash1.wav" 0.5
@@ -79,7 +80,7 @@ ability thunderBolt {
 	cooldown {7.5 12.5}
 	range 50
 	mana 200
-	particleEffect electroHit
+	particleEffectHit electroHit
 	soundCast "lighting_bolt.mp3" 3
 	soundHit "zap.mp3" 1
 	icon
