@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------
 struct Usable : EntityType<Usable>
 {
+	SceneNode* node;
 	BaseUsable* base;
 	Vec3 pos;
 	float rot;
@@ -19,9 +20,9 @@ struct Usable : EntityType<Usable>
 	static const float SOUND_DIST;
 	static const int MIN_SIZE = 29;
 
-	Usable() : variant(-1), container(nullptr) {}
+	Usable() : variant(-1), node(nullptr), container(nullptr) {}
 	~Usable() { delete container; }
-
+	SceneNode* CreateSceneNode();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void Write(BitStreamWriter& f) const;

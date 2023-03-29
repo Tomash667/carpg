@@ -101,30 +101,6 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 		}
 	}
 
-	// usable objects
-	for(vector<Usable*>::iterator it = locPart.usables.begin(), end = locPart.usables.end(); it != end; ++it)
-	{
-		Usable& use = **it;
-		Mesh* mesh = use.GetMesh();
-		mesh->EnsureIsLoaded();
-		if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
-		{
-			SceneNode* node = SceneNode::Get();
-			node->SetMesh(mesh);
-			node->center = use.pos;
-			node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
-			if(drawBatch.gatherLights)
-				GatherDrawBatchLights(node);
-			if(pc->data.beforePlayer == BP_USABLE && pc->data.beforePlayerPtr.usable == &use)
-			{
-				GlowNode& glow = Add1(drawBatch.glowNodes);
-				glow.node = node;
-				glow.color = Color::White;
-			}
-			drawBatch.Add(node);
-		}
-	}
-
 	// chests
 	for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
 	{
@@ -446,12 +422,24 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	}
 
 	// glow
-	if(PlayerController::data.beforePlayer == BP_ITEM)
+	switch(PlayerController::data.beforePlayer)
 	{
-		GroundItem* groundItem = PlayerController::data.beforePlayerPtr.item;
-		GlowNode& glow = Add1(drawBatch.glowNodes);
-		glow.node = groundItem->node;
-		glow.color = Color::White;
+	case BP_ITEM:
+		{
+			GroundItem* groundItem = PlayerController::data.beforePlayerPtr.item;
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = groundItem->node;
+			glow.color = Color::White;
+		}
+		break;
+	case BP_USABLE:
+		{
+			Usable* usable = PlayerController::data.beforePlayerPtr.usable;
+			GlowNode& glow = Add1(drawBatch.glowNodes);
+			glow.node = usable->node;
+			glow.color = Color::White;
+		}
+		break;
 	}
 
 	drawBatch.Process();

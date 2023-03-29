@@ -14,10 +14,22 @@
 #include "Unit.h"
 
 #include <ParticleSystem.h>
+#include <SceneNode.h>
 #include <SoundManager.h>
 
 const float Usable::SOUND_DIST = 1.5f;
 EntityType<Usable>::Impl EntityType<Usable>::impl;
+
+//=================================================================================================
+SceneNode* Usable::CreateSceneNode()
+{
+	node = SceneNode::Get();
+	node->SetMesh(GetMesh());
+	node->center = pos;
+	node->mat = Matrix::RotationY(rot) * Matrix::Translation(pos);
+	node->persistent = true;
+	return node;
+}
 
 //=================================================================================================
 void Usable::Save(GameWriter& f)

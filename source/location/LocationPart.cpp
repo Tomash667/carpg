@@ -53,6 +53,8 @@ void LocationPart::BuildScene()
 		scene->Add(obj->CreateSceneNode());
 	for(GroundItem* groundItem : groundItems)
 		scene->Add(groundItem->CreateSceneNode());
+	for(Usable* usable : usables)
+		scene->Add(usable->CreateSceneNode());
 }
 
 //=================================================================================================
@@ -1100,6 +1102,7 @@ void LocationPart::DestroyUsable(Usable* usable)
 	if(PlayerController::data.beforePlayer == BP_USABLE && PlayerController::data.beforePlayerPtr.usable == usable)
 		PlayerController::data.beforePlayer = BP_NONE;
 
+	lvlPart->scene->Remove(usable->node);
 	RemoveElement(usables, usable);
 	usable->RemoveAllEventHandlers();
 	delete usable;
