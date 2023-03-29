@@ -90,9 +90,8 @@ void GameResources::InitEffects()
 	peHit = effect;
 
 	effect = new ParticleEffect;
-	effect->id = "spellBall";
-	//effect->tex = ability->texParticle;
-	effect->tex = nullptr;
+	effect->id = "magicBolt";
+	effect->tex = resMgr->Get<Texture>("mpp.png");
 	effect->life = -1;
 	effect->particleLife = 0.5f;
 	effect->emissionInterval = 0.1f;
@@ -101,13 +100,45 @@ void GameResources::InitEffects()
 	effect->maxParticles = 50;
 	effect->speedMin = Vec3(-1, -1, -1);
 	effect->speedMax = Vec3(1, 1, 1);
-	//effect->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-	//effect->posMax = Vec3(ability->size, ability->size, ability->size);
+	effect->posMin = Vec3(-0.05f, -0.05f, -0.05f);
+	effect->posMax = Vec3(0.05f, 0.05f, 0.05f);
 	effect->alpha = Vec2(1.f, 0.f);
-	//effect->size = Vec2(ability->sizeParticle, 0.f);
+	effect->size = Vec2(0.02f, 0.f);
 	effect->mode = 1;
 	particleEffects.push_back(effect);
-	peSpellBall = effect;
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "xmagicBolt";
+	effect->tex = resMgr->Get<Texture>("xmp.png");
+	particleEffects.push_back(effect);
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "fireball";
+	effect->tex = resMgr->Get<Texture>("flare.png");
+	effect->posMin = Vec3(-0.2f, -0.2f, -0.2f);
+	effect->posMax = Vec3(0.2f, 0.2f, 0.2f);
+	effect->size = Vec2(0.075f, 0.f);
+	particleEffects.push_back(effect);
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "mysticBall";
+	effect->tex = resMgr->Get<Texture>("flare2.png");
+	particleEffects.push_back(effect);
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "explodingSkull";
+	effect->tex = resMgr->Get<Texture>("flare.png");
+	effect->posMin = Vec3(-0.13f, -0.13f, -0.13f);
+	effect->posMax = Vec3(0.13f, 0.13f, 0.13f);
+	effect->size = Vec2(0.075f, 0.f);
+	particleEffects.push_back(effect);
+
+	effect = new ParticleEffect(*effect);
+	effect->id = "spitPoison";
+	effect->posMin = Vec3(-0.1f, -0.1f, -0.1f);
+	effect->posMax = Vec3(0.1f, 0.1f, 0.1f);
+	effect->size = Vec2(0.03f, 0.f);
+	particleEffects.push_back(effect);
 
 	effect = new ParticleEffect;
 	effect->id = "electroHit";
@@ -598,8 +629,6 @@ void GameResources::PreloadAbilities()
 			resMgr->Load(ability.soundHit);
 		if(ability.tex)
 			resMgr->Load(ability.tex);
-		if(ability.texParticle)
-			resMgr->Load(ability.texParticle);
 		if(ability.texExplode.diffuse)
 			resMgr->Load(ability.texExplode.diffuse);
 		if(ability.texIcon)

@@ -36,7 +36,6 @@ enum Keyword
 	K_EXPLODE_RANGE,
 	K_MESH,
 	K_TEX,
-	K_TEX_PARTICLE,
 	K_TEX_EXPLODE,
 	K_SOUND_CAST,
 	K_SOUND_HIT,
@@ -93,7 +92,6 @@ void AbilityLoader::InitTokenizer()
 		{ "explodeRange", K_EXPLODE_RANGE },
 		{ "mesh", K_MESH },
 		{ "tex", K_TEX },
-		{ "texParticle", K_TEX_PARTICLE },
 		{ "texExplode", K_TEX_EXPLODE },
 		{ "soundCast", K_SOUND_CAST },
 		{ "soundHit", K_SOUND_HIT },
@@ -281,21 +279,6 @@ void AbilityLoader::ParseAbility(const string& id)
 				if(ability->size <= 0.f)
 					t.Throw("Invalid texture size %g.", ability->size);
 				crc.Update(ability->size);
-				t.Next();
-			}
-			break;
-		case K_TEX_PARTICLE:
-			{
-				const string& texId = t.MustGetString();
-				ability->texParticle = resMgr->TryGet<Texture>(texId);
-				if(!ability->texParticle)
-					t.Throw("Missing texture '%s'.", texId.c_str());
-				crc.Update(texId);
-				t.Next();
-				ability->sizeParticle = t.MustGetFloat();
-				if(ability->sizeParticle <= 0.f)
-					t.Throw("Invalid particle texture size %g.", ability->sizeParticle);
-				crc.Update(ability->sizeParticle);
 				t.Next();
 			}
 			break;

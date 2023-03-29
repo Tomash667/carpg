@@ -2320,15 +2320,11 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				bullet->owner = unit;
 				bullet->yspeed = speedY;
 
-				if(ability.texParticle)
+				if(ability.particleEffect)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					gameRes->peSpellBall->Apply(pe);
-					pe->tex = ability.texParticle;
+					ability.particleEffect->Apply(pe);
 					pe->pos = bullet->pos;
-					pe->posMin = Vec3(-ability.size, -ability.size, -ability.size);
-					pe->posMax = Vec3(ability.size, ability.size, ability.size);
-					pe->size = Vec2(ability.sizeParticle, 0.f);
 					pe->Init();
 					locPart.lvlPart->pes.push_back(pe);
 					bullet->pe = pe;

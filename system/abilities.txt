@@ -8,7 +8,7 @@ ability magicBolt {
 	range 50
 	speed 20
 	tex "mp.png" 0.05
-	texParticle "mpp.png" 0.02
+	particleEffect magicBolt
 	soundCast "flaunch.wav" 0.5
 	soundHit "punch1.wav" 1
 }
@@ -20,7 +20,7 @@ ability xmagicBolt {
 	range 50
 	speed 20
 	tex "xmp.png" 0.05
-	texParticle "xmpp.png" 0.02
+	particleEffect xmagicBolt
 	soundCast "flaunch.wav" 0.5
 	soundHit "punch1.wav" 1
 }
@@ -36,7 +36,7 @@ ability fireball {
 	explodeRange 2
 	mana 75
 	tex "flare.png" 0.2
-	texParticle "flare.png" 0.075
+	particleEffect fireball
 	texExplode "explosion.jpg"
 	soundCast "rlaunch.mp3" 1
 	soundHit "explode.mp3" 3
@@ -52,9 +52,9 @@ ability spitPoison {
 	cooldown {5 10}
 	range 20
 	speed 12
-	particleEffectHit spitPoisonHit
 	tex "spit.png" 0.1
-	texParticle "spitp.png" 0.03
+	particleEffect spitPoison
+	particleEffectHit spitPoisonHit
 	soundCast "splash1.wav" 0.5
 	soundHit "splash2.mp3" 1
 }
@@ -67,7 +67,6 @@ ability raise {
 	range 2.5
 	moveRange 15
 	particleEffect raiseEffect
-	texParticle "czarna_iskra.png" 0.2
 	soundCast "Darkness3.mp3" 1
 }
 
@@ -115,7 +114,7 @@ ability explodingSkull {
 	speed 12
 	explodeRange 2.5
 	mesh "czaszka.qmsh" 0.13
-	texParticle "flare.png" 0.075
+	particleEffect explodingSkull
 	texExplode "explosion.jpg"
 	soundCast "evil_laught.mp3" 1
 	soundHit "explode.mp3" 3
@@ -131,7 +130,6 @@ ability heal {
 	moveRange 15
 	mana 100
 	particleEffect healEffect
-	texParticle "heal_effect.png" 0.1
 	soundCast "heal.mp3" 1
 	icon
 }
@@ -145,7 +143,7 @@ ability mysticBall {
 	speed 18
 	explodeRange 3
 	tex "flare2.png" 0.2
-	texParticle "flare2.png" 0.075
+	particleEffect mysticBall
 	texExplode "rainbow.jpg"
 	soundCast "rlaunch.mp3" 1
 	soundHit "explode.mp3" 3

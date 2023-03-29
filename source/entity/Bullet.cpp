@@ -560,15 +560,11 @@ bool Bullet::Read(BitStreamReader& f, LevelPart& lvlPart)
 		trail = nullptr;
 		pe = nullptr;
 
-		if(ability->texParticle)
+		if(ability->particleEffect)
 		{
 			pe = new ParticleEmitter;
-			gameRes->peSpellBall->Apply(pe);
-			pe->tex = ability->texParticle;
+			ability->particleEffect->Apply(pe);
 			pe->pos = pos;
-			pe->posMin = Vec3(-ability->size, -ability->size, -ability->size);
-			pe->posMax = Vec3(ability->size, ability->size, ability->size);
-			pe->size = Vec2(ability->sizeParticle, 0.f);
 			pe->Init();
 			lvlPart.pes.push_back(pe);
 		}
