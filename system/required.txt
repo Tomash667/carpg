@@ -417,6 +417,7 @@ object torch
 object table
 object table2
 object chest
+object magicTorch
 usable stool
 // MoonwellGenerator
 object moonwell

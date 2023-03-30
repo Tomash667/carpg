@@ -51,7 +51,16 @@ object torch {
 	cylinder { 0.0675 2.18 }
 	centerY 2.2
 	extraDist 0.5
-	flags { nearWall light important }
+	effect torch
+	light 5
+	lightColor { 1.0 0.9 0.9 }
+	flags { nearWall torch }
+}
+
+object magicTorch : torch {
+	effect magicTorch
+	lightColor { 0.8 0.8 1.0 }
+	flags nearWall
 }
 
 object torchOff {
@@ -63,7 +72,9 @@ object torchOff {
 object torchCeiling {
 	mesh "torchCeiling.qmsh"
 	centerY -2.58
-	flags { light torchCeilingEffect }
+	effect torchCeiling
+	light 10
+	lightColor { 1.0 0.9 0.9 }
 }
 
 object tanningRack {
@@ -162,7 +173,10 @@ object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
 	centerY 0.4
-	flags { tmpPhysics light campfireEffect }
+	effect campfire
+	light 5
+	lightColor { 1.0 0.9 0.9 }
+	flags tmpPhysics
 }
 
 object campfireOff {
@@ -307,7 +321,9 @@ object magicThing {
 	mesh "magiczne_cos.qmsh"
 	cylinder { 0.561 0.844 }
 	centerY 0.844
-	flags light
+	effect magicTorch
+	light 5
+	lightColor { 0.8 0.8 1.0 }
 }
 
 object moonwell {

@@ -691,6 +691,21 @@ ObjectEntity Level::SpawnObjectEntity(LocationPart& locPart, BaseObject* base, c
 
 		return o;
 	}
+	else if(IsSet(base->flags, OBJ_TORCH) && IsSet(flags, SOE_MAGIC_LIGHT))
+	{
+		// replace torch with magic torch
+		base = BaseObject::TryGet("magicTorch");
+
+		Object* o = new Object;
+		o->mesh = base->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = scale;
+		o->base = base;
+		locPart.objects.push_back(o);
+
+		SpawnObjectExtras(locPart, base, pos, rot, o, scale, flags);
+	}
 	else if(IsSet(base->flags, OBJ_BUILDING))
 	{
 		// building
@@ -812,53 +827,26 @@ void Level::SpawnObjectExtras(LocationPart& locPart, BaseObject* obj, const Vec3
 {
 	assert(obj);
 
-	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
+	// particle effect
+	if(obj->effect && !IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
-		if(IsSet(obj->flags, OBJ_LIGHT))
-		{
-			// flame
-			ParticleEffect* effect;
-			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
-				effect = gameRes->peCampfire;
-			else if(IsSet(obj->flags, OBJ_TORCH_CEILING_EFFECT))
-				effect = gameRes->peTorchCeiling;
-			else if(IsSet(flags, SOE_MAGIC_LIGHT))
-				effect = gameRes->peMagicTorch;
-			else
-				effect = gameRes->peTorch;
-
-			ParticleEmitter* pe = new ParticleEmitter;
-			effect->Apply(pe);
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->Init();
-			locPart.lvlPart->pes.push_back(pe);
-
-			// light
-			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
-			{
-				GameLight& light = Add1(locPart.lights);
-				light.startPos = pe->pos;
-				light.range = IsSet(obj->flags, OBJ_TORCH_CEILING_EFFECT) ? 10.f : 5.f;
-				if(IsSet(flags, SOE_MAGIC_LIGHT))
-					light.startColor = Vec3(0.8f, 0.8f, 1.f);
-				else
-					light.startColor = Vec3(1.f, 0.9f, 0.9f);
-			}
-		}
-
-		if(obj->effect)
-		{
-			ParticleEmitter* pe = new ParticleEmitter;
-			obj->effect->Apply(pe);
-			pe->pos = pos;
-			pe->pos.y += obj->centery;
-			pe->Init();
-			locPart.lvlPart->pes.push_back(pe);
-		}
+		ParticleEmitter* pe = new ParticleEmitter;
+		obj->effect->Apply(pe);
+		pe->pos = pos.ModY(obj->centery);
+		pe->Init();
+		locPart.lvlPart->pes.push_back(pe);
 	}
 
-	// fizyka
+	// light
+	if(obj->light > 0.f && !IsSet(flags, SOE_DONT_CREATE_LIGHT))
+	{
+		GameLight& light = Add1(locPart.lights);
+		light.startPos = pos.ModY(obj->centery);
+		light.range = obj->light;
+		light.startColor = obj->lightColor;
+	}
+
+	// physics
 	if(obj->shape)
 	{
 		CollisionObject& c = Add1(locPart.lvlPart->colliders);
@@ -4602,9 +4590,7 @@ int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* i
 //=================================================================================================
 void Level::SpawnUnitEffect(Unit& unit)
 {
-	Vec3 realPos = unit.pos;
-	realPos.y += 1.f;
-	soundMgr->PlaySound3d(gameRes->sSummon, realPos, SPAWN_SOUND_DIST);
+	soundMgr->PlaySound3d(gameRes->sSummon, unit.pos.ModY(1.f), SPAWN_SOUND_DIST);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	gameRes->peSpawn->Apply(pe);

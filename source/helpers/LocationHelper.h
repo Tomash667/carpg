@@ -48,6 +48,7 @@ namespace LocationHelper
 
 	LocationPart* GetLocationPart(Location* loc);
 	LocationPart* GetLocationPart(Location* loc, int index);
+	void GetLocationParts(Location& loc, vector<std::reference_wrapper<LocationPart>>& parts);
 	LocationPart* GetBuildingLocationPart(Location* loc, const string& name);
 	Unit* GetMayor(Location* loc);
 	Unit* GetCaptain(Location* loc);

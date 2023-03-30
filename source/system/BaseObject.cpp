@@ -44,9 +44,12 @@ BaseObject& BaseObject::operator = (BaseObject& o)
 	r = o.r;
 	h = o.h;
 	centery = o.centery;
-	flags = o.flags;
-	variants = o.variants;
+	light = o.light;
 	extraDist = o.extraDist;
+	effect = o.effect;
+	flags = o.flags;
+	lightColor = o.lightColor;
+	variants = o.variants;
 	return *this;
 }
 

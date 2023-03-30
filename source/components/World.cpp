@@ -1251,6 +1251,29 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	if(LOAD_VERSION < V_0_17)
 		f.SkipVector<Int2>(); // old boss_levels
 	f >> tomirSpawned;
+
+	// convert torch to magic torch
+	if(LOAD_VERSION < V_DEV)
+	{
+		BaseObject* torch = BaseObject::TryGet("torch");
+		BaseObject* magicTorch = BaseObject::TryGet("magicTorch");
+		vector<std::reference_wrapper<LocationPart>> parts;
+		for(Location* loc : locations)
+		{
+			if(loc && loc->type == L_DUNGEON && IsSet(gBaseLocations[loc->target].options, BLO_MAGIC_LIGHT))
+			{
+				LocationHelper::GetLocationParts(*loc, parts);
+				for(LocationPart& part : parts)
+				{
+					for(Object* obj : part.objects)
+					{
+						if(obj->base == torch)
+							obj->base = magicTorch;
+					}
+				}
+			}
+		}
+	}
 }
 
 //=================================================================================================

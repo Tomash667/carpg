@@ -51,6 +51,34 @@ LocationPart* LocationHelper::GetLocationPart(Location* loc, int index)
 }
 
 //=================================================================================================
+void LocationHelper::GetLocationParts(Location& loc, vector<std::reference_wrapper<LocationPart>>& parts)
+{
+	parts.clear();
+	if(loc.outside)
+	{
+		parts.push_back(static_cast<OutsideLocation&>(loc));
+		if(loc.type == L_CITY)
+		{
+			City& city = static_cast<City&>(loc);
+			for(InsideBuilding* insideBuilding : city.insideBuildings)
+				parts.push_back(*insideBuilding);
+		}
+	}
+	else
+	{
+		InsideLocation& inside = static_cast<InsideLocation&>(loc);
+		if(inside.IsMultilevel())
+		{
+			MultiInsideLocation& multi = static_cast<MultiInsideLocation&>(inside);
+			for(InsideLocationLevel* lvl : multi.levels)
+				parts.push_back(*lvl);
+		}
+		else
+			parts.push_back(static_cast<SingleInsideLocation&>(inside));
+	}
+}
+
+//=================================================================================================
 LocationPart* LocationHelper::GetBuildingLocationPart(Location* loc, const string& name)
 {
 	assert(loc);

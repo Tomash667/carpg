@@ -25,7 +25,6 @@
 #include "Quest_Mine.h"
 #include "Quest_Orcs.h"
 #include "Quest_Sawmill.h"
-#include "MultiInsideLocation.h"
 #include "NameHelper.h"
 #include "News.h"
 #include "ScriptManager.h"
