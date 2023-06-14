@@ -200,7 +200,7 @@ void Bullet::OnHit(LocationPart& locPart, Unit* hitted, const Vec3& hitpoint, Bu
 						else
 							hitted->animationState = AS_POSITION_HURT;
 
-						if(hitted->meshInst->mesh->head.nGroups == 2)
+						if(hitted->meshInst->GetMesh()->head.nGroups == 2)
 							hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{

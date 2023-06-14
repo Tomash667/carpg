@@ -1573,13 +1573,13 @@ int Unit::GetDmgType() const
 //=================================================================================================
 Vec3 Unit::GetLootCenter() const
 {
-	Mesh::Point* point2 = meshInst->mesh->GetPoint("centrum");
+	Mesh::Point* point2 = meshInst->GetMesh()->GetPoint("centrum");
 
 	if(!point2)
 		return visualPos;
 
 	const Mesh::Point& point = *point2;
-	Matrix matBone = point.mat * meshInst->matBones[point.bone];
+	Matrix matBone = point.mat * meshInst->GetBoneMatrix(point.bone);
 	matBone = matBone * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(visualPos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
@@ -2299,9 +2299,9 @@ void Unit::Load(GameReader& f)
 		if(action == A_SHOOT)
 		{
 			bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
-			bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bowInstance->groups[0].speed = meshInst->groups[1].speed;
-			bowInstance->groups[0].time = Min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
+			bowInstance->Play(&bowInstance->GetMesh()->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bowInstance->GetGroup(0).speed = meshInst->GetGroup(1).speed;
+			bowInstance->GetGroup(0).time = Min(meshInst->GetGroup(1).time, bowInstance->GetGroup(0).anim->length);
 		}
 
 		f >> lastBash;
@@ -3010,9 +3010,9 @@ bool Unit::Read(BitStreamReader& f)
 		case A_SHOOT:
 			act.shoot.ability = Ability::Get(f.Read<int>());
 			bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
-			bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bowInstance->groups[0].speed = meshInst->groups[1].speed;
-			bowInstance->groups[0].time = Min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
+			bowInstance->Play(&bowInstance->GetMesh()->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bowInstance->GetGroup(0).speed = meshInst->GetGroup(1).speed;
+			bowInstance->GetGroup(0).time = Min(meshInst->GetGroup(1).time, bowInstance->GetGroup(0).anim->length);
 			break;
 		case A_USE_USABLE:
 			f >> act.useUsable.rot;
@@ -3890,8 +3890,8 @@ void Unit::ClearInventory()
 // unused?
 Vec3 Unit::GetEyePos() const
 {
-	const Mesh::Point& point = *meshInst->mesh->GetPoint("oczy");
-	Matrix matBone = point.mat * meshInst->matBones[point.bone];
+	const Mesh::Point& point = *meshInst->GetMesh()->GetPoint("oczy");
+	Matrix matBone = point.mat * meshInst->GetBoneMatrix(point.bone);
 	matBone = matBone * (Matrix::Scale(data->scale) * Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
@@ -4120,21 +4120,21 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 	if(melee)
 	{
 		if(HaveShield())
-			return meshInst->mesh->GetAnimation(NAMES::aniTakeWeapon);
+			return meshInst->GetMesh()->GetAnimation(NAMES::aniTakeWeapon);
 		else
 		{
-			Mesh::Animation* anim = meshInst->mesh->GetAnimation(NAMES::aniTakeWeaponNoShield);
+			Mesh::Animation* anim = meshInst->GetMesh()->GetAnimation(NAMES::aniTakeWeaponNoShield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej
-				return meshInst->mesh->GetAnimation(NAMES::aniTakeWeapon);
+				return meshInst->GetMesh()->GetAnimation(NAMES::aniTakeWeapon);
 			}
 			else
 				return anim;
 		}
 	}
 	else
-		return meshInst->mesh->GetAnimation(NAMES::aniTakeBow);
+		return meshInst->GetMesh()->GetAnimation(NAMES::aniTakeBow);
 }
 
 //=================================================================================================
@@ -4811,7 +4811,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 		{
 			assert(!meshInst);
 			meshInst = new MeshInstance(mesh);
-			meshInst->ptr = this;
+			meshInst->SetUserPointer(this);
 
 			if(mode != CREATE_MESH::ON_WORLDMAP)
 			{
@@ -4827,8 +4827,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 			}
 
-			if(meshInst->mesh->head.nGroups > 1)
-				meshInst->groups[1].state = 0;
+			if(meshInst->GetMesh()->head.nGroups > 1)
+				meshInst->GetGroup(1).state = 0;
 			if(humanData)
 				humanData->ApplyScale(meshInst);
 		}
@@ -5060,7 +5060,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allowAnimation)
 
 	if(mode != BREAK_ACTION_MODE::INSTANT)
 	{
-		if(meshInst->groups.size() == 2u)
+		if(meshInst->GetMesh()->groups.size() == 2u)
 			meshInst->Deactivate(1);
 		animation = ANI_STAND;
 	}
@@ -5170,7 +5170,7 @@ void Unit::Fall()
 	}
 	animation = ANI_DIE;
 	talking = false;
-	meshInst->needUpdate = true;
+	meshInst->Changed();
 }
 
 //=================================================================================================
@@ -5266,7 +5266,7 @@ void Unit::Standup(bool warp, bool leave)
 	else
 	{
 		action = A_STAND_UP;
-		Mesh::Animation* anim = meshInst->mesh->GetAnimation("wstaje2");
+		Mesh::Animation* anim = meshInst->GetMesh()->GetAnimation("wstaje2");
 		if(anim)
 		{
 			meshInst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
@@ -5445,7 +5445,7 @@ void Unit::Die(Unit* killer)
 	}
 	animation = ANI_DIE;
 	talking = false;
-	meshInst->needUpdate = true;
+	meshInst->Changed();
 
 	// sound
 	Sound* sound = nullptr;
@@ -5667,7 +5667,7 @@ bool Unit::SetWeaponState(bool takesOut, WeaponType type, bool send)
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
-				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
+				SetBit(meshInst->GetGroup(1).state, MeshInstance::FLAG_BACK);
 				weaponState = WeaponState::Hiding;
 				weaponHiding = weaponTaken;
 			}
@@ -5716,7 +5716,7 @@ bool Unit::SetWeaponState(bool takesOut, WeaponType type, bool send)
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
-				SetBit(meshInst->groups[1].state, MeshInstance::FLAG_BACK);
+				SetBit(meshInst->GetGroup(1).state, MeshInstance::FLAG_BACK);
 				weaponHiding = weaponTaken;
 				weaponTaken = W_NONE;
 				weaponState = WeaponState::Hiding;
@@ -6957,7 +6957,7 @@ void Unit::Update(float dt)
 		if(IsStanding() && talking)
 		{
 			talkTimer += dt;
-			meshInst->needUpdate = true;
+			meshInst->Changed();
 		}
 
 		if(Net::IsLocal())
@@ -7041,27 +7041,27 @@ void Unit::Update(float dt)
 		case ANI_WALK:
 			meshInst->Play(NAMES::aniMove, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetWalkSpeed() / data->walkSpeed;
+				meshInst->GetGroup(0).speed = GetWalkSpeed() / data->walkSpeed;
 			break;
 		case ANI_WALK_BACK:
 			meshInst->Play(NAMES::aniMove, PLAY_BACK | PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetWalkSpeed() / data->walkSpeed;
+				meshInst->GetGroup(0).speed = GetWalkSpeed() / data->walkSpeed;
 			break;
 		case ANI_RUN:
 			meshInst->Play(NAMES::aniRun, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRunSpeed() / data->runSpeed;
+				meshInst->GetGroup(0).speed = GetRunSpeed() / data->runSpeed;
 			break;
 		case ANI_LEFT:
 			meshInst->Play(NAMES::aniLeft, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRotationSpeed() / data->rotSpeed;
+				meshInst->GetGroup(0).speed = GetRotationSpeed() / data->rotSpeed;
 			break;
 		case ANI_RIGHT:
 			meshInst->Play(NAMES::aniRight, PLAY_PRIO1, 0);
 			if(!Net::IsClient())
-				meshInst->groups[0].speed = GetRotationSpeed() / data->rotSpeed;
+				meshInst->GetGroup(0).speed = GetRotationSpeed() / data->rotSpeed;
 			break;
 		case ANI_STAND:
 			meshInst->Play(NAMES::aniStand, PLAY_PRIO1, 0);
@@ -7150,7 +7150,7 @@ void Unit::Update(float dt)
 		}
 	}
 
-	const int groupIndex = meshInst->mesh->head.nGroups - 1;
+	const int groupIndex = meshInst->GetMesh()->head.nGroups - 1;
 
 	// aktualizuj akcjê
 	switch(action)
@@ -7312,7 +7312,7 @@ void Unit::Update(float dt)
 		else if(animationState == AS_SHOOT_PREPARE)
 		{
 			if(meshInst->GetProgress(1) > 20.f / 40)
-				meshInst->groups[1].time = 20.f / 40 * meshInst->groups[1].anim->length;
+				meshInst->GetGroup(1).time = 20.f / 40 * meshInst->GetGroup(1).anim->length;
 		}
 		else if(animationState == AS_SHOOT_CAN)
 		{
@@ -7457,8 +7457,8 @@ void Unit::Update(float dt)
 				break;
 			}
 		}
-		bowInstance->groups[0].time = min(meshInst->groups[1].time, bowInstance->groups[0].anim->length);
-		bowInstance->needUpdate = true;
+		bowInstance->GetGroup(0).time = min(meshInst->GetGroup(1).time, bowInstance->GetGroup(0).anim->length);
+		bowInstance->Changed();
 		break;
 	case A_ATTACK:
 		staminaTimer = STAMINA_RESTORE_TIMER;
@@ -7480,7 +7480,7 @@ void Unit::Update(float dt)
 				if(Net::IsLocal() && IsAI())
 				{
 					float speed = (1.f + GetAttackSpeed()) * GetStaminaAttackSpeedMod();
-					meshInst->groups[groupIndex].speed = speed;
+					meshInst->GetGroup(groupIndex).speed = speed;
 					act.attack.power = 2.f;
 					animationState = AS_ATTACK_CAN_HIT;
 					if(Net::IsOnline())
@@ -7492,7 +7492,7 @@ void Unit::Update(float dt)
 					}
 				}
 				else
-					meshInst->groups[groupIndex].time = t * meshInst->groups[groupIndex].anim->length;
+					meshInst->GetGroup(groupIndex).time = t * meshInst->GetGroup(groupIndex).anim->length;
 			}
 			else if(IsPlayer() && Net::IsLocal())
 			{
@@ -7517,7 +7517,7 @@ void Unit::Update(float dt)
 				{
 					// koniec mo¿liwego ataku
 					animationState = AS_ATTACK_FINISHED;
-					meshInst->groups[groupIndex].speed = 1.f;
+					meshInst->GetGroup(groupIndex).speed = 1.f;
 					act.attack.run = false;
 				}
 			}
@@ -7620,7 +7620,7 @@ void Unit::Update(float dt)
 		}
 		break;
 	case A_PAIN:
-		if(meshInst->mesh->head.nGroups == 2)
+		if(meshInst->GetMesh()->head.nGroups == 2)
 		{
 			if(meshInst->IsEnded(1))
 			{
@@ -7870,7 +7870,7 @@ void Unit::Update(float dt)
 		if(animationState == AS_POSITION_HURT)
 		{
 			// obs³uga animacji cierpienia
-			if(meshInst->mesh->head.nGroups == 2)
+			if(meshInst->GetMesh()->head.nGroups == 2)
 			{
 				if(meshInst->IsEnded(1) || timer >= 0.5f)
 				{
@@ -8086,7 +8086,7 @@ void Unit::Update(float dt)
 					act.dash.hit->Free();
 				action = A_NONE;
 				if(Net::IsLocal() || IsLocalPlayer())
-					meshInst->groups[0].speed = GetRunSpeed() / data->runSpeed;
+					meshInst->GetGroup(0).speed = GetRunSpeed() / data->runSpeed;
 			}
 		}
 		break;
@@ -8773,7 +8773,7 @@ bool Unit::DoShieldSmash()
 	if(!mesh)
 		return false;
 
-	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), meshInst->mesh->GetPoint(NAMES::pointShield), hitpoint))
+	if(!locPart->CheckForHit(*this, hitted, *mesh->FindPoint("hit"), meshInst->GetMesh()->GetPoint(NAMES::pointShield), hitpoint))
 		return false;
 
 	if(!hitted)
@@ -8790,7 +8790,7 @@ bool Unit::DoShieldSmash()
 		else
 			hitted->animationState = AS_POSITION_HURT;
 
-		if(hitted->meshInst->mesh->head.nGroups == 2)
+		if(hitted->meshInst->GetMesh()->head.nGroups == 2)
 			hitted->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 		else
 		{
@@ -8878,7 +8878,7 @@ void Unit::DoGenericAttack(Unit& hitted, const Vec3& hitpoint, float attack, int
 				else
 					hitted.animationState = AS_POSITION_HURT;
 
-				if(hitted.meshInst->mesh->head.nGroups == 2)
+				if(hitted.meshInst->GetMesh()->head.nGroups == 2)
 					hitted.meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				else
 				{
@@ -8965,14 +8965,14 @@ void Unit::DoRangedAttack(bool prepare, bool notify, float _speed)
 {
 	const float speed = _speed > 0.f ? _speed : GetBowAttackSpeed();
 	meshInst->Play(NAMES::aniShoot, PLAY_PRIO1 | PLAY_ONCE, 1);
-	meshInst->groups[1].speed = speed;
+	meshInst->GetGroup(1).speed = speed;
 	action = A_SHOOT;
 	act.shoot.ability = nullptr;
 	animationState = prepare ? AS_SHOOT_PREPARE : AS_SHOOT_CAN;
 	if(!bowInstance)
 		bowInstance = gameLevel->GetBowInstance(GetBow().mesh);
-	bowInstance->Play(&bowInstance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-	bowInstance->groups[0].speed = speed;
+	bowInstance->Play(&bowInstance->GetMesh()->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+	bowInstance->GetGroup(0).speed = speed;
 
 	if(!fakeUnit && Net::IsLocal())
 	{

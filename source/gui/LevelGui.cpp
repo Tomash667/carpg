@@ -1303,7 +1303,7 @@ void LevelGui::UpdateSpeechBubbles(float dt)
 							sb.unit->GetRealName(), sb.text.c_str()));
 					}
 					else
-						sb.unit->meshInst->needUpdate = true;
+						sb.unit->meshInst->Changed();
 				}
 				SpeechBubblePool.Free(*it);
 				*it = nullptr;

@@ -214,7 +214,7 @@ namespace UnitHelper
 
 	const UnitMatrixCache& GetMatrixCache(const Unit& unit)
 	{
-		Mesh* mesh = unit.meshInst->mesh;
+		Mesh* mesh = unit.meshInst->GetMesh();
 		MeshInstance* meshInst = gameRes->tmpMeshInst;
 
 		auto it = unitMatrixCache.find(mesh);
@@ -231,7 +231,7 @@ namespace UnitHelper
 			const float p = unit.data->frames->t[F_CAST];
 			meshInst->SetMesh(mesh);
 			meshInst->SetAnimation(anim, p);
-			cache.matCast = point->mat * meshInst->matBones[point->bone];
+			cache.matCast = point->mat * meshInst->GetBoneMatrix(point->bone);
 			cache.castAvailable = true;
 		}
 		else
@@ -244,7 +244,7 @@ namespace UnitHelper
 		{
 			meshInst->SetMesh(mesh);
 			meshInst->SetAnimation(anim, 0.5f);
-			cache.matShoot = point->mat * meshInst->matBones[point->bone];
+			cache.matShoot = point->mat * meshInst->GetBoneMatrix(point->bone);
 			cache.shootAvailable = true;
 		}
 		else

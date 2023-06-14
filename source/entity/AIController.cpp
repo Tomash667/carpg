@@ -511,7 +511,7 @@ void AIController::HitReaction(const Vec3& pos)
 // when target is nullptr, it deals no damage (dummy training)
 void AIController::DoAttack(Unit* target, bool running)
 {
-	if(!(unit->action == A_NONE && (unit->meshInst->mesh->head.nGroups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
+	if(!(unit->action == A_NONE && (unit->meshInst->GetMesh()->head.nGroups == 1 || unit->weaponState == WeaponState::Taken) && nextAttack <= 0.f))
 		return;
 
 	if(unit->data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -554,15 +554,15 @@ void AIController::DoAttack(Unit* target, bool running)
 
 	float speed = (doPowerAttack ? unit->GetPowerAttackSpeed() : unit->GetAttackSpeed()) * unit->GetStaminaAttackSpeedMod();
 
-	if(unit->meshInst->mesh->head.nGroups > 1)
+	if(unit->meshInst->GetMesh()->head.nGroups > 1)
 	{
 		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-		unit->meshInst->groups[1].speed = speed;
+		unit->meshInst->GetGroup(1).speed = speed;
 	}
 	else
 	{
 		unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 0);
-		unit->meshInst->groups[0].speed = speed;
+		unit->meshInst->GetGroup(0).speed = speed;
 		unit->animation = ANI_PLAY;
 	}
 	unit->animationState = (doPowerAttack ? AS_ATTACK_PREPARE : AS_ATTACK_CAN_HIT);

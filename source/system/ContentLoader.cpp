@@ -30,7 +30,7 @@ bool ContentLoader::DoLoad(cstring filename, int topGroup, bool* requireId)
 
 	try
 	{
-		content.errors += t.ParseTop<int>(topGroup, [&](int top)
+		content.errors += t.ParseTop(topGroup, [&](int top)
 		{
 			currentEntity = top;
 			if(requireId && !requireId[top])

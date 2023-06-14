@@ -345,7 +345,7 @@ void Game::UpdateAi(float dt)
 					{
 						// someone else alert him with enemy alert shout
 						u.talking = false;
-						u.meshInst->needUpdate = true;
+						u.meshInst->Changed();
 						ai.inCombat = true;
 						ai.target = alertTarget;
 						ai.targetLastPos = ai.alertTargetPos;
@@ -365,7 +365,7 @@ void Game::UpdateAi(float dt)
 					{
 						// enemy noticed - start the fight
 						u.talking = false;
-						u.meshInst->needUpdate = true;
+						u.meshInst->Changed();
 						ai.inCombat = true;
 						ai.target = enemy;
 						ai.targetLastPos = enemy->pos;
@@ -800,7 +800,7 @@ void Game::UpdateAi(float dt)
 					else if(ai.st.idle.action == AIController::Idle_Chat)
 					{
 						u.talking = false;
-						u.meshInst->needUpdate = true;
+						u.meshInst->Changed();
 						ai.st.idle.action = AIController::Idle_None;
 					}
 					else if(ai.st.idle.action == AIController::Idle_Use)
@@ -1710,7 +1710,7 @@ void Game::UpdateAi(float dt)
 
 								if(ability.animation.empty())
 								{
-									if(u.meshInst->mesh->head.nGroups == 2)
+									if(u.meshInst->GetMesh()->head.nGroups == 2)
 										u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 									else
 									{
@@ -1853,7 +1853,7 @@ void Game::UpdateAi(float dt)
 								ai.ignore = 0.f;
 								u.action = A_BLOCK;
 								u.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-								u.meshInst->groups[1].blendMax = speed;
+								u.meshInst->GetGroup(1).blendMax = speed;
 
 								if(Net::IsOnline())
 								{
@@ -2247,7 +2247,7 @@ void Game::UpdateAi(float dt)
 					targetPos = top->pos;
 
 					// hit with shield
-					if(bestDist <= u.GetAttackRange() && !u.meshInst->groups[1].IsBlending() && ai.ignore <= 0.f)
+					if(bestDist <= u.GetAttackRange() && !u.meshInst->GetGroup(1).IsBlending() && ai.ignore <= 0.f)
 					{
 						if(Rand() % 2 == 0)
 						{
@@ -2255,7 +2255,7 @@ void Game::UpdateAi(float dt)
 							u.action = A_BASH;
 							u.animationState = AS_BASH_ANIMATION;
 							u.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, 1);
-							u.meshInst->groups[1].speed = speed;
+							u.meshInst->GetGroup(1).speed = speed;
 							u.RemoveStamina(u.GetStaminaMod(u.GetShield()) * Unit::STAMINA_BASH_ATTACK);
 
 							if(Net::IsOnline())
@@ -2402,7 +2402,7 @@ void Game::UpdateAi(float dt)
 
 					if(ability.animation.empty())
 					{
-						if(u.meshInst->mesh->head.nGroups == 2)
+						if(u.meshInst->GetMesh()->head.nGroups == 2)
 							u.meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 						else
 						{

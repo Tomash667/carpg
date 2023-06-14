@@ -657,7 +657,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			unit->humanData->height = Lerp(MIN_HEIGHT, MAX_HEIGHT, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->humanData->ApplyScale(unit->meshInst);
-			unit->meshInst->needUpdate = true;
+			unit->meshInst->Changed();
 			break;
 		case IdRandomSet:
 			if(mode == Mode::PickAppearance)
@@ -775,7 +775,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->act.attack.index = unit->GetRandomAttack();
 			unit->act.attack.run = false;
 			unit->meshInst->Play(NAMES::aniAttacks[unit->act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-			unit->meshInst->groups[1].speed = unit->GetAttackSpeed();
+			unit->meshInst->GetGroup(1).speed = unit->GetAttackSpeed();
 			t = 100.f;
 			break;
 		case DA_BLOCK:

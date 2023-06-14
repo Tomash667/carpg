@@ -501,7 +501,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 			f >> newPos;
 			f >> rot;
-			f >> unit.meshInst->groups[0].speed;
+			f >> unit.meshInst->GetGroup(0).speed;
 			f.ReadCasted<byte>(ani);
 			if(!f)
 			{
@@ -665,9 +665,9 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Attack:
 						if(unit.action == A_ATTACK && unit.animationState == AS_ATTACK_PREPARE)
 						{
-							const float ratio = unit.meshInst->groups[1].time / unit.GetAttackFrame(0);
+							const float ratio = unit.meshInst->GetGroup(1).time / unit.GetAttackFrame(0);
 							unit.animationState = AS_ATTACK_CAN_HIT;
-							unit.meshInst->groups[1].speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
+							unit.meshInst->GetGroup(1).speed = (ratio + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
 							unit.act.attack.power = ratio + 1.f;
 						}
 						else
@@ -681,7 +681,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.meshInst->groups[1].speed = attackSpeed;
+							unit.meshInst->GetGroup(1).speed = attackSpeed;
 						}
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
 						break;
@@ -696,7 +696,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.run = false;
 							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.meshInst->groups[1].speed = attackSpeed;
+							unit.meshInst->GetGroup(1).speed = attackSpeed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * unit.GetStaminaMod(weapon));
 							unit.timer = 0.f;
@@ -715,14 +715,14 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_Block:
 						unit.action = A_BLOCK;
 						unit.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-						unit.meshInst->groups[1].speed = 1.f;
-						unit.meshInst->groups[1].blendMax = attackSpeed;
+						unit.meshInst->GetGroup(1).speed = 1.f;
+						unit.meshInst->GetGroup(1).blendMax = attackSpeed;
 						break;
 					case AID_Bash:
 						unit.action = A_BASH;
 						unit.animationState = AS_BASH_ANIMATION;
 						unit.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, 1);
-						unit.meshInst->groups[1].speed = attackSpeed;
+						unit.meshInst->GetGroup(1).speed = attackSpeed;
 						unit.player->Train(TrainWhat::BashStart, 0.f, 0);
 						unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK * unit.GetStaminaMod(unit.GetShield()));
 						break;
@@ -737,7 +737,7 @@ bool Net::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.act.attack.run = true;
 							unit.act.attack.hitted = 0;
 							unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-							unit.meshInst->groups[1].speed = attackSpeed;
+							unit.meshInst->GetGroup(1).speed = attackSpeed;
 							const Weapon& weapon = unit.GetWeapon();
 							unit.RemoveStamina(weapon.GetInfo().stamina * 1.5f * unit.GetStaminaMod(weapon));
 						}
@@ -2907,7 +2907,7 @@ void Net::WriteServerChanges(BitStreamWriter& f)
 				f << unit.id;
 				f << unit.pos;
 				f << unit.rot;
-				f << unit.meshInst->groups[0].speed;
+				f << unit.meshInst->GetGroup(0).speed;
 				f.WriteCasted<byte>(unit.animation);
 			}
 			break;

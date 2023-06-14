@@ -2010,14 +2010,14 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 		{
 			unit->timer = 0.33f;
 			unit->speed = ability->range / 0.33f;
-			unit->meshInst->groups[0].speed = 3.f;
+			unit->meshInst->GetGroup(0).speed = 3.f;
 		}
 		else
 		{
 			unit->timer = 0.5f;
 			unit->speed = ability->range / 0.5f;
-			unit->meshInst->groups[0].speed = 2.5f;
-			unit->meshInst->groups[1].blendMax = 0.1f;
+			unit->meshInst->GetGroup(0).speed = 2.5f;
+			unit->meshInst->GetGroup(1).blendMax = 0.1f;
 			unit->meshInst->Play("charge", PLAY_PRIO1, 1);
 		}
 
@@ -2037,7 +2037,7 @@ void PlayerController::UseAbility(Ability* ability, bool fromServer, const Vec3*
 			NetChange& c = Net::PushChange(NetChange::PLAYER_ABILITY);
 			c.unit = unit;
 			c.ability = ability;
-			c.extraFloat = unit->meshInst->groups[1].speed;
+			c.extraFloat = unit->meshInst->GetGroup(1).speed;
 		}
 		else if(!fromServer)
 		{
@@ -2981,9 +2981,9 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					if(GKey.KeyUpAllowed(actionKey))
 					{
 						// release attack
-						const float ratio = u.meshInst->groups[1].time / u.GetAttackFrame(0);
+						const float ratio = u.meshInst->GetGroup(1).time / u.GetAttackFrame(0);
 						const float speed = (ratio + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
-						u.meshInst->groups[1].speed = speed;
+						u.meshInst->GetGroup(1).speed = speed;
 						u.animationState = AS_ATTACK_CAN_HIT;
 						u.act.attack.power = ratio + 1.f;
 
@@ -3028,7 +3028,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						u.act.attack.run = false;
 						u.act.attack.hitted = 0;
 						u.meshInst->Play(NAMES::aniAttacks[u.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, 1);
-						u.meshInst->groups[1].speed = speed;
+						u.meshInst->GetGroup(1).speed = speed;
 						actionKey = k;
 						u.timer = 0.f;
 
@@ -3064,7 +3064,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.meshInst->groups[1].IsBlending() && u.HaveShield() && !data.abilityReady)
+				else if(!u.meshInst->GetGroup(1).IsBlending() && u.HaveShield() && !data.abilityReady)
 				{
 					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) || GKey.KeyPressedUpAllowed(GK_SECONDARY_ATTACK))
 					{
@@ -3073,7 +3073,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						u.action = A_BASH;
 						u.animationState = AS_BASH_ANIMATION;
 						u.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, 1);
-						u.meshInst->groups[1].speed = speed;
+						u.meshInst->GetGroup(1).speed = speed;
 
 						if(Net::IsOnline())
 						{
@@ -3117,7 +3117,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						{
 							// running attack
 							float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.meshInst->groups[1].speed = speed;
+							u.meshInst->GetGroup(1).speed = speed;
 							u.animationState = AS_ATTACK_CAN_HIT;
 							u.act.attack.run = true;
 							u.act.attack.power = 1.5f;
@@ -3141,7 +3141,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 						{
 							// prepare attack
 							float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
-							u.meshInst->groups[1].speed = speed;
+							u.meshInst->GetGroup(1).speed = speed;
 							actionKey = k;
 							u.animationState = AS_ATTACK_PREPARE;
 							u.act.attack.run = false;
@@ -3176,7 +3176,7 @@ void PlayerController::UpdateMove(float dt, bool allowRot)
 					const float blendMax = u.GetBlockSpeed();
 					u.action = A_BLOCK;
 					u.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, 1);
-					u.meshInst->groups[1].blendMax = blendMax;
+					u.meshInst->GetGroup(1).blendMax = blendMax;
 					actionKey = k;
 
 					if(Net::IsOnline())

@@ -1299,7 +1299,7 @@ void Game::UpdateServerTransfer(float dt)
 				u = gameLevel->CreateUnit(*info.clas->player, -1, inLevel);
 				u->locPart = nullptr;
 				u->ApplyHumanData(info.hd);
-				u->meshInst->needUpdate = true;
+				u->meshInst->Changed();
 				info.u = u;
 
 				u->player = new PlayerController;

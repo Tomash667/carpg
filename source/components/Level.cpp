@@ -45,6 +45,7 @@
 #include "UnitGroup.h"
 #include "World.h"
 
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <ParticleSystem.h>
 #include <Render.h>
 #include <ResourceManager.h>
@@ -4626,7 +4627,7 @@ MeshInstance* Level::GetBowInstance(Mesh* mesh)
 	{
 		MeshInstance* instance = bowInstances.back();
 		bowInstances.pop_back();
-		instance->mesh = mesh;
+		instance->SetMesh(mesh);
 		return instance;
 	}
 }
@@ -4902,7 +4903,7 @@ void Level::CreateObjectsMeshInstance()
 				obj->meshInst = new MeshInstance(obj->mesh);
 				obj->meshInst->Play(&obj->mesh->anims[0], PLAY_NO_BLEND, 0);
 				if(time != 0)
-					obj->meshInst->groups[0].time = time;
+					obj->meshInst->GetGroup(0).time = time;
 			}
 		}
 

@@ -129,8 +129,8 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	for(vector<Chest*>::iterator it = locPart.chests.begin(), end = locPart.chests.end(); it != end; ++it)
 	{
 		Chest& chest = **it;
-		chest.meshInst->mesh->EnsureIsLoaded();
-		if(frustum.SphereToFrustum(chest.pos, chest.meshInst->mesh->head.radius))
+		chest.meshInst->GetMesh()->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(chest.pos, chest.meshInst->GetMesh()->head.radius))
 		{
 			SceneNode* node = SceneNode::Get();
 			if(chest.meshInst->IsActive())
@@ -139,7 +139,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 				node->SetMesh(chest.meshInst);
 			}
 			else
-				node->SetMesh(chest.meshInst->mesh);
+				node->SetMesh(chest.meshInst->GetMesh());
 			node->center = chest.pos;
 			node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
 			if(drawBatch.gatherLights)
@@ -158,12 +158,12 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 	for(vector<Door*>::iterator it = locPart.doors.begin(), end = locPart.doors.end(); it != end; ++it)
 	{
 		Door& door = **it;
-		door.meshInst->mesh->EnsureIsLoaded();
-		if(frustum.SphereToFrustum(door.pos, door.meshInst->mesh->head.radius))
+		door.meshInst->GetMesh()->EnsureIsLoaded();
+		if(frustum.SphereToFrustum(door.pos, door.meshInst->GetMesh()->head.radius))
 		{
 			SceneNode* node = SceneNode::Get();
-			if(!door.meshInst->groups[0].anim || door.meshInst->groups[0].time == 0.f)
-				node->SetMesh(door.meshInst->mesh);
+			if(!door.meshInst->GetGroup(0).anim || door.meshInst->GetGroup(0).time == 0.f)
+				node->SetMesh(door.meshInst->GetMesh());
 			else
 			{
 				door.meshInst->SetupBones();
@@ -460,7 +460,7 @@ void Game::ListDrawObjects(LocationPart& locPart, FrustumPlanes& frustum)
 //=================================================================================================
 void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 {
-	u.meshInst->mesh->EnsureIsLoaded();
+	u.meshInst->GetMesh()->EnsureIsLoaded();
 	if(!frustum.SphereToFrustum(u.visualPos, u.GetSphereRadius()))
 		return;
 
@@ -606,13 +606,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	Mesh* mesh;
 	if(u.HaveWeapon() && rightHandItem != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointWeapon : NAMES::pointHiddenWeapon);
+		Mesh::Point* point = u.meshInst->GetMesh()->GetPoint(inHand ? NAMES::pointWeapon : NAMES::pointHiddenWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(mesh);
 		node2->center = node->center;
-		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->GetBoneMatrix(point->bone) * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -637,11 +637,11 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	}
 	else if(u.action == A_ATTACK && drawHitbox)
 	{
-		Mesh::Point* hitbox = u.meshInst->mesh->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
+		Mesh::Point* hitbox = u.meshInst->GetMesh()->GetPoint(Format("hitbox%d", u.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = u.meshInst->mesh->FindPoint("hitbox");
+			hitbox = u.meshInst->GetMesh()->FindPoint("hitbox");
 		DebugNode* debugNode = DebugNode::Get();
-		debugNode->mat = hitbox->mat * u.meshInst->matBones[hitbox->bone] * node->mat * drawBatch.camera->matViewProj;
+		debugNode->mat = hitbox->mat * u.meshInst->GetBoneMatrix(hitbox->bone) * node->mat * drawBatch.camera->matViewProj;
 		debugNode->shape = MeshShape::Box;
 		debugNode->color = Color::Black;
 		drawBatch.debugNodes.push_back(debugNode);
@@ -651,13 +651,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointShield : NAMES::pointShieldHidden);
+		Mesh::Point* point = u.meshInst->GetMesh()->GetPoint(inHand ? NAMES::pointShield : NAMES::pointShieldHidden);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(shield);
 		node2->center = node->center;
-		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->GetBoneMatrix(point->bone) * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -684,13 +684,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 	// other item (arrow/potion)
 	if(rightHandItem)
 	{
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(NAMES::pointWeapon);
+		Mesh::Point* point = u.meshInst->GetMesh()->GetPoint(NAMES::pointWeapon);
 		assert(point);
 
 		SceneNode* node2 = SceneNode::Get();
 		node2->SetMesh(rightHandItem);
 		node2->center = node->center;
-		node2->mat = matScale * point->mat * u.meshInst->matBones[point->bone] * node->mat;
+		node2->mat = matScale * point->mat * u.meshInst->GetBoneMatrix(point->bone) * node->mat;
 		node2->lights = node->lights;
 		if(selected)
 		{
@@ -731,13 +731,13 @@ void Game::ListDrawObjectsUnit(FrustumPlanes& frustum, Unit& u)
 		else
 			node2->SetMesh(u.GetBow().mesh);
 		node2->center = node->center;
-		Mesh::Point* point = u.meshInst->mesh->GetPoint(inHand ? NAMES::pointBow : NAMES::pointShieldHidden);
+		Mesh::Point* point = u.meshInst->GetMesh()->GetPoint(inHand ? NAMES::pointBow : NAMES::pointShieldHidden);
 		assert(point);
 		Matrix m1;
 		if(inHand)
-			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.meshInst->matBones[point->bone];
+			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.meshInst->GetBoneMatrix(point->bone);
 		else
-			m1 = point->mat * u.meshInst->matBones[point->bone];
+			m1 = point->mat * u.meshInst->GetBoneMatrix(point->bone);
 		node2->mat = matScale * m1 * node->mat;
 		node2->lights = node->lights;
 		if(selected)

@@ -243,7 +243,7 @@ void LoadResourcesConfig()
 }
 
 //=================================================================================================
-void LoadConfiguration(char* cmdLine)
+void LoadConfiguration(cstring cmdLine)
 {
 	// parse command line, load config
 	Info("Settings: Parsing command line & config.");
@@ -339,7 +339,7 @@ void LoadConfiguration(char* cmdLine)
 //=================================================================================================
 // main program function
 //=================================================================================================
-int AppEntry(char* cmdLine)
+int AppEntry(cstring cmdLine)
 {
 	if(IsDebug() && IsDebuggerPresent() && !io::FileExists("fmod.dll"))
 	{

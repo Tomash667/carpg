@@ -257,7 +257,7 @@ void Net::UpdateClient(float dt)
 			f << true;
 			f << game->pc->unit->pos;
 			f << game->pc->unit->rot;
-			f << game->pc->unit->meshInst->groups[0].speed;
+			f << game->pc->unit->meshInst->GetGroup(0).speed;
 			f.WriteCasted<byte>(game->pc->unit->animation);
 		}
 		else
@@ -277,9 +277,9 @@ void Net::InterpolateUnits(float dt)
 		{
 			if(!unit->IsLocalPlayer())
 				unit->interp->Update(dt, unit->visualPos, unit->rot);
-			if(unit->meshInst->mesh->head.nGroups == 1)
+			if(unit->meshInst->GetMesh()->head.nGroups == 1)
 			{
-				if(!unit->meshInst->groups[0].anim)
+				if(!unit->meshInst->GetGroup(0).anim)
 				{
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
@@ -287,7 +287,7 @@ void Net::InterpolateUnits(float dt)
 			}
 			else
 			{
-				if(!unit->meshInst->groups[0].anim && !unit->meshInst->groups[1].anim)
+				if(!unit->meshInst->GetGroup(0).anim && !unit->meshInst->GetGroup(1).anim)
 				{
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
@@ -565,7 +565,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				else if(unit != pc.unit)
 				{
 					unit->pos = pos;
-					unit->meshInst->groups[0].speed = aniSpeed;
+					unit->meshInst->GetGroup(0).speed = aniSpeed;
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
@@ -648,7 +648,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 
 				Unit& unit = *unitPtr;
 				byte type = (typeflags & 0xF);
-				int group = unit.meshInst->mesh->head.nGroups - 1;
+				int group = unit.meshInst->GetMesh()->head.nGroups - 1;
 
 				bool isBow = false;
 				switch(type)
@@ -657,7 +657,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					if(unit.action == A_ATTACK && unit.animationState == AS_ATTACK_PREPARE)
 					{
 						unit.animationState = AS_ATTACK_CAN_HIT;
-						unit.meshInst->groups[group].speed = attackSpeed;
+						unit.meshInst->GetGroup(group).speed = attackSpeed;
 					}
 					else
 					{
@@ -670,7 +670,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						unit.act.attack.run = false;
 						unit.act.attack.hitted = 0;
 						unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-						unit.meshInst->groups[group].speed = attackSpeed;
+						unit.meshInst->GetGroup(group).speed = attackSpeed;
 					}
 					break;
 				case AID_PrepareAttack:
@@ -683,7 +683,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.run = false;
 					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-					unit.meshInst->groups[group].speed = attackSpeed;
+					unit.meshInst->GetGroup(group).speed = attackSpeed;
 					break;
 				case AID_Shoot:
 				case AID_StartShoot:
@@ -696,13 +696,13 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 				case AID_Block:
 					unit.action = A_BLOCK;
 					unit.meshInst->Play(NAMES::aniBlock, PLAY_PRIO1 | PLAY_STOP_AT_END, group);
-					unit.meshInst->groups[group].blendMax = attackSpeed;
+					unit.meshInst->GetGroup(group).blendMax = attackSpeed;
 					break;
 				case AID_Bash:
 					unit.action = A_BASH;
 					unit.animationState = AS_BASH_ANIMATION;
 					unit.meshInst->Play(NAMES::aniBash, PLAY_ONCE | PLAY_PRIO1, group);
-					unit.meshInst->groups[group].speed = attackSpeed;
+					unit.meshInst->GetGroup(group).speed = attackSpeed;
 					break;
 				case AID_RunningAttack:
 					if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
@@ -714,7 +714,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 					unit.act.attack.run = true;
 					unit.act.attack.hitted = 0;
 					unit.meshInst->Play(NAMES::aniAttacks[unit.act.attack.index], PLAY_PRIO1 | PLAY_ONCE, group);
-					unit.meshInst->groups[group].speed = attackSpeed;
+					unit.meshInst->GetGroup(group).speed = attackSpeed;
 					break;
 				case AID_Cancel:
 					if(unit.action == A_SHOOT)
@@ -1067,7 +1067,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 						else
 							unit->animationState = AS_POSITION_HURT;
 
-						if(unit->meshInst->mesh->head.nGroups == 2)
+						if(unit->meshInst->GetMesh()->head.nGroups == 2)
 							unit->meshInst->Play(NAMES::aniHurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						else
 						{
@@ -2240,7 +2240,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							unit->animationState = AS_CAST_ANIMATION;
 							if(ability->animation.empty())
 							{
-								if(unit->meshInst->mesh->head.nGroups == 2)
+								if(unit->meshInst->GetMesh()->head.nGroups == 2)
 									unit->meshInst->Play(NAMES::aniCast, PLAY_ONCE | PLAY_PRIO1, 1);
 								else
 								{

@@ -20,7 +20,7 @@ void Chest::Recreate()
 	{
 		meshInst->ApplyPreload(base->mesh);
 		if(meshInst->IsActive())
-			meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_BACK | PLAY_ONCE);
+			meshInst->Play(&meshInst->GetMesh()->anims[0], PLAY_PRIO1 | PLAY_BACK | PLAY_ONCE);
 	}
 	else
 		meshInst = new MeshInstance(base->mesh);
@@ -153,7 +153,7 @@ void Chest::OpenClose(Unit* unit)
 		// open chest by unit
 		assert(!user);
 		user = unit;
-		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END);
+		meshInst->Play(&meshInst->GetMesh()->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END);
 		soundMgr->PlaySound3d(gameRes->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
@@ -169,7 +169,7 @@ void Chest::OpenClose(Unit* unit)
 		// close chest
 		assert(user);
 		user = nullptr;
-		meshInst->Play(&meshInst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK);
+		meshInst->Play(&meshInst->GetMesh()->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK);
 		soundMgr->PlaySound3d(gameRes->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{

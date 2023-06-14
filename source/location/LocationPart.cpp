@@ -864,21 +864,21 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Vec3& hitpoint)
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.meshInst->mesh->head.nGroups > 1)
+	if(unit.meshInst->GetMesh()->head.nGroups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.meshInst->mesh->GetPoint(NAMES::pointWeapon);
+		point = unit.meshInst->GetMesh()->GetPoint(NAMES::pointWeapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.meshInst->mesh->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
+		hitbox = unit.meshInst->GetMesh()->GetPoint(Format("hitbox%d", unit.act.attack.index + 1));
 		if(!hitbox)
-			hitbox = unit.meshInst->mesh->FindPoint("hitbox");
+			hitbox = unit.meshInst->GetMesh()->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -903,10 +903,10 @@ bool LocationPart::CheckForHit(Unit& unit, Unit*& hitted, Mesh::Point& hitbox, M
 	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitScale * UnitRot * UnitPos
-		m1 = hitbox.mat * (bone->mat * unit.meshInst->matBones[bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * unit.meshInst->GetBoneMatrix(bone->bone) * m1);
 	}
 	else
-		m1 = hitbox.mat * unit.meshInst->matBones[hitbox.bone] * m1;
+		m1 = hitbox.mat * unit.meshInst->GetBoneMatrix(hitbox.bone) * m1;
 
 	// a - weapon hitbox, b - unit hitbox
 	Oob a, b;

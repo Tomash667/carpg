@@ -373,13 +373,13 @@ void Game::ConfigureGame()
 	loadErrors += BaseLocation::SetRoomPointers();
 
 	// shaders
-	render->RegisterShader(basicShader = new BasicShader);
-	render->RegisterShader(grassShader = new GrassShader);
-	render->RegisterShader(particleShader = new ParticleShader);
-	render->RegisterShader(postfxShader = new PostfxShader);
-	render->RegisterShader(skyboxShader = new SkyboxShader);
-	render->RegisterShader(terrainShader = new TerrainShader);
-	render->RegisterShader(glowShader = new GlowShader(postfxShader));
+	basicShader = render->GetShader<BasicShader>();
+	grassShader = render->GetShader<GrassShader>();
+	particleShader = render->GetShader<ParticleShader>();
+	postfxShader = render->GetShader<PostfxShader>();
+	skyboxShader = render->GetShader<SkyboxShader>();
+	terrainShader = render->GetShader<TerrainShader>();
+	glowShader = render->GetShader<GlowShader>();
 
 	tMinimap = render->CreateDynamicTexture(Int2(128));
 	CreateRenderTargets();
@@ -654,7 +654,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->meshInst->mesh->GetBone("usta")->id;
+		int bone = u->meshInst->GetMesh()->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talkTimer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) * mat[bone];
@@ -2916,7 +2916,7 @@ void Game::LeaveLevel(LocationPart& locPart, bool clear)
 			else
 			{
 				unit.talking = false;
-				unit.meshInst->needUpdate = true;
+				unit.meshInst->Changed();
 				unit.usable = nullptr;
 				return true;
 			}

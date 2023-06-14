@@ -869,7 +869,7 @@ public:
 	void Talk(cstring text, int playAnim = -1);
 	void TalkS(const string& text, int playAnim = -1) { Talk(text.c_str(), playAnim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animationState == AS_BASH_ANIMATION); }
-	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, meshInst->groups[1].GetBlendT()) : 0.5f; }
+	float GetBlockMod() const { return action == A_BLOCK ? Max(0.5f, meshInst->GetGroup(1).GetBlendT()) : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const;
 	void RotateTo(const Vec3& pos, float dt);

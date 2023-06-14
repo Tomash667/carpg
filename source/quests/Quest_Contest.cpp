@@ -572,7 +572,7 @@ void Quest_Contest::Cleanup()
 	Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
 
 	innkeeper->talking = false;
-	innkeeper->meshInst->needUpdate = true;
+	innkeeper->meshInst->Changed();
 	innkeeper->busy = Unit::Busy_No;
 	state = CONTEST_DONE;
 	units.clear();

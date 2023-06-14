@@ -28,7 +28,7 @@ void Object::Save(GameWriter& f)
 		f << mesh->filename;
 	}
 	if(meshInst)
-		f << meshInst->groups[0].time;
+		f << meshInst->GetGroup(0).time;
 }
 
 //=================================================================================================
@@ -85,7 +85,7 @@ void Object::Write(BitStreamWriter& f) const
 		f << mesh->filename;
 	}
 	if(meshInst && net->mpLoad)
-		f << meshInst->groups[0].time;
+		f << meshInst->GetGroup(0).time;
 }
 
 //=================================================================================================
