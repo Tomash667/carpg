@@ -9,13 +9,13 @@ struct ContentItem
 {
 	ContentItem() : hash(0) {}
 
-	int hash;
+	uint hash;
 	string id;
 
 	inline static vector<T*> items;
-	inline static std::unordered_map<int, T*> hashes;
+	inline static std::unordered_map<uint, T*> hashes;
 
-	static T* TryGet(int hash)
+	static T* TryGet(uint hash)
 	{
 		auto it = hashes.find(hash);
 		if(it != hashes.end())
@@ -23,12 +23,12 @@ struct ContentItem
 		return nullptr;
 	}
 
-	static T* Get(int hash)
+	static T* Get(uint hash)
 	{
 		T* item = T::TryGet(hash);
 		if(item)
 			return item;
-		throw Format("Missing %s hash %d.", T::typeName, hash);
+		throw Format("Missing %s hash %u.", T::typeName, hash);
 	}
 
 	static T* TryGet(Cstring id)

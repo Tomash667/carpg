@@ -113,7 +113,7 @@ struct BaseObject : public ContentItem<BaseObject>
 
 	bool IsUsable() const { return IsSet(flags, OBJ_USABLE); }
 
-	static BaseObject* TryGet(int hash, ObjectGroup** group = nullptr);
+	static BaseObject* TryGet(uint hash, ObjectGroup** group = nullptr);
 	static BaseObject* TryGet(Cstring id, ObjectGroup** group = nullptr)
 	{
 		return TryGet(Hash(id), group);

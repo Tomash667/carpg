@@ -117,7 +117,7 @@ void PerkLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void PerkLoader::ParsePerk(const string& id)
 {
-	const int hash = Hash(id);
+	const uint hash = Hash(id);
 	Perk* existingPerk = Perk::Get(hash);
 	if(existingPerk && existingPerk->defined)
 	{
@@ -157,7 +157,7 @@ void PerkLoader::ParsePerk(const string& id)
 				if(t.IsKeyword(0, G_TOP))
 				{
 					t.Next();
-					const int perkHash = ParsePerkId()->hash;
+					const uint perkHash = ParsePerkId()->hash;
 					perk->required.push_back({ Perk::Required::HAVE_PERK, perkHash, 0 });
 					crc.Update(Perk::Required::HAVE_PERK);
 					crc.Update(perkHash);
@@ -168,14 +168,14 @@ void PerkLoader::ParsePerk(const string& id)
 					t.Next();
 					if(special == SR_NO_PERK)
 					{
-						const int perkHash = ParsePerkId()->hash;
+						const uint perkHash = ParsePerkId()->hash;
 						perk->required.push_back({ Perk::Required::HAVE_NO_PERK, perkHash, 0 });
 						crc.Update(Perk::Required::HAVE_NO_PERK);
 						crc.Update(perkHash);
 					}
 					else
 					{
-						const int subtype = t.GetKeywordId(G_ATTRIBUTE);
+						const uint subtype = t.GetKeywordId(G_ATTRIBUTE);
 						t.Next();
 						perk->required.push_back({ Perk::Required::CAN_MOD, subtype, 0 });
 						crc.Update(Perk::Required::CAN_MOD);
@@ -184,9 +184,9 @@ void PerkLoader::ParsePerk(const string& id)
 				}
 				else if(t.IsKeywordGroup(G_ATTRIBUTE))
 				{
-					const int subtype = t.GetKeywordId(G_ATTRIBUTE);
+					const uint subtype = t.GetKeywordId(G_ATTRIBUTE);
 					t.Next();
-					const int value = t.MustGetInt();
+					const uint value = t.MustGetInt();
 					t.Next();
 					perk->required.push_back({ Perk::Required::HAVE_ATTRIBUTE, subtype, value });
 					crc.Update(Perk::Required::HAVE_ATTRIBUTE);
@@ -195,9 +195,9 @@ void PerkLoader::ParsePerk(const string& id)
 				}
 				else if(t.IsKeywordGroup(G_SKILL))
 				{
-					const int subtype = t.GetKeywordId(G_SKILL);
+					const uint subtype = t.GetKeywordId(G_SKILL);
 					t.Next();
-					const int value = t.MustGetInt();
+					const uint value = t.MustGetInt();
 					t.Next();
 					perk->required.push_back({ Perk::Required::HAVE_SKILL, subtype, value });
 					crc.Update(Perk::Required::HAVE_SKILL);
@@ -324,7 +324,7 @@ void PerkLoader::ParsePerk(const string& id)
 Perk* PerkLoader::ParsePerkId()
 {
 	const string& id = t.MustGetItemKeyword();
-	int hash = Hash(id);
+	const uint hash = Hash(id);
 	Perk* perk = Perk::Get(hash);
 	if(!perk)
 	{
@@ -348,7 +348,7 @@ void PerkLoader::ParseAlias(const string& id)
 	t.Next();
 
 	const string& alias = t.MustGetItemKeyword();
-	int hash = Hash(alias);
+	const uint hash = Hash(alias);
 	if(Perk::Get(hash))
 		t.Throw("Alias or perk '%s' already exists.", alias.c_str());
 

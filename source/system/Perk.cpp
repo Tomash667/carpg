@@ -10,7 +10,7 @@
 
 //-----------------------------------------------------------------------------
 vector<Perk*> Perk::perks;
-std::map<int, Perk*> Perk::hashPerks;
+std::map<uint, Perk*> Perk::hashPerks;
 
 //=================================================================================================
 ::Perk* old::Convert(Perk perk)
@@ -106,7 +106,7 @@ std::map<int, Perk*> Perk::hashPerks;
 }
 
 //=================================================================================================
-Perk* Perk::Get(int hash)
+Perk* Perk::Get(uint hash)
 {
 	auto it = hashPerks.find(hash);
 	if(it != hashPerks.end())

@@ -51,7 +51,7 @@ BaseObject& BaseObject::operator = (BaseObject& o)
 }
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(int hash, ObjectGroup** outGroup)
+BaseObject* BaseObject::TryGet(uint hash, ObjectGroup** outGroup)
 {
 	// find object
 	BaseObject* obj = ContentItem<BaseObject>::TryGet(hash);

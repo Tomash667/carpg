@@ -48,7 +48,7 @@ struct BaseUsable : public BaseObject
 	void EnsureIsLoaded();
 
 	static vector<BaseUsable*> usables;
-	static BaseUsable* TryGet(int hash)
+	static BaseUsable* TryGet(uint hash)
 	{
 		BaseObject* obj = BaseObject::TryGet(hash);
 		if(obj && obj->IsUsable())
@@ -59,12 +59,12 @@ struct BaseUsable : public BaseObject
 	{
 		return TryGet(Hash(id));
 	}
-	static BaseUsable* Get(int hash)
+	static BaseUsable* Get(uint hash)
 	{
 		BaseUsable* use = TryGet(hash);
 		if(use)
 			return use;
-		throw Format("Missing usable hash %d.", hash);
+		throw Format("Missing usable hash %u.", hash);
 	}
 	static BaseUsable* Get(Cstring id)
 	{

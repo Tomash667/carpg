@@ -2266,7 +2266,7 @@ void Unit::Load(GameReader& f)
 		case A_SHOOT:
 			if(LOAD_VERSION >= V_0_18)
 			{
-				int hash;
+				uint hash;
 				f >> hash;
 				if(hash != 0)
 					act.shoot.ability = Ability::Get(hash);

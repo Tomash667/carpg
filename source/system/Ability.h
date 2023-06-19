@@ -52,7 +52,7 @@ struct Ability
 		UseKneel = 1 << 12, // use kneel animation
 	};
 
-	int hash;
+	uint hash;
 	string id, animation;
 	SoundPtr soundCast, soundHit;
 	TexturePtr tex, texParticle, texIcon;
@@ -87,8 +87,8 @@ struct Ability
 	SkillId GetSkill() const;
 
 	static vector<Ability*> abilities;
-	static std::map<int, Ability*> hashAbilities;
-	static Ability* Get(int hash);
+	static std::map<uint, Ability*> hashAbilities;
+	static Ability* Get(uint hash);
 	static Ability* Get(Cstring id) { return Get(Hash(id)); }
 	static Ability* GetS(const string& id) { return Get(id); }
 };

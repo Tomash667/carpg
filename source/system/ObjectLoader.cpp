@@ -132,7 +132,7 @@ void ObjectLoader::LoadEntity(int top, const string& id)
 {
 	if(top != T_ALIAS)
 	{
-		int hash = Hash(id);
+		const uint hash = Hash(id);
 		ObjectGroup* group = nullptr;
 		BaseObject* existingObj = BaseObject::TryGet(hash, &group);
 		if(existingObj)
@@ -479,7 +479,7 @@ void ObjectLoader::ParseAlias(const string& id)
 	t.Next();
 
 	const string& alias = t.MustGetItemKeyword();
-	int hash = Hash(alias);
+	const uint hash = Hash(alias);
 	if(BaseObject::TryGet(hash))
 		t.Throw("Alias or object '%s' already exists.", alias.c_str());
 

@@ -40,7 +40,7 @@ void Object::Load(GameReader& f)
 
 	if(LOAD_VERSION >= V_0_16)
 	{
-		const int hash = f.Read<int>();
+		const uint hash = f.Read<uint>();
 		if(hash != 0)
 		{
 			base = BaseObject::Get(hash);
@@ -95,7 +95,7 @@ bool Object::Read(BitStreamReader& f)
 	f >> rot;
 	f >> scale;
 
-	const int hash = f.Read<int>();
+	const uint hash = f.Read<uint>();
 	if(hash != 0)
 	{
 		base = BaseObject::Get(hash);

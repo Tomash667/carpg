@@ -1244,7 +1244,7 @@ void ItemLoader::ParseBetterItems()
 //=================================================================================================
 void ItemLoader::ParseRecipe(const string& id)
 {
-	int hash = Hash(id);
+	const uint hash = Hash(id);
 	Recipe* existingRecipe = Recipe::TryGet(hash);
 	if(existingRecipe)
 	{
@@ -1364,7 +1364,7 @@ void ItemLoader::ParseRecipeAlias(const string& id)
 	t.Next();
 
 	const string& alias = t.MustGetItemKeyword();
-	const int hash = Hash(alias);
+	const uint hash = Hash(alias);
 	Recipe* recipe2 = Recipe::TryGet(hash);
 	if(recipe2)
 		t.Throw("Can't create recipe alias '%s', already exists.", alias.c_str());

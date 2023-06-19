@@ -528,7 +528,7 @@ const Item* FindItemOrList(Cstring id, ItemList*& lis)
 //=================================================================================================
 Recipe* Recipe::ForwardGet(const string& id)
 {
-	int hash = Hash(id);
+	const uint hash = Hash(id);
 	Recipe* recipe = TryGet(hash);
 	if(!recipe)
 	{
@@ -540,6 +540,6 @@ Recipe* Recipe::ForwardGet(const string& id)
 		items.push_back(recipe);
 	}
 	else if(recipe->id != id)
-		throw Format("Recipe hash collision '%s' and '%s' (%d).", id.c_str(), recipe->id.c_str(), hash);
+		throw Format("Recipe hash collision '%s' and '%s' (%u).", id.c_str(), recipe->id.c_str(), hash);
 	return recipe;
 }

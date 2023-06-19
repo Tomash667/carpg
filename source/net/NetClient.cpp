@@ -2221,7 +2221,8 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 		// unit cast spell animation
 		case NetChange::CAST_SPELL:
 			{
-				int id, hash;
+				int id;
+				uint hash;
 				f >> id;
 				f >> hash;
 				if(!f)
@@ -2255,7 +2256,7 @@ bool Net::ProcessControlMessageClient(BitStreamReader& f)
 							}
 						}
 						else
-							Error("Update client: CAST_SPELL, missing ability %d.", hash);
+							Error("Update client: CAST_SPELL, missing ability %u.", hash);
 					}
 				}
 			}

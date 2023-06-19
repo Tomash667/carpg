@@ -105,7 +105,7 @@ void Usable::Write(BitStreamWriter& f) const
 //=================================================================================================
 bool Usable::Read(BitStreamReader& f)
 {
-	int hash;
+	uint hash;
 	f >> id;
 	f >> hash;
 	f >> pos;

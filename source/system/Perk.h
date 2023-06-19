@@ -77,8 +77,8 @@ struct Perk
 			CAN_MOD
 		};
 		Type type;
-		int subtype;
-		int value;
+		uint subtype;
+		uint value;
 	};
 
 	struct Effect
@@ -101,9 +101,10 @@ struct Perk
 		};
 	};
 
-	int hash;
+	uint hash;
 	string id, name, desc, details;
-	int parent, flags, cost;
+	uint parent;
+	int flags, cost;
 	ValueType valueType;
 	vector<Required> required;
 	vector<Effect> effects;
@@ -112,8 +113,8 @@ struct Perk
 	Perk() : parent(0), flags(0), cost(0), valueType(None), defined(false) {}
 
 	static vector<Perk*> perks;
-	static std::map<int, Perk*> hashPerks;
-	static Perk* Get(int hash);
+	static std::map<uint, Perk*> hashPerks;
+	static Perk* Get(uint hash);
 	static Perk* Get(Cstring id) { return Get(Hash(id)); }
 	static void Validate(uint& err);
 };

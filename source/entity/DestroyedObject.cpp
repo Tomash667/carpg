@@ -63,7 +63,7 @@ void DestroyedObject::Write(BitStreamWriter& f) const
 //=================================================================================================
 bool DestroyedObject::Read(BitStreamReader& f)
 {
-	int hash;
+	uint hash;
 	f >> hash;
 	f >> pos;
 	f >> rot;
